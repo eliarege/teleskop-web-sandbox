@@ -66,10 +66,14 @@ async function handleEdit(formData: StopReason) {
 }
 
 async function handleAdd(formData: StopReason) {
+  const stopCode = formData.stopCode || (stopReasons.value.length === 0
+    ? 1
+    : stopReasons.value[stopReasons.value.length - 1].stopCode + 1)
+
   await kc.fetch('/api/stop-reasons/stop-reason', {
     method: 'POST',
     body: {
-      stopCode: stopReasons.value[stopReasons.value.length - 1].stopCode + 1,
+      stopCode,
       stopName: formData.stopName,
       reportToERP: formData.reportToERP,
     },
