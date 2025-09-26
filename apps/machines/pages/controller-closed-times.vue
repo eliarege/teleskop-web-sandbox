@@ -104,6 +104,9 @@ async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
           <span v-else-if="row.field === 'endTime'">
             {{ d(row.value, 'datetime') }}
           </span>
+          <span v-else-if="row.field === 'duration'">
+            {{ Math.floor(row.value / 3600) }}h {{ Math.floor((row.value % 3600) / 60) }}m {{ row.value % 60 }}s
+          </span>
           <span v-else>
             {{ row.value }}
           </span>
