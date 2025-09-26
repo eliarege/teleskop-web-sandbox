@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import type { MasterCommand } from '~/types'
 
 const kc = useKeycloak()
+const router = useRouter()
 const { t } = useI18n()
-
+const { notifyError, notifySuccess } = useNotify()
 const selectedMachineId = ref()
 
 interface CommandType {
@@ -37,23 +39,20 @@ const { data: machines } = useAuthFetch('/api/machines/active-machines')
 const { data: commandOptions } = useAuthFetch('/api/master-commands/master-commands', {
   query: { machineId: selectedMachineId },
   immediate: false,
-  transform: (commandOptions) => {
-    commandOptions.unshift({
-      commandNo: -1,
-      commandName: t('Empty'),
-    })
-    return commandOptions as readonly MasterCommand[]
-  },
 })
-
 const { data: commands } = useAuthFetch('/api/smart-request-commands/smart-request-commands', {
   query: { machineId: selectedMachineId },
   immediate: false,
 })
-
+watch(commandOptions, () => {
+  commandOptions.value?.unshift({
+    commandNo: -1,
+    commandName: t('empty'),
+  })
+})
 watch(commands, (_newValue, _oldValue) => {
   for (const commandTypeMap of commandTypeMaps) {
-    commandTypeMap.data = commands.value?.find(t => t.commandType === Number(commandTypeMap.id))?.commandName || t('Empty')
+    commandTypeMap.data = commands.value?.find(t => t.commandType === Number(commandTypeMap.id))?.commandName || t('empty')
   }
 })
 
@@ -64,24 +63,36 @@ async function handleOptionChange(commandTypeName: string) {
 }
 
 async function handleSubmit() {
-  await kc.fetch('/api/smart-request-commands/smart-request-commands', {
-    method: 'PUT',
-    body: { changedCommandTypes: changedCommandTypes.value },
-  })
-  changedCommandTypes.value = []
+  try {
+    await kc.fetch('/api/smart-request-commands/smart-request-commands', {
+      method: 'PUT',
+      body: { changedCommandTypes: changedCommandTypes.value },
+    })
+    changedCommandTypes.value = []
+    notifySuccess(t('smartRequestCommandsSaved'))
+  } catch (error: any) {
+    if (error?.statusCode === 409 && error?.statusMessage === 'COMMAND_ID_INUSE') {
+      notifyError(t('commandIdInUse'))
+    } else
+      notifyError(error?.message || t('smartRequestCommandsSaveError'))
+  }
 }
 </script>
 
 <template>
-  <q-card>
+  <q-card class="h-[calc(100vh-41px)] flex-center flex-col ">
     <q-card-section class="flex flex-row justify-center gap-8">
       <div class="w-sm">
         <h3>{{ t('machines') }}</h3>
-        <q-list bordered separator>
+        <q-list
+          bordered
+          separator
+        >
           <q-item
             v-for="machine in machines"
             :key="machine.machineId"
             v-ripple
+            dense
             clickable
             :active="selectedMachineId === machine.machineId"
             :focused="selectedMachineId === machine.machineId"
@@ -93,7 +104,6 @@ async function handleSubmit() {
           </q-item>
         </q-list>
       </div>
-
       <div v-if="commandOptions" class="w-xs flex flex-col">
         <div
           v-for="commandMap in commandTypeMaps"
@@ -102,6 +112,7 @@ async function handleSubmit() {
         >
           <q-select
             v-model="commandMap.data"
+            dense
             :label="commandMap.label"
             :options="commandOptions"
             option-label="commandName"
@@ -111,20 +122,22 @@ async function handleSubmit() {
         </div>
       </div>
     </q-card-section>
-
-    <q-card-actions align="right" class="mt-4 mr-4">
-      <q-btn
-        no-caps
-        :label="t('cancel')"
-        @click="$router.go(0)"
-      />
-      <q-btn
-        color="primary"
-        no-caps
-        :label="t('submit')"
-        @click="handleSubmit"
-      />
-    </q-card-actions>
+    <q-space />
+    <div class="w-full flex p-10">
+      <q-space />
+      <div class="flex gap-3">
+        <q-btn
+          :label="t('cancel')"
+          @click="router.go(0)"
+        />
+        <q-btn
+          color="primary"
+          no-caps
+          :label="t('submit')"
+          @click="handleSubmit"
+        />
+      </div>
+    </div>
   </q-card>
 </template>
 
