@@ -7,6 +7,18 @@ const userTypeOptions = [{ label: t('Operator'), value: 1 }, { label: t('other')
 
 const { notifySuccess, notifyError } = useNotify()
 
+const selected = ref<Partial<User>>({
+  userId: -1,
+  userName: '',
+  userSurname: '',
+  userPass: '',
+  userInfo: '',
+  userActive: 0,
+  userType: -1,
+  userMode: '',
+  userMode2: '',
+})
+
 const columns = computed(() => ({
   userId: {
     label: t('userId'),
@@ -79,6 +91,7 @@ const columns = computed(() => ({
     schema: {
       filled: true,
       validation: 'required',
+      disabled: selected.value?.userId === 0,
     },
   },
   userInfo: {
@@ -118,17 +131,6 @@ const { data: users, refresh } = useAuthFetch('/api/user-definitions/user-defini
 })
 
 const showPermissionsDialog = ref(false)
-const selected = ref<Partial<User>>({
-  userId: -1,
-  userName: '',
-  userSurname: '',
-  userPass: '',
-  userInfo: '',
-  userActive: 0,
-  userType: -1,
-  userMode: '',
-  userMode2: '',
-})
 
 async function handleAdd(formData: Partial<User>) {
   try {
@@ -154,6 +156,7 @@ async function handleAdd(formData: Partial<User>) {
 }
 
 async function handleEdit(formData: Partial<User>) {
+  console.log('formData', formData)
   try {
     formData.userMode = selected.value.userMode
     formData.userMode2 = selected.value.userMode2
@@ -163,10 +166,8 @@ async function handleEdit(formData: Partial<User>) {
         formData,
     })
     await refresh()
-    const { notifySuccess } = useNotify()
     notifySuccess(t('userUpdatedSuccessfully'))
   } catch (error: any) {
-    const { notifyError } = useNotify()
     notifyError(error.statusMessage || t('errorUpdatingUser'))
   }
 }
@@ -180,10 +181,8 @@ async function handleDelete(formData: Partial<User>[]) {
       },
     })
     await refresh()
-    const { notifySuccess } = useNotify()
     notifySuccess(t('userDeletedSuccessfully'))
   } catch (error: any) {
-    const { notifyError } = useNotify()
     notifyError(error.statusMessage || t('errorDeletingUser'))
   }
 }
