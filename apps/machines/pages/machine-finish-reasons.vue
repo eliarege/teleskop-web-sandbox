@@ -60,10 +60,14 @@ const columns = computed(() => ({
 }))
 
 async function handleAdd(formData: FinishReason) {
+  const nextId = finishReasons.value.length === 0
+    ? 1
+    : finishReasons.value[finishReasons.value.length - 1].reasonId + 1
+
   await kc.fetch('/api/finish-reasons/finish-reason', {
     method: 'POST',
     body: {
-      reasonId: finishReasons.value[finishReasons.value.length - 1].reasonId + 1,
+      reasonId: nextId,
       formData,
     },
   })
