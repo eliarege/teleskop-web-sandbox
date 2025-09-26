@@ -1,13 +1,61 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineAuthEventHandler(async (event) => {
-  const { stopCode, stopName, reportToERP } = await readBody(event)
+  try {
+    const { stopCode, stopName, reportToERP, originalStopCode } = await readBody(event)
 
-  const res = await knex('BFSTOPREASONS').where('STOPCODE', stopCode)
-    .update({
-      STOPNAME: stopName,
-      ReportToERP: reportToERP,
+    if (!stopCode || !stopName) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'BAD_REQUEST',
+      })
+    }
+
+    const searchStopCode = originalStopCode || stopCode
+
+    const existingRecord = await knex('BFSTOPREASONS').where('STOPCODE', searchStopCode).first()
+    if (!existingRecord) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'NOT_FOUND',
+      })
+    }
+
+    if (originalStopCode && originalStopCode !== stopCode) {
+      const duplicateCheck = await knex('BFSTOPREASONS').where('STOPCODE', stopCode).first()
+      if (duplicateCheck) {
+        throw createError({
+          statusCode: 409,
+          statusMessage: `ID_INUSE`,
+        })
+      }
+    }
+
+    const res = await knex('BFSTOPREASONS').where('STOPCODE', searchStopCode)
+      .update({
+        STOPCODE: stopCode,
+        STOPNAME: stopName,
+        ReportToERP: reportToERP,
+      })
+
+    return res
+  } catch (error: any) {
+    console.log('error msg:', error.message)
+    if (error?.code === 'ERR_DUP_ENTRY' || error?.message?.includes('PRIMARY KEY constraint')) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: `ID_INUSE`,
+      })
+    }
+
+    if (error.statusCode) {
+      throw error
+    }
+
+    console.error('Database error in stop-reason PUT:', error)
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Internal Server Error',
     })
-
-  return res
+  }
 })

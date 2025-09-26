@@ -27,7 +27,7 @@ export default defineAuthEventHandler(async (event) => {
     })
     return res
   } catch (error: any) {
-    if (error.code === 'ER_DUP_ENTRY' || error.message?.includes('PRIMARY KEY constraint')) {
+    if (error.code === 'ERR_DUP_ENTRY' || error.message?.includes('PRIMARY KEY constraint')) {
       throw createError({
         statusCode: 409,
         statusMessage: `ID_INUSE`,
