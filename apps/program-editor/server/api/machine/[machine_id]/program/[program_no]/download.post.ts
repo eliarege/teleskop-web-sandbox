@@ -49,9 +49,11 @@ export default defineAuthEventHandler(async (event) => {
       })
     }
 
+    console.error('Download error details:', error)
     throw createError({
       statusCode: 500,
       message: 'INTERNAL_SERVER_ERROR',
+      data: error instanceof Error ? error.message : String(error),
     })
   }
 })

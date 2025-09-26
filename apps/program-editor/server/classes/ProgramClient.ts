@@ -51,10 +51,18 @@ export class T7ProgramClient implements ProgramClient {
       throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
 
-    const rawProgram = parseProgramString(programString, {
-      id: this.id,
-      commands: this.commandArrayToMap(commands),
-    })
+    let rawProgram: Program
+    try {
+      rawProgram = parseProgramString(programString, {
+        id: this.id,
+        commands: this.commandArrayToMap(commands),
+      })
+    } catch (error) {
+      console.error(`Parse error for program ${programNo} on machine ${this.id}:`, error)
+      console.error('Program content:', programString)
+      throw error
+    }
+
     const program: Program = {
       ...rawProgram,
       machineId: this.id,
@@ -121,7 +129,8 @@ export class TonelloProgramClient implements ProgramClient {
       steps: [],
       machineId: this.id,
       programNo: id,
-      typeId: -1,
+      typeId: 0,
+      additionalTypeId: 0,
       duration: 0,
       typeName: '',
       prgState: ProgramStatus.EXISTS_ON_BOTH,
