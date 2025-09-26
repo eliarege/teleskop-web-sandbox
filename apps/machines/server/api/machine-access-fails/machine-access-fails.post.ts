@@ -14,7 +14,8 @@ export default defineAuthEventHandler(async (event) => {
     eventEnd: 'EventEnd',
     archived: 'ARCHIVED',
   }
-  const timezoneOffset = Number(process.env.TIMEZONE_OFFSET || 0)
+
+  const timezoneOffset = Number(process.env.NUXT_TELESKOP_TIMEZONE_OFFSET || 0)
 
   const query = knex('BFMachineAccessFails')
     .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'BFMachineAccessFails.MachineId')
