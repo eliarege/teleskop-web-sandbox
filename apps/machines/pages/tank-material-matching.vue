@@ -52,6 +52,7 @@ function deleteItem(tank: TankDefinition, materialCode: string) {
     const cloneTank = tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)
     if (cloneTank) {
       cloneTank.materials = cloneTank.materials.filter((m: Material) => m.materialCode !== materialCode)
+      tanksClone.value = [...tanksClone.value]
     }
   }
 }
@@ -62,11 +63,12 @@ async function handleDragDrop(e: any, tank: TankDefinition) {
     const material = materials.value.find(t => t.materialCode === materialCode)
     const targetTank = tanksClone.value.find(t => t.tankNo === tank.tankNo)!
 
-    const materialExists = targetTank.materials.some(m => m.materialCode === materialCode)
+    const materialExistsInAnyTank = assignedMaterialCodes.value.has(materialCode)
 
-    if (material && !materialExists) {
+    if (material && !materialExistsInAnyTank) {
       targetTank.materials.push(material)
-    } else if (materialExists) {
+      tanksClone.value = [...tanksClone.value]
+    } else if (materialExistsInAnyTank) {
       notifyError(t('duplicateMaterialError'))
     }
   }
