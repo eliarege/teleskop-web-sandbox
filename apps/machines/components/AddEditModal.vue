@@ -2,7 +2,7 @@
 import { changeLocale } from '@formkit/i18n'
 import type { Machine, MachineGroup } from '~/types'
 
-defineProps<{
+const { isEdit } = defineProps<{
   title: string
   isEdit: boolean
   formClass?: string
@@ -21,13 +21,119 @@ const formData = defineModel({
 })
 
 const { t, locale } = useI18n()
-const IPV4_RE = /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
+const { notifyError } = useNotify()
+
+const validationError = ref('')
+const duplicateIpError = ref('')
+const duplicateIdError = ref('')
+
+function validateTheoreticalCharge(formData: any): boolean {
+  const theoricalCharge = Number(formData.theoricalCharge)
+  const theoricalChargeDuration = Number(formData.theoricalChargeDuration)
+
+  if (!theoricalCharge || !theoricalChargeDuration || Number.isNaN(theoricalCharge) || Number.isNaN(theoricalChargeDuration)) {
+    return true
+  }
+
+  if (theoricalCharge < 1 || theoricalCharge > 25) {
+    return false
+  }
+
+  if (theoricalCharge !== Math.floor(theoricalCharge)) {
+    return false
+  }
+
+  const minDuration = 45
+  const maxDuration = 1440
+
+  if (theoricalChargeDuration < minDuration || theoricalChargeDuration > maxDuration) {
+    return false
+  }
+
+  return true
+}
+
+async function checkDuplicateIp(ip: string, currentMachineId?: number): Promise<boolean> {
+  try {
+    const response = await kc.fetch('/api/machines/check-duplicate-ip', {
+      method: 'POST',
+      body: { ip, currentMachineId },
+    })
+    return response.isDuplicate
+  } catch (error) {
+    console.error('Error checking duplicate IP:', error)
+    return false
+  }
+}
+
+async function checkDuplicateId(machineId: number, currentMachineId?: number): Promise<boolean> {
+  try {
+    const response = await kc.fetch('/api/machines/check-duplicate-id', {
+      method: 'POST',
+      body: { machineId, currentMachineId },
+    })
+    return response.isDuplicate
+  } catch (error) {
+    console.error('Error checking duplicate ID:', error)
+    return false
+  }
+}
 
 watch(locale, (newLocale) => {
   changeLocale(newLocale)
 })
 
-function onSubmitForm() {
+watch([() => formData.value.theoricalCharge, () => formData.value.theoricalChargeDuration], () => {
+  if (formData.value.theoricalCharge && formData.value.theoricalChargeDuration) {
+    if (!validateTheoreticalCharge(formData.value)) {
+      validationError.value = t('theoricalChargeValidationError')
+    } else {
+      validationError.value = ''
+    }
+  } else {
+    validationError.value = ''
+  }
+}, { deep: true })
+
+watch(() => formData.value.ip, async (newIp) => {
+  if (newIp && newIp.match(/^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/)) {
+    const isDuplicate = await checkDuplicateIp(newIp, isEdit ? formData.value.machineId : undefined)
+    if (isDuplicate) {
+      duplicateIpError.value = t('duplicateIpError')
+    } else {
+      duplicateIpError.value = ''
+    }
+  } else {
+    duplicateIpError.value = ''
+  }
+}, { debounce: 500 })
+
+watch(() => formData.value.machineId, async (newMachineId) => {
+  if (newMachineId && !isEdit) { // Sadece yeni makine eklerken kontrol et
+    const isDuplicate = await checkDuplicateId(Number(newMachineId), isEdit ? formData.value.machineId : undefined)
+    if (isDuplicate) {
+      duplicateIdError.value = t('duplicateIdError')
+    } else {
+      duplicateIdError.value = ''
+    }
+  } else {
+    duplicateIdError.value = ''
+  }
+}, { debounce: 500 })
+
+async function onSubmitForm() {
+  if (!validateTheoreticalCharge(formData.value)) {
+    validationError.value = t('theoricalChargeValidationError')
+    return
+  }
+
+  if (duplicateIpError.value || duplicateIdError.value || validationError.value) {
+    return
+  }
+
+  validationError.value = ''
+  duplicateIpError.value = ''
+  duplicateIdError.value = ''
   emit('submit', formData.value)
   onDialogHide()
 }
@@ -85,15 +191,46 @@ async function checkNetworkConnection(formData: Machine) {
     }
   }
 }
+
+const versionInfoMessage = ref({
+  message: '',
+  color: '',
+})
+
+async function getVersionInfo(formData: Machine) {
+  if (!formData.ip) {
+    notifyError(t('ipRequired'))
+    return
+  }
+
+  try {
+    versionInfoMessage.value.message = t('receivingVersionInfo')
+    versionInfoMessage.value.color = ''
+
+    const response = await kc.fetch('/api/sync/get-machine-version', {
+      method: 'POST',
+      retry: false,
+      body: {
+        ip: formData.ip,
+      },
+    })
+
+    if (response.version) {
+      formData.version = response.version
+      versionInfoMessage.value.message = t('versionInfoReceived')
+      versionInfoMessage.value.color = 'text-green'
+    }
+  } catch (error: any) {
+    console.error(error)
+    versionInfoMessage.value.message = t('errorReceivingVersionInfo')
+    versionInfoMessage.value.color = 'text-red'
+  }
+}
 </script>
 
 <template>
-  <q-dialog
-    ref="dialogRef"
-    position="top"
-    @hide="onDialogHide"
-  >
-    <q-card class="min-w-fit mt-15">
+  <q-dialog ref="dialogRef">
+    <q-card class="max-w-[90vw] min-w-[90vw]">
       <q-card-section class="flex">
         <div class="flex-center font-extrabold text-h6">
           {{ title }}
@@ -110,10 +247,10 @@ async function checkNetworkConnection(formData: Machine) {
           v-model="formData"
           :actions="false"
           type="form"
-          form-class="grid grid-cols-1 grid-rows-[1fr_0.3fr_0.3fr_0.1fr] gap-9"
+          form-class="flex flex-col gap-6"
           @submit="onSubmitForm"
         >
-          <div class="grid grid-cols-5 gap-4 grid-items-baseline items-center">
+          <div class="grid grid-cols-5 gap-4 items-start">
             <FormKit
               :readonly="isEdit"
               blocked
@@ -122,6 +259,8 @@ async function checkNetworkConnection(formData: Machine) {
               label="ID"
               validation="required|number"
               validation-label="ID"
+              :help="duplicateIdError || undefined"
+              :validation-visibility="duplicateIdError ? 'live' : 'blur'"
             />
             <FormKit
               type="text"
@@ -173,20 +312,26 @@ async function checkNetworkConnection(formData: Machine) {
               label="IP"
               :validation="[['required'], ['matches', IPV4_RE]]"
               validation-label="IP"
+              :help="duplicateIpError || undefined"
+              :validation-visibility="duplicateIpError ? 'live' : 'blur'"
             />
             <FormKit
               type="text"
               name="theoricalCharge"
               :label="t('theoricalCharge')"
-              validation="number"
+              :validation="[['required'], ['number'], ['min', 1], ['max', 25]]"
               :validation-label="t('theoricalCharge')"
+              :help="validationError || undefined"
+              :validation-visibility="validationError ? 'live' : 'blur'"
             />
             <FormKit
               type="text"
               name="theoricalChargeDuration"
               :label="t('theoricalChargeDuration')"
-              validation="number"
+              :validation="[['required'], ['number'], ['min', 45], ['max', 1440]]"
               :validation-label="t('theoricalChargeDuration')"
+              :help="validationError || undefined"
+              :validation-visibility="validationError ? 'live' : 'blur'"
             />
             <FormKit
               type="select"
@@ -223,7 +368,7 @@ async function checkNetworkConnection(formData: Machine) {
               :label="t('theoreticalWaterCalculationActive')"
             />
           </div>
-          <div class="grid grid-cols-2 gap-4 grid-items-baseline items-center">
+          <div class="grid grid-cols-2 gap-4 items-start">
             <FormKit
               type="checkbox"
               name="additionalTank1"
@@ -250,7 +395,7 @@ async function checkNetworkConnection(formData: Machine) {
               :label="t('reserveTank')"
             />
           </div>
-          <div class="grid grid-cols-5 gap-4 grid-items-baseline items-center">
+          <div class="grid grid-cols-5 gap-4 items-start">
             <FormKit
               type="checkbox"
               name="theoreticalSteam"
@@ -294,12 +439,25 @@ async function checkNetworkConnection(formData: Machine) {
                   {{ networkConnectionMessage.message || '&nbsp;' }}
                 </span>
               </div>
+              <div flex-center flex-col>
+                <FormKit
+                  type="button"
+                  :label="t('receiveVersionInfo')"
+                  @click="getVersionInfo(formData)"
+                />
+                <span :class="versionInfoMessage.color" class="row-start-7">
+                  {{ versionInfoMessage.message }}
+                </span>
+              </div>
             </div>
-            <FormKit
-              type="submit"
-              :label="t('submit')"
-              @submit="onSubmitForm"
-            />
+            <div class="flex flex-col items-end gap-2">
+              <FormKit
+                type="submit"
+                :label="t('submit')"
+                :disabled="!!(duplicateIpError || duplicateIdError || validationError)"
+                @submit="onSubmitForm"
+              />
+            </div>
           </div>
         </FormKit>
       </q-card-section>
@@ -310,5 +468,17 @@ async function checkNetworkConnection(formData: Machine) {
 <style lang="postcss">
 .formkit-outer {
   margin: 0;
+}
+
+.formkit-help {
+  word-break: break-word;
+  white-space: normal;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.formkit-messages {
+  max-width: 100%;
+  overflow: hidden;
 }
 </style>
