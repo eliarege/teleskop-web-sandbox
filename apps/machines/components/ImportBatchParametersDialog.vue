@@ -5,12 +5,11 @@ const props = defineProps<{
   show: boolean
 }>()
 
-const emit = defineEmits(['close', 'addBatchParam'])
+const emit = defineEmits(['close', 'addBatchParams'])
 
 const { t } = useI18n()
 
-const selectedMachineId = ref<number>()
-const selectedParam = ref<BatchParam>()
+const selectedMachine = ref<Machine>()
 
 const { data: machines } = useAuthFetch('/api/machines/machines', {
   default: () => [],
@@ -22,9 +21,15 @@ const { data: batchParameters } = useAuthFetch('/api/starting-parameter-types/st
   immediate: false,
   default: () => [],
   query: {
-    machineId: selectedMachineId,
+    machineId: computed(() => selectedMachine.value?.machineId),
   },
 })
+
+async function importAllParameters() {
+  if (selectedMachine.value && batchParameters.value.length > 0) {
+    emit('addBatchParams', batchParameters.value)
+  }
+}
 </script>
 
 <template>
@@ -45,34 +50,37 @@ const { data: batchParameters } = useAuthFetch('/api/starting-parameter-types/st
       </q-card-section>
       <q-card-section class="flex flex-col gap-8">
         <q-select
-          :model-value="selectedMachineId"
+          :model-value="selectedMachine"
           :options="machines"
           option-label="machineCode"
-          option-value="machineId"
           :label="t('machine')"
           filled
-          @update:model-value="(e) => selectedMachineId = e.machineId"
+          @update:model-value="(machine) => selectedMachine = machine"
         />
 
-        <q-list
-          bordered
-          separator
-          class="overflow-y-auto h-140"
-        >
-          <q-item
-            v-for="param in batchParameters"
-            :key="param.paramId"
-            v-ripple
-            clickable
-            :focused="selectedParam?.paramId === param.paramId"
-            :active="selectedParam?.paramId === param.paramId"
-            @click="selectedParam = param"
+        <div v-if="selectedMachine">
+          <h6 class="text-h6 mb-4">
+            {{ t('parametersToImport') }} ({{ batchParameters.length }})
+          </h6>
+          <q-list
+            bordered
+            separator
+            class="overflow-y-auto h-140"
           >
-            <q-item-section>
-              {{ param.paramString }}
-            </q-item-section>
-          </q-item>
-        </q-list>
+            <q-item
+              v-for="param in batchParameters"
+              :key="param.paramId"
+            >
+              <q-item-section>
+                {{ param.paramString }}
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+
+        <div v-else class="text-center text-grey-6 py-8">
+          {{ t('selectMachineToViewParameters') }}
+        </div>
       </q-card-section>
       <q-card-actions align="right" class="m-4">
         <q-btn
@@ -80,9 +88,10 @@ const { data: batchParameters } = useAuthFetch('/api/starting-parameter-types/st
           @click="emit('close')"
         />
         <q-btn
-          :label="t('submit')"
+          :label="t('importAllParameters')"
           color="primary"
-          @click="emit('addBatchParam', selectedParam)"
+          :disabled="!selectedMachine || batchParameters.length === 0"
+          @click="importAllParameters"
         />
       </q-card-actions>
     </q-card>

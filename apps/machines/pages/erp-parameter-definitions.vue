@@ -266,19 +266,26 @@ async function deleteParam() {
   await refreshParams()
 }
 
-async function addBatchParam(batchParam: BatchParam) {
+async function addBatchParams(batchParams: BatchParam[]) {
   showImportBatchParametersDialog.value = false
-  await kc.fetch('/api/erp/erp-parameter', {
-    method: 'POST',
-    body: {
-      machineId: selectedMachineId.value,
-      paramId: params.value.length ? Math.max(...params.value.map(p => p.paramId)) + 1 : 1,
-      erpParameter: {
-        paramName: batchParam.paramString,
-        erpFieldName: null,
+
+  let nextParamId = params.value.length ? Math.max(...params.value.map(p => p.paramId)) + 1 : 1
+
+  for (const batchParam of batchParams) {
+    await kc.fetch('/api/erp/erp-parameter', {
+      method: 'POST',
+      body: {
+        machineId: selectedMachineId.value,
+        paramId: nextParamId,
+        erpParameter: {
+          paramName: batchParam.paramString,
+          erpFieldName: null,
+        },
       },
-    },
-  })
+    })
+    nextParamId++
+  }
+
   await refreshParams()
 }
 
@@ -402,6 +409,7 @@ const contextMenuOptions = computed(() => [
             :rows="machines"
             :columns="machineColumns"
             class="overflow-y-auto	h-160 w-xl"
+            :rows-per-page-options="[0]"
             @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
           >
             <template #custombody="props">
@@ -425,6 +433,7 @@ const contextMenuOptions = computed(() => [
             :rows="params"
             :columns="parameterColumns"
             class="overflow-y-auto h-160 w-2xl"
+            :rows-per-page-options="[0]"
           >
             <template #custombody="props">
               <q-tr
@@ -449,7 +458,7 @@ const contextMenuOptions = computed(() => [
       v-if="showImportBatchParametersDialog"
       :show="showImportBatchParametersDialog"
       @close="showImportBatchParametersDialog = false"
-      @add-batch-param="addBatchParam"
+      @add-batch-params="addBatchParams"
     />
   </div>
 </template>
