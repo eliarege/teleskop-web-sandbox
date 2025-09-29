@@ -1,8 +1,82 @@
 # Changelog
 
+## 0.49.0 - 2025-09-29
+
+[Compare Changes](b2c8a6f56e69d0c1eb85f30e4f0441e71fb8b630...b183bd8c8cdff4ae3d46663a021372f76eda3162)
+
+### 🚀 Features
+
+-  **PE**: Add VALUEINDEX column for Tonello integration and update related types ([4382d9f](4382d9ff2c94d344b2d63443bcc1ea3b2daccf64))
+-  **PE**: Add new error codes and details for machine parameter validation ([ff5088e](ff5088e70ba15641d2da4b90b36e646a4e549caa))
+-  **PE**: Implement TonelloProgramClient for integration with Tonello API ([22147f0](22147f0a6d4970b7369ceabc960a40572889e218))
+-  **PE**: Handle Tonello integration ([6686963](6686963b6d8d76957fda608e8537757fcde4251e))
+- **utils**: Add type utilities ([562d79f](562d79fdd00a377ff4f182f3ee0f69d401f45382))
+- **core**: Add TypeScript types for Teleskop database tables and enums ([ecf05af](ecf05af3a7c197035bb070843a73d7efbddb1017))
+-  **MA**: Add Tonello project update functionality ([a2e60a8](a2e60a8b66499e45b3d6f5c4270f863a6b27056f))
+-  **MA**: Enhance sync/update-machine endpoint with Tonello-specific updates ([c4afaf7](c4afaf74b83fa7a3ab2674d41590ec6cbc2017c4))
+- Add SELECT_ADDITIVE parameter type and update related components ([dadd64b](dadd64bf166e6fdd51483773fe9646c82a1401aa))
+-  **MA**: Enhance AddEditModal with additional props and validation improvements ([bad8db3](bad8db3840c8359957fa93010c1a07d49e8b9dda))
+-  **MA**: Enhance machine version check and teleskop connection handling with model-specific logic ([6c736ec](6c736ec23059a8fcb8d51cbf2648eacb8b3f6821))
+-  **MA**: Add support for additive function parameter type in updateTonelloFunctions ([4ef2929](4ef292989fba7b2f49fe855b277c50c6335623c8))
+- **core**: Add fetchDatetime and updateDatetime methods to TonelloApi ([c210f82](c210f828523109882c10b4d8bdf875859a94e0e0))
+-  **PE**: Separate chemical request counting for Tonello model ([ba1d787](ba1d787a8d4b5dc89d5f7ab418b5d053d420216f))
+-  **PE**: Improved grouped parameter styling ([01c8697](01c86977dca49e39148824cb53d51326455d9a28))
+-  **PE**: Add InputCheckbox component, modify parameter inputs to have dynamic width instead of fixed width ([83155a6](83155a68a7a79f8ff81b00b6a4cc1a4ef72c1ae3))
+- **TonelloApi**: Add fetchStatus and submitBatch methods; update TonelloResponse type ([354dd60](354dd60fb6934a174aa62de072fca6659db2e4de))
+
+### 🐛 Bug Fixes
+
+- **utils**: Update `env` prop to support array of strings and adjust related logic ([d00cca4](d00cca4dbeb0512f469ddb13e38ffd3ba55b0b3a))
+- **config**: Update environment variables to support both standard and NUXT-prefixed names ([f43df02](f43df02a62afa66c85507b3b991c2e513b57b50a))
+- **utils**: Update isDef function to exclude null values ([4aaa30e](4aaa30e89199707fcba9057099db5558cfc77cf1))
+- **core**: Add missing private and license fields, and define scripts and devDependencies ([e3431ae](e3431ae4ab107a515e48da67d87e5292d4f01cdc))
+- **core**: Update type imports and response types for TonelloApi methods ([8dcd9e9](8dcd9e987fecdbd5cb732cbd48af1f781dc62c79))
+- **scripts**: Remove timezone offset from NUXT_DMEXCHANGE environment variable generation ([4b4936b](4b4936b35aa2d278e557d79e22142d1e26df9f66))
+- **config**: Update configuration management by adding README and removing deprecated dev.json ([b980cc0](b980cc079ca92d7dc14130801b5b5504c87ae630))
+- **scripts**: Add Keycloak configuration to environment file generation ([340332d](340332d62385bc51aee6a01d65053aef2e7225ea))
+-  **PE**: Set default tbbModel to 'T7700' and update type to MachineTbbModel ([d4b6622](d4b66229c8112fa9d13b7a73974f7b069fe0bb8b))
+- **core**: Tonello type changes ([29cf788](29cf7881d54991efe1cb12b71c834bce34718448))
+-  **MA**: Handle null index in Tonello functions to prevent processing errors ([d83b3e2](d83b3e24c5944d065ac12ede3a6473da5ae0b6ce))
+-  **MA**: Add API no response error message and update error handling in machine update process ([11b8453](11b845397e02d343171f8e9b2709b1c6858acdc7))
+-  **MA**: Prevent adding empty messages to translation rows in updateTonelloProjectTranslations ([631bc08](631bc0822ebf0018808625b59a717bc829359adf))
+- **project-translations**: Include machine_id in global translations query to ensure accurate mapping ([8898b3c](8898b3cd5c185249b2fff12689990bcff4be2b1f))
+- **nuxt-base**: SubMenu visibility check to support ref/getter for item.disabled ([614164e](614164e1baf2d67b74b5b8f309d2e98056f34398))
+-  **MA**: Refactor and fix issues with MachineList page ([763f707](763f707c6ef32ac9c6a5708b3fdc75ab9b2afd0d))
+-  **PE**: Improve command validation and label handling ([3c943ba](3c943baa99e6d94884dfeb5a92626d9ba31f732b))
+- **project-translations**: Change locale initialization to useLocalStorage for persistence ([0102f3c](0102f3cce9e01d220c5c128e30700c4e5f6b0e3a))
+-  **PE**: Machine page not having single root element ([a77d874](a77d87442b92a173b0326cc5c0d4012d7bde7ee8))
+-  **PE**: Remove obsolete TopbarProjectLocaleSelect from topbar ([37a0a79](37a0a797d3bda4f254c3d3188459de7a2985e227))
+-  **PE**: Conditionally render operator checkbox based on isTonello prop ([02e63e6](02e63e627eeac9a6bfda57894b67326375f51efc))
+-  **PE**: Refactor checkbox handling to use model for binding and simplify state management ([af2e4a0](af2e4a0243cd2597c1c8c022eb76503c2edbdd3e))
+-  **PE**: Wrap NuxtLayout in a div for proper structure, always visible vertical scrollbar ([09714f6](09714f6a2a76f72f960e4cb3818b7670546a4df5))
+-  **PE**: Prevent InputNumber from trying to parse numbers under specific conditions ([18f633b](18f633bf0ce662d5e9894739f2d9fe126c2b69ad))
+-  **PE**: Add workaround to remove odd padding in QField when no labels are provided ([a748176](a748176e839688391e58873ae91aabc39f4ef75f))
+-  **PE**: Remove unnecessary padding class from search input ([48109e7](48109e79b591d99a9c24932870d0e9c620b5cad6))
+-  **PE**: Change scrollIntoView behavior to 'instant' for improved performance ([f4deb5d](f4deb5d64ffc4a1fc06aae8b56d0e942cd325c12))
+-  **AR**: Add missing CHECKBOX type to ParameterType ([6198f1a](6198f1aee6d34c631cd41298e0e3a919c080a5a7))
+
+### ♻️ Refactor
+
+- **migrations**: Optimize column existence check for PARAMETERGROUP in BFCOMMANDPARAMETERS ([5ea2e98](5ea2e980a44dbf598cc20a3e2bb116ec5f09540b))
+-  **MA**: Update ContextMenu component props and usage across multiple pages ([d403a63](d403a63fdcfe6933e0f53b71c31936a1bb679775))
+-  **MA**: Remove obsolete FTP command alarm reasons and locks general endpoints ([64395e8](64395e84f98e8fe6ea20d96fc41c69b98ab6ec7c))
+- **bump-version**: Consolidate package.json updates into a single loop for efficiency ([f1c3028](f1c302810bfc9b85b632d37832820f34ed81c3a8))
+
+### 🔧 Miscellaneous Tasks
+
+- **migration-service**: Add `generate-migration` script ([def09ca](def09ca198f81702c727063be94ddd06ee058251))
+- Add script to generate .env files based on config ([84921de](84921de4aca32f19d8aeb6183315f80c66d3f1bf))
+-  **PE**: Remove unused Vitest configuration file ([05d772b](05d772b55a7258ef3f3f7f5ff6a5d8eb2859b4dd))
+-  **PE**: Add `@teleskop/core` dependency ([8fdef4f](8fdef4ff5b785b698e89dbf2ab401f0cc9dd7236))
+- Update base image to node:22.19-alpine ([12549f8](12549f84165412db85e1dbcbf1b03e44b8f2aed7))
+- **cliff**: Include build commits in miscellaneous tasks group ([f4ba67c](f4ba67cd57c14a6c84e99480c444b28ab8c55e5d))
+- Update lockfile ([9844106](98441067c456f53b20b7fc41f951c83b5d02b916))
+-  **PE**: Minor jsdoc fixes ([1671857](1671857f3d7c5231fca30d403e7b638de96c2e02))
+- Update lockfile ([b183bd8](b183bd8c8cdff4ae3d46663a021372f76eda3162))
+
 ## 0.48.0 - 2025-09-12
 
-[Compare Changes](7210afb650b29c01646b617b2d9df2a28d310700...fe38f5cfe69d11d1820f43d64287d095fee548e8)
+[Compare Changes](7210afb650b29c01646b617b2d9df2a28d310700...b2c8a6f56e69d0c1eb85f30e4f0441e71fb8b630)
 
 ### 🚀 Features
 
