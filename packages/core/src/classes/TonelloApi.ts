@@ -2,9 +2,11 @@ import type { $Fetch } from 'ofetch'
 import { $fetch } from 'ofetch'
 import { format } from 'date-fns'
 import type {
+  TonelloBatch,
   TonelloConfiguration,
   TonelloFunctionBody,
   TonelloInputOutputList,
+  TonelloMachineStatus,
   TonelloProgram,
   TonelloProgramList,
   TonelloResponse,
@@ -41,6 +43,10 @@ export class TonelloApi {
     return await this.fetch('/api/v1/getFunctions')
   }
 
+  async fetchStatus(): Promise<TonelloResponse<TonelloMachineStatus>> {
+    return await this.fetch('/api/v1/getStatus')
+  }
+
   async fetchInputOutputList(): Promise<TonelloResponse<TonelloInputOutputList>> {
     return await this.fetch('/api/v1/getInputOutputList')
   }
@@ -61,6 +67,20 @@ export class TonelloApi {
     return await this.fetch('/api/v1/putProgram', {
       method: 'POST',
       body: { program },
+    })
+  }
+
+  async submitBatch(batch: TonelloBatch): Promise<TonelloResponse<void>> {
+    return await this.fetch('/api/v1/putBatch', {
+      method: 'POST',
+      body: { batch },
+    })
+  }
+
+  async deleteBatch(code: string): Promise<TonelloResponse<void>> {
+    return await this.fetch('/api/v1/deleteBatch', {
+      method: 'POST',
+      body: { batch: { code } },
     })
   }
 }
