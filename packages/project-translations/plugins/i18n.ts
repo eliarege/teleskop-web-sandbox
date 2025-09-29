@@ -16,7 +16,7 @@ export default defineNuxtPlugin(() => {
     newLocale: (locale: string, messages: ProjectTranslations) => void
     updateLocale: (locale: string) => void
   }>()
-  const locale = ref(supportedProjectLocales[0].code)
+  const locale = useLocalStorage('projectLocale', supportedProjectLocales[0].code)
   const messages = {} as Record<string, ProjectTranslations>
   const availableLocales = ref<{ id: number, code: string, name: string }[]>([])
 

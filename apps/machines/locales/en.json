@@ -7,6 +7,7 @@
     "connection_refused": "Could not connect to the machine. Check your network connection or whether the machine is running.",
     "network_unreachable": "The machine is unreachable. Please check your network connection.",
     "address_resolution_failed": "The machine address could not be resolved. Please verify your settings.",
+    "api_no_response": "No response from the machine. Please ensure you entered the correct TBB Model and IP address.",
 
     "ftp": "An error occurred while retrieving data from the machine. Please try again.",
 

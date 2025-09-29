@@ -118,7 +118,7 @@ function handleClickFocus(event) {
 
 /**
  * Get whether the picker passed must hide seconds
- * @param {*} inputBox
+ * @param {*} _inputBox
  * @return {boolean}
  */
 function shouldHideSeconds(_inputBox) {
@@ -174,7 +174,6 @@ function insertFormatted(inputBox, secondsValue, dispatchSyntheticEvents, adjust
  * Highlights/selects the time unit area hh, mm or ss of a picker
  * @param {*} inputBox
  * @param {3600 |60 | 1} adjustmentFactor
- * @param {boolean} forceInputFocus
  */
 function highlightTimeUnitArea(inputBox, adjustmentFactor) {
   const hourMarker = inputBox.value.indexOf(':')
@@ -270,7 +269,6 @@ function isValidDurationFormat(value, hideSeconds, strictMode) {
  *  Applies a picker's min and max duration constraints to a given value
  * @param {*} inputBox
  * @param {number} value in seconds
- * @param {{minDuration: string, maxDuration: string}} constraints
  * @return {number} number withing the min and max data attributes
  */
 function applyMinMaxConstraints(inputBox, value) {
@@ -322,7 +320,6 @@ function durationToSeconds(value) {
  *
  * @param {string} value
  * @param {boolean} hideSeconds
- * @param {{minDuration: string, maxDuration: string}} constraints
  * @return {false | string} return false if theres no need to validate, and a string of a modified value if the string neeeded validation
  */
 function validateValue(value, hideSeconds, _constraints) {

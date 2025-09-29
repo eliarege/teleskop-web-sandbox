@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { CommandParameter, WaterIO } from '~/types'
 
 interface Water {
@@ -118,9 +117,9 @@ const contextMenuOptions = computed(() => [
 <template>
   <div>
     <ContextMenu
-      :context-menu-options="contextMenuOptions"
+      :options="contextMenuOptions"
       target=".q-list"
-      @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+      @click="option => option.onClick(selectedMachineId)"
     />
     <q-card>
       <q-card-section class="flex flex-row justify-around">

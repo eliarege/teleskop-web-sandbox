@@ -1,3 +1,5 @@
+import type { ValueOf } from '@teleskop/utils'
+
 export const ProgramStateColors = {
   EXISTS_ONLY_ON_CONTROLLER: '#bebebe',
   EXISTS_ONLY_ON_DATABASE: '#009900',
@@ -46,13 +48,23 @@ export const IO_TYPE: { [key: string]: string } = {
   '-1': 'Seçilmemiş',
 }
 
-export enum ParameterType {
-  NUMBER = 'NUMBER',
-  SELECT = 'SELECT',
-  CHECKBOX = 'CHECKBOX',
-  MACHINE_FORMULA = 'MACHINE_FORMULA',
-  SELECTABLE_FORMULA = 'SELECTABLE_FORMULA',
-}
+export const ParameterType = {
+  NUMBER: 'NUMBER',
+  SELECT: 'SELECT',
+  CHECKBOX: 'CHECKBOX',
+  SELECT_ADDITIVE: 'SELECT_ADDITIVE',
+  MACHINE_FORMULA: 'MACHINE_FORMULA',
+  SELECTABLE_FORMULA: 'SELECTABLE_FORMULA',
+} as const
+
+export const ParameterTypeRaw = {
+  NUMBER: 0,
+  SELECT: 1,
+  CHECKBOX: 2,
+  SELECT_ADDITIVE: 3,
+} as const
+
+export type ParameterTypeValue = ValueOf<typeof ParameterType>
 
 export enum CommandType {
   AutoChem = 100,
@@ -69,6 +81,11 @@ export enum CommandType {
   GenericMaterial2 = 820,
   ManualMeasurement = 1000,
 }
+
+export const AdditiveType = {
+  Chemical: 0,
+  Dye: 1,
+} as const
 
 export const commandTypeMaps = [
   { index: 0, ref: [], value: CommandType.AutoChem, title: 'chemicalRequestCommands' },

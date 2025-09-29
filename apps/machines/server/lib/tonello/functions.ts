@@ -11,6 +11,8 @@ import {
 } from './errors'
 import { DEFAULT_LOCALE, extractLocalizedMessage, parseLocalizedString } from './locale'
 
+const ADDITIVE_FUNCTION_INDEX = 5
+
 export async function updateTonelloFunctions(
   trx: Knex.Transaction,
   machineId: number,
@@ -22,6 +24,9 @@ export async function updateTonelloFunctions(
 
   for (const fn of functions) {
     const name = extractLocalizedMessage(fn.label, DEFAULT_LOCALE)
+    if (fn.index === null) {
+      continue
+    }
     if (!isDef(name)) {
       ctx.errors.push({
         code: MISSING_LOCALE_ERROR,
@@ -79,8 +84,13 @@ export async function updateTonelloFunctions(
         PARAMETERGROUP: param.row,
         VALUEINDEX: param.index,
       }
+
       if (param.type === 'list') {
-        paramRow.PARAMETERTYPE = CommandParameterType.SELECT
+        // Special case for additive function, assume first list parameter is SELECT_ADDITIVE
+        paramRow.PARAMETERTYPE
+          = fn.index === ADDITIVE_FUNCTION_INDEX && fn.params.findIndex(p => p.type === 'list') === index
+            ? CommandParameterType.SELECT_ADDITIVE
+            : CommandParameterType.SELECT
         paramRow.SELECTIONLIST = param.options
           .map(o => `"${extractLocalizedMessage(o.label, DEFAULT_LOCALE)}"`)
           .join(' ')

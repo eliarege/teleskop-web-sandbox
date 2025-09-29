@@ -177,11 +177,13 @@ function onBlur(event: FocusEvent) {
   input.value?.validate()
 }
 
+const IGNORE_RE = /^(\.|-|-\.)?$/
+
 function onInput(event: Event) {
   const { value } = event.target as HTMLInputElement
   if (value === '' && props.maybeEmpty) {
     model.value = undefined
-  } else if (value !== '') {
+  } else if (!IGNORE_RE.test(value)) {
     model.value = Number.parseFloat(value)
   }
 }
@@ -246,5 +248,12 @@ onMounted(() => {
     appearance: textfield;
     -moz-appearance: textfield;
   }
+}
+/*
+  When there are no labels sent to `QField`, for some reason there is a odd padding despite `QField` dense.
+  This is a workaround to remove it.
+*/
+.input-number .q-field__native {
+  padding: 0;
 }
 </style>

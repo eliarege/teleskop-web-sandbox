@@ -30,4 +30,5 @@ export const CommandParameterType = {
   NUMBER: 0,
   SELECT: 1,
   CHECKBOX: 2,
+  SELECT_ADDITIVE: 3,
 } as const

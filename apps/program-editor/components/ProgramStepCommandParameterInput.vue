@@ -46,15 +46,12 @@ const isOptimizable = computed(() => {
   })
 })
 
-const isChecked = computed({
-  get: () => !!programParameter.value,
-  set: (val: boolean) => {
-    programParameter.value = val ? 1 : 0
-  },
-})
-
 watch(() => model.value, (newValue: number) => {
   programParameter.value = newValue
+})
+
+const labelLength = computed(() => {
+  return props.parameter.name ? mt(props.parameter.name, editor.machine.id).length : 0
 })
 
 // TODO: update other steps parameter
@@ -70,7 +67,7 @@ function handleInputBlur() {
 </script>
 
 <template>
-  <div class="pr-1 pb-1">
+  <div class="flex">
     <DevOnly>
       <div class="color-gray-5 text-3">
         {{ props.commandNo }} - {{ props.parameter.index }} - {{ props.parameter.group }}
@@ -83,7 +80,7 @@ function handleInputBlur() {
         v-model="model"
         dense
         outlined
-        :label="mt(parameter.name, editor.machine.id)"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :rules="rules"
         style="width: 150px;"
         class="text-3"
@@ -105,15 +102,15 @@ function handleInputBlur() {
         v-else
         v-model="model"
         :rules="rules"
-        :label="mt(parameter.name, editor.machine.id)"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         type="decimal"
         :maxlength="10"
         :hide-bottom-space="true"
         :format="parameter.format"
         outlined
         dense
-        style="width: 150px;"
-        class="text-3"
+        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
+        class="text-3 dynamic-min-width"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       >
         <template #optimized>
@@ -128,10 +125,10 @@ function handleInputBlur() {
       </InputNumber>
     </template>
 
-    <template v-else-if="parameter.type === 'SELECT'">
+    <template v-else-if="parameter.type === 'SELECT' || parameter.type === 'SELECT_ADDITIVE'">
       <QSelect
         v-model="model"
-        :label="mt(parameter.name, editor.machine.id)"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :options="options"
         option-label="name"
         option-value="value"
@@ -140,8 +137,8 @@ function handleInputBlur() {
         emit-value
         outlined
         dense
-        style="width: 150px;"
-        class="text-3 q-select-nowrap"
+        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
+        class="text-3 q-select-nowrap dynamic-min-width"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       />
     </template>
@@ -149,7 +146,7 @@ function handleInputBlur() {
     <template v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
       <QSelect
         v-model="model"
-        :label="mt(parameter.name, editor.machine.id)"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :options="formulaOptions"
         :option-label="(f) => f.label?.trim().slice(0, 15)"
         option-value="value"
@@ -158,8 +155,8 @@ function handleInputBlur() {
         emit-value
         outlined
         dense
-        style="width: 150px;"
-        class="text-3 q-select-nowrap"
+        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
+        class="text-3 q-select-nowrap dynamic-min-width"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       >
         <template #option="scope">
@@ -185,17 +182,12 @@ function handleInputBlur() {
     </template>
 
     <template v-else-if="parameter.type === 'CHECKBOX'">
-      <QCheckbox
-        v-model="isChecked"
-        class="checkbox-outlined"
+      <InputCheckbox
+        v-model="model"
+        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :class="{ 'border-2 border-red rounded-2': props.parameterError }"
-        style="width: 150px;"
         @blur="handleInputBlur"
-      >
-        <span class="text-3">
-          <TruncatedText :text="mt(parameter.name, editor.machine.id)" />
-        </span>
-      </QCheckbox>
+      />
     </template>
   </div>
 </template>
@@ -205,8 +197,7 @@ function handleInputBlur() {
   white-space: nowrap;
 }
 
-.checkbox-outlined {
-  border: 1px solid #c0c0c0;
-  border-radius: 4px;
+.dynamic-min-width {
+  min-width: calc(var(--q-label-length) * 0.6em + 2.5rem);
 }
 </style>

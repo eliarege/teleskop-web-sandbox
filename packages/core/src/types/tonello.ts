@@ -3,10 +3,9 @@ export type TonelloLocale =
   | 'ITA'
   | string & NonNullable<unknown>
 
-export interface TonelloResponse<T = unknown> {
+export type TonelloResponse<T = unknown, DataKey extends string = 'data'> = {
   result: TonelloResponseResult
-  data: T
-}
+} & (T extends null ? Record<string, never> : { [K in DataKey]: T })
 
 export interface TonelloResponseResult {
   status: string
@@ -167,7 +166,7 @@ export interface TonelloFunctionBody {
 
 export interface TonelloFunction {
   /** Function index */
-  index: number
+  index: number | null
   /** Can earlier versions be accesed? */
   // version: number
   label: string
@@ -300,4 +299,42 @@ export interface TonelloMachineParameterList extends TonelloFunctionParameterBas
 export interface TonelloMachineParameterBit extends TonelloFunctionParameterBase {
   type: 'bit'
   value: boolean
+}
+
+export interface TonelloMachineStatus {
+  activeFunctions: string
+  lifeminutes: number
+  stepType: number
+  activeRequests: string
+  pcVersion: string
+  mxCurTemp2: number
+  plcVersion: string
+  warnings1: number
+  nextBatchReady: string
+  endOfProgram: string
+  programName: string
+  conductivity: number
+  oscillation: number
+  curRpm: number
+  curoperator: string
+  alarms: number
+  o3alarms: number
+  curVol: number
+  step: number
+  autoMode: string
+  lot: string
+  kgs: number
+  curTemp: number
+  steps: number
+  programTime: number
+  mxCurVol1: number
+  mxCurVol2: number
+  setTemp: number
+  mxCurTemp1: number
+  setRpm: number
+  setVol: number
+  programRunning: string
+  warnings2: number
+  functions: number
+  pH: number
 }

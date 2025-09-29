@@ -14,13 +14,14 @@ defineProps<{
 }>()
 const emit = defineEmits([...useDialogPluginComponent.emits, 'submit'])
 const kc = useKeycloak()
-const { dialogRef, onDialogHide } = useDialogPluginComponent()
+const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent()
 const formData = defineModel({
   type: Object,
   required: true,
 })
 
 const { t, locale } = useI18n()
+const IPV4_RE = /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
 
 watch(locale, (newLocale) => {
   changeLocale(newLocale)
@@ -49,6 +50,7 @@ async function checkTeleskopConnection(formData: Machine) {
       retry: false,
       query: {
         ip: formData.ip,
+        model: formData.tbbModel,
       },
     })
     teleskopConnectionMessage.value.message = t('connection-successful')
@@ -86,8 +88,12 @@ async function checkNetworkConnection(formData: Machine) {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
-    <q-card class="min-w-fit">
+  <q-dialog
+    ref="dialogRef"
+    position="top"
+    @hide="onDialogHide"
+  >
+    <q-card class="min-w-fit mt-15">
       <q-card-section class="flex">
         <div class="flex-center font-extrabold text-h6">
           {{ title }}
@@ -96,7 +102,7 @@ async function checkNetworkConnection(formData: Machine) {
         <q-btn
           flat
           icon="close"
-          @click="onDialogHide"
+          @click="onDialogCancel"
         />
       </q-card-section>
       <q-card-section>
@@ -165,7 +171,7 @@ async function checkNetworkConnection(formData: Machine) {
               type="text"
               name="ip"
               label="IP"
-              :validation="[['required'], ['matches', /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/]]"
+              :validation="[['required'], ['matches', IPV4_RE]]"
               validation-label="IP"
             />
             <FormKit
@@ -275,7 +281,7 @@ async function checkNetworkConnection(formData: Machine) {
                   @click="checkTeleskopConnection(formData)"
                 />
                 <span :class="teleskopConnectionMessage.color" class="row-start-7">
-                  {{ teleskopConnectionMessage.message }}
+                  {{ teleskopConnectionMessage.message || '&nbsp;' }}
                 </span>
               </div>
               <div flex-center flex-col>
@@ -285,7 +291,7 @@ async function checkNetworkConnection(formData: Machine) {
                   @click="checkNetworkConnection(formData)"
                 />
                 <span :class="networkConnectionMessage.color" class="row-start-7">
-                  {{ networkConnectionMessage.message }}
+                  {{ networkConnectionMessage.message || '&nbsp;' }}
                 </span>
               </div>
             </div>

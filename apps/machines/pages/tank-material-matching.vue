@@ -2,7 +2,6 @@
 import { Sortable } from 'sortablejs-vue3'
 import { klona } from 'klona'
 import type { Machine, Material, TankDefinition } from '~/types'
-import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 
 const { t } = useI18n()
 const kc = useKeycloak()
@@ -91,9 +90,9 @@ const contextMenuOptions = computed(() => [
 
 <template>
   <ContextMenu
-    :context-menu-options="contextMenuOptions"
+    :options="contextMenuOptions"
     target=".q-list"
-    @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+    @click="option => option.onClick(selectedMachineId)"
   />
   <div>
     <q-card>

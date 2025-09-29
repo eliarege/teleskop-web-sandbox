@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { CommandTimeoutReason, Machine, MasterCommand } from '~/types'
 
 const kc = useKeycloak()
@@ -122,9 +121,9 @@ const contextMenuOptions = computed(() => [
 <template>
   <div>
     <ContextMenu
-      :context-menu-options="contextMenuOptions"
+      :options="contextMenuOptions"
       target=".q-list"
-      @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+      @click="(option) => option.onClick(selectedMachineId)"
     />
     <q-dialog :model-value="showAddReasonDialog" @hide="showAddReasonDialog = false">
       <q-card>

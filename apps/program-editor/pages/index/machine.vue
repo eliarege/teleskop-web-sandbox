@@ -715,98 +715,100 @@ const columns = computed(() =>
 </script>
 
 <template>
-  <div v-if="editor.isLoading" class="loading-container bg-gray-3 bg-opacity-10 dark:bg-dark-2 dark:bg-opacity-10">
-    <LoadingSpinner />
+  <div>
+    <div v-if="editor.isLoading" class="loading-container bg-gray-3 bg-opacity-10 dark:bg-dark-2 dark:bg-opacity-10">
+      <LoadingSpinner />
+    </div>
+    <div class="custom-page select-none relative">
+      <DevOnly>
+        <div class="flex flex-col color-gray-5 text-3">
+          <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
+          <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues().map(p => `${p.machineId}-${p.programNo}-${p.name}`).join(', ')}` }} </span>
+          <span> {{ `programErrors: ${useErrorStore().errors.map(p => `${p.programNo}-${p.steps.length}`).join(', ')}` }} </span>
+        </div>
+      </DevOnly>
+      <QTable
+        ref="tableRef"
+        v-model:selected="editor.selectedPrograms"
+        :rows="filteredPrograms"
+        :columns
+        row-key="programNo"
+        :rows-per-page-options="[0]"
+        class="program-table bg-gray-1 dark:bg-dark-4"
+        selection="multiple"
+        :selected-rows-label="getSelectedString"
+        :filter="searchFilter"
+        dense
+        flat
+        table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
+        table-header-class="bg-gray-1 dark:bg-dark-4"
+        table-class="bg-gray-1 dark:bg-dark-4"
+        @row-click="onRowClick"
+        @row-dblclick="onRowDoubleClick"
+        @row-contextmenu="handleContextMenu"
+      >
+        <template #body-cell="{ value, row, col }">
+          <QTd
+            :class="[handleRowClass(row), col.__tdClass?.(row)]"
+            :style="col.__tdStyle?.(row)"
+          >
+            <template v-if="typeof value === 'boolean'">
+              <QIcon
+                :name="value ? 'check' : ''"
+                color="positive"
+                size="xs"
+              />
+            </template>
+            <template v-else>
+              {{ value }}
+            </template>
+            <QTooltip v-if="col.tooltip">
+              {{ formatTooltip(row, col) }}
+            </QTooltip>
+          </QTd>
+        </template>
+        <template #top>
+          <QInput
+            v-model="searchFilter"
+            class="w-xs"
+            :placeholder="t('search')"
+            autocomplete="false"
+            debounce="100"
+            clearable
+            outlined
+            dense
+          >
+            <template #prepend>
+              <QIcon name="search" />
+            </template>
+          </QInput>
+          <QSpace />
+          <ProgramFilterButton />
+        </template>
+      </QTable>
+
+      <QMenu
+        touch-position
+        context-menu
+        :transition-duration="0"
+      >
+        <ProgramContextMenu :items="contextMenuOptions" />
+      </QMenu>
+    </div>
+
+    <CMProgramStateDialog v-if="!route.params.program_no" />
+
+    <EliarModal v-if="versionDialogVisible">
+      <CMVersionDialog
+        :rows="versions"
+        :machine-id="machineId"
+        :program-no="editor.selectedPrograms[0].programNo"
+        @close="versionDialogVisible = false"
+        @delete="e => handleVersionDelete(e)"
+        @active-version-changed="editor.fetchAllPrograms(), fetchVersions(editor.selectedPrograms[0].programNo)"
+      />
+    </EliarModal>
   </div>
-  <div class="custom-page select-none relative">
-    <DevOnly>
-      <div class="flex flex-col color-gray-5 text-3">
-        <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
-        <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues().map(p => `${p.machineId}-${p.programNo}-${p.name}`).join(', ')}` }} </span>
-        <span> {{ `programErrors: ${useErrorStore().errors.map(p => `${p.programNo}-${p.steps.length}`).join(', ')}` }} </span>
-      </div>
-    </DevOnly>
-    <QTable
-      ref="tableRef"
-      v-model:selected="editor.selectedPrograms"
-      :rows="filteredPrograms"
-      :columns
-      row-key="programNo"
-      :rows-per-page-options="[0]"
-      class="program-table bg-gray-1 dark:bg-dark-4"
-      selection="multiple"
-      :selected-rows-label="getSelectedString"
-      :filter="searchFilter"
-      dense
-      flat
-      table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
-      table-header-class="bg-gray-1 dark:bg-dark-4"
-      table-class="bg-gray-1 dark:bg-dark-4"
-      @row-click="onRowClick"
-      @row-dblclick="onRowDoubleClick"
-      @row-contextmenu="handleContextMenu"
-    >
-      <template #body-cell="{ value, row, col }">
-        <QTd
-          :class="[handleRowClass(row), col.__tdClass?.(row)]"
-          :style="col.__tdStyle?.(row)"
-        >
-          <template v-if="typeof value === 'boolean'">
-            <QIcon
-              :name="value ? 'check' : ''"
-              color="positive"
-              size="xs"
-            />
-          </template>
-          <template v-else>
-            {{ value }}
-          </template>
-          <QTooltip v-if="col.tooltip">
-            {{ formatTooltip(row, col) }}
-          </QTooltip>
-        </QTd>
-      </template>
-      <template #top>
-        <QInput
-          v-model="searchFilter"
-          class="q-pa-md w-xs"
-          :placeholder="t('search')"
-          autocomplete="false"
-          debounce="100"
-          clearable
-          outlined
-          dense
-        >
-          <template #prepend>
-            <QIcon name="search" />
-          </template>
-        </QInput>
-        <QSpace />
-        <ProgramFilterButton />
-      </template>
-    </QTable>
-
-    <q-menu
-      touch-position
-      context-menu
-      :transition-duration="0"
-    >
-      <ProgramContextMenu :items="contextMenuOptions" />
-    </q-menu>
-  </div>
-
-  <CMProgramStateDialog v-if="!route.params.program_no" />
-
-  <EliarModal v-if="versionDialogVisible">
-    <CMVersionDialog
-      :rows="versions"
-      :machine-id="machineId"
-      :program-no="editor.selectedPrograms[0].programNo"
-      @close="versionDialogVisible = false"
-      @delete="e => handleVersionDelete(e)"
-      @active-version-changed="editor.fetchAllPrograms(), fetchVersions(editor.selectedPrograms[0].programNo)"
-    />
-  </EliarModal>
 </template>
 
 <style lang="postcss" scoped>
@@ -837,7 +839,7 @@ const columns = computed(() =>
 }
 
 .program-table {
-  height: 80vh;
+  height: calc(100vh - 10rem);
   user-select: none;
 }
 </style>

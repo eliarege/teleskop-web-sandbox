@@ -95,6 +95,8 @@ export default defineEventHandler(async (event) => {
           WHEN USEFORMULA = 1 THEN 'SELECTABLE_FORMULA'
           WHEN PARAMETERTYPE = 0 THEN 'NUMBER'
           WHEN PARAMETERTYPE = 1 THEN 'SELECT'
+          WHEN PARAMETERTYPE = 2 THEN 'CHECKBOX'
+          WHEN PARAMETERTYPE = 3 THEN 'SELECT_ADDITIVE'
         END`,
       ),
       value: 'VALUE',

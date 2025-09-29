@@ -10,7 +10,7 @@ import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
 import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
-import { CommandType, ProgramStatus } from '~/shared/constants'
+import { AdditiveType, CommandType, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
@@ -81,6 +81,7 @@ export class MachineController {
             WHEN PARAMETERTYPE = 0 THEN 'NUMBER'
             WHEN PARAMETERTYPE = 1 THEN 'SELECT'
             WHEN PARAMETERTYPE = 2 THEN 'CHECKBOX'
+            WHEN PARAMETERTYPE = 3 THEN 'SELECT_ADDITIVE'
           END
         `),
         format: db.raw(`
@@ -1099,7 +1100,9 @@ export class MachineController {
       commands: this.commandArrayToMap(machine.commands),
     }, initialTemp)
 
-    const chemRequests = await this.countChemicalRequests(program)
+    const chemRequests = machine.tbbModel === 'Tonello'
+      ? await this.countTonelloChemicalRequests(program)
+      : await this.countChemicalRequests(program)
 
     program.manChemReq = chemRequests.get(CommandType.ManChem) ?? 0
     program.autoChemReq = chemRequests.get(CommandType.AutoChem) ?? 0
@@ -1686,6 +1689,17 @@ export class MachineController {
       .where('CT.machineId', this.id)
   }
 
+  async fetchCommandsWithSelectableAdditive(): Promise<{ commandNo: number, parameterIndex: number }[]> {
+    return await db
+      .from('BFCOMMANDPARAMETERS')
+      .select({
+        commandNo: 'COMMANDNO',
+        parameterIndex: 'PARAMETERINDEX',
+      })
+      .where('PARAMETERTYPE', ParameterTypeRaw.SELECT_ADDITIVE)
+      .andWhere('MACHINEID', this.id)
+  }
+
   async insertEmptyProgramHeader(machineId: number, programNo: number): Promise<void> {
     const timestamp = this.getCurrentTimestamp()
 
@@ -1705,6 +1719,15 @@ export class MachineController {
       })
   }
 
+  private createChemicalRequestCountMap(): Map<CommandType, number> {
+    return new Map<CommandType, number>([
+      [CommandType.ManChem, 0],
+      [CommandType.AutoChem, 0],
+      [CommandType.ManDye, 0],
+      [CommandType.AutoDye, 0],
+    ])
+  }
+
   /**
    * Programdaki toplam kimyasal ve boya istek sayısını hesaplar
    *
@@ -1712,15 +1735,7 @@ export class MachineController {
    * @returns {Promise<Map<CommandType, number>>} - Toplam istek sayılarını döndürür
    */
   async countChemicalRequests(program: Program): Promise<Map<CommandType, number>> {
-    const chemRequestCommandTypes = [
-      CommandType.AutoChem,
-      CommandType.AutoDye,
-      CommandType.ManDye,
-      CommandType.ManChem,
-    ]
-    const chemRequestCounters = new Map<CommandType, number>(
-      chemRequestCommandTypes.map(type => [type, 0]),
-    )
+    const chemRequestCounters = this.createChemicalRequestCountMap()
 
     if (!program.steps.length)
       return chemRequestCounters
@@ -1729,12 +1744,10 @@ export class MachineController {
 
     let activeRequests: number[] = []
 
-    const handleCommand = (commandNo: number) => {
+    const handleCommand = (command: ProgramStepCommand) => {
+      const { commandNo } = command
       const { commandType } = mappings.find(ct => ct.commandNo === commandNo) || {}
-      if (!commandType)
-        return
-
-      if (!activeRequests.includes(commandNo)) {
+      if (commandType && !activeRequests.includes(commandNo)) {
         activeRequests.push(commandNo)
         chemRequestCounters.set(commandType, (chemRequestCounters.get(commandType) || 0) + 1)
       }
@@ -1743,14 +1756,39 @@ export class MachineController {
     for (const step of program.steps) {
       const stepCommandNos: number[] = []
 
-      handleCommand(step.mainCommand.commandNo)
+      handleCommand(step.mainCommand)
       stepCommandNos.push(step.mainCommand.commandNo)
 
       for (const parallelCommand of step.parallelCommands || []) {
-        handleCommand(parallelCommand.commandNo)
+        handleCommand(parallelCommand)
         stepCommandNos.push(parallelCommand.commandNo)
       }
       activeRequests = activeRequests.filter(cmdNo => stepCommandNos.includes(cmdNo))
+    }
+
+    return chemRequestCounters
+  }
+
+  async countTonelloChemicalRequests(program: Program): Promise<Map<CommandType, number>> {
+    const chemRequestCounters = this.createChemicalRequestCountMap()
+
+    if (!program.steps.length)
+      return chemRequestCounters
+
+    const commandsWithSelectableAdditives = await this.fetchCommandsWithSelectableAdditive()
+
+    const incCounter = (type: CommandType) => {
+      chemRequestCounters.set(type, (chemRequestCounters.get(type) || 0) + 1)
+    }
+
+    for (const step of program.steps) {
+      const command = step.mainCommand
+      const commandWithAdditive = commandsWithSelectableAdditives.find(c => c.commandNo === command.commandNo)
+      if (commandWithAdditive) {
+        let additionType = command.parameters[commandWithAdditive.parameterIndex].value
+        additionType = typeof additionType === 'string' ? Number.parseInt(additionType) : additionType
+        incCounter(additionType === AdditiveType.Chemical ? CommandType.AutoChem : CommandType.AutoDye)
+      }
     }
 
     return chemRequestCounters

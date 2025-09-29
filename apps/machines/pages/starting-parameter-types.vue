@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { klona } from 'klona'
-import type { IContextMenuOption } from '~/components/ContextMenu.vue'
 import type { StartingParameter } from '~/types'
 
 const { t } = useI18n()
@@ -104,9 +103,9 @@ const contextMenuOptions = computed(() => [
 <template>
   <div>
     <ContextMenu
-      :context-menu-options="contextMenuOptions"
+      :options="contextMenuOptions"
       target=".q-list"
-      @click="(option: IContextMenuOption) => option.onClick(selectedMachineId)"
+      @click="option => option.onClick(selectedMachineId)"
     />
     <q-card>
       <q-card-section class="flex flex-row justify-center gap-8">

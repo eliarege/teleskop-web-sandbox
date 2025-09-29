@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { QSelect } from 'quasar'
+import { isDef } from '@teleskop/utils'
 import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
 import { useProgramWriteSettings } from '~/composables/settings'
@@ -45,7 +46,7 @@ const availableCommands = computed(() => {
 })
 
 const rules = [
-  (value: number) => (!!value || t('emptyCommand')),
+  (value: number) => (isDef(value) || t('emptyCommand')),
   (value: number) => {
     const machineCommand = editor.machine.commands.get(value)
     return machineCommand ? true : t('error.machineCommandNotFound', { commandNo: value })
@@ -56,7 +57,11 @@ const rules = [
 function validateCommand() {
   nextTick(() => {
     const commandNo = programCommand.value?.commandNo
-    commandNo ? editor.errorIds.delete(id.value) : editor.errorIds.add(id.value)
+    if (isDef(commandNo)) {
+      editor.errorIds.delete(id.value)
+    } else {
+      editor.errorIds.add(id.value)
+    }
     selectRef.value?.validate()
   })
 }
@@ -65,7 +70,7 @@ watch(() => programCommand.value.commandNo, validateCommand)
 watch(() => stepData.value.mainCommand.commandNo, validateCommand)
 
 onMounted(() => {
-  if (!programCommand.value.commandNo || (isMainCommand.value && !stepData.value.mainCommand.commandNo)) {
+  if (!isDef(programCommand.value.commandNo) || (isMainCommand.value && !isDef(stepData.value.mainCommand.commandNo))) {
     editor.errorIds.add(id.value)
   } else if (!editor.machine.commands.has(programCommand.value.commandNo)) {
     editor.errorIds.add(id.value)
@@ -80,7 +85,7 @@ onUnmounted(() => {
 })
 
 async function updateStepCommand(commandNo: number) {
-  const isNewCommand = !programCommand.value.commandNo
+  const isNewCommand = !isDef(programCommand.value.commandNo)
   editor.updateCommand(commandNo, programCommand.value)
 
   if (!isMainCommand.value && !isLastStep.value && isNewCommand) {
@@ -116,7 +121,7 @@ function isParallelCommandRestricted(commandNo: number): boolean {
       ref="selectRef"
       :model-value="programCommand.commandNo"
       :options="availableCommands"
-      :label="programCommand.commandNo ? undefined : t('selectCommand')"
+      :label="isDef(programCommand.commandNo) ? undefined : t('selectCommand')"
       :rules="rules"
       :for="id"
       :option-label="getCommandLabel"

@@ -375,7 +375,7 @@ export type Columns = Record<string, ColumnDefinition>
 
 export interface MachineTableColumn extends Omit<QTableColumn, 'label'> {
   name: string
-  label: string | Readonly<Ref<string>>
+  label: string
   field: keyof Machine | ((row: Machine) => any)
   sortable?: boolean
   align?: 'left' | 'right' | 'center'

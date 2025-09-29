@@ -9,7 +9,11 @@ const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
 
 export default defineAuthEventHandler(async (event) => {
   const { sseId } = getQuery(event)
-  const machines = await knex('BFMACHINES').select('MACHINEID', 'IP')
+  const machines = await knex
+    .from('BFMACHINES')
+    .select('MACHINEID', 'IP')
+    .whereNot('TBBMODEL', 'Tonello')
+
   if (sseLoggingEnabled && !sseId) {
     throw new Error('SSE ID REQUIRED')
   }
@@ -23,7 +27,8 @@ export default defineAuthEventHandler(async (event) => {
     const { MACHINEID, IP } = machine
     try {
       const startingMessage = `version-check-started-${MACHINEID}`
-      sse.send(strSseId, 'log', { message: startingMessage, progress: Math.round((currentStep / totalSteps) * 100) })
+
+      sse.send(strSseId, 'start', { message: startingMessage, progress: Math.round((currentStep / totalSteps) * 100) })
 
       const response = await $fetch(`http://${IP}:8080`, {
         method: 'POST',
