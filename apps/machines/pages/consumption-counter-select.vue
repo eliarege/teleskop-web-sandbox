@@ -12,57 +12,138 @@ interface CounterOption {
 
 const kc = useKeycloak()
 const { t } = useI18n()
-
+const { notifyError, notifySuccess } = useNotify()
 const selectedMachineId = ref()
 
 const counter1 = ref()
 const counter2 = ref()
+const originalCounter1 = ref()
+const originalCounter2 = ref()
 
 const changedCounters = ref<ConsumptionCounter[]>([])
 
 const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
-const { data: counterOptions } = useAuthFetch('/api/consumption-counters/mach-counters', {
+const { data: allCounterOptions, refresh: refreshCounterOptions } = useAuthFetch('/api/consumption-counters/mach-counters', {
   immediate: false,
   query: { machineId: selectedMachineId },
   transform: (counterOptions) => {
-    counterOptions.unshift({
+    const options = [...counterOptions]
+    options.unshift({
       id: -1,
       name: t('notSelected'),
     })
-    return counterOptions as readonly CounterOption[]
+    return options as readonly CounterOption[]
   },
 })
 
-const { data: counters } = useAuthFetch('/api/consumption-counters/consumption-counter', {
+const counter1Options = computed(() => {
+  if (!allCounterOptions.value)
+    return []
+  if (!counter2.value || counter2.value.id === -1)
+    return allCounterOptions.value
+  return allCounterOptions.value.filter(option => option.id === -1 || option.id !== counter2.value.id)
+})
+
+const counter2Options = computed(() => {
+  if (!allCounterOptions.value)
+    return []
+  if (!counter1.value || counter1.value.id === -1)
+    return allCounterOptions.value
+  return allCounterOptions.value.filter(option => option.id === -1 || option.id !== counter1.value.id)
+})
+
+const { data: counters, refresh: refreshCounters } = useAuthFetch('/api/consumption-counters/consumption-counter', {
   immediate: false,
   query: { machineId: selectedMachineId },
 })
 
+const hasChanges = computed(() => {
+  if (!counter1.value || !counter2.value || !originalCounter1.value || !originalCounter2.value) {
+    return false
+  }
+  return counter1.value.id !== originalCounter1.value.id || counter2.value.id !== originalCounter2.value.id
+})
+
 watch(counters, (_newValue, _oldValue) => {
-  if (counterOptions.value && counterOptions.value.length && counters.value && counters.value.counter1 && counters.value.counter2) {
-    counter1.value = counterOptions.value.find(option => option.id === counters.value.counter1)
-    counter2.value = counterOptions.value.find(option => option.id === counters.value.counter2)
+  if (allCounterOptions.value && allCounterOptions.value.length && counters.value) {
+    const notSelectedOption = allCounterOptions.value.find(option => option.id === -1)
+
+    counter1.value = allCounterOptions.value.find(option => option.id === counters.value.counter1) || notSelectedOption
+    counter2.value = allCounterOptions.value.find(option => option.id === counters.value.counter2) || notSelectedOption
+
+    originalCounter1.value = counter1.value
+    originalCounter2.value = counter2.value
   } else {
-    counter1.value = ''
-    counter2.value = ''
+    const notSelectedOption = allCounterOptions.value?.find(option => option.id === -1)
+    counter1.value = notSelectedOption || null
+    counter2.value = notSelectedOption || null
+    originalCounter1.value = counter1.value
+    originalCounter2.value = counter2.value
   }
 })
 
 async function handleMachineClick(machineId: number) {
   selectedMachineId.value = machineId
+  await refreshCounterOptions()
+  await refreshCounters()
 }
 
 function handleOptionChange() {
-  changedCounters.value.push({ machineId: selectedMachineId.value, counterId1: counter1.value.id, counterId2: counter2.value.id })
+  if (!selectedMachineId.value || !counter1.value || !counter2.value)
+    return
+
+  if (counter1.value.id !== -1 && counter2.value.id !== -1 && counter1.value.id === counter2.value.id) {
+    notifyError(t('error.same_counter_selected'))
+    counter1.value = originalCounter1.value
+    counter2.value = originalCounter2.value
+    return
+  }
+
+  changedCounters.value = changedCounters.value.filter(c => c.machineId !== selectedMachineId.value)
+
+  if (hasChanges.value) {
+    changedCounters.value.push({
+      machineId: selectedMachineId.value,
+      counterId1: counter1.value.id,
+      counterId2: counter2.value.id,
+    })
+  }
 }
 
 async function handleSubmit() {
-  await kc.fetch('/api/consumption-counters/consumption-counters', {
-    method: 'PUT',
-    body: { changedCounters: changedCounters.value },
-  })
-  changedCounters.value = []
+  if (changedCounters.value.length === 0)
+    return
+
+  try {
+    const result = await kc.fetch('/api/consumption-counters/consumption-counters', {
+      method: 'PUT',
+      body: { changedCounters: changedCounters.value },
+    })
+
+    if (result.message) {
+      notifySuccess(t(`success.${result.message}`))
+    } else {
+      notifySuccess(t('success.operation_completed'))
+    }
+
+    changedCounters.value = []
+
+    originalCounter1.value = counter1.value
+    originalCounter2.value = counter2.value
+
+    await refreshCounterOptions()
+  } catch (error: any) {
+    const errorMessage = error.data?.statusMessage || error.statusMessage || error.message || 'unknown'
+    notifyError(t(`error.${errorMessage}`))
+  }
+}
+
+function handleCancel() {
+  counter1.value = originalCounter1.value
+  counter2.value = originalCounter2.value
+
+  changedCounters.value = changedCounters.value.filter(c => c.machineId !== selectedMachineId.value)
 }
 
 const copy = ref()
@@ -73,7 +154,7 @@ const contextMenuOptions = computed(() => [
     category: 'copy',
     keybind: '',
     icon: 'content_copy',
-    disabled: !selectedMachineId.value,
+    disabled: !selectedMachineId.value || !counter1.value || !counter2.value,
     onClick: () => {
       copy.value = { counter1: counter1.value, counter2: counter2.value }
     },
@@ -85,10 +166,18 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      counter1.value = copy.value.counter1
-      counter2.value = copy.value.counter2
-      handleOptionChange()
-      await handleSubmit()
+      if (allCounterOptions.value && copy.value) {
+        const copiedCounter1 = allCounterOptions.value.find(option => option.id === copy.value.counter1.id)
+        const copiedCounter2 = allCounterOptions.value.find(option => option.id === copy.value.counter2.id)
+
+        if (copiedCounter1 && copiedCounter2 && copy.value.counter1.id !== copy.value.counter2.id) {
+          counter1.value = copiedCounter1
+          counter2.value = copiedCounter2
+          handleOptionChange()
+        } else {
+          notifyError(t('error.counter_not_available'))
+        }
+      }
     },
   },
 ])
@@ -126,10 +215,10 @@ const contextMenuOptions = computed(() => [
           </q-list>
         </div>
 
-        <div v-if="counterOptions" class="flex flex-col input-field">
+        <div v-if="allCounterOptions" class="flex flex-col input-field">
           <q-select
             v-model="counter1"
-            :options="counterOptions"
+            :options="counter1Options"
             option-label="name"
             option-value="id"
             :label="`${t('counter')} 1`"
@@ -137,7 +226,7 @@ const contextMenuOptions = computed(() => [
           />
           <q-select
             v-model="counter2"
-            :options="counterOptions"
+            :options="counter2Options"
             option-label="name"
             option-value="id"
             :label="`${t('counter')} 2`"
@@ -150,12 +239,14 @@ const contextMenuOptions = computed(() => [
         <q-btn
           no-caps
           :label="t('cancel')"
-          @click="$router.go(0)"
+          :disabled="!hasChanges"
+          @click="handleCancel"
         />
         <q-btn
           color="primary"
           no-caps
           :label="t('submit')"
+          :disabled="!hasChanges"
           @click="handleSubmit"
         />
       </q-card-actions>
