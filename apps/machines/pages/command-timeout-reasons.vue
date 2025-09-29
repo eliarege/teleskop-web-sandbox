@@ -3,11 +3,16 @@ import type { CommandTimeoutReason, Machine, MasterCommand } from '~/types'
 
 const kc = useKeycloak()
 const { t } = useI18n()
+const router = useRouter()
 
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 const selectedReasonId = ref()
 const changedReasons = ref<CommandTimeoutReason[]>([])
+
+watch([selectedMachineId, selectedCommandNo], () => {
+  changedReasons.value = []
+})
 
 const { data: machines } = useAuthFetch<Machine[]>('/api/machines/active-machines', {
   default: () => [],
@@ -40,7 +45,16 @@ function handleCheckChange(e: boolean, reason: CommandTimeoutReason) {
   reason.machineId = selectedMachineId.value
   reason.commandNo = selectedCommandNo.value
   reason.checked = e
-  changedReasons.value.push(reason)
+
+  const existingIndex = changedReasons.value.findIndex(
+    r => r.id === reason.id && r.machineId === selectedMachineId.value && r.commandNo === selectedCommandNo.value,
+  )
+
+  if (existingIndex !== -1) {
+    changedReasons.value.splice(existingIndex, 1)
+  }
+
+  changedReasons.value.push({ ...reason })
 }
 
 async function handleSubmit() {
@@ -266,7 +280,7 @@ const contextMenuOptions = computed(() => [
         <q-btn
           no-caps
           :label="t('cancel')"
-          @click="$router.go(0)"
+          @click="router.go(0)"
         />
         <q-btn
           color="primary"

@@ -5,6 +5,7 @@ import type { Machine, Material, TankDefinition } from '~/types'
 
 const { t } = useI18n()
 const kc = useKeycloak()
+const { notifyError } = useNotify()
 /*
 1 kimyasal
 2 boya
@@ -26,15 +27,37 @@ const { data: tanks, refresh: refreshTanks } = useAuthFetch('/api/materials/mate
   },
 })
 
+const assignedMaterialCodes = computed(() => {
+  if (!tanksClone.value)
+    return new Set()
+  const codes = new Set<string>()
+  tanksClone.value.forEach((tank) => {
+    tank.materials.forEach((material) => {
+      codes.add(material.materialCode)
+    })
+  })
+  return codes
+})
+
+const availableMaterials = computed(() => {
+  if (!materials.value)
+    return []
+  return materials.value.filter(material =>
+    !assignedMaterialCodes.value.has(material.materialCode),
+  )
+})
+
 function deleteItem(tank: TankDefinition, materialCode: string) {
-  tanks.value.find(t => t.tankNo === tank.tankNo)
-    .materials = tanks.value.find(t => t.tankNo === tank.tankNo)
-      .materials.filter((m: Material) => m.materialCode !== materialCode)
+  const originalTank = tanks.value.find(t => t.tankNo === tank.tankNo)
+  if (originalTank) {
+    originalTank.materials = originalTank.materials.filter((m: Material) => m.materialCode !== materialCode)
+  }
 
   if (tanksClone.value && tanksClone.value.length) {
-    tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)!
-      .materials = tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)!
-        .materials.filter((m: Material) => m.materialCode !== materialCode)
+    const cloneTank = tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)
+    if (cloneTank) {
+      cloneTank.materials = cloneTank.materials.filter((m: Material) => m.materialCode !== materialCode)
+    }
   }
 }
 
@@ -42,8 +65,15 @@ async function handleDragDrop(e: any, tank: TankDefinition) {
   const materialCode = e.item.getAttribute('data-material-code')
   if (materials.value && tanksClone.value) {
     const material = materials.value.find(t => t.materialCode === materialCode)
-    if (material)
-      tanksClone.value.find(t => t.tankNo === tank.tankNo)!.materials.push(material)
+    const targetTank = tanksClone.value.find(t => t.tankNo === tank.tankNo)!
+
+    const materialExists = targetTank.materials.some(m => m.materialCode === materialCode)
+
+    if (material && !materialExists) {
+      targetTank.materials.push(material)
+    } else if (materialExists) {
+      notifyError(t('duplicateMaterialError'))
+    }
   }
 }
 
@@ -123,7 +153,7 @@ const contextMenuOptions = computed(() => [
           <div class="mr-4 w-sm">
             <h3>{{ t('materials') }}</h3>
             <Sortable
-              :list="materials!"
+              :list="availableMaterials!"
               :item-key="item => item.materialCode"
               class="q-list q-list--bordered q-list--separator h-160 overflow-y-auto"
               :options="{ group: { name: 'group', pull: 'clone', put: false } }"
