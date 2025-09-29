@@ -224,13 +224,12 @@ async function handleSend() {
         settings: selectedSettings.value,
         machines: selectedMachines.map(machine => machine.machineId),
       },
-      timeout: 60000, // 60 saniye timeout
+      timeout: 60000,
     })
 
     if (response.success) {
       notifySuccess(t('settingsUpdatedSuccessfully'))
     } else {
-      // Kısmi başarı durumu
       const failedMachines = response.results.filter((r: any) => !r.success)
       if (failedMachines.length > 0) {
         const failedIps = failedMachines.map((m: any) => m.ip).join(', ')
@@ -242,7 +241,6 @@ async function handleSend() {
       }
     }
 
-    // Başarılı gönderimden sonra seçili ayarları ve makinaları temizle
     selectedSettings.value = []
     machines.value?.forEach(machine => machine.check = false)
   } catch (error: any) {
