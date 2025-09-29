@@ -7,9 +7,8 @@ const props = defineProps<{
   show: boolean
   selected: object
 }>()
-
 const emit = defineEmits(['close'])
-
+const { notifyError, notifySuccess } = useNotify()
 const kc = useKeycloak()
 
 const { t } = useI18n()
@@ -44,40 +43,91 @@ async function handleDragDrop(e: SortableEvent) {
   if (matches && matches.length) {
     const machineId = Number.parseInt(matches[0])
 
-    await kc.fetch('/api/treatment-parameters/machine-group-machines', {
-      method: 'PUT',
-      body: {
-        machineId,
-        groupId: selectedGroupId.value,
-        action: e.type,
-      },
-    })
+    try {
+      await kc.fetch('/api/treatment-parameters/machine-group-machines', {
+        method: 'PUT',
+        body: {
+          machineId,
+          groupId: selectedGroupId.value,
+          action: e.type,
+        },
+      })
+      // Show success message
+      const notify = useNotify()
+      if (e.type === 'add') {
+        notify.notifySuccess(t('MACHINE_ADDED_TO_GROUP_SUCCESSFULLY'))
+      } else if (e.type === 'remove') {
+        notify.notifySuccess(t('MACHINE_REMOVED_FROM_GROUP_SUCCESSFULLY'))
+      }
+    } catch (error: any) {
+      const notify = useNotify()
+      if (error.statusCode === 409) {
+        notify.notifyError(t('MACHINE_GROUP_MAPPING_ALREADY_EXISTS'))
+      } else if (error.statusCode === 404) {
+        notify.notifyError(t('MACHINE_GROUP_MAPPING_NOT_FOUND'))
+      } else if (error.statusCode === 400) {
+        notify.notifyError(t('INVALID_ACTION'))
+      } else {
+        notify.notifyError(t('TREATMENT_MAP_ERROR'))
+      }
+    }
   }
 }
 
 async function handleAdd() {
-  await kc.fetch('/api/treatment-parameters/machine-group', {
-    method: 'POST',
-    body: selected.value,
-  })
-  await refreshGroups()
+  try {
+    await kc.fetch('/api/treatment-parameters/machine-group', {
+      method: 'POST',
+      body: selected.value,
+    })
+    await refreshGroups()
+    selected.value = {
+      id: -1,
+      groupName: '',
+    }
+    notifySuccess(t('GROUP_CREATED_SUCCESSFULLY'))
+  } catch (error: any) {
+    if (error.statusCode === 409) {
+      notifyError(t('GROUP_ALREADY_EXISTS'))
+    } else {
+      notifyError(t('GROUP_ADD_ERROR'))
+    }
+  }
 }
 async function handleEdit() {
-  await kc.fetch('/api/treatment-parameters/machine-group', {
-    method: 'PUT',
-    body: selected.value,
-  })
-  await refreshGroups()
+  try {
+    await kc.fetch('/api/treatment-parameters/machine-group', {
+      method: 'PUT',
+      body: selected.value,
+    })
+    await refreshGroups()
+    notifySuccess(t('GROUP_UPDATED_SUCCESSFULLY'))
+  } catch (error: any) {
+    if (error.statusCode === 409) {
+      notifyError(t('GROUP_ALREADY_EXISTS'))
+    } else {
+      notifyError(t('GROUP_UPDATE_ERROR'))
+    }
+  }
 }
 async function handleDelete() {
-  await kc.fetch('/api/treatment-parameters/machine-group', {
-    method: 'DELETE',
-    body: selected.value,
-  })
-  await refreshGroups()
-  selected.value = {
-    id: -1,
-    groupName: '',
+  try {
+    await kc.fetch('/api/treatment-parameters/machine-group', {
+      method: 'DELETE',
+      body: selected.value,
+    })
+    await refreshGroups()
+    selected.value = {
+      id: -1,
+      groupName: '',
+    }
+    notifySuccess(t('GROUP_DELETED_SUCCESSFULLY'))
+  } catch (error: any) {
+    if (error.statusCode === 404) {
+      notifyError(t('GROUP_NOT_FOUND'))
+    } else {
+      notifyError(t('GROUP_DELETE_ERROR'))
+    }
   }
 }
 async function handleGroupClick(obj: TreatmentMachineGroup) {

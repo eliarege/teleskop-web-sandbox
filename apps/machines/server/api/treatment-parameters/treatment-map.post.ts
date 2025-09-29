@@ -10,7 +10,7 @@ export default defineAuthEventHandler(async (event) => {
     }).first()
 
   if (existing) {
-    return await knex('BFTREATMENTPARAMGROUPMAP')
+    const result = await knex('BFTREATMENTPARAMGROUPMAP')
       .where({
         PARAMID: paramId,
         GROUPID: groupId,
@@ -19,13 +19,25 @@ export default defineAuthEventHandler(async (event) => {
         COMMANDNO: commandNo,
         PARAMETERINDEX: parameterIndex,
       })
+
+    return {
+      success: true,
+      message: 'TREATMENT_MAP_UPDATED_SUCCESSFULLY',
+      updatedCount: result,
+    }
   } else {
-    return await knex('BFTREATMENTPARAMGROUPMAP')
+    const result = await knex('BFTREATMENTPARAMGROUPMAP')
       .insert({
         PARAMID: paramId,
         GROUPID: groupId,
         COMMANDNO: commandNo,
         PARAMETERINDEX: parameterIndex,
       })
+
+    return {
+      success: true,
+      message: 'TREATMENT_MAP_CREATED_SUCCESSFULLY',
+      insertedId: result[0],
+    }
   }
 })

@@ -5,6 +5,7 @@ export default defineAuthEventHandler(async (event) => {
   return await knex('BFTREATMENTPARAMETERGROUPMACHINES')
     .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'BFTREATMENTPARAMETERGROUPMACHINES.MACHINEID')
     .where('GROUPID', groupId)
+    .where('BFMACHINES.USEINTELESKOP', true)
     .select({
       machineId: 'BFTREATMENTPARAMETERGROUPMACHINES.MACHINEID',
       groupId: 'GROUPID',

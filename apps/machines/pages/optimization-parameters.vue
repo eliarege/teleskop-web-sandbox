@@ -27,16 +27,24 @@ const { data: matchedTreatments, refresh } = useAuthFetch('/api/treatment-parame
 })
 
 async function handleAdd() {
-  await kc.fetch('/api/treatment-parameters/treatment-map', {
-    method: 'POST',
-    body: {
-      paramId: selectedParameter.value.id,
-      groupId: selectedMachineGroup.value.id,
-      commandNo: selectedOption.value.COMMANDNO,
-      parameterIndex: selectedOption.value.PARAMETERINDEX,
-    },
-  })
-  await refresh()
+  try {
+    await kc.fetch('/api/treatment-parameters/treatment-map', {
+      method: 'POST',
+      body: {
+        paramId: selectedParameter.value.id,
+        groupId: selectedMachineGroup.value.id,
+        commandNo: selectedOption.value.COMMANDNO,
+        parameterIndex: selectedOption.value.PARAMETERINDEX,
+      },
+    })
+    await refresh()
+    // Show success message
+    const notify = useNotify()
+    notify.notifySuccess(t('TREATMENT_MAP_CREATED_SUCCESSFULLY'))
+  } catch (error: any) {
+    const notify = useNotify()
+    notify.notifyError(t('TREATMENT_MAP_ERROR'))
+  }
 }
 </script>
 
@@ -135,6 +143,7 @@ async function handleAdd() {
           </h3>
           <q-table
             :rows="matchedTreatments"
+            :rows-per-page-options="[0]"
           />
         </div>
       </q-card-section>

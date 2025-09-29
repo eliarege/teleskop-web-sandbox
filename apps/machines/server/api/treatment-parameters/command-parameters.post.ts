@@ -22,7 +22,6 @@ export default defineAuthEventHandler(async (event) => {
       machineId: 'BFTREATMENTPARAMETERGROUPMACHINES.MACHINEID',
     }).first()
 
-  // parameter id
   return await knex.raw(`
   Select cmd.COMMANDNO, cmd.NAME, prm.PARAMETERINDEX, prm.PARAMSTRING From BFCOMMANDPARAMETERS prm
    LEFT JOIN BFMASTERCOMMANDS cmd
