@@ -5,7 +5,7 @@ import type { Machine, Material, TankDefinition } from '~/types'
 
 const { t } = useI18n()
 const kc = useKeycloak()
-const { notifyError } = useNotify()
+const { notifySuccess, notifyError } = useNotify()
 /*
 1 kimyasal
 2 boya
@@ -48,11 +48,6 @@ const availableMaterials = computed(() => {
 })
 
 function deleteItem(tank: TankDefinition, materialCode: string) {
-  const originalTank = tanks.value.find(t => t.tankNo === tank.tankNo)
-  if (originalTank) {
-    originalTank.materials = originalTank.materials.filter((m: Material) => m.materialCode !== materialCode)
-  }
-
   if (tanksClone.value && tanksClone.value.length) {
     const cloneTank = tanksClone.value.find((t: TankDefinition) => t.tankNo === tank.tankNo)
     if (cloneTank) {
@@ -78,14 +73,32 @@ async function handleDragDrop(e: any, tank: TankDefinition) {
 }
 
 async function handleSubmit() {
-  await kc.fetch('/api/materials/material-tank-map', {
-    method: 'POST',
-    body: {
-      tankMap: tanksClone.value,
-    },
-  })
-  await refreshTanks()
+  try {
+    const response = await kc.fetch('/api/materials/material-tank-map', {
+      method: 'POST',
+      body: {
+        tankMap: tanksClone.value,
+      },
+    })
+    notifySuccess(t(`success.${response.message}`))
+    await refreshTanks()
+  } catch (error: any) {
+    const message = error.data?.data?.message || error.data?.message || 'INTERNAL_SERVER_ERROR'
+    notifyError(t(message))
+  }
 }
+
+function handleCancel() {
+  tanksClone.value = klona(tanks.value)
+}
+
+const isDirty = computed(() => {
+  if (!tanks.value || !tanksClone.value) {
+    return false
+  }
+  return JSON.stringify(tanks.value) !== JSON.stringify(tanksClone.value)
+})
+
 const copy = ref()
 
 const contextMenuOptions = computed(() => [
@@ -106,13 +119,19 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await kc.fetch('/api/materials/material-tank-map', {
-        method: 'POST',
-        body: {
-          tankMap: copy.value.map((t: TankDefinition) => ({ ...t, machineId: selectedMachineId.value })),
-        },
-      })
-      await refreshTanks()
+      try {
+        const response = await kc.fetch('/api/materials/material-tank-map', {
+          method: 'POST',
+          body: {
+            tankMap: copy.value.map((t: TankDefinition) => ({ ...t, machineId: selectedMachineId.value })),
+          },
+        })
+        notifySuccess(t(response.message || 'success.TANK_MATERIAL_MAPPING_PASTED'))
+        await refreshTanks()
+      } catch (error: any) {
+        const message = error.data?.data?.message || error.data?.message || 'INTERNAL_SERVER_ERROR'
+        notifyError(t(message))
+      }
     },
   },
 ])
@@ -172,12 +191,12 @@ const contextMenuOptions = computed(() => [
             </Sortable>
           </div>
           <!-- tanks -->
-          <div v-if="tanks.length" class="flex flex-col w-lg overflow-y-auto h-160">
-            <div v-for="tank in tanks" :key="tank">
+          <div v-if="tanksClone && tanksClone.length" class="flex flex-col w-lg overflow-y-auto h-160">
+            <div v-for="tank in tanksClone" :key="tank.tankNo">
               <h3>{{ tank.tankName }}</h3>
               <Sortable
                 :list="tank.materials"
-                :item-key="tank => tank.tankNo"
+                :item-key="material => material.materialCode"
                 class="q-list q-list--bordered q-list--separator"
                 :options="{ group: { name: 'group' } }"
                 @add="(e) => handleDragDrop(e, tank)"
@@ -207,11 +226,17 @@ const contextMenuOptions = computed(() => [
         </div>
       </q-card-section>
       <q-card-actions align="right" class="m-4">
-        <q-btn no-caps :label="t('cancel')" />
+        <q-btn
+          no-caps
+          :label="t('cancel')"
+          :disabled="!isDirty"
+          @click="handleCancel"
+        />
         <q-btn
           no-caps
           color="primary"
           :label="t('submit')"
+          :disabled="!isDirty"
           @click="handleSubmit"
         />
       </q-card-actions>
