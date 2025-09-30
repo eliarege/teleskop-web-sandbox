@@ -247,14 +247,15 @@ registerCommand(() => {
   return {
     name: 'deleteProgramFromMultiMachine',
     async execute(ctx: any, selectedRows: ProgramItem[]) {
-      const allMachines = await editor.fetchAllMachine()
-      const machineGroups = await editor.fetchMachineGroup()
+      await editor.fetchAllMachine()
+      await editor.fetchMachineGroups()
+
       ctx.$q.dialog({
         component: CMMachineListDialog,
         componentProps: {
           type: 'deleteFromMultiMachine',
-          allMachines,
-          machineGroups,
+          allMachines: editor.allMachines,
+          machineGroups: editor.machineGroups,
         },
       }).onOk(async (machines: MachineInfo[]) => {
         ctx.$q.dialog({
@@ -429,14 +430,15 @@ registerCommand(() => {
   return {
     name: 'copyAndSend',
     async execute(ctx: any, selectedRows: ProgramItem[], machineId: number) {
-      const allMachines = await editor.fetchAllMachine()
-      const machineGroups = await editor.fetchMachineGroup()
+      await editor.fetchAllMachine()
+      await editor.fetchMachineGroups()
+
       ctx.$q.dialog({
         component: CMMachineListDialog,
         componentProps: {
           type: 'copyAndSend',
-          allMachines,
-          machineGroups,
+          allMachines: editor.allMachines,
+          machineGroups: editor.machineGroups,
         },
       }).onOk(async (machines: MachineInfo[]) => {
         await contextMenuStore.sendProgramToMachines(selectedRows, machines, machineId)

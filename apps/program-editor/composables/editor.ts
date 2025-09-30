@@ -13,6 +13,8 @@ export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createEmptyProgram())
   const originalProgram = ref<Program>(createEmptyProgram())
   const machine = ref<Machine>(createMachine())
+  const allMachines = ref<Machine[]>([])
+  const machineGroups = ref<MachineGroup[]>([])
   const selectedPrograms = ref<ProgramTableRow[]>([])
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTableRow[]>([])
@@ -637,8 +639,8 @@ export const useEditorStore = defineStore('editor', () => {
    * @description Bu fonksiyon, API üzerinden tüm makineleri çeker ve bir dizi olarak döner.
    * Elde edilen makineler, `Machine` türünde nesneler içerir.
    */
-  async function fetchAllMachine(): Promise<Machine[]> {
-    return await kc.fetch<Machine[]>('/api/machine')
+  async function fetchAllMachine(): Promise<void> {
+    allMachines.value = await kc.fetch<Machine[]>('/api/machine')
   }
 
   /**
@@ -649,8 +651,8 @@ export const useEditorStore = defineStore('editor', () => {
    * @description Bu fonksiyon, API üzerinden makine gruplarını çeker ve bir dizi olarak döner.
    * Elde edilen makine grupları, `MachineGroup` türünde nesneler içerir.
    */
-  async function fetchMachineGroup(): Promise<MachineGroup[]> {
-    return await kc.fetch<MachineGroup[]>('/api/machine-group')
+  async function fetchMachineGroups(): Promise<void> {
+    machineGroups.value = await kc.fetch<MachineGroup[]>('/api/machine-group')
   }
 
   /**
@@ -1011,6 +1013,8 @@ export const useEditorStore = defineStore('editor', () => {
     program,
     originalProgram,
     machine,
+    allMachines,
+    machineGroups,
     selectedPrograms,
     selectedSteps,
     isLoading,
@@ -1031,7 +1035,7 @@ export const useEditorStore = defineStore('editor', () => {
     fetchProgram,
     fetchMachine,
     fetchAllMachine,
-    fetchMachineGroup,
+    fetchMachineGroups,
     fetchAllPrograms,
     createMachine,
     createEmptyProgram,

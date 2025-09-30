@@ -1,6 +1,6 @@
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { ensureTreatmentGroups, fetchTeleskopSettings, getTeleskopSettings, hasMachine, logEditorOperation } from '../functions'
+import { ensureTreatmentGroups, fetchTeleskopSettings, getTeleskopSettings, logEditorOperation } from '../functions'
 import { db, dmExchange } from '../database'
 import { withProgramClient, withTransaction } from '../decorators'
 import { sql } from '../sql'
