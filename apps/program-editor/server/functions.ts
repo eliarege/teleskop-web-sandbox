@@ -1,8 +1,10 @@
 import type { Knex } from 'knex'
-import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
+import type { CommandParameter, Machine, MachineGroup, MachineInfo, MachineTbbModel, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
 import { MSSQL_ERROR } from './constants'
+import type { ProgramClient } from './classes/ProgramClient'
+import { T7ProgramClient } from './classes/ProgramClient'
 
 interface TransactionOptions {
   trx?: Knex.Transaction
@@ -293,5 +295,31 @@ export async function getTeleskopSettings(): Promise<TeleskopSettings> {
     },
     selectedIcons,
     initialTemperature,
+  }
+}
+
+/**
+ * Makinenin durumunu kontrol eder (ping)
+ * @param {number} machineId - Makine ID'si (opsiyonel, this.id kullanılır)
+ * @returns {Promise<boolean>} - Makine erişilebilirse true, değilse false
+ */
+export async function getMachineStatus(machineId: number): Promise<boolean> {
+  try {
+    const targetMachineId = machineId
+
+    const machine: { IP: string, MACHINECODE: string } = await db('BFMACHINES')
+      .select('IP', 'MACHINECODE')
+      .where('MACHINEID', targetMachineId)
+      .first()
+
+    if (!machine) {
+      throw new PError('MACHINE_NOT_FOUND', { machineId: targetMachineId })
+    }
+
+    const client: ProgramClient = new T7ProgramClient(targetMachineId, machine.IP)
+
+    return await client.ping()
+  } catch (err) {
+    throw new PError('MACHINE_OFFLINE', { machineId })
   }
 }

@@ -30,6 +30,7 @@ export interface ContextMenuStore {
   isThereCopiedValue: ComputedRef<boolean>
   copyStep: () => void
   pasteStep: () => void
+  getMachineStatus: (machineId: number) => Promise<boolean>
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
@@ -236,15 +237,23 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     editor.isLoading = false
   }
 
-  async function sendProgram(programs: ProgramTableRow[], machineId: number) {
+  async function sendProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    const notificationState = useNotificationStore()
+
     editor.isLoading = true
+    const isMultiplePrograms = programs.length > 3
 
     for (const program of programs) {
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
-        notification(true, t(`contextMenu.send.success`, { programNo: program.programNo }))
+
+        if (isMultiplePrograms) {
+          notificationState.addNotification(t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
+        } else {
+          notification(true, t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
+        }
       } catch (error: any) {
         let messageKey = 'fail'
 
@@ -253,10 +262,19 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         } else if (isProgramError(error, 'PROGRAM_HAS_ERRORS')) {
           messageKey = 'programHasErrors'
         }
-        notification(false, t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
+
+        if (isMultiplePrograms) {
+          notificationState.addNotification(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }), 'warning')
+        } else {
+          notification(false, t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
+        }
       }
     }
     editor.isLoading = false
+
+    if (isMultiplePrograms) {
+      notificationState.showNotificationPopup = true
+    }
   }
 
   async function getRemoteProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
@@ -367,6 +385,25 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
+  async function getMachineStatus(machineId: number): Promise<boolean> {
+    const { fetch } = useKeycloak()
+
+    try {
+      return await fetch<boolean>(`/api/machine/${machineId}/status`)
+    } catch (error: any) {
+      let messageKey = 'fail'
+
+      if (isProgramError(error, 'MACHINE_NOT_FOUND')) {
+        messageKey = 'machineNotFound'
+      } else if (isProgramError(error, 'MACHINE_OFFLINE')) {
+        messageKey = 'machineOffline'
+      }
+
+      notification(false, t(`contextMenu.send.${messageKey}`, { machineId }))
+      return false
+    }
+  }
+
   return {
     getCopiedValues,
     getCopiedStepsValues,
@@ -393,5 +430,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     isThereCopiedValue,
     copyStep,
     pasteStep,
+    getMachineStatus,
   }
 }

@@ -337,13 +337,16 @@
     "send": {
       "success": "{programNo} numaralı program makineye başarıyla gönderildi.",
       "fail": "{programNo} numaralı program makineye gönderilemedi.",
-      "programHasErrors": "{programNo} numaralı programda hatalar var. Lütfen kontrol ediniz."
+      "programHasErrors": "{programNo} numaralı programda hatalar var. Lütfen kontrol ediniz.",
+      "machineNotFound": "Makine bulunamadı.",
+      "machineOffline": "{machineId} numaralı makine çevrimdışı"
     },
     "get": {
       "success": "{programNo} numaralı program makineden başarıyla alındı.",
       "fail": "{programNo} numaralı program makineden alınamadı.",
-      "programNotFound": "{programNo} numaralı program makinede bulunamadı."
-
+      "programNotFound": "{programNo} numaralı program makinede bulunamadı.",
+      "machineNotFound": "{machineId} numaralı makine bulunamadı.",
+      "machineOffline": "{machineId} numaralı makine çevrimdışı"
     },
     "delete": {
       "success": "{programNo} numaralı program başarıyla silindi.",

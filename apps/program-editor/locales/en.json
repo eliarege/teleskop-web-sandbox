@@ -337,12 +337,16 @@
     "send": {
       "success": "Program {programNo} sent successfully.",
       "fail": "An error occurred while sending program {programNo}.",
-      "programHasErrors": "Program {programNo} has errors. Please check."
+      "programHasErrors": "Program {programNo} has errors. Please check.",
+      "machineNotFound": "Machine {machineId} not found.",
+      "machineOffline": "Machine {machineId} is offline"
     },
     "get": {
       "success": "Program {programNo} retrieved successfully.",
       "fail": "An error occured while retrieving program {programNo}.",
-      "programNotFound": "Program {programNo} not found on the machine."
+      "programNotFound": "Program {programNo} not found on the machine.",
+      "machineNotFound": "Machine {machineId} not found.",
+      "machineOffline": "Machine {machineId} is offline"
     },
     "delete": {
       "success": "Program {programNo} is deleted successfully.",

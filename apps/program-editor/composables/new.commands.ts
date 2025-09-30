@@ -408,9 +408,18 @@ registerCommand(() => {
   return {
     name: 'sendProgram',
     async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
-      await contextMenuStore.sendProgram(selectedRows, machineId)
-      await editor.fetchAllPrograms()
-      return false
+      editor.isLoading = true
+      try {
+        const machineStatus = await contextMenuStore.getMachineStatus(machineId)
+        if (machineStatus) {
+          await contextMenuStore.sendProgram(selectedRows, machineId)
+          await editor.fetchAllPrograms()
+          return true
+        }
+        return false
+      } finally {
+        editor.isLoading = false
+      }
     },
   }
 })
