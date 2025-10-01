@@ -197,9 +197,8 @@ registerCommand(() => {
   }
 })
 
-async function openDialogonPaste(ctx: any, conflicts: CopyItem): Promise<CopyItem> {
-  const editor = useEditorStore()
-  const resolvedItems = await new Promise<CopyItem>((resolve) => {
+async function openDialogonPaste(ctx: any, conflicts: CopyItem): Promise<CopyItem | null> {
+  const resolvedItems = await new Promise<CopyItem | null>((resolve) => {
     ctx.$q.dialog({
       component: CMChangeProgramNoOnPasteDialog,
       componentProps: {
@@ -207,30 +206,38 @@ async function openDialogonPaste(ctx: any, conflicts: CopyItem): Promise<CopyIte
       },
     }).onOk((newIds: CopyItem) => {
       resolve(newIds)
+    }).onCancel(() => {
+      resolve(null)
     })
   })
 
-  await editor.fetchAllPrograms()
   return resolvedItems
 }
 
 registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'pasteProgram',
     async execute(ctx: any, toMachineId: number) {
-      const conflicts = await contextMenuStore.paste(toMachineId)
+      editor.isLoading = true
+      try {
+        const conflicts = await contextMenuStore.paste(toMachineId)
 
-      if (conflicts.program.length) {
-        // Çakışan programlar için kullanıcıdan yeni numaralar al
-        const resolvedItems = await openDialogonPaste(ctx, conflicts)
+        if (conflicts.program.length) {
+          // Çakışan programlar için kullanıcıdan yeni numaralar al
+          const resolvedItems = await openDialogonPaste(ctx, conflicts)
 
-        // Yeni numaralarla tekrar yapıştır
-        if (resolvedItems.program.length) {
-          await contextMenuStore.paste(toMachineId, resolvedItems)
+          // Kullanıcı iptal etmediyse yeni numaralarla tekrar yapıştır
+          if (resolvedItems && resolvedItems.program.length) {
+            await contextMenuStore.paste(toMachineId, resolvedItems)
+          }
         }
-      }
 
-      return true
+        await editor.fetchAllPrograms()
+        return true
+      } finally {
+        editor.isLoading = false
+      }
     },
   }
 })
