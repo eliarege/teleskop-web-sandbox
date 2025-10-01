@@ -285,7 +285,13 @@
       "title": "Program Numaralarını Düzenle",
       "warning": "Yapıştırılmak istenilen programların numaraları bu makinede mevcut. Lütfen yeni program numaralarını giriniz.",
       "overwrite": "Üzerine Yapıştır",
-      "copyWillOverwriteProgram": "Bu program bu makinedeki mevcut programın üzerine kopyalanacak."
+      "clear": "Clear",
+      "willOverwrite": "Bu program bu makinedeki mevcut programın üzerine kopyalanacak",
+      "hasDuplicate": "Bu program numarası zaten kullanıldı",
+      "setAllToOriginal": "Orijinal Numaraları Kullan",
+      "setAllToOriginalTooltip": "Tüm programları orijinal program numaralarına ayarla",
+      "clearAll": "Tümünü Temizle",
+      "clearAllTooltip": "Tüm program numaralarını temizle"
     },
     "changeProcessTypeDialog": {
       "title": "Program Tipini Değiştir",
@@ -405,7 +411,7 @@
     "uploadAllPrograms": "Tüm Programları Makineye Yolla",
     "downloadAllPrograms": "Tüm Programları Makineden Al",
     "copy": "Programları Kopyala",
-    "paste": "Yapıştır",
+    "paste": "Programları Yapıştır",
     "findChange": "Bul - Değiştir",
     "compareAllPrograms": "Tüm Programları Karşılaştır"
   },
