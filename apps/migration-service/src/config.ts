@@ -35,4 +35,9 @@ export const config = defineConfiguration({
     env: ['LOG_LEVEL', 'NUXT_LOG_LEVEL'],
     default: 'info',
   },
+  enableLegacyMigrations: {
+    env: ['ENABLE_LEGACY_MIGRATIONS'],
+    type: 'boolean',
+    default: false,
+  },
 })
