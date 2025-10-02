@@ -1,4 +1,4 @@
-import { expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { parseCommandsEditing } from '../src/parsers/parseCommandsEditing'
 import { parseAnalogInput } from '../src/parsers/parseAnalogInput'
 import { parseAnalogOutput } from '../src/parsers/parseAnalogOutput'
@@ -31,94 +31,170 @@ import { parseSystem } from '../src/parsers/parseSystem'
 import { parseUser } from '../src/parsers/parseUser'
 import { parseMachineTranslations } from '../src/parsers/parseMachineTranslations'
 
-it('parseAnalogInput', () => {
-  const contents = `
-0 1 1 "AK Sicakligi" 1 0 "anakazan_sicaklik.gif"
-13 2 6 "Iletkenlik" 1 13 "Karisimsuyu_Degeri.gif"
-`
-  const output = parseAnalogInput(contents)
+// Helper: returns two variants of the given raw multiline content
+// 1. Without a trailing newline
+// 2. With a single trailing newline
+function withVariants(raw: string) {
+  const base = raw.endsWith('\n') ? raw.slice(0, -1) : raw
+  return [base, `${base}\n`]
+}
 
+it('parseAnalogInput', () => {
+  const base = [
+    '0 1 1 "AK Sicakligi" 1 0 "anakazan_sicaklik.gif"',
+    '13 2 6 "Iletkenlik" 1 13 "Karisimsuyu_Degeri.gif"',
+  ].join('\n')
   const results = [
     { id: 0, card: 1, channel: 1, name: 'AK Sicakligi', enabled: 1, plcIO: 0, icon: 'anakazan_sicaklik.gif' },
     { id: 13, card: 2, channel: 6, name: 'Iletkenlik', enabled: 1, plcIO: 13, icon: 'Karisimsuyu_Degeri.gif' },
   ]
-
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseAnalogInput(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseAnalogOutput', () => {
-  const contents = `
-0 1 1 "Pompa Hizi" 0 1 0
-17 3 2 "empty" 0 1 17
-`
-  const output = parseAnalogOutput(contents)
-
+  const base = [
+    '0 1 1 "Pompa Hizi" 0 1 0',
+    '17 3 2 "empty" 0 1 17',
+  ].join('\n')
   const results = [
     { id: 0, card: 1, channel: 1, name: 'Pompa Hizi', defaultValue: 0, enabled: 1, plcIO: 0, icon: '' },
     { id: 17, card: 3, channel: 2, name: 'empty', defaultValue: 0, enabled: 1, plcIO: 17, icon: '' },
   ]
-
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseAnalogOutput(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
-it('parseBatchParameters', () => {
-  const contents = `
-SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600, []
-SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4, []
-SABIT_11=Wss Yoğun Yıkama, 0, 0, 1, 0, 0, 0,9611,["Hayır","0",1,"Evet","1",0]
-`
+describe('parseBatchParameters', () => {
+  it('old format', () => {
+    const base = [
+      'SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600, []',
+      'SABIT_2=Ikinci Soda, 0, 0, 5000, 0, 2, 4, []',
+      'SABIT_11=Wss Yoğun Yıkama, 0, 0, 1, 0, 0, 0,9611,["Hayır","0",1,"Evet","1",0]',
+    ].join('\n')
+    const results = [
+      {
+        batchParameterId: 0,
+        paramString: 'Kilo',
+        format: '1',
+        min: 0,
+        max: 2000,
+        default: -9999,
+        unitCode: 1,
+        unitText: 'Kg',
+        parameterId: 1,
+        dmArea: 9600,
+        selectionList: [],
+        selectionValues: [],
+        selectionListDefault: null,
+      },
+      {
+        batchParameterId: 2,
+        paramString: 'Ikinci Soda',
+        format: '0',
+        min: 0,
+        max: 5000,
+        default: 0,
+        unitCode: 2,
+        unitText: 'lt',
+        parameterId: 4,
+        dmArea: null,
+        selectionList: [],
+        selectionValues: [],
+        selectionListDefault: null,
+      },
+      {
+        batchParameterId: 11,
+        paramString: 'Wss Yoğun Yıkama',
+        format: '0',
+        min: 0,
+        max: 1,
+        default: 0,
+        unitCode: 0,
+        unitText: '---',
+        parameterId: 0,
+        dmArea: 9611,
+        selectionList: ['Hayır', 'Evet'],
+        selectionValues: ['0', '1'],
+        selectionListDefault: '0',
+      },
+    ]
+    for (const variant of withVariants(base)) {
+      const output = parseBatchParameters(variant)
+      expect(output).toStrictEqual(results)
+    }
+  })
 
-  const output = parseBatchParameters(contents)
+  it('new format', () => {
+    const base = [
+      'SABIT_12=Pk410, 0, 0, 1, 0, 0, 0,4500,[],0',
+      'SABIT_13=Pk412, 0, 0, 30000, -9999, 8, 1,["t","1",1,"s","2",0,"e","3",0],1,8,12',
+      'SABIT_14=Kilo, 0, 0, 30000, -9999, 1, 1,["t","1",1,"s","2",0,"e","3",0],1,-1,-1',
+    ].join('\n')
+    const results = [
 
-  const results = [
-    {
-      batchParameterId: 0,
-      paramString: 'Kilo',
-      format: '1',
-      min: 0,
-      max: 2000,
-      default: -9999,
-      unitCode: 1,
-      unitText: 'Kg',
-      parameterId: 1,
-      dmArea: 9600,
-      selectionList: [],
-      selectionValues: [],
-      selectionListDefault: null,
-    },
-    {
-      batchParameterId: 2,
-      paramString: 'Ikinci Soda',
-      format: '0',
-      min: 0,
-      max: 5000,
-      default: 0,
-      unitCode: 2,
-      unitText: 'lt',
-      parameterId: 4,
-      dmArea: null,
-      selectionList: [],
-      selectionValues: [],
-      selectionListDefault: null,
-    },
-    {
-      batchParameterId: 11,
-      paramString: 'Wss Yoğun Yıkama',
-      format: '0',
-      min: 0,
-      max: 1,
-      default: 0,
-      unitCode: 0,
-      unitText: '---',
-      parameterId: 0,
-      dmArea: 9611,
-      selectionList: ['Hayır', 'Evet'],
-      selectionValues: ['0', '1'],
-      selectionListDefault: '0',
-    },
-  ]
-
-  expect(output).toStrictEqual(results)
+      {
+        batchParameterId: 12,
+        paramString: 'Pk410',
+        format: '0',
+        min: 0,
+        max: 1,
+        default: 0,
+        unitCode: 0,
+        unitText: '---',
+        parameterId: 0,
+        dmArea: 4500,
+        selectionList: [],
+        selectionValues: [],
+        selectionListDefault: null,
+        visibility: false,
+      },
+      {
+        batchParameterId: 13,
+        paramString: 'Pk412',
+        format: '0',
+        min: 0,
+        max: 30000,
+        default: -9999,
+        unitCode: 8,
+        unitText: 'mbar',
+        parameterId: 1,
+        dmArea: null,
+        selectionList: ['t', 's', 'e'],
+        selectionValues: ['1', '2', '3'],
+        selectionListDefault: '1',
+        visibility: true,
+        machineConstantIdMin: 8,
+        machineConstantIdMax: 12,
+      },
+      {
+        batchParameterId: 14,
+        paramString: 'Kilo',
+        format: '0',
+        min: 0,
+        max: 30000,
+        default: -9999,
+        unitCode: 1,
+        unitText: 'Kg',
+        parameterId: 1,
+        dmArea: null,
+        selectionList: ['t', 's', 'e'],
+        selectionValues: ['1', '2', '3'],
+        selectionListDefault: '1',
+        visibility: true,
+        machineConstantIdMin: -1,
+        machineConstantIdMax: -1,
+      },
+    ]
+    for (const variant of withVariants(base)) {
+      const output = parseBatchParameters(variant)
+      expect(output).toStrictEqual(results)
+    }
+  })
 })
 
 it.todo('parseCalibrationAnalogInput', () => {
@@ -134,47 +210,43 @@ it.todo('parseCommandAlarmReasons', () => {
 })
 
 it('parseCommandAlarms', () => {
-  const contents = `
-5 100 8 -1 "" "Süre Aşıldı"
-86 106 0 -1 "" "Dozaj Süre Yetersiz"
-`
-  const output = parseCommandAlarms(contents)
-
+  const base = [
+    '5 100 8 -1 "" "Süre Aşıldı"',
+    '86 106 0 -1 "" "Dozaj Süre Yetersiz"',
+  ].join('\n')
   const results = [
     { commandNo: 5, alarmNo: 100, alarm: 'Süre Aşıldı' },
     { commandNo: 86, alarmNo: 106, alarm: 'Dozaj Süre Yetersiz' },
   ]
-
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseCommandAlarms(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseCommandFeedback', () => {
-  const contents = `
-5 0 "PV 1" "Sıcaklık" 1 3
-6 0 "PV 4" "Stabilize Zamanı" 0 11
-`
-
-  const output = parseCommandFeedback(contents)
-
+  const base = [
+    '5 0 "PV 1" "Sıcaklık" 1 3',
+    '6 0 "PV 4" "Stabilize Zamanı" 0 11',
+  ].join('\n')
   const results = [
     { commandNo: 5, format: 0, pvNo: 'PV 1', returnValueName: 'Sıcaklık', canShow: 1, SPRelation: 3 },
     { commandNo: 6, format: 0, pvNo: 'PV 4', returnValueName: 'Stabilize Zamanı', canShow: 0, SPRelation: 11 },
   ]
-
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseCommandFeedback(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseCommandGraphic', () => {
-  const contents = `
-24 2 "Süre" "Sıcaklık" "Gradyan" "5" "Bekleme Zamanı"
-30 0 "Süre" "" "" "" ""
-31 6 "Süre" "25" "" "" ""
-34 2 "Süre" "Sıcaklık" "Kazanç" "5" ""
-35 0 "" "" "" "" ""
-`
-
-  const output = parseCommandGraphic(contents)
-
+  const base = [
+    '24 2 "Süre" "Sıcaklık" "Gradyan" "5" "Bekleme Zamanı"',
+    '30 0 "Süre" "" "" "" ""',
+    '31 6 "Süre" "25" "" "" ""',
+    '34 2 "Süre" "Sıcaklık" "Kazanç" "5" ""',
+    '35 0 "" "" "" "" ""',
+  ].join('\n')
   const results = [
     { commandNo: 24, type: 2, x: 'Süre', y: 'Sıcaklık', a: 'Gradyan', maxA: '5', b: 'Bekleme Zamanı' },
     { commandNo: 30, type: 0, x: 'Süre', y: '', a: '', maxA: '', b: '' },
@@ -182,33 +254,33 @@ it('parseCommandGraphic', () => {
     { commandNo: 34, type: 2, x: 'Süre', y: 'Sıcaklık', a: 'Kazanç', maxA: '5', b: '' },
     { commandNo: 35, type: 0, x: '', y: '', a: '', maxA: '', b: '' },
   ]
-
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseCommandGraphic(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseCommandGroup', () => {
-  const contents = `
-0 "Komutlar" "grupBoyama.gif"
-9 "Diger" "grupBoyama.gif"
-`
-  const output = parseCommandGroup(contents)
-
+  const base = [
+    '0 "Komutlar" "grupBoyama.gif"',
+    '9 "Diger" "grupBoyama.gif"',
+  ].join('\n')
   const results = [
     { commandGroupId: 0, name: 'Komutlar', icon: 'grupBoyama' },
     { commandGroupId: 9, name: 'Diger', icon: 'grupBoyama' },
   ]
-
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseCommandGroup(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseCommandIO', () => {
-  const contents = `
-5 "Giriş Seviye" 1,5 1 5,3 0
-5 "" 1,1 0
-4 "" -1,-1 -1
-`
-  const output = parseCommandIO(contents)
-
+  const base = [
+    '5 "Giriş Seviye" 1,5 1 5,3 0',
+    '5 "" 1,1 0',
+    '4 "" -1,-1 -1',
+  ].join('\n')
   const results = [
     {
       commandNo: 4,
@@ -258,89 +330,179 @@ it('parseCommandIO', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseCommandIO(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
-it('parseCommandParams', () => {
-  const contents = `
-5 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2
-5 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]
-15 1 "SP 17" "Hedef Toleransı" "" 3 0.8 0.0 1.0 0
-41 0 "SP 2" "Dozaj Egrisi" "" 1 0 -4 4 0 ["-4","-4","-3","-3","-2","-2","-1","-1","Lineer","0","1","1","2","2","3","3","4","4"]
-`
-  const output = parseCommandParams(contents)
+describe('parseCommandParams', () => {
+  it('old format', () => {
+    const base = [
+      '5 0 "SP 12" "Pompa Offdelay" "" 3 60 0 600 2',
+      '5 0 "SP 13" "Mikser" "" 1 0 0 1 0 ["Calisma","0","Calis","1"]',
+      '15 1 "SP 17" "Hedef Toleransı" "" 3 0.8 0.0 1.0 0',
+      '41 0 "SP 2" "Dozaj Egrisi" "" 1 0 -4 4 0 ["-4","-4","-3","-3","-2","-2","-1","-1","Lineer","0","1","1","2","2","3","3","4","4"]',
+    ].join('\n')
 
-  const results = [
-    {
-      commandNo: 5,
-      name: 'SP 12',
-      paramName: 'Pompa Offdelay',
-      paramFormula: '',
-      binding: 3,
-      defaultValue: 60,
-      minValue: 0,
-      maxValue: 600,
-      graphic: 2,
-      selectionList: null,
-    },
-    {
-      commandNo: 5,
-      name: 'SP 13',
-      paramName: 'Mikser',
-      paramFormula: '',
-      binding: 1,
-      defaultValue: 0,
-      minValue: 0,
-      maxValue: 1,
-      graphic: 0,
-      selectionList: [
-        {
-          name: 'Calisma',
-          value: 0,
-        },
-        {
-          name: 'Calis',
-          value: 1,
-        },
-      ],
-    },
-    {
-      commandNo: 15,
-      name: 'SP 17',
-      paramName: 'Hedef Toleransı',
-      paramFormula: '',
-      binding: 3,
-      defaultValue: 0.8,
-      minValue: 0,
-      maxValue: 1,
-      graphic: 0,
-      selectionList: null,
-    },
-    {
-      commandNo: 41,
-      name: 'SP 2',
-      paramName: 'Dozaj Egrisi',
-      paramFormula: '',
-      binding: 1,
-      defaultValue: 0,
-      minValue: -4,
-      maxValue: 4,
-      graphic: 0,
-      selectionList: [
-        { name: '-4', value: -4 },
-        { name: '-3', value: -3 },
-        { name: '-2', value: -2 },
-        { name: '-1', value: -1 },
-        { name: 'Lineer', value: 0 },
-        { name: '1', value: 1 },
-        { name: '2', value: 2 },
-        { name: '3', value: 3 },
-        { name: '4', value: 4 },
-      ],
-    },
-  ]
+    const results = [
+      {
+        commandNo: 5,
+        name: 'SP 12',
+        paramName: 'Pompa Offdelay',
+        paramFormula: '',
+        binding: 3,
+        defaultValue: 60,
+        minValue: 0,
+        maxValue: 600,
+        graphic: 2,
+        selectionList: null,
+      },
+      {
+        commandNo: 5,
+        name: 'SP 13',
+        paramName: 'Mikser',
+        paramFormula: '',
+        binding: 1,
+        defaultValue: 0,
+        minValue: 0,
+        maxValue: 1,
+        graphic: 0,
+        selectionList: [
+          {
+            name: 'Calisma',
+            value: 0,
+          },
+          {
+            name: 'Calis',
+            value: 1,
+          },
+        ],
+      },
+      {
+        commandNo: 15,
+        name: 'SP 17',
+        paramName: 'Hedef Toleransı',
+        paramFormula: '',
+        binding: 3,
+        defaultValue: 0.8,
+        minValue: 0,
+        maxValue: 1,
+        graphic: 0,
+        selectionList: null,
+      },
+      {
+        commandNo: 41,
+        name: 'SP 2',
+        paramName: 'Dozaj Egrisi',
+        paramFormula: '',
+        binding: 1,
+        defaultValue: 0,
+        minValue: -4,
+        maxValue: 4,
+        graphic: 0,
+        selectionList: [
+          { name: '-4', value: -4 },
+          { name: '-3', value: -3 },
+          { name: '-2', value: -2 },
+          { name: '-1', value: -1 },
+          { name: 'Lineer', value: 0 },
+          { name: '1', value: 1 },
+          { name: '2', value: 2 },
+          { name: '3', value: 3 },
+          { name: '4', value: 4 },
+        ],
+      },
+    ]
 
-  expect(output).toStrictEqual(results)
+    for (const variant of withVariants(base)) {
+      const output = parseCommandParams(variant)
+      expect(output).toStrictEqual(results)
+    }
+  })
+  it('new format', () => {
+    const base = [
+      '3 0 "SP 3" "Süre" "" 3 300 0 7200 2 12 34',
+      '1 0 "SP 4" "Dara" "" 3 0 0 1 0 ["Dara Alma","0","Dara Al","1"] 12 44',
+      '2 0 "SP 5" "Artan Azalan" "IK1 Ust Seviye*IK1 Oran/100" 3 1 0 1 0 ["Azalan","0","Artan","1"] -1 -1',
+      '3 0 "SP 6" "Alarm Toleransı" "" 3 0 0 100 0 -1 -1',
+    ].join('\n')
+
+    const results = [
+      {
+        commandNo: 3,
+        name: 'SP 3',
+        paramName: 'Süre',
+        paramFormula: '',
+        binding: 3,
+        defaultValue: 300,
+        minValue: 0,
+        maxValue: 7200,
+        graphic: 2,
+        selectionList: null,
+        machineConstantIdMin: 12,
+        machineConstantIdMax: 34,
+      },
+      {
+        commandNo: 1,
+        name: 'SP 4',
+        paramName: 'Dara',
+        paramFormula: '',
+        binding: 3,
+        defaultValue: 0,
+        minValue: 0,
+        maxValue: 1,
+        graphic: 0,
+        selectionList: [
+          {
+            name: 'Dara Alma',
+            value: 0,
+          },
+          {
+            name: 'Dara Al',
+            value: 1,
+          },
+        ],
+        machineConstantIdMin: 12,
+        machineConstantIdMax: 44,
+      },
+      {
+        commandNo: 2,
+        name: 'SP 5',
+        paramName: 'Artan Azalan',
+        paramFormula: 'IK1 Ust Seviye*IK1 Oran/100',
+        binding: 3,
+        defaultValue: 1,
+        minValue: 0,
+        maxValue: 1,
+        graphic: 0,
+        selectionList: [
+          { name: 'Azalan', value: 0 },
+          { name: 'Artan', value: 1 },
+        ],
+        machineConstantIdMin: -1,
+        machineConstantIdMax: -1,
+      },
+      {
+        commandNo: 3,
+        name: 'SP 6',
+        paramName: 'Alarm Toleransı',
+        paramFormula: '',
+        binding: 3,
+        defaultValue: 0,
+        minValue: 0,
+        maxValue: 100,
+        graphic: 0,
+        selectionList: null,
+        machineConstantIdMin: -1,
+        machineConstantIdMax: -1,
+      },
+    ]
+    for (const variant of withVariants(base)) {
+      const output = parseCommandParams(variant)
+      expect(output).toStrictEqual(results)
+    }
+  })
 })
 
 it('parseCommandsEditing', () => {
@@ -366,12 +528,10 @@ it('parseCommandsEditing', () => {
 })
 
 it('parseCommandsGeneral', () => {
-  const contents = `
-5 1 "RK Boya Suyu Al" "f22.3" "RK_Boya_Suyu_Al.gif" 0 1 -1 1 0
-68 1 "AK Yikama Suyu Al" "f2" "AK_Boya_Suyu_Al.gif" 0 1 -1 2 0
-`
-  const output = parseCommandsGeneral(contents)
-
+  const base = [
+    '5 1 "RK Boya Suyu Al" "f22.3" "RK_Boya_Suyu_Al.gif" 0 1 -1 1 0',
+    '68 1 "AK Yikama Suyu Al" "f2" "AK_Boya_Suyu_Al.gif" 0 1 -1 2 0',
+  ].join('\n')
   const results = [
     {
       commandNo: 5,
@@ -399,16 +559,18 @@ it('parseCommandsGeneral', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseCommandsGeneral(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseConsumption', () => {
-  const contents = `
-IP_CONVERTOR=5
-STEAM_COEFFICENT=1.00
-BUHAR_SAYACI_REEL=-1
-`
-  const output = parseConsumption(contents)
+  const base = [
+    'IP_CONVERTOR=5',
+    'STEAM_COEFFICENT=1.00',
+    'BUHAR_SAYACI_REEL=-1',
+  ].join('\n')
 
   const results = {
     IP_CONVERTOR: 5,
@@ -416,14 +578,16 @@ BUHAR_SAYACI_REEL=-1
     BUHAR_SAYACI_REEL: -1,
   }
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseConsumption(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseControllerModel', () => {
-  const contents = `
-T7700-Giada-TBBPLC
-`
-  const output = parseControllerModel(contents)
+  const base = [
+    'T7700-Giada-TBBPLC',
+  ].join('\n')
 
   const results = {
     productModel: 'T7700',
@@ -431,29 +595,33 @@ T7700-Giada-TBBPLC
     plcModel: 'TBBPLC',
   }
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseControllerModel(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseCounter', () => {
-  const contents = `
-2 1 3 "Elektrik Sayaci" 1 2
-3 1 4 "Su Sayaci" 1 3
-`
-  const output = parseCounter(contents)
+  const base = [
+    '2 1 3 "Elektrik Sayaci" 1 2',
+    '3 1 4 "Su Sayaci" 1 3',
+  ].join('\n')
 
   const results = [
     { id: 2, card: 1, channel: 3, name: 'Elektrik Sayaci', enabled: 1, plcIO: 2, icon: '' },
     { id: 3, card: 1, channel: 4, name: 'Su Sayaci', enabled: 1, plcIO: 3, icon: '' },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseCounter(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseCycleControl', () => {
-  const contents = `
-CYCLE_GOZ_SAYISI=6
-`
-  const output = parseCycleControl(contents)
+  const base = [
+    'CYCLE_GOZ_SAYISI=6',
+  ].join('\n')
 
   const results = [
     {
@@ -461,46 +629,51 @@ CYCLE_GOZ_SAYISI=6
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseCycleControl(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseDigitalInput', () => {
-  const contents = `
-0 1 1 "Basinc Tahliye Acik" 1 0
-2 1 3 "Pompa 2 Calisiyor " 1 2
-`
-  const output = parseDigitalInput(contents)
+  const base = [
+    '0 1 1 "Basinc Tahliye Acik" 1 0',
+    '2 1 3 "Pompa 2 Calisiyor " 1 2',
+  ].join('\n')
 
   const results = [
     { id: 0, card: 1, channel: 1, name: 'Basinc Tahliye Acik', enabled: 1, plcIO: 0, icon: '' },
     { id: 2, card: 1, channel: 3, name: 'Pompa 2 Calisiyor ', enabled: 1, plcIO: 2, icon: '' },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseDigitalInput(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseDigitalOutput', () => {
-  const contents = `
-0 1 1 "Ana Pompa" 0 1 0
-2 1 3 "Alarm Lambasi" 0 1 2
-`
-  const output = parseDigitalOutput(contents)
+  const base = [
+    '0 1 1 "Ana Pompa" 0 1 0',
+    '2 1 3 "Alarm Lambasi" 0 1 2',
+  ].join('\n')
 
   const results = [
     { id: 0, card: 1, channel: 1, name: 'Ana Pompa', defaultValue: 0, enabled: 1, plcIO: 0, icon: '' },
     { id: 2, card: 1, channel: 3, name: 'Alarm Lambasi', defaultValue: 0, enabled: 1, plcIO: 2, icon: '' },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseDigitalOutput(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseFinishReason', () => {
-  const contents = `
-1 "Renk OK" 3 "Bitir"
-2 "LaboratuvarÇalışıyor" 3 "Bitir"
-`
-
-  const output = parseFinishReason(contents)
+  const base = [
+    '1 "Renk OK" 3 "Bitir"',
+    '2 "LaboratuvarÇalışıyor" 3 "Bitir"',
+  ].join('\n')
 
   const results = [
     {
@@ -515,32 +688,34 @@ it('parseFinishReason', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseFinishReason(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseFunctionAlarms', () => {
-  const contents = `
-f6 S=100 E=101 O=
-f7 S= E=100,101,102,103,104,105,106 O=
-`
-
-  const output = parseFunctionAlarms(contents)
+  const base = [
+    'f6 S=100 E=101 O=',
+    'f7 S= E=100,101,102,103,104,105,106 O=',
+  ].join('\n')
 
   const results = [
     { f: 'f6', s: '100', e: '101', o: '', m: '' },
     { f: 'f7', s: '', e: '100,101,102,103,104,105,106', o: '', m: '' },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseFunctionAlarms(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseGlobalCommandFormulas', () => {
-  const contents = `
-GLOBAL_FORMULA_1=Kilo*(AK Yikama Oran-Kumastaki Su),1,1,0,Yikama Suyu
-GLOBAL_FORMULA_2=Kilo*(AK Boya Oran-Kumastaki Su)-(Soda+Tuz+Boya+Sülfat+Alkali),2,1,0,Boya Suyu
-`
-
-  const output = parseGlobalCommandFormulas(contents)
+  const base = [
+    'GLOBAL_FORMULA_1=Kilo*(AK Yikama Oran-Kumastaki Su),1,1,0,Yikama Suyu',
+    'GLOBAL_FORMULA_2=Kilo*(AK Boya Oran-Kumastaki Su)-(Soda+Tuz+Boya+Sülfat+Alkali),2,1,0,Boya Suyu',
+  ].join('\n')
 
   const results = [
     {
@@ -559,18 +734,19 @@ GLOBAL_FORMULA_2=Kilo*(AK Boya Oran-Kumastaki Su)-(Soda+Tuz+Boya+Sülfat+Alkali)
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseGlobalCommandFormulas(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseIOChangedEvent', () => {
-  const contents = `
-1 13 10 60 60
-2 0 10 60
-5 2 60
-6 1 10 10 60 5
-`
-
-  const output = parseIOChangedEvent(contents)
+  const base = [
+    '1 13 10 60 60',
+    '2 0 10 60',
+    '5 2 60',
+    '6 1 10 10 60 5',
+  ].join('\n')
 
   const results = [
     {
@@ -603,16 +779,18 @@ it('parseIOChangedEvent', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseIOChangedEvent(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseLockGeneral', () => {
-  const contents = `
-0 "Otomatik" 0 0 0 0 "0" "0" 0 "" 1
-182 "4.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "4.Kule Kumas Koptu" 1
-55 "BK+1+ORANSAL+DOLDUR+MKS+ON" 0 0 0 0 "" "" 0 "" 1
-`
-  const output = parseLockGeneral(contents)
+  const base = [
+    '0 "Otomatik" 0 0 0 0 "0" "0" 0 "" 1',
+    '182 "4.Kule Kumas Koptu" 0 0 0 130 "Kumas Koptu sn" "0" 1 "4.Kule Kumas Koptu" 1',
+    '55 "BK+1+ORANSAL+DOLDUR+MKS+ON" 0 0 0 0 "" "" 0 "" 1',
+  ].join('\n')
 
   const results = [
     {
@@ -656,17 +834,17 @@ it('parseLockGeneral', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseLockGeneral(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseLocksInput', () => {
-  const contents = `
-6 8 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0
-7 0 0 "Dozaj Sicaklik" "0" 0.0 3 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 0
-`
-
-  const lines = contents.split('\n').filter(line => line.length > 0)
-  const output = lines.map(parseSeperatedLocks)
+  const base = [
+    '6 8 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 0',
+    '7 0 0 "Dozaj Sicaklik" "0" 0.0 3 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 -1 0.0 0.0 0.0 0 0',
+  ].join('\n')
 
   const results = [
     {
@@ -691,17 +869,19 @@ it('parseLocksInput', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const lines = variant.split('\n').filter(line => line.length > 0)
+    const output = lines.map(parseSeperatedLocks)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseLocksOutput', () => {
-  const contents = `
-172 2 9 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 -1
-6 3 62 0 30 1 63 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0
-7 2 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 -1
-`
-
-  const output = parseLocksOutput(contents)
+  const base = [
+    '172 2 9 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 -1',
+    '6 3 62 0 30 1 63 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0',
+    '7 2 -1 0 -1 0 -1 0 -1 0 -1 0 -1 -1 -1 -1 -1',
+  ].join('\n')
 
   const results = {
     analogLocks: [
@@ -740,16 +920,17 @@ it('parseLocksOutput', () => {
     ],
   }
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseLocksOutput(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseMachineParameters', () => {
-  const contents = `
-SABIT_0=AK Ust,9000,9100,1,0,9500,0,1,0
-SABIT_80=Kumas gir minumum,7500.000,9101,1,7500.000,8000.000,0,81,0
-`
-
-  const output = parseMachineParameters(contents)
+  const base = [
+    'SABIT_0=AK Ust,9000,9100,1,0,9500,0,1,0',
+    'SABIT_80=Kumas gir minumum,7500.000,9101,1,7500.000,8000.000,0,81,0',
+  ].join('\n')
 
   const results = [
     {
@@ -776,16 +957,17 @@ SABIT_80=Kumas gir minumum,7500.000,9101,1,7500.000,8000.000,0,81,0
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseMachineParameters(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseMachineParameterValues', () => {
-  const contents = `
-SABIT_0=15000.000000
-SABIT_1=1500.000000
-`
-
-  const output = parseMachineParameterValues(contents)
+  const base = [
+    'SABIT_0=15000.000000',
+    'SABIT_1=1500.000000',
+  ].join('\n')
 
   const results = [
     {
@@ -798,16 +980,17 @@ SABIT_1=1500.000000
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseMachineParameterValues(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseManualReason', () => {
-  const contents = `
-1 "Kumaş kontrol"
-9 "Su yok"
-`
-
-  const output = parseManualReason(contents)
+  const base = [
+    '1 "Kumaş kontrol"',
+    '9 "Su yok"',
+  ].join('\n')
 
   const results = [
     {
@@ -820,16 +1003,17 @@ it('parseManualReason', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseManualReason(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseStopReason', () => {
-  const contents = `
-1 "Mal Yok(sipariş yok)"
-7 "Filtre Temizliği"
-`
-
-  const output = parseStopReason(contents)
+  const base = [
+    '1 "Mal Yok(sipariş yok)"',
+    '7 "Filtre Temizliği"',
+  ].join('\n')
 
   const results = [
     {
@@ -842,18 +1026,19 @@ it('parseStopReason', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseStopReason(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseSystem', () => {
-  const contents = `
-FROM_PROJECT_LANGUAGE=0
-DIL=TR
-PROJECT_NAME=CANLAR MAKINA 2016
-PROJECT_DATE=0.0
-`
-
-  const output = parseSystem(contents)
+  const base = [
+    'FROM_PROJECT_LANGUAGE=0',
+    'DIL=TR',
+    'PROJECT_NAME=CANLAR MAKINA 2016',
+    'PROJECT_DATE=0.0',
+  ].join('\n')
 
   const results = {
     FROM_PROJECT_LANGUAGE: '0',
@@ -862,16 +1047,17 @@ PROJECT_DATE=0.0
     PROJECT_DATE: '0.0',
   }
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseSystem(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseUser', () => {
-  const contents = `
-100 1984 GECICI KULLANICI 0x1313ffff 0x00000003 2
-9999 9999 DENEME KULLANICISI 0x13110000 0x00000003 1
-`
-
-  const output = parseUser(contents)
+  const base = [
+    '100 1984 GECICI KULLANICI 0x1313ffff 0x00000003 2',
+    '9999 9999 DENEME KULLANICISI 0x13110000 0x00000003 1',
+  ].join('\n')
 
   const results = [
     {
@@ -894,14 +1080,17 @@ it('parseUser', () => {
     },
   ]
 
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseUser(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseMachineTranslations', () => {
-  const content = `
-  Sistem~System~~سیستم~Sistem~Sistema~Sistema~نظام~系统~系统~Σύστημα~Sistem~Tizim~Sistema~Hệ thống~Sistem~시스템~System~Système
-  acil~urgent~~
-  `
+  const base = [
+  `Sistem~System~~سیستم~Sistem~Sistema~Sistema~نظام~系统~系统~Σύστημα~Sistem~Tizim~Sistema~Hệ thống~Sistem~시스템~System~Système`,
+  `acil~urgent~~`,
+  ].join('\n')
 
   const results = [
     [
@@ -930,7 +1119,8 @@ it('parseMachineTranslations', () => {
     ],
   ]
 
-  const output = parseMachineTranslations(content)
-
-  expect(output).toStrictEqual(results)
+  for (const variant of withVariants(base)) {
+    const output = parseMachineTranslations(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
