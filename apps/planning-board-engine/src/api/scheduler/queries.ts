@@ -308,19 +308,20 @@ WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
   AND b.MACHINEID = :machineId
 GROUP BY b.PROGNO, b.NAME, b.DURATION, ad.duration, t.RUNNING_PROGRAMID;
   `, { planKey, machineId })
+
   const times = await knex.raw(/* sql */`
   SELECT TOP 1
     d.TheoricalDuration AS theoreticalDuration,
-    d.STARTDATETIME AS startTime,
-    DATEADD(MINUTE, ?, d.PLANNEDSTARTTIME) AS plannedStartTime,
-    DATEADD(MINUTE, ?, IIF(b.ENDTIME IS NULL, b.CANCELTIME, b.ENDTIME)) AS endTime
+    DATEADD(MINUTE, :timezoneOffset, d.STARTDATETIME) AS startTime,
+    DATEADD(MINUTE, :timezoneOffset, d.PLANNEDSTARTTIME) AS plannedStartTime,
+    DATEADD(MINUTE, :timezoneOffset, IIF(b.ENDTIME IS NULL, b.CANCELTIME, b.ENDTIME)) AS endTime
   FROM
     DYBFBATCHPLAN AS d
   LEFT JOIN
     BADATA AS b ON d.PLANKEY = b.PLANKEY
   WHERE
-    d.PLANKEY = ?;
-  `, [config.teleskopTimezoneOffset, config.teleskopTimezoneOffset, planKey])
+    d.PLANKEY = :planKey;
+  `, { timezoneOffset: config.teleskopTimezoneOffset, planKey })
 
   return { erpParameters, programs, times: times[0] }
 }

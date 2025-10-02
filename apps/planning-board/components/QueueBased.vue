@@ -829,7 +829,7 @@ onMounted(async () => {
               const machineId = assignmentRecord.originalData.resourceId
               const fabricWeight = eventRecord.originalData.fabricWeight
               const theoreticalDuration = eventRecord.originalData.theoreticalDuration
-              const realDuration = eventRecord.originalData.eventType === 'finished' ? differenceInSeconds(eventRecord.originalData.startTime, eventRecord.originalData.endTime) : 0
+              const realDuration = eventRecord.originalData.eventType === 'finished' ? differenceInSeconds(eventRecord.originalData.endTime, eventRecord.originalData.startTime) : 0
               const deviation = eventRecord.originalData.eventType === 'finished' ? eventRecord.originalData.deviation : 0
               const eventType = eventRecord.originalData.eventType
               let program: string = eventRecord.originalData.programList
