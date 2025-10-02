@@ -11,7 +11,7 @@ defineEmits([
 ])
 const { t } = useI18n()
 const editor = useEditorStore()
-const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 const newIds = ref(props.remains)
 
 function getWarningStates(index: number) {
@@ -44,7 +44,11 @@ function clearAll() {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
+  <q-dialog
+    ref="dialogRef"
+    persistent
+    @hide="onDialogHide"
+  >
     <q-card style="width: 500px; max-height: 800px; display: flex; flex-direction: column;">
       <q-card-section>
         <div class="text-h6 flex">
@@ -56,7 +60,7 @@ function clearAll() {
             flat
             round
             dense
-            @click="onDialogHide()"
+            @click="onDialogCancel()"
           >
             <q-tooltip>
               {{ t('close') }}
@@ -166,7 +170,7 @@ function clearAll() {
           :label="t('cancel')"
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
           flat
-          @click="onDialogHide()"
+          @click="onDialogCancel()"
         />
         <q-btn
           :label="t('apply')"
