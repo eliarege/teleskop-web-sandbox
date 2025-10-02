@@ -118,8 +118,7 @@ export class TonelloProgramClient implements ProgramClient {
   }
 
   async ping(): Promise<boolean> {
-    await this.connect()
-    this.disconnect()
+    await this.api.fetchDatetime()
     return true
   }
 
