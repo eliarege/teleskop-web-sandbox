@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { isDef } from '@teleskop/utils'
+import { ADDITIONAL_PROCESS_CODE_ILAVE } from '~/shared/constants'
 import type { ProcessType, Program, ProgramHeader } from '~/shared/types'
 
 const props = defineProps<{
@@ -28,7 +29,13 @@ const programName = ref<string>(
 )
 
 const processType = ref<number>(props.program.typeId || props.allProcessTypes[0].value)
+const additionalProcessType = ref<number>(props.program.additionalTypeId || props.allProcessTypes.filter(type => type.value !== ADDITIONAL_PROCESS_CODE_ILAVE)[0]?.value || 0)
 const operator = ref<boolean>(isRename ? props.program.tbbProgramChangedEvent === 1 : false)
+
+const isIlaveSelected = computed(() => processType.value === ADDITIONAL_PROCESS_CODE_ILAVE)
+const additionalProcessTypeOptions = computed(() =>
+  props.allProcessTypes.filter(type => type.value !== ADDITIONAL_PROCESS_CODE_ILAVE),
+)
 
 const newProgram = computed<Program | ProgramHeader>(() => ({
   ...props.program,
@@ -36,6 +43,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
   programNo: programNo.value ?? 0,
   name: programName.value,
   typeId: processType.value,
+  additionalTypeId: isIlaveSelected.value ? additionalProcessType.value : 0,
   tbbProgramChangedEvent: operator.value ? 1 : 0,
   steps: props.type === 'newProgram' ? [] : props.program.steps,
 }))
@@ -80,13 +88,27 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
                 v-if="!isTonello"
                 v-model="processType"
                 :options="allProcessTypes"
-                :label="t('program.programState')"
+                :label="t('program.processType')"
                 options-dense
-                :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.programState') })]"
+                :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.processType') })]"
                 :disable="isRename"
                 map-options
                 emit-value
                 dense
+              />
+
+              <QSelect
+                v-if="!isTonello && isIlaveSelected"
+                v-model="additionalProcessType"
+                :options="additionalProcessTypeOptions"
+                :label="t('program.additionalProcessType')"
+                options-dense
+                :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.additionalProcessType') })]"
+                :disable="isRename"
+                map-options
+                emit-value
+                dense
+                class="mt-3"
               />
 
               <QCheckbox

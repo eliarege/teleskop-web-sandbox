@@ -5,16 +5,25 @@ import { RollupMigrationSource } from '#migrations'
 
 const MIGRATION_TABLE = 'TFMigrations'
 
-async function migrate(): Promise<boolean> {
+async function migrate(isDown?: boolean): Promise<boolean> {
   console.log('Starting migration...')
   try {
     await setCompatibilityLevel(130)
-    await db.migrate.latest({
-      tableName: MIGRATION_TABLE,
-      migrationSource: new RollupMigrationSource(),
-    })
-    console.log('Migration completed successfully.')
-    return true
+    if (isDown) {
+      await db.migrate.down({
+        tableName: MIGRATION_TABLE,
+        migrationSource: new RollupMigrationSource(),
+      })
+      console.log('Rollback completed successfully.')
+      return true
+    } else {
+      await db.migrate.latest({
+        tableName: MIGRATION_TABLE,
+        migrationSource: new RollupMigrationSource(),
+      })
+      console.log('Migration completed successfully.')
+      return true
+    }
   } catch (error) {
     console.error('Migration failed:', error)
     return false
@@ -37,7 +46,7 @@ async function setCompatibilityLevel(level: number) {
     `)
   }
 }
-
-migrate().then((success) => {
+const isDown = process.argv.includes('down')
+migrate(isDown).then((success) => {
   process.exit(success ? 0 : 1)
 })

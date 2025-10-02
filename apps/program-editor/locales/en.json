@@ -100,11 +100,12 @@
     "name": "Program Name",
     "programNo": "Program No",
     "errorCount": "Error Count",
-    "programState": "Proccess Type",
     "stepCount": "Step Count",
     "type": "Type",
+    "additionalType": "Additional Type",
     "updated": "Updated",
-    "processType": "Proccess Type",
+    "processType": "Process Type",
+    "additionalProcessType": "Additional Process Type",
     "opMud": "Op. ch.",
     "theoreticalDuration": "Theoretical Duration",
     "parameter": "Parameter",
@@ -200,11 +201,13 @@
   "no": "No",
   "cancel": "Cancel",
   "create": "Create ",
+  "edit": "Edit",
   "delete": "Delete",
   "submit": "Submit",
   "change": "Change",
   "apply": "Apply",
   "ok": "OK",
+  "close": "Close",
   "save": "Save",
   "message": {
     "delete_program": "Delete program from Teleskop",
@@ -233,24 +236,38 @@
     "title": "Rename Program",
     "message": "Enter the new name of the program."
   },
-  "changeProcessTypeDialog": {
-    "_": "Edit Process Types",
-    "processTypeNo": "Process Type No",
-    "processTypeName": "Process Type Name",
+  "processTypeDialog": {
+    "title": "Program Types",
+    "processTypeNo": "Program Type No",
+    "processTypeName": "Program Type Name",
     "note": "Note",
-    "deletionWarning": "Program type {type} will be deleted! Are you sure you want to continue?",
     "createProcessType": {
-      "_": "Create Program Type",
-      "success": "Process type {no} - {name} is created successfully.",
-      "fail": "An error occured while creating process type."
+      "title": "Create Program Type",
+      "newProcessType": "New Program Type",
+      "processTypeNo": "Process Type No",
+      "processTypeNoRequired": "Process Type No is required",
+      "processTypeNoUnique": "Process Type No must be unique",
+      "processTypeName": "Process Type Name",
+      "processTypeNameRequired": "Process Type Name is required",
+      "note": "Note",
+      "processTypeNoReadOnlyHint": "Process Type No cannot be changed.",
+      "success": "Program type {no} - {name} is created successfully.",
+      "fail": "An error occured while creating program type."
+    },
+    "editProcessType": {
+      "title": "Edit Program Type",
+      "success": "Program type {no} - {name} is updated successfully.",
+      "fail": "An error occured while updating program type."
     },
     "deleteProcessType": {
-      "success": "Process type {no} - {name} is deleted successfully.",
-      "fail": "An error occured while deleting process type."
+      "title": "Delete Program Type",
+      "deletionWarning": "Program type \"{type}\" will be deleted! Are you sure you want to continue?",
+      "success": "Program type {no} - {name} is deleted successfully.",
+      "fail": "An error occured while deleting program type."
     },
     "updateProcessTypes": {
-      "success": "Process types updated successfully.",
-      "fail": "An error occured while updating process types."
+      "success": "Program types updated successfully.",
+      "fail": "An error occured while updating program types."
     }
   },
   "contextMenu": {
@@ -293,7 +310,7 @@
       "clearAll": "Clear All",
       "clearAllTooltip": "Clear all program numbers"
     },
-    "changeProcessTypeDialog": {
+    "processTypeDialog": {
       "title": "Change Process Type",
       "warning": "Please select the process type you want to change"
     },

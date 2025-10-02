@@ -1,9 +1,14 @@
 import type { Knex } from 'knex'
+import { config } from '../config'
 
 export async function up(knex: Knex) {
-  const alarmsHasShowColumn = await knex.schema.hasColumn('BFMASTERCOMMANDSALARMS', 'SHOWONSCREEN')
+  if (!config.enableLegacyMigrations) {
+    return
+  }
 
-  if (!alarmsHasShowColumn) {
+  const hasColumn = await knex.schema.hasColumn('BFMASTERCOMMANDSALARMS', 'SHOWONSCREEN')
+
+  if (!hasColumn) {
     await knex.schema.alterTable('BFMASTERCOMMANDSALARMS', (table) => {
       table.boolean('SHOWONSCREEN').defaultTo(true)
     })
@@ -19,7 +24,13 @@ export async function up(knex: Knex) {
 }
 
 export async function down(knex: Knex) {
-  await knex.schema.alterTable('BFMASTERCOMMANDSALARMS', (table) => {
-    table.dropColumn('SHOWONSCREEN')
-  })
+  if (!config.enableLegacyMigrations) {
+    return
+  }
+  const hasColumn = await knex.schema.hasColumn('BFMASTERCOMMANDSALARMS', 'SHOWONSCREEN')
+  if (hasColumn) {
+    await knex.schema.alterTable('BFMASTERCOMMANDSALARMS', (table) => {
+      table.dropColumn('SHOWONSCREEN')
+    })
+  }
 }

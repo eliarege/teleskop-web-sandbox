@@ -103,6 +103,8 @@ export const commandTypeMaps = [
   { index: 12, ref: [], value: CommandType.ManualMeasurement, title: 'manualMeasurementCommands' },
 ]
 
+export const ADDITIONAL_PROCESS_CODE_ILAVE = 7
+
 // @unocss-include
 export const CommandIconMapping: Record<string, { name: string, label?: string, color?: string }> = {
   'AK_Bosalt.gif': { name: 'i-ri-exchange-2-line', label: 'AK_Bosalt', color: '#00CC00' },

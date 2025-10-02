@@ -4,9 +4,8 @@ import CMDeleteProgramDialog from '~/components/CMDeleteProgramDialog.vue'
 import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPasteDialog.vue'
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
-import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
+import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, ProcessType, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -25,6 +24,7 @@ import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
 import TBMachineConstantsDialog from '~/components/TBMachineConstantsDialog.vue'
 import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDialog.vue'
 import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
+import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -388,10 +388,11 @@ registerCommand(() => {
         component: CMChangeProcessTypeDialog,
         componentProps: {
           programType: selectedRows[0].type,
+          additionalType: selectedRows[0].additionalType,
           options: editor.allProcessTypes,
         },
-      }).onOk(async (newType: number) => {
-        await contextMenuStore.changeProcessType(machineId, selectedRows, newType)
+      }).onOk(async (result: { type: number, additionalType: number | null }) => {
+        await contextMenuStore.changeProcessType(machineId, selectedRows, result)
         await editor.fetchAllPrograms()
         return true
       }).onCancel(() => {
@@ -515,7 +516,7 @@ registerCommand(() => {
 registerCommand(() => {
   return {
     name: 'editProgramTypes',
-    async execute(ctx: any) {
+    execute(ctx: any) {
       ctx.$q.dialog({
         component: TBEditProgramTypes,
       })

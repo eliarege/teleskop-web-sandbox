@@ -15,7 +15,7 @@ export interface ContextMenuStore {
   getProgram: (programNo: number, machineId: number) => Promise<ProgramWithErrors>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
-  changeProcessType: (machineId: number, programs: ProgramTableRow[], newType: number) => Promise<void>
+  changeProcessType: (machineId: number, programs: ProgramTableRow[], typeData: { type: number, additionalType: number | null }) => Promise<void>
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
@@ -218,7 +218,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return !!check
   }
 
-  async function changeProcessType(machineId: number, programs: ProgramTableRow[], newType: number) {
+  async function changeProcessType(machineId: number, programs: ProgramTableRow[], typeData: { type: number, additionalType: number | null }) {
     const editor = useEditorStore()
     editor.isLoading = true
 
@@ -226,7 +226,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       try {
         await updateProgramHeader(machineId, program.programNo, {
           programNo: program.programNo,
-          typeId: newType,
+          typeId: typeData.type,
+          additionalTypeId: typeData.additionalType,
         })
       } catch (e) {
         notification(false, t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))

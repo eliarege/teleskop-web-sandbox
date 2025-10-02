@@ -6,6 +6,7 @@ import { parseProgramString } from '../parse'
 import { stringifyProgram } from '../stringify'
 import type { ErrorMachineParameterDetail } from '../error'
 import { PError } from '../error'
+import logger from '../logger'
 import type { MachineCommand, Program, ProgramStepCommand } from '~/shared/types'
 import { ParameterType, ProgramStatus } from '~/shared/constants'
 
@@ -51,10 +52,18 @@ export class T7ProgramClient implements ProgramClient {
       throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
 
-    const rawProgram = parseProgramString(programString, {
-      id: this.id,
-      commands: this.commandArrayToMap(commands),
-    })
+    let rawProgram: Program
+    try {
+      rawProgram = parseProgramString(programString, {
+        id: this.id,
+        commands: this.commandArrayToMap(commands),
+      })
+    } catch (error) {
+      logger.error(`Parse error for program ${programNo} on machine ${this.id}:`, error)
+      logger.error('Program content:', programString)
+      throw error
+    }
+
     const program: Program = {
       ...rawProgram,
       machineId: this.id,
@@ -121,7 +130,8 @@ export class TonelloProgramClient implements ProgramClient {
       steps: [],
       machineId: this.id,
       programNo: id,
-      typeId: -1,
+      typeId: 0,
+      additionalTypeId: 0,
       duration: 0,
       typeName: '',
       prgState: ProgramStatus.EXISTS_ON_BOTH,

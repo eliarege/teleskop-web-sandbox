@@ -111,40 +111,42 @@ export async function fetchProcessTypes(): Promise<ProcessType[]> {
       description: 'NOTE',
     })
     .from('BFPROCESSTYPES')
+    .where('BOYAPRGMI', 1)
 }
 
-export async function createProcessType(type: ProcessType): Promise<any> {
-  try {
-    return await db('BFPROCESSTYPES')
-      .insert({
-        PROCESSCODE: type.value,
-        PROCESSNAME: type.label,
-        NOTE: type.description,
-        BOYAPRGMI: 1,
-      })
-  } catch (e: any) {
-    if (e.number === MSSQL_ERROR.DUPLICATE_PK)
-      throw createError({ statusCode: 400, data: { messageCode: 'PROCESS_TYPE_EXISTS', key: type.value } })
-    throw e
-  }
+export async function createProcessType(body: { type: ProcessType }): Promise<boolean> {
+  const type = body.type
+  const result = await db('BFPROCESSTYPES')
+    .insert({
+      PROCESSCODE: type.value,
+      PROCESSNAME: type.label.trim(),
+      NOTE: type.description?.trim() || '',
+      BOYAPRGMI: 1,
+    })
+
+  return result.length > 0
 }
-export async function updateProcessTypes(types: ProcessType[]): Promise<any> {
-  types.forEach(async (type) => {
-    await db('BFPROCESSTYPES')
-      .update({
-        PROCESSCODE: type.value,
-        PROCESSNAME: type.label,
-        NOTE: type.description,
-      })
-      .where('PROCESSCODE', type.value)
-  })
-  return true
+
+export async function updateProcessType(body: { type: ProcessType }): Promise<boolean> {
+  const type = body.type
+  const result = await db('BFPROCESSTYPES')
+    .update({
+      PROCESSNAME: type.label.trim(),
+      NOTE: type.description?.trim() || '',
+    })
+    .where('PROCESSCODE', type.value)
+
+  return result > 0
 }
-export async function deleteProcessType(processCode: number): Promise<any> {
-  return await db
+
+export async function deleteProcessType(body: { processCode?: number, PROCESSCODE?: number }): Promise<boolean> {
+  const processCode = body.processCode || body.PROCESSCODE
+  const result = await db
     .del()
     .where('PROCESSCODE', processCode)
     .from('BFPROCESSTYPES')
+
+  return result > 0
 }
 
 export async function getMachineBatchParameters(machineId: number): Promise<CommandParameter[]> {

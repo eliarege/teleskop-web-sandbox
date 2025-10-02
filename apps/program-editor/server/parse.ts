@@ -2,19 +2,6 @@ import { set as setTimestamp } from 'date-fns'
 import type { Machine, MachineCommand, ParameterItem, Program, ioListItem } from '../shared/types'
 import { BEGIN_HEADER, BEGIN_PROGRAM, FIRST_COMMAND_NO, LAST_COMMAND_NO } from './constants'
 
-const NAME_RE = /^ISIM=(.+)?$/
-/** Capture groups: 1) isSet?, 2) date, 3) month, 4) year (20XX) */
-const CREATED_AT_DATE_RE = /^OLUSTURMATARIH=((\d\d)\.(\d\d)\.(\d\d))?$/
-/** Capture groups: 1) isSet?, 2) hours, 3) minutes, 4) seconds */
-const CREATED_AT_TIME_RE = /^OLUSTURMASAAT=(([0-1]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?)?$/
-/** Capture groups: 1) isSet?, 2) date, 3) month, 4) year (20XX) */
-const UPDATED_AT_DATE_RE = /^DEGISIKLIKTARIH=((\d\d)\.(\d\d)\.(\d\d))?$/
-/** Capture groups: 1) isSet?, 2) hours, 3) minutes, 4) seconds */
-const UPDATED_AT_TIME_RE = /^DEGISIKLIKSAAT=(([0-1]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?)?$/
-const AUTHOR_RE = /^YAZAR=(.+)?$/
-const COMMENT_RE = /^YORUMLAR=(.+)?$/
-const PROCESS_CODE_RE = /^PROCESSCODE=(\d+)?$/
-
 /**
  * Capture groups:
  *
@@ -29,10 +16,6 @@ const PROCESS_CODE_RE = /^PROCESSCODE=(\d+)?$/
  */
 
 const COMMAND_PATTERN = /^(\d{1,3}) F=1 P=(\d+)(?:-(\d+))?( FI=(\d+) FN=(\d+))? IO=((?:\[.+?\])*) SP=(-?\d+(?:\.\d+)?(?: -?\d+(?:\.\d+)?)*)?$/
-
-function skipLine(it: IterableIterator<string>): void {
-  it.next()
-}
 
 /** Reads next line, throws if EOF or does not match pattern. */
 function readLineStrict(it: IterableIterator<string>, pattern: RegExp | string): RegExpMatchArray {
@@ -54,75 +37,145 @@ function readLineStrict(it: IterableIterator<string>, pattern: RegExp | string):
   }
 }
 
-function readProgramName(it: IterableIterator<string>) {
-  const match = readLineStrict(it, NAME_RE)
-  return match[1] || ''
-}
+/**
+ * Flexible header parser that can handle unknown parameters gracefully
+ * Reads header parameters until BEGIN_PROGRAM is encountered
+ */
+function parseHeaderFlexible(it: IterableIterator<string>, program: Program): string | null {
+  const knownParams = new Set([
+    'ISIM',
+    'OLUSTURMATARIH',
+    'OLUSTURMASAAT',
+    'DEGISIKLIKTARIH',
+    'DEGISIKLIKSAAT',
+    'YAZAR',
+    'YORUMLAR',
+    'PROCESSCODE',
+    'ADDITIONALPROCESSCODE',
+  ])
 
-function readCreatedAt(it: IterableIterator<string>): Date | null {
-  const dateMatch = readLineStrict(it, CREATED_AT_DATE_RE)
-  let createdAt: Date | null = null
-  if (dateMatch[1]) {
-    createdAt = setTimestamp(new Date(), {
-      date: Number.parseInt(dateMatch[2]),
-      month: Number.parseInt(dateMatch[3]) - 1,
-      year: 2000 + Number.parseInt(dateMatch[4]),
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-      milliseconds: 0,
-    })
-    const timeMatch = readLineStrict(it, CREATED_AT_TIME_RE)
-    if (timeMatch[1]) {
-      createdAt = setTimestamp(createdAt, {
-        hours: Number.parseInt(timeMatch[2]),
-        minutes: Number.parseInt(timeMatch[3]),
-        seconds: Number.parseInt(timeMatch[4] || '0'),
-      })
-    }
-  } else { // Skip CREATED_AT_TIME
-    skipLine(it)
-  }
-  return createdAt
-}
+  // Temporary storage for date/time parsing
+  let createdAtDate: Date | null = null
+  let updatedAtDate: Date | null = null
 
-function readUpdatedAt(it: IterableIterator<string>): Date | null {
-  const dateMatch = readLineStrict(it, UPDATED_AT_DATE_RE)
-  let updatedAt: Date | null = null
-  if (dateMatch[1]) {
-    updatedAt = setTimestamp(new Date(), {
-      date: Number.parseInt(dateMatch[2]),
-      month: Number.parseInt(dateMatch[3]) - 1,
-      year: 2000 + Number.parseInt(dateMatch[4]),
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-      milliseconds: 0,
-    })
-    const timeMatch = readLineStrict(it, UPDATED_AT_TIME_RE)
-    if (timeMatch[1]) {
-      updatedAt = setTimestamp(updatedAt, {
-        hours: Number.parseInt(timeMatch[2]),
-        minutes: Number.parseInt(timeMatch[3]),
-        seconds: Number.parseInt(timeMatch[4] || '0'),
-      })
+  while (true) {
+    const line = it.next()
+    if (line.done) {
+      throw new Error('Unexpected end of file while parsing header')
     }
-  } else { // Skip UPDATED_AT_TIME
-    skipLine(it)
+
+    // If we encounter BEGIN_PROGRAM, return it so main function can handle it
+    if (line.value === BEGIN_PROGRAM) {
+      return line.value
+    }
+
+    // Skip empty lines
+    if (!line.value.trim()) {
+      continue
+    }
+
+    // Parse parameter line: PARAMETER=VALUE
+    const match = line.value.match(/^([A-Z_]+)=(.*)$/)
+    if (match) {
+      const [, paramName, paramValue] = match
+
+      if (knownParams.has(paramName)) {
+        // Handle known parameters
+        switch (paramName) {
+          case 'ISIM': {
+            program.name = paramValue || ''
+            break
+          }
+
+          case 'OLUSTURMATARIH': {
+            const dateMatch = paramValue.match(/^((\d\d)\.(\d\d)\.(\d\d))?$/)
+            if (dateMatch && dateMatch[1]) {
+              createdAtDate = setTimestamp(new Date(), {
+                date: Number.parseInt(dateMatch[2]),
+                month: Number.parseInt(dateMatch[3]) - 1,
+                year: 2000 + Number.parseInt(dateMatch[4]),
+                hours: 0,
+                minutes: 0,
+                seconds: 0,
+                milliseconds: 0,
+              })
+            }
+            break
+          }
+
+          case 'OLUSTURMASAAT': {
+            const timeMatch = paramValue.match(/^(([0-1]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?)?$/)
+            if (timeMatch && timeMatch[1] && createdAtDate) {
+              program.createdAt = setTimestamp(createdAtDate, {
+                hours: Number.parseInt(timeMatch[2]),
+                minutes: Number.parseInt(timeMatch[3]),
+                seconds: Number.parseInt(timeMatch[4] || '0'),
+              })
+            } else if (createdAtDate) {
+              program.createdAt = createdAtDate
+            }
+            break
+          }
+
+          case 'DEGISIKLIKTARIH': {
+            const updatedDateMatch = paramValue.match(/^((\d\d)\.(\d\d)\.(\d\d))?$/)
+            if (updatedDateMatch && updatedDateMatch[1]) {
+              updatedAtDate = setTimestamp(new Date(), {
+                date: Number.parseInt(updatedDateMatch[2]),
+                month: Number.parseInt(updatedDateMatch[3]) - 1,
+                year: 2000 + Number.parseInt(updatedDateMatch[4]),
+                hours: 0,
+                minutes: 0,
+                seconds: 0,
+                milliseconds: 0,
+              })
+            }
+            break
+          }
+
+          case 'DEGISIKLIKSAAT': {
+            const updatedTimeMatch = paramValue.match(/^(([0-1]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?)?$/)
+            if (updatedTimeMatch && updatedTimeMatch[1] && updatedAtDate) {
+              program.updatedAtTBB = setTimestamp(updatedAtDate, {
+                hours: Number.parseInt(updatedTimeMatch[2]),
+                minutes: Number.parseInt(updatedTimeMatch[3]),
+                seconds: Number.parseInt(updatedTimeMatch[4] || '0'),
+              })
+            } else if (updatedAtDate) {
+              program.updatedAtTBB = updatedAtDate
+            }
+            break
+          }
+
+          case 'YAZAR': {
+            program.author = paramValue || null
+            break
+          }
+
+          case 'YORUMLAR': {
+            program.comment = paramValue || ''
+            break
+          }
+
+          case 'PROCESSCODE': {
+            program.typeId = paramValue ? Number.parseInt(paramValue) : 0
+            break
+          }
+
+          case 'ADDITIONALPROCESSCODE': {
+            program.additionalTypeId = paramValue ? Number.parseInt(paramValue) : 0
+            break
+          }
+        }
+      } else {
+        // Handle unknown parameters - just log a warning
+        console.warn(`Unknown header parameter found: ${paramName}=${paramValue}`)
+      }
+    } else {
+      // Line doesn't match PARAMETER=VALUE format
+      console.warn(`Invalid header line format: ${line.value}`)
+    }
   }
-  return updatedAt
-}
-function readAuthor(it: IterableIterator<string>): string | null {
-  const match = readLineStrict(it, AUTHOR_RE)
-  return match[1] || null
-}
-function readComment(it: IterableIterator<string>): string | null {
-  const match = readLineStrict(it, COMMENT_RE)
-  return match[1] || null
-}
-function readProcessCode(it: IterableIterator<string>): number {
-  const match = readLineStrict(it, PROCESS_CODE_RE)
-  return match[1] ? Number.parseInt(match[1]) : 0
 }
 
 export function parseProgramString(programString: string, machine: Pick<Machine, 'id' | 'commands'>): Program {
@@ -131,20 +184,20 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
   const reader = programString.split('\n')
 
   const it = reader[Symbol.iterator]()
-  // Order is important
-  readLineStrict(it, BEGIN_HEADER)
-  program.name = readProgramName(it)
-  program.createdAt = readCreatedAt(it)
-  program.updatedAtTBB = readUpdatedAt(it)
-  program.author = readAuthor(it)
-  program.comment = readComment(it)
-  program.typeId = readProcessCode(it)
 
-  readLineStrict(it, BEGIN_PROGRAM)
+  // Parse header flexibly
+  readLineStrict(it, BEGIN_HEADER)
+  const beginProgramLine = parseHeaderFlexible(it, program)
+
+  // Validate that we got the expected BEGIN_PROGRAM line
+  if (beginProgramLine !== BEGIN_PROGRAM) {
+    throw new Error(`Expected ${BEGIN_PROGRAM}, got: ${beginProgramLine}`)
+  }
   readLineStrict(it, FIRST_COMMAND_NO)
 
   let receivedLastCommand = false
   let lastStepIndex = -1
+  let currentStepArrayIndex = -1
 
   // Read rest of the lines via `for await`
   for (const line of it) {
@@ -154,18 +207,21 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
     }
 
     const match = line.match(COMMAND_PATTERN)
-    if (!match)
-      throw new Error(`Invalid command defined at program ${program.name}: '${line}'`)
+    if (!match) {
+      continue
+    }
 
     const commandNo = Number.parseInt(match[1])
     const command = machine.commands.get(commandNo)
-    if (!command)
-      throw new Error(`unknown command ${commandNo} at machine ${machine.id}`)
+    if (!command) {
+      continue
+    }
 
     const stepIndex = Number.parseInt(match[2])
 
     if (stepIndex !== lastStepIndex) {
       lastStepIndex = stepIndex
+      currentStepArrayIndex++
       program.steps.push({
         stepId: 0,
         mainCommand: {
@@ -177,12 +233,14 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
         parallelCommands: [],
       })
     } else {
-      program.steps[stepIndex].parallelCommands.push({
-        commandId: 0,
-        commandNo,
-        ioList: parseCommandIOList(match[7], command),
-        parameters: parseCommandParameters(program.programNo, match[8], command),
-      })
+      if (currentStepArrayIndex >= 0 && program.steps[currentStepArrayIndex]) {
+        program.steps[currentStepArrayIndex].parallelCommands.push({
+          commandId: 0,
+          commandNo,
+          ioList: parseCommandIOList(match[7], command),
+          parameters: parseCommandParameters(program.programNo, match[8], command),
+        })
+      }
     }
   }
 
@@ -251,6 +309,7 @@ function createEmptyProgram(): Program {
     author: null,
     comment: '',
     typeId: 0,
+    additionalTypeId: 0,
     typeName: '',
     machineId: 0,
     steps: [],

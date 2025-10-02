@@ -24,7 +24,8 @@ export interface ProgramTableRow {
   errorCount?: number
   duration: number
   stepCount: number
-  type: string
+  type: number
+  additionalType: number
   operator: boolean
   updatedAt: Date
   prgState: number
@@ -146,6 +147,7 @@ export interface ProgramHeader {
   author: string | null
   comment: string | null
   typeId: number
+  additionalTypeId: number
   createdAt: Date | null
   updatedAt: Date | null
   updatedAtTBB: Date | null
@@ -164,6 +166,7 @@ export interface ProgramHeaderUpdate {
   programNo: number
   name?: string
   typeId?: number
+  additionalTypeId?: number | null
   author?: string | null
   comment?: string | null
   isChanged?: boolean | null

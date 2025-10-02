@@ -211,7 +211,7 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
-  if (event.ctrlKey && !isActiveElementEditable()) {
+  if (event.ctrlKey) {
     event.preventDefault()
     await editor.onSubmit()
   }

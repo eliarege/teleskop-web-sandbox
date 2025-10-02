@@ -1,6 +1,10 @@
 import type { Knex } from 'knex'
+import { config } from '../config'
 
 export async function up(knex: Knex) {
+  if (!config.enableLegacyMigrations) {
+    return
+  }
   const dispenserSettingsColumns = await knex('DYTFDISPENSERSETTINGS').columnInfo()
   const dySettingsColumns = await knex('DYTFDYSETTINGS').columnInfo()
   const recipeStepColumns = await knex('DYBFBATCHORDERRECIPESTEPS').columnInfo()
@@ -51,6 +55,9 @@ export async function up(knex: Knex) {
 }
 
 export async function down(knex: Knex) {
+  if (!config.enableLegacyMigrations) {
+    return
+  }
   const dispenserSettingsColumns = await knex('DYTFDISPENSERSETTINGS').columnInfo()
   const dySettingsColumns = await knex('DYTFDYSETTINGS').columnInfo()
   const recipeStepColumns = await knex('DYBFBATCHORDERRECIPESTEPS').columnInfo()
