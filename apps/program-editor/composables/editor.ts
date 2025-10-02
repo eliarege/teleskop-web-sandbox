@@ -695,7 +695,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   async function addProcessType(newType: ProcessType): Promise<void> {
-    await kc.fetch<void>('/api/process', { method: 'POST', body: { type: newType } })
+    await kc.fetch<void>('/api/process', { method: 'POST', body: { processType: newType } })
     await fetchAllProcessTypes()
   }
 
@@ -704,8 +704,8 @@ export const useEditorStore = defineStore('editor', () => {
     await fetchAllProcessTypes()
   }
 
-  async function updateProcessType(updatedType: ProcessType): Promise<void> {
-    await kc.fetch<void>('/api/process', { method: 'PUT', body: { type: updatedType } })
+  async function updateProcessType(updatedType: ProcessType, originalProcessCode?: number): Promise<void> {
+    await kc.fetch<void>('/api/process', { method: 'PUT', body: { processType: updatedType, originalProcessCode } })
     await fetchAllProcessTypes()
   }
 

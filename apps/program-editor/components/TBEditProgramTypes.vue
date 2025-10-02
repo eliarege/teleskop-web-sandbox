@@ -22,10 +22,10 @@ const columns: QTableColumn[] = [
 function handleCreateProcessType() {
   $q.dialog({
     component: TBCreateProcessTypeDialog,
-  }).onOk(async (type: ProcessType) => {
-    await editor.addProcessType(type)
+  }).onOk(async (result: { processType: ProcessType, originalProcessCode?: number }) => {
+    await editor.addProcessType(result.processType)
     // Eklenen kaydı seç
-    selectedRow.value = [type]
+    selectedRow.value = [result.processType]
   })
 }
 
@@ -36,10 +36,10 @@ function handleEditProcessType() {
   $q.dialog({
     component: TBCreateProcessTypeDialog,
     componentProps: { processType: row },
-  }).onOk(async (type: ProcessType) => {
-    await editor.updateProcessType(type)
+  }).onOk(async (result: { processType: ProcessType, originalProcessCode?: number }) => {
+    await editor.updateProcessType(result.processType, result.originalProcessCode)
     // Güncellenmiş kaydı seç
-    selectedRow.value = [type]
+    selectedRow.value = [result.processType]
   })
 }
 

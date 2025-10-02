@@ -114,27 +114,32 @@ export async function fetchProcessTypes(): Promise<ProcessType[]> {
     .where('BOYAPRGMI', 1)
 }
 
-export async function createProcessType(body: { type: ProcessType }): Promise<boolean> {
-  const type = body.type
+export async function createProcessType(body: { processType: ProcessType }): Promise<boolean> {
+  const processType = body.processType
+
   const result = await db('BFPROCESSTYPES')
     .insert({
-      PROCESSCODE: type.value,
-      PROCESSNAME: type.label.trim(),
-      NOTE: type.description?.trim() || '',
+      PROCESSCODE: processType.value,
+      PROCESSNAME: processType.label.trim(),
+      NOTE: processType.description?.trim() || '',
       BOYAPRGMI: 1,
     })
 
   return result.length > 0
 }
 
-export async function updateProcessType(body: { type: ProcessType }): Promise<boolean> {
-  const type = body.type
+export async function updateProcessType(body: { processType: ProcessType, originalProcessCode?: number }): Promise<boolean> {
+  const processType = body.processType
+  const originalProcessCode = body.originalProcessCode
+  const whereClause = originalProcessCode || processType.value
+
   const result = await db('BFPROCESSTYPES')
     .update({
-      PROCESSNAME: type.label.trim(),
-      NOTE: type.description?.trim() || '',
+      PROCESSCODE: processType.value,
+      PROCESSNAME: processType.label.trim(),
+      NOTE: processType.description?.trim() || '',
     })
-    .where('PROCESSCODE', type.value)
+    .where('PROCESSCODE', whereClause)
 
   return result > 0
 }
