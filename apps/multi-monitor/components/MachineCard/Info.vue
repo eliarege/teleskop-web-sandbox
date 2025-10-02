@@ -217,7 +217,7 @@ const infoTextColor = computed(() => {
         spaced
       />
       <!-- machine.autoManualStatus === 1 ise makine manuelde -->
-      <div class="flex-center w-full">
+      <div v-if="machine.connectionStatus !== 2" class="flex-center w-full">
         <div v-if="machine.autoManualStatus" class="flex-center gap-3">
           <span>{{ machine.manualReason }}</span>
           <span>
@@ -244,9 +244,9 @@ const infoTextColor = computed(() => {
             </q-tooltip>
           </span>
         </div>
-        <span v-show="machine.connectionStatus === 2" class="text-red-700">
-          {{ t("teleskop.no-connection") }}
-        </span>
+      </div>
+      <div v-else class="text-red-700 flex-center w-full">
+        {{ t("teleskop.no-connection") }}
       </div>
     </div>
     <div
