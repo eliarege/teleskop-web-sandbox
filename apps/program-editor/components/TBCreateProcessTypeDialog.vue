@@ -33,8 +33,14 @@ const dialogTitle = computed(() =>
 // Validation rules
 const valueRules = computed(() => [
   (val: number) => (val >= 0) || t('processTypeDialog.createProcessType.processTypeNoRequired'),
-  (val: number) => isEditMode.value || !editor.allProcessTypes.find(type => type.value === val)
-  || t('processTypeDialog.createProcessType.processTypeNoUnique'),
+  (val: number) => {
+    // Edit modunda orijinal değer ile aynıysa geçerli
+    if (isEditMode.value && val === props.processType?.value)
+      return true
+    // Yeni değer başka bir process type tarafından kullanılıyor mu kontrol et
+    return !editor.allProcessTypes.find(type => type.value === val)
+      || t('processTypeDialog.createProcessType.processTypeNoUnique')
+  },
 ])
 
 const labelRules = [
@@ -44,7 +50,10 @@ const labelRules = [
 async function handleApply() {
   const isValid = await formRef.value?.validate()
   if (isValid) {
-    onDialogOK(processType.value)
+    onDialogOK({
+      processType: processType.value,
+      originalProcessCode: isEditMode.value ? props.processType?.value : undefined,
+    })
   }
 }
 </script>
@@ -79,8 +88,6 @@ async function handleApply() {
                 type="number"
                 min="0"
                 :rules="valueRules"
-                :readonly="isEditMode"
-                :hint="isEditMode ? t('processTypeDialog.createProcessType.processTypeNoReadOnlyHint') : ''"
                 dense
                 outlined
               />
