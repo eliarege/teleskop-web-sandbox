@@ -106,7 +106,7 @@ function cellColor(data: {
   if (deviation > 0)
     return '#C02A15'
   if (deviation < 0)
-    return '#94AEB7'
+    return '#A7D1DF'
   return 'white'
 }
 
@@ -146,7 +146,7 @@ const summary = computed(() => {
 const items = [
   {
     label: t('legend.early'),
-    color: '#94AEB7',
+    color: '#A7D1DF',
   },
   {
     label: t('legend.ontime'),
