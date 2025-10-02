@@ -162,6 +162,42 @@ export interface MachineParameter {
   isDeleted: number
 }
 
+export interface BatchParameter {
+  batchParameterId: number
+  paramString: string
+  format: string
+  min: number
+  max: number
+  default: number
+  unitCode: number
+  unitText: string
+  parameterId: number
+  dmArea: number | null
+  selectionList: string[]
+  selectionValues: string[]
+  selectionListDefault: string | null
+  visibility?: boolean
+  /** Minimum değer olarak kullanılacak makine sabiti id'si */
+  machineConstantIdMin?: number
+  /** Maximum değer olarak kullanılacak makine sabiti id'si */
+  machineConstantIdMax?: number
+}
+
+export interface CommandParameter {
+  commandNo: number
+  name: string
+  paramName: string
+  paramFormula: string
+  binding: number
+  defaultValue: number
+  minValue: number
+  maxValue: number
+  graphic: number
+  selectionList: { name: string, value: number }[] | null
+  machineConstantIdMin?: number
+  machineConstantIdMax?: number
+}
+
 export interface CommandIO {
   id: number
   commandNo: number
