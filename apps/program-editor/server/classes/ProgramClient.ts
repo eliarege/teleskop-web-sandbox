@@ -6,6 +6,7 @@ import { parseProgramString } from '../parse'
 import { stringifyProgram } from '../stringify'
 import type { ErrorMachineParameterDetail } from '../error'
 import { PError } from '../error'
+import logger from '../logger'
 import type { MachineCommand, Program, ProgramStepCommand } from '~/shared/types'
 import { ParameterType, ProgramStatus } from '~/shared/constants'
 
@@ -58,8 +59,8 @@ export class T7ProgramClient implements ProgramClient {
         commands: this.commandArrayToMap(commands),
       })
     } catch (error) {
-      console.error(`Parse error for program ${programNo} on machine ${this.id}:`, error)
-      console.error('Program content:', programString)
+      logger.error(`Parse error for program ${programNo} on machine ${this.id}:`, error)
+      logger.error('Program content:', programString)
       throw error
     }
 

@@ -1,3 +1,4 @@
+import logger from '~/server/logger'
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError, isPError } from '~/server/error'
 import { ProgramStatus } from '~/shared/constants'
@@ -49,7 +50,7 @@ export default defineAuthEventHandler(async (event) => {
       })
     }
 
-    console.error('Download error details:', error)
+    logger.error('Download error details:', error)
     throw createError({
       statusCode: 500,
       message: 'INTERNAL_SERVER_ERROR',
