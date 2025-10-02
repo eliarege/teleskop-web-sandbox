@@ -6,7 +6,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="color-picker flex flex-col gap-3 bg-gray-100 rounded m-1 px-2 py-1">
+  <div class="color-picker flex flex-col gap-3 bg-gray-100 rounded m-1 py-1">
     <span class="settings-title inline-block mb-3">
       {{ t('settings.color-picker') }}
     </span>

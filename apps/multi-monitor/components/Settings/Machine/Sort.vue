@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SortableEvent } from 'sortablejs'
 import { Sortable } from 'sortablejs-vue3'
+import { MachineSort } from '~/shared/constants'
 import type { MachineDataRaw } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 
@@ -11,24 +12,57 @@ const emit = defineEmits(['updateScheduler'])
 
 const { t } = useI18n()
 const store = useDataStore()
-const sortableMachines = ref([] as { name: string, index: number }[])
 
-watch(() => props.machines, (machines) => {
-  // Add missing machine id's
+const sortableMachines = ref([] as { name: string, index: number, id: number }[])
+
+const compareById = (a: { id: number }, b: { id: number }) => a.id - b.id
+
+const sortedMachines = computed(() => {
+  const machines = props.machines
+  const activeMachines = machines.filter(machine => machine.runningBatchStatus !== 0)
+  const inactiveMachines = machines.filter(machine => machine.runningBatchStatus === 0)
+  const customSort = store.customSort
+  const order = new Map(customSort.map((id, i) => [id, i]))
+
+  switch (store.sortMachines) {
+    case MachineSort.ById:
+      return machines.sort(compareById)
+    case MachineSort.ByActive:
+      return [
+        ...activeMachines.sort(compareById),
+        ...inactiveMachines.sort(compareById),
+      ]
+    case MachineSort.ByIdle:
+      return [
+        ...inactiveMachines.sort(compareById),
+        ...activeMachines.sort(compareById),
+      ]
+    case MachineSort.ByGroup:
+      return machines.sort((a, b) =>
+        a.groupName < b.groupName ? -1 : (a.groupName > b.groupName ? 1 : 0),
+      )
+    case MachineSort.ByCustom:
+      return machines.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+    default:
+      return machines
+  }
+})
+
+watch(() => sortedMachines.value, (machines) => {
+  // Add missing machine id's to customSort
   for (const machine of machines) {
     if (!store.customSort.includes(machine.id)) {
       store.customSort.push(machine.id)
     }
   }
 
-  // Create the array for Sortable component
+  // Create the array for Sortable component based on sorted machines
   sortableMachines.value = machines.map((machine) => {
     return {
       index: store.customSort.indexOf(machine.id),
       name: machine.name,
+      id: machine.id,
     }
-  }).sort((a, b) => {
-    return a.index - b.index
   })
 }, { immediate: true })
 
@@ -39,6 +73,11 @@ function isDef<T>(value: T): value is Exclude<T, null | undefined> {
 function moveItem<T>(array: T[], from: number, to: number) {
   const item = array.splice(from, 1)[0]
   array.splice(to, 0, item)
+}
+
+function onStart() {
+  // Set sort to custom when user starts dragging
+  store.sortMachines = MachineSort.ByCustom
 }
 
 function onEnd(ev: SortableEvent) {
@@ -58,11 +97,12 @@ function onEnd(ev: SortableEvent) {
       tag="div"
       :list="sortableMachines"
       item-key="id"
-      class="w-full"
+      class="w-full grid grid-cols-4 gap-2"
       :options="{
         animation: 150,
         ghostClass: 'ghost',
       }"
+      @start="onStart"
       @end="(ev) => onEnd(ev)"
     >
       <template #item="{ element }">

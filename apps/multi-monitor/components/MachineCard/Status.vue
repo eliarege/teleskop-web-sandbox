@@ -91,7 +91,7 @@ const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.ur
             <QTooltip>{{ t('details._') }}</QTooltip>
           </NuxtLink>
           <NuxtLink
-            v-if="archiveUrl !== null"
+            v-if="archiveUrl !== null && machine.runningBatchStatus !== 0"
             external
             target="_blank"
             :to="`${archiveUrl}/${machine.runningBatchKey}`"

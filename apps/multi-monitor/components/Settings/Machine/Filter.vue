@@ -12,7 +12,7 @@ const machineGroups = computed(() => new Set(store.machines.map(g => g.groupName
     <span class="settings-sub-title inline-block mb-2px">
       {{ t('settings.filter.title') }}
     </span>
-    <div class="grid grid-cols-2 w-min min-w-100">
+    <div class="grid grid-cols-4 gap-x-50 w-min min-w-100 whitespace-nowrap">
       <div
         v-for="item in store.machines"
         :key="item.id"
@@ -31,7 +31,7 @@ const machineGroups = computed(() => new Set(store.machines.map(g => g.groupName
     <span class="settings-sub-title inline-block mb-2px">
       {{ t('settings.filter.group-title') }}
     </span>
-    <div class="grid grid-cols-2 w-min min-w-100">
+    <div class="grid grid-cols-4 gap-x-50 pb-10 w-min min-w-100 whitespace-nowrap">
       <div v-for="(item, idx) in machineGroups" :key="idx">
         <q-checkbox
           dense

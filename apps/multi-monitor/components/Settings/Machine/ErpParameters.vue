@@ -21,7 +21,7 @@ const availableMachines = computed<MachineDataRaw[]>(() => store.machines.filter
 </script>
 
 <template>
-  <div class="w-auto px-30">
+  <div class="w-auto">
     <span class="settings-sub-title inline-block mb-2px">
       {{ t('settings.machine-parameter') }}
     </span>

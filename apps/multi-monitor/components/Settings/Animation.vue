@@ -9,7 +9,7 @@ const store = useDataStore()
 </script>
 
 <template>
-  <div class="p-4 flex justify-between gap-3 bg-gray-100 rounded m-1 px-2 py-1">
+  <div class="p-4 flex justify-between gap-3 bg-gray-100 rounded m-1 py-1">
     <span class="settings-title inline-block mb-3">
       {{ t('settings.animation') }}
     </span>
