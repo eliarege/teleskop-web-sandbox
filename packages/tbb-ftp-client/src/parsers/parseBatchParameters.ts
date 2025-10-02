@@ -1,3 +1,5 @@
+import type { BatchParameter } from '../types'
+
 const unitMap = [
   '---',
   'Kg',
@@ -47,10 +49,11 @@ const unitMap = [
  * ```
  * SABIT_0=Kilo, 1, 0, 2000, -9999, 1, 1,9600, []"
  * SABIT_11=Wss Yoğun Yıkama, 0, 0, 1, 0, 0, 0,9611,["Hayır","0",1,"Evet","1",0]
+ * SABIT_12=Ornek, 0, 0, 30000, -9999, 1, 1,["t","1",1,"s","2",0,"e","3",0],1,8,12
  * ```
  */
-export function parseBatchParameters(content: string) {
-  const reasons = []
+export function parseBatchParameters(content: string): BatchParameter[] {
+  const parameters: BatchParameter[] = []
 
   const lines = content
     .split('\n')
@@ -64,6 +67,7 @@ export function parseBatchParameters(content: string) {
 
     const keyValue = parts[0]
     const listString = parts[1] ?? ''
+    const afterList = parts[2] ?? ''
 
     const keyValueParts = keyValue.split('=')
     if (keyValueParts.length < 2)
@@ -89,7 +93,7 @@ export function parseBatchParameters(content: string) {
       }
     }
 
-    const reason = {
+    const parameter: BatchParameter = {
       batchParameterId: id,
       paramString: entries[0],
       format: entries[1],
@@ -105,8 +109,21 @@ export function parseBatchParameters(content: string) {
       selectionListDefault,
     }
 
-    reasons.push(reason)
+    const afterListEntries = afterList.split(',').map(e => e.trim())
+    if (afterListEntries.length > 1) {
+      if (afterListEntries[1]) {
+        parameter.visibility = afterListEntries[1] === '1'
+      }
+      if (afterListEntries[2]) {
+        parameter.machineConstantIdMin = Number.parseInt(afterListEntries[2]) || -1
+      }
+      if (afterListEntries[3]) {
+        parameter.machineConstantIdMax = Number.parseInt(afterListEntries[3]) || -1
+      }
+    }
+
+    parameters.push(parameter)
   }
 
-  return reasons
+  return parameters
 }
