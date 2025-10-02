@@ -30,7 +30,7 @@ function setDefaultSettings() {
   <div class="max-w-full min-w-full w-full h-full bg-white">
     <div class="rounded">
       <div class="flex border-b-1">
-        <span class="settings-title text-center">
+        <span class="settings-title text-center ml-3">
           {{ t('settings._') }}
         </span>
         <q-space />
@@ -46,18 +46,18 @@ function setDefaultSettings() {
       </div>
 
       <div class="px-45 w-full h-full overflow-auto max-h-[calc(100vh-134px)]">
-        <div class="h-full w-auto flex flex-col w-full">
+        <div class="h-full w-auto flex flex-col w-full ">
           <!-- Makine Ayarları -->
-          <SettingsMachine />
+          <SettingsMachine class="px-11" />
           <q-separator class="my-10" />
           <!-- Görsel Ayarlar -->
-          <SettingsVisual />
+          <SettingsVisual class="px-11" />
           <q-separator class="my-10" />
           <!-- Renk seçici -->
-          <SettingsColorPicker />
+          <SettingsColorPicker class="px-11" />
           <q-separator class="my-10" />
           <!-- Animasyon -->
-          <SettingsAnimation />
+          <SettingsAnimation class="px-11" />
         </div>
       </div>
     </div>
