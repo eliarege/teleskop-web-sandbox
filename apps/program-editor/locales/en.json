@@ -285,7 +285,13 @@
       "title": "Change Program No",
       "warning": "Programs with given program numbers exists. Please provide a new program number for programs below.",
       "overwrite": "Overwrite",
-      "copyWillOverwriteProgram": "This program will overwrite on machine"
+      "clear": "Clear",
+      "willOverwrite": "This program will overwrite on machine",
+      "hasDuplicate": "This program number is duplicated",
+      "setAllToOriginal": "Use Original Numbers",
+      "setAllToOriginalTooltip": "Set all programs to their original program numbers",
+      "clearAll": "Clear All",
+      "clearAllTooltip": "Clear all program numbers"
     },
     "changeProcessTypeDialog": {
       "title": "Change Process Type",
@@ -403,8 +409,8 @@
   "machineContextMenu": {
     "uploadAllPrograms": "Upload All Programs To Machine",
     "downloadAllPrograms": "Download All Programs From Machine",
-    "copy": "Copy All Programs",
-    "paste": "Paste",
+    "copy": "Copy Programs",
+    "paste": "Paste Programs",
     "findChange": "Find - Change",
     "compareAllPrograms": "Compare All Programs"
   },

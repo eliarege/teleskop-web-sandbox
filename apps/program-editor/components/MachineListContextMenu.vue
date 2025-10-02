@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
+import type { ProgramTableRow } from '~/shared/types'
 
 const props = defineProps<{
   machineId: number
@@ -41,8 +42,8 @@ const items = computed(() => [[
     label: t('machineContextMenu.copy'),
     disabled: false,
     onClick: async () => {
-      const programs = await fetch(`/api/machine/${props.machineId}/program`)
-      contextMenuStore.copy(programs, props.machineId)
+      const programs = await fetch<ProgramTableRow[]>(`/api/machine/${props.machineId}/program`)
+      contextMenuStore.copy(props.machineId, programs)
     },
   },
   {
