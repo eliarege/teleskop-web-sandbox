@@ -13,6 +13,7 @@ interface commandTypeMap {
 const kc = useKeycloak()
 const { t } = useI18n()
 const selectedMachineId = ref()
+const originalCommandTypes = ref<CommandType[]>([])
 
 const commandTypeMaps = reactive<commandTypeMap[]>([
   { ref: [], value: 100, title: t('chemicalRequestCommands') },
@@ -52,6 +53,7 @@ const { data: commandTypes, refresh } = useAuthFetch<CommandType[]>('/api/comman
   },
   onResponse: ({ response }) => {
     const data = response._data
+    originalCommandTypes.value = klona(data)
 
     for (const cmd of commandTypeMaps) {
       cmd.ref = []
@@ -63,6 +65,12 @@ const { data: commandTypes, refresh } = useAuthFetch<CommandType[]>('/api/comman
         mapping?.ref.push(commandType)
     })
   },
+})
+
+const hasChanges = computed(() => {
+  if (!originalCommandTypes.value.length && !commandTypes.value.length)
+    return false
+  return JSON.stringify(originalCommandTypes.value) !== JSON.stringify(commandTypes.value)
 })
 
 watch(selectedMachineId, (_newMachineId, _oldMachineId) => {
@@ -98,8 +106,15 @@ async function handleSubmit() {
     method: 'PUT',
     body: { machineId: selectedMachineId.value, commandTypes: commandTypes.value },
   })
+  originalCommandTypes.value = klona(commandTypes.value)
 }
-
+async function requestCount() {
+  await kc.fetch('/api/commands/calculate-request-count', {
+    method: 'POST',
+    body: { machineId: selectedMachineId.value },
+  })
+  await refresh()
+}
 const copy = ref()
 
 const contextMenuOptions = computed(() => [
@@ -157,6 +172,7 @@ const contextMenuOptions = computed(() => [
               :key="machine.machineId"
               v-ripple
               clickable
+              :class="{ 'bg-primary text-white': selectedMachineId === machine.machineId }"
               @click="selectedMachineId = machine.machineId"
             >
               <q-item-section>
@@ -221,12 +237,24 @@ const contextMenuOptions = computed(() => [
         </q-card-section>
       </q-card-section>
       <q-card-actions align="right" class="flex gap-2 ">
-        <q-btn no-caps :label="t('cancel')" />
+        <q-btn
+          no-caps
+          :label="t('cancel')"
+          :disabled="!hasChanges"
+        />
         <q-btn
           :label="t('submit')"
           no-caps
           color="primary"
+          :disabled="!hasChanges"
           @click="handleSubmit"
+        />
+        <q-btn
+          :label="t('calculateReqCount')"
+          no-caps
+          color="primary"
+          :disabled="!selectedMachineId"
+          @click="requestCount"
         />
       </q-card-actions>
     </q-card>

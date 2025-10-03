@@ -48,6 +48,7 @@
   "duplicateMaterialError": "Bu materyal bu makineye zaten atanmış.",
   "connectionNotReady": "Bağlantı henüz hazır değil. Lütfen sayfayı yenileyip tekrar deneyin.",
   "ipRequired": "Versiyon bilgisi almak için IP adresi gerekli.",
+  "calculateReqCount": "Program İstek Sayısı Hesapla",
   "addMachine": "Makine Ekle",
   "editMachine": "Makine Düzenle",
   "deleteMachines": "Makineleri Sil",

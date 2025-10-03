@@ -220,9 +220,10 @@ function selectAll() {
       <template #body="bodyProps">
         <q-tr
           :props="bodyProps"
+          class="machine-row"
           :class="isRowSelected(bodyProps.row) ? '!bg-blue-100' : ''"
           @click="onRowClick(bodyProps.row, false)"
-          @contextmenu="onRowClick(bodyProps.row, true)"
+          @contextmenu.prevent="onRowClick(bodyProps.row, true)"
         >
           <q-td>
             <q-checkbox
