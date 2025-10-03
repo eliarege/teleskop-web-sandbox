@@ -59,3 +59,9 @@ export async function getIONames(machineId: number, trx: Knex) {
 
   return ioNames
 }
+
+export function omitUndefined(object: Record<string, any>) {
+  return Object.fromEntries(
+    Object.entries(object).filter(([_, v]) => v !== undefined),
+  )
+}

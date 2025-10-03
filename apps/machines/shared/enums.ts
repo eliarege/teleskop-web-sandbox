@@ -10,6 +10,7 @@ export enum ErrorMessageKey {
   FtpError = 'error.ftp',
 
   // Veritabanı hataları
+  DatabaseUnsupportedVersion = 'error.db.unsupported_version',
   DatabaseQueryError = 'error.db.query',
   DatabaseDeadlock = 'error.db.deadlock',
   DatabaseDuplicateKey = 'error.db.duplicate_key',

@@ -1,9 +1,15 @@
 import type { Knex } from 'knex'
 import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { insertBatch } from '@teleskop/utils'
-import { DatabaseQueryError } from '../error'
+import { DatabaseQueryError, MSSQL_ERROR_CODE, UnsupportedDatabaseVersionError, inferInvalidColumnError } from '../error'
+import { fetchDatabaseVersion } from './version'
 import { calcIONumber, getIONames, omitUndefined } from './index'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
+
+/**
+ * Makine sabitlerine bağlı MIN/MAX değerlerinin tutulduğu sütunların eklendiği veri tabanı versiyonu
+ */
+const machineConstantForMinMaxLimitDbVersion = '3.4.25.0'
 
 async function replaceRecords(trx: Knex.Transaction, tableName: string, data: any[], whereObject?: Record<string, any>): Promise<boolean> {
   const delQuery = trx(tableName).del()
@@ -435,7 +441,7 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
   const data = commands.map((c) => {
     const globalCommandFormula = formulas.findIndex(f => f.commandNo === c.commandNo)
 
-    return {
+    return omitUndefined({
       MACHINEID: machineId,
       COMMANDNO: c.commandNo,
       PARAMSTRING: c.paramName,
@@ -459,10 +465,28 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
       TBBFORMUL: !!c.paramFormula,
       USEFORMULA: c.binding === 5,
       PARAMETERINDEX: Number.parseInt(c.name.split(' ')[1]) - 1,
-    }
+      // Yeni eklenen sütunlar (4.23.5 ve sonrası)
+      MACHINECONSTANTFORLOWLIMIT: c.machineConstantIdMin,
+      MACHINECONSTANTFORHIGHLIMIT: c.machineConstantIdMax,
+    })
   })
 
-  return await replaceRecords(trx, 'BFCOMMANDPARAMETERS', data, { MACHINEID: machineId })
+  try {
+    return await replaceRecords(trx, 'BFCOMMANDPARAMETERS', data, { MACHINEID: machineId })
+  } catch (error: unknown) {
+    if (error instanceof DatabaseQueryError) {
+      const invalidColumnErrors = error.getMssqlErrors()
+        .filter(e => e.number === MSSQL_ERROR_CODE.SQ_BADCOL)
+      const invalidColumns = invalidColumnErrors
+        .map(e => inferInvalidColumnError(e.message))
+
+      const newColumns = ['MACHINECONSTANTFORLOWLIMIT', 'MACHINECONSTANTFORHIGHLIMIT']
+      if (invalidColumns.some(col => col && newColumns.includes(col))) {
+        const version = await fetchDatabaseVersion(trx)
+        throw new UnsupportedDatabaseVersionError(machineConstantForMinMaxLimitDbVersion, version)
+      }
+    }
+  }
 }
 
 export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
@@ -788,7 +812,7 @@ export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient
   if (!params.length)
     return false
   const data = params.map((d) => {
-    return {
+    return omitUndefined({
       BATCHPARAMETERID: d.batchParameterId,
       MACHINEID: machineId,
       PARAMSTRING: d.paramString,
@@ -810,10 +834,30 @@ export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient
       TBBCHANGETIME: null,
       CHANGETIME: null,
       PARAMSTRINGEn: d.paramString,
-    }
+      // Yeni eklenen sütunlar (4.23.5 ve sonrası)
+      VISIBILITY: d.visibility,
+      MACHINECONSTANTFORLOWLIMIT: d.machineConstantIdMin,
+      MACHINECONSTANTFORHIGHLIMIT: d.machineConstantIdMax,
+    })
   })
 
-  return await replaceRecords(trx, 'BFMACHBATCHPARAMETERS', data, { MACHINEID: machineId })
+  try {
+    return await replaceRecords(trx, 'BFMACHBATCHPARAMETERS', data, { MACHINEID: machineId })
+  } catch (error: unknown) {
+    if (error instanceof DatabaseQueryError) {
+      const invalidColumnErrors = error.getMssqlErrors()
+        .filter(e => e.number === MSSQL_ERROR_CODE.SQ_BADCOL)
+      const invalidColumns = invalidColumnErrors
+        .map(e => inferInvalidColumnError(e.message))
+
+      const newColumns = ['VISIBILITY', 'MACHINECONSTANTFORLOWLIMIT', 'MACHINECONSTANTFORHIGHLIMIT']
+      if (invalidColumns.some(col => col && newColumns.includes(col))) {
+        const version = await fetchDatabaseVersion(trx)
+        throw new UnsupportedDatabaseVersionError(machineConstantForMinMaxLimitDbVersion, version)
+      }
+    }
+    throw error
+  }
 }
 
 export async function updateIcons(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {

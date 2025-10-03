@@ -13,6 +13,7 @@
     "ftp": "Makineden veri alınırken hata oluştu. Lütfen tekrar deneyin.",
 
     "db": {
+      "unsupported_version": "Veritabanı sürümü desteklenmiyor. Lütfen destek ekibiyle iletişime geçin. (Beklenen: {expectedVersion}, Mevcut: {actualVersion})",
       "query": "Sistemde veritabanı sorgusu sırasında hata oluştu. Lütfen tekrar deneyin.",
       "deadlock": "Veritabanı işlemi kilitlendi. Lütfen kısa süre sonra tekrar deneyin.",
       "duplicate_key": "Veri kaydı sırasında kural ihlali oldu. Lütfen girdiğiniz bilgileri kontrol edin."
