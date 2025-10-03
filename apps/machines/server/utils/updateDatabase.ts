@@ -2,7 +2,7 @@ import type { Knex } from 'knex'
 import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { insertBatch } from '@teleskop/utils'
 import { DatabaseQueryError } from '../error'
-import { calcIONumber, getIONames } from '.'
+import { calcIONumber, getIONames, omitUndefined } from './index'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
 
 async function replaceRecords(trx: Knex.Transaction, tableName: string, data: any[], whereObject?: Record<string, any>): Promise<boolean> {
@@ -15,7 +15,7 @@ async function replaceRecords(trx: Knex.Transaction, tableName: string, data: an
     await insertBatch(trx, tableName, data)
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -62,7 +62,7 @@ export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, t
 
     return await replaceRecords(trx, 'BFMACHAIN', analogInputs, { MACHINEID: machineId })
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -202,7 +202,7 @@ export async function updateMachineController(machineId: number, tbb: TbbFtpClie
     await updateQuery
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -324,7 +324,7 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
       })
     }
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -368,7 +368,7 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
       })
     }
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -409,7 +409,7 @@ export async function updateConsumption(machineId: number, tbb: TbbFtpClient, tr
     await query
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -489,7 +489,7 @@ export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpCl
     await trx('BFCOMMANDTIMEOUTREASONMAP').insert(commandMapEntries)
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -595,7 +595,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
 
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -681,7 +681,7 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
 
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -763,7 +763,7 @@ export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, t
 
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -779,7 +779,7 @@ export async function updateCycleControl(machineId: number, tbb: TbbFtpClient, t
       })
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -1176,7 +1176,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
 
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -1211,7 +1211,7 @@ export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx:
 
     return true
   } catch (error: any) {
-    throw new DatabaseQueryError(error.message)
+    throw new DatabaseQueryError(error.message, { cause: error })
   }
 }
 
@@ -1246,6 +1246,6 @@ export async function updateProjectTranslations(
 
     return true
   } catch (err: any) {
-    throw new DatabaseQueryError(err.message)
+    throw new DatabaseQueryError(err.message, { cause: err })
   }
 }
