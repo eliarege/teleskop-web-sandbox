@@ -16,10 +16,6 @@ const knex = Knex({
   },
 })
 
-knex.raw('select 1+1 as result')
-  .then(() => console.log('Connected to the SQL Server via knex'))
-  .catch((err: any) => console.error('Error connecting to SQL Server:', err))
-
 export {
   knex,
 }
