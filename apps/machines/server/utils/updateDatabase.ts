@@ -1,31 +1,25 @@
 import type { Knex } from 'knex'
 import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from '@teleskop/tbb-ftp-client'
-import { chunk } from 'lodash-es'
 import { insertBatch } from '@teleskop/utils'
 import { DatabaseQueryError } from '../error'
 import { calcIONumber, getIONames } from '.'
 import type { CommandAlarmReason, FunctionAlarm } from '~/types'
 
-async function replaceRecords(knex: Knex, tableName: string, data: any[], whereObject?: Record<string, any>): Promise<boolean> {
-  const chunks = chunk(data, 50)
-  const delQuery = knex(tableName).del()
+async function replaceRecords(trx: Knex.Transaction, tableName: string, data: any[], whereObject?: Record<string, any>): Promise<boolean> {
+  const delQuery = trx(tableName).del()
   if (whereObject)
     delQuery.where(whereObject)
 
-  const insertQuery = knex(tableName)
-
   try {
     await delQuery
-    for (const chunk of chunks) {
-      await insertQuery.insert(chunk)
-    }
+    await insertBatch(trx, tableName, data)
     return true
   } catch (error: any) {
     throw new DatabaseQueryError(error.message)
   }
 }
 
-async function insertIgnoringDuplicates(trx: Knex, tableName: string, data: any[], uniqueColumns: string[]) {
+async function insertIgnoringDuplicates(trx: Knex.Transaction, tableName: string, data: any[], uniqueColumns: string[]) {
   for (const item of data) {
     const exists = await trx(tableName)
       .select('*')
@@ -39,7 +33,7 @@ async function insertIgnoringDuplicates(trx: Knex, tableName: string, data: any[
   return true
 }
 
-export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   try {
     const inputs = await tbb.fetchAnalogInputs()
     if (!inputs.length)
@@ -72,7 +66,7 @@ export async function updateAnalogInputs(machineId: number, tbb: TbbFtpClient, t
   }
 }
 
-export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const outputs = await tbb.fetchAnalogOutputs()
   if (!outputs.length)
     return false
@@ -91,7 +85,7 @@ export async function updateAnalogOutputs(machineId: number, tbb: TbbFtpClient, 
   return await replaceRecords(trx, 'BFMACHAOUT', analogOutputs, { MACHINEID: machineId })
 }
 
-export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const inputs = await tbb.fetchDigitalInputs()
   if (!inputs.length)
     return false
@@ -109,7 +103,7 @@ export async function updateDigitalInputs(machineId: number, tbb: TbbFtpClient, 
   return await replaceRecords(trx, 'BFMACHDIN', digitalInputs, { MACHINEID: machineId })
 }
 
-export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const outputs = await tbb.fetchDigitalOutputs()
   if (!outputs.length)
     return false
@@ -128,7 +122,7 @@ export async function updateDigitalOutputs(machineId: number, tbb: TbbFtpClient,
   return await replaceRecords(trx, 'BFMACHDOUT', digitalOutputs, { MACHINEID: machineId })
 }
 
-export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const counters = await tbb.fetchCounters()
   if (!counters.length)
     return false
@@ -150,7 +144,7 @@ export async function updateCounters(machineId: number, tbb: TbbFtpClient, trx: 
   return await replaceRecords(trx, 'BFMACHCOUNTER', data, { MACHINEID: machineId })
 }
 
-export async function updateFinishReasons(tbb: TbbFtpClient, trx: Knex) {
+export async function updateFinishReasons(tbb: TbbFtpClient, trx: Knex.Transaction) {
   const finishReasons = await tbb.fetchFinishReasons()
   if (!finishReasons.length)
     return false
@@ -158,7 +152,7 @@ export async function updateFinishReasons(tbb: TbbFtpClient, trx: Knex) {
 }
 
 // used in project load only
-export async function updateManualReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateManualReasons(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const manualReasons = await tbb.fetchManualReasons()
   if (!manualReasons)
     return false
@@ -173,7 +167,7 @@ export async function updateManualReasons(machineId: number, tbb: TbbFtpClient, 
 }
 
 // used in download dye house definitions only
-export async function updateManualReasonsGeneral(tbb: TbbFtpClient, trx: Knex) {
+export async function updateManualReasonsGeneral(tbb: TbbFtpClient, trx: Knex.Transaction) {
   const manualReasons = await tbb.fetchManualReasons()
   if (!manualReasons)
     return false
@@ -188,14 +182,14 @@ export async function updateManualReasonsGeneral(tbb: TbbFtpClient, trx: Knex) {
   return await replaceRecords(trx, 'BFMANUALREASONSGENERAL', data)
 }
 
-export async function updateStopReasons(tbb: TbbFtpClient, trx: Knex) {
+export async function updateStopReasons(tbb: TbbFtpClient, trx: Knex.Transaction) {
   const stopReasons = await tbb.fetchStopReasons()
   if (!stopReasons.length)
     return false
   return await replaceRecords(trx, 'BFSTOPREASONS', stopReasons)
 }
 
-export async function updateMachineController(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateMachineController(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const { productModel, hardwareModel, plcModel } = await tbb.fetchControllerModel()
   if (!productModel && !hardwareModel && !plcModel)
     return false
@@ -212,7 +206,7 @@ export async function updateMachineController(machineId: number, tbb: TbbFtpClie
   }
 }
 
-export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commands = await tbb.fetchCommandGroups()
   if (!commands.length)
     return false
@@ -227,7 +221,7 @@ export async function updateCommandGroups(machineId: number, tbb: TbbFtpClient, 
   return await replaceRecords(trx, 'BFCOMMANDGROUP', data, { MACHINEID: machineId })
 }
 
-export async function updateIOChangedEvent(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateIOChangedEvent(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const inputs = await tbb.fetchIOChangedEvent()
   if (!inputs.length)
     return false
@@ -248,7 +242,7 @@ export async function updateIOChangedEvent(machineId: number, tbb: TbbFtpClient,
   return await replaceRecords(trx, 'BFIOCHANGEDEVENT', data, { MACHINEID: machineId })
 }
 
-export async function updateUsers(tbb: TbbFtpClient, trx: Knex) {
+export async function updateUsers(tbb: TbbFtpClient, trx: Knex.Transaction) {
   const users = await tbb.fetchUsers()
   if (!users.length)
     return false
@@ -266,7 +260,7 @@ export async function updateUsers(tbb: TbbFtpClient, trx: Knex) {
   return await replaceRecords(trx, 'BFUSERS', data)
 }
 
-export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commands = await tbb.fetchCommandsGeneral()
   if (!commands.length)
     return false
@@ -309,7 +303,7 @@ export async function updateCommandsGeneral(machineId: number, tbb: TbbFtpClient
   return await replaceRecords(trx, 'BFMASTERCOMMANDS', data, { MACHINEID: machineId })
 }
 
-export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commands = await tbb.fetchCommandGraphic()
   if (!commands.length)
     return false
@@ -334,7 +328,7 @@ export async function updateCommandGraphic(machineId: number, tbb: TbbFtpClient,
   }
 }
 
-export async function updateMachineParameters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateMachineParameters(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const parameters = await tbb.fetchMachineParameters()
   if (!parameters.length)
     return false
@@ -358,7 +352,7 @@ export async function updateMachineParameters(machineId: number, tbb: TbbFtpClie
   return await replaceRecords(trx, 'BFMACHPARAMETERS', machineParameters, { MACHINEID: machineId })
 }
 
-export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commands = await tbb.fetchCommandsEditing()
   if (!commands.length)
     return false
@@ -378,7 +372,7 @@ export async function updateCommandEditing(machineId: number, tbb: TbbFtpClient,
   }
 }
 
-export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commandFeedback = await tbb.fetchCommandFeedback()
   if (!commandFeedback.length)
     return false
@@ -394,7 +388,7 @@ export async function updateCommandFeedback(machineId: number, tbb: TbbFtpClient
   return await replaceRecords(trx, 'BFMASTERCOMMANDRETURNVALUES', data, { MACHINEID: machineId })
 }
 
-export async function updateConsumption(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateConsumption(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const consumption = await tbb.fetchConsumption()
   if (!consumption)
     return false
@@ -419,7 +413,7 @@ export async function updateConsumption(machineId: number, tbb: TbbFtpClient, tr
   }
 }
 
-export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const formulas = await tbb.fetchGlobalCommandFormulas()
   if (!formulas.length)
     return false
@@ -432,7 +426,7 @@ export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtp
   return await replaceRecords(trx, 'BFCOMMANDFORMULAS', data, { machineId })
 }
 
-export async function updateCommandParameters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandParameters(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commands = await tbb.fetchCommandParams()
   const formulas = await tbb.fetchGlobalCommandFormulas()
   if (!commands.length && !formulas.length)
@@ -471,7 +465,7 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
   return await replaceRecords(trx, 'BFCOMMANDPARAMETERS', data, { MACHINEID: machineId })
 }
 
-export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commandAlarmReasons = await tbb.fetchCommandAlarmReasons()
   if (!commandAlarmReasons.length)
     return false
@@ -499,7 +493,7 @@ export async function updateCommandAlarmReasons(machineId: number, tbb: TbbFtpCl
   }
 }
 
-export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commands = await tbb.fetchCommandAlarms()
   const functionAlarms = await tbb.fetchFunctionAlarms()
   if (!commands.length && !functionAlarms.length)
@@ -553,7 +547,7 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
   return await replaceRecords(trx, 'BFMASTERCOMMANDSALARMS', commandsAlarmsInserts, { MACHINEID: machineId })
 }
 
-export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const commands = await tbb.fetchCommandIO()
   if (!commands.length)
     return false
@@ -605,7 +599,7 @@ export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx:
   }
 }
 
-export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const locks = await tbb.fetchLocksInput()
   if (!locks.length)
     return false
@@ -700,7 +694,7 @@ export async function updateLocksInput(machineId: number, tbb: TbbFtpClient, trx
  * 7: digital output
  * 8: virtual input
  */
-export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const locks = await tbb.fetchLocksGeneral()
   const locksInput = await tbb.fetchLocksInput()
   if (!locks.length && !locksInput.length)
@@ -741,7 +735,7 @@ export async function updateLocksGeneral(machineId: number, tbb: TbbFtpClient, t
   return await replaceRecords(trx, 'BFLOCKSGENERAL', data, { MACHINEID: machineId })
 }
 
-export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const system = await tbb.fetchSystemParams()
   if (!system)
     return false
@@ -773,7 +767,7 @@ export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, t
   }
 }
 
-export async function updateCycleControl(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateCycleControl(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const control = await tbb.fetchCycleControl()
   if (!control.length)
     return false
@@ -789,7 +783,7 @@ export async function updateCycleControl(machineId: number, tbb: TbbFtpClient, t
   }
 }
 
-export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const params = await tbb.fetchBatchParameters()
   if (!params.length)
     return false
@@ -822,7 +816,7 @@ export async function updateBatchParameters(machineId: number, tbb: TbbFtpClient
   return await replaceRecords(trx, 'BFMACHBATCHPARAMETERS', data, { MACHINEID: machineId })
 }
 
-export async function updateIcons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateIcons(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const icons = await tbb.fetchIcons()
 
   if (!icons.length)
@@ -840,7 +834,7 @@ export async function updateIcons(machineId: number, tbb: TbbFtpClient, trx: Kne
   return await replaceRecords(trx, 'BFCUSTOMCOMMANDICONS', data, { MACHINEID: machineId })
 }
 
-export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
+export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex.Transaction) {
   const finishReasons = await trx('BFDYLOTFINISHREASONS').select({
     reasonId: 'REASONID',
     typeId: 'TYPEID',
@@ -853,7 +847,7 @@ export async function writeFinishReasons(tbb: TbbFtpClient, trx: Knex) {
   return finishReasons
 }
 
-export async function writeStopReasons(tbb: TbbFtpClient, trx: Knex) {
+export async function writeStopReasons(tbb: TbbFtpClient, trx: Knex.Transaction) {
   const stopReasons = await trx('BFSTOPREASONS').select({
     stopCode: 'STOPCODE',
     stopName: 'STOPNAME',
@@ -865,7 +859,7 @@ export async function writeStopReasons(tbb: TbbFtpClient, trx: Knex) {
   return stopReasons
 }
 
-export async function writeMachineParameterValues(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function writeMachineParameterValues(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const values = await trx('BFMACHPARAMETERS').where('MACHINEID', machineId).select({
     id: 'MACHINEPARAMETERID',
     currentValue: 'currentValue',
@@ -876,7 +870,7 @@ export async function writeMachineParameterValues(machineId: number, tbb: TbbFtp
   return values
 }
 
-export async function writeUsers(tbb: TbbFtpClient, trx: Knex) {
+export async function writeUsers(tbb: TbbFtpClient, trx: Knex.Transaction) {
   const users = await trx('BFUSERS').select({
     userId: 'userID',
     userName: 'userName',
@@ -894,7 +888,7 @@ export async function writeUsers(tbb: TbbFtpClient, trx: Knex) {
   return users
 }
 
-export async function writeGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function writeGlobalCommandFormulas(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const formulas = await trx('BFCOMMANDFORMULAS')
     .where('machineId', machineId)
     .select(
@@ -911,7 +905,7 @@ export async function writeGlobalCommandFormulas(machineId: number, tbb: TbbFtpC
 }
 
 // used in upload dye house definitions
-export async function writeManualReasonsGeneral(tbb: TbbFtpClient, trx: Knex) {
+export async function writeManualReasonsGeneral(tbb: TbbFtpClient, trx: Knex.Transaction) {
   const formulas = await trx('BFMANUALREASONSGENERAL')
     .select({
       manualCode: 'manualID',
@@ -923,7 +917,7 @@ export async function writeManualReasonsGeneral(tbb: TbbFtpClient, trx: Knex) {
   return formulas
 }
 
-export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const { analogLocks, digitalLocks } = await tbb.fetchLocksOutput()
   if (!analogLocks.length && !digitalLocks.length)
     return false
@@ -965,7 +959,7 @@ export async function updateLocksOutput(machineId: number, tbb: TbbFtpClient, tr
   return true
 }
 
-export async function writeCommandAlarmReasons(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function writeCommandAlarmReasons(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const reasons: CommandAlarmReason[] = await trx('BFCOMMANDTIMEOUTREASONS')
     .leftJoin('BFCOMMANDTIMEOUTREASONMAP', 'BFCOMMANDTIMEOUTREASONS.ID', 'BFCOMMANDTIMEOUTREASONMAP.REASONID')
     .where('BFCOMMANDTIMEOUTREASONMAP.MACHINEID', machineId)
@@ -992,7 +986,7 @@ export async function writeCommandAlarmReasons(machineId: number, tbb: TbbFtpCli
   return mergedReasons
 }
 
-export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   // Determine new version number
   const trxTime = trx.fn.now()
   const versionRow = await trx('BAMASTERCOMMANDS')
@@ -1186,7 +1180,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
   }
 }
 
-export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function updateERPParams(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   try {
     const batchParams = await trx('BFMACHBATCHPARAMETERS')
       .where({ MACHINEID: machineId })
