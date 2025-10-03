@@ -4,6 +4,7 @@ import type { CommandTimeoutReason, Machine, MasterCommand } from '~/types'
 const kc = useKeycloak()
 const { t } = useI18n()
 const router = useRouter()
+const { notifySuccess, notifyError } = useNotify()
 
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
@@ -58,8 +59,14 @@ function handleCheckChange(e: boolean, reason: CommandTimeoutReason) {
 }
 
 async function handleSubmit() {
-  await kc.fetch('/api/command-timeout-reasons/command-timeout-reasons', { method: 'PUT', body: { changedReasons: changedReasons.value } })
-  changedReasons.value = []
+  try {
+    await kc.fetch('/api/command-timeout-reasons/command-timeout-reasons', { method: 'PUT', body: { changedReasons: changedReasons.value } })
+    changedReasons.value = []
+    notifySuccess(t('savedSuccessfully'))
+  } catch (error: any) {
+    const errorMessage = error?.data?.statusMessage || 'SAVE_OPERATION_FAILED'
+    notifyError(t(errorMessage))
+  }
 }
 
 const showAddReasonDialog = ref(false)
@@ -67,13 +74,19 @@ const showEditReasonDialog = ref(false)
 
 const newReasonText = ref('')
 async function handleAddReason() {
-  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
-    method: 'POST',
-    body: { reasonText: newReasonText.value },
-  })
-  showAddReasonDialog.value = false
-  newReasonText.value = ''
-  await refreshTimeoutReasons()
+  try {
+    await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
+      method: 'POST',
+      body: { reasonText: newReasonText.value },
+    })
+    showAddReasonDialog.value = false
+    newReasonText.value = ''
+    await refreshTimeoutReasons()
+    notifySuccess(t('addedSuccessfully'))
+  } catch (error: any) {
+    const errorMessage = error?.data?.statusMessage || 'CREATE_OPERATION_FAILED'
+    notifyError(t(errorMessage))
+  }
 }
 function handleEditButton() {
   if (timeoutReasons.value && timeoutReasons.value.length) {
@@ -86,21 +99,33 @@ function handleEditButton() {
 }
 
 async function handleEditReason() {
-  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
-    method: 'PUT',
-    body: { reasonText: newReasonText.value, id: selectedReasonId.value },
-  })
-  showEditReasonDialog.value = false
-  newReasonText.value = ''
-  await refreshTimeoutReasons()
+  try {
+    await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
+      method: 'PUT',
+      body: { reasonText: newReasonText.value, id: selectedReasonId.value },
+    })
+    showEditReasonDialog.value = false
+    newReasonText.value = ''
+    await refreshTimeoutReasons()
+    notifySuccess(t('editedSuccessfully'))
+  } catch (error: any) {
+    const errorMessage = error?.data?.statusMessage || 'UPDATE_OPERATION_FAILED'
+    notifyError(t(errorMessage))
+  }
 }
 
 async function handleDeleteReason() {
-  await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
-    method: 'DELETE',
-    body: { id: selectedReasonId.value },
-  })
-  await refreshTimeoutReasons()
+  try {
+    await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
+      method: 'DELETE',
+      body: { id: selectedReasonId.value },
+    })
+    await refreshTimeoutReasons()
+    notifySuccess(t('deletedSuccessfully'))
+  } catch (error: any) {
+    const errorMessage = error?.data?.statusMessage || 'DELETE_OPERATION_FAILED'
+    notifyError(t(errorMessage))
+  }
 }
 
 const copy = ref()
@@ -123,10 +148,16 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await kc.fetch('/api/command-timeout-reasons/copy', {
-        method: 'POST',
-        body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
-      })
+      try {
+        await kc.fetch('/api/command-timeout-reasons/copy', {
+          method: 'POST',
+          body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
+        })
+        notifySuccess(t('copiedSuccessfully'))
+      } catch (error: any) {
+        const errorMessage = error?.data?.statusMessage || 'COPY_OPERATION_FAILED'
+        notifyError(t(errorMessage))
+      }
     },
   },
 ])
@@ -220,6 +251,7 @@ const contextMenuOptions = computed(() => [
               clickable
               :focused="selectedMachineId === machine.machineId"
               :active="selectedMachineId === machine.machineId"
+              :class="{ 'bg-primary text-white': selectedMachineId === machine.machineId }"
               @click="selectedMachineId = machine.machineId;selectedReasonId = null;selectedCommandNo = null"
             >
               <q-item-section>
@@ -243,6 +275,7 @@ const contextMenuOptions = computed(() => [
               clickable
               :focused="selectedCommandNo === command.commandNo"
               :active="selectedReasonCommands && selectedReasonCommands.length ? selectedReasonCommands.some(r => r.commandNo === command.commandNo) : false"
+              :class="{ 'bg-primary text-white': selectedCommandNo === command.commandNo }"
               @click="selectedCommandNo = command.commandNo;selectedReasonId = null"
             >
               <q-item-section>
@@ -280,12 +313,14 @@ const contextMenuOptions = computed(() => [
         <q-btn
           no-caps
           :label="t('cancel')"
+          :disable="changedReasons.length === 0"
           @click="router.go(0)"
         />
         <q-btn
           color="primary"
           no-caps
           :label="t('submit')"
+          :disable="changedReasons.length === 0"
           @click="handleSubmit"
         />
       </q-card-actions>
