@@ -21,6 +21,7 @@ function setDefaultSettings() {
   store.scrollSpeed = 3
   store.zoomLevel = 1
 
+  store.sortMachines = 1
   store.erpKeys = store.machines.map(m => ({ id: m.id, key: Object.keys(m.erp ?? {})[0] })).sort((a, b) => a.id > b.id ? 1 : -1)
   store.customSort.sort((a, b) => a > b ? 1 : -1)
 }
@@ -61,7 +62,7 @@ function setDefaultSettings() {
         </div>
       </div>
     </div>
-    <div class="flex justify-end md:justify-end sm:justify-center px-3 py-1 border-t-1">
+    <div class="flex justify-end md:justify-end sm:justify-center sm:mb-5 sm:mt-2 px-3 py-1 border-t-1">
       <q-btn
         color="primary"
         outline
