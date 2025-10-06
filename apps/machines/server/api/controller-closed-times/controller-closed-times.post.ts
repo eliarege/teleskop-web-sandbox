@@ -15,7 +15,8 @@ export default defineAuthEventHandler(async (event) => {
     closedType: 'CLOSEDTYPE',
     archived: 'ARCHIVED',
   }
-  const timezoneOffset = Number(process.env.NUXT_TELESKOP_TIMEZONE_OFFSET || 0)
+
+  const timezoneOffset = useRuntimeConfig().teleskopTimezoneOffset
 
   const query = knex('BACONTROLLERCLOSEDTIMES')
     .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'BACONTROLLERCLOSEDTIMES.MACHINEID')

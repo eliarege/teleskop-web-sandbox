@@ -12,34 +12,33 @@ export default defineAuthEventHandler(async (event) => {
     }
 
     for (const counter of changedCounters) {
-      const { machineId, counterId1, counterId2 } = counter
-
-      if (!machineId) {
+      if (!counter.machineId) {
         throw createError({
           statusCode: 400,
           statusMessage: 'MACHINE_ID_REQUIRED',
         })
       }
-
-      const existingRecord = await knex('BFCONSUMPTIONCOUNTERS')
-        .where('MACHINEID', machineId)
-        .first()
-
-      if (existingRecord) {
-        await knex('BFCONSUMPTIONCOUNTERS')
-          .where('MACHINEID', machineId)
-          .update({
-            COUNTER1: counterId1 === -1 ? null : counterId1,
-            COUNTER2: counterId2 === -1 ? null : counterId2,
-          })
-      } else {
-        await knex('BFCONSUMPTIONCOUNTERS').insert({
-          MACHINEID: machineId,
-          COUNTER1: counterId1 === -1 ? null : counterId1,
-          COUNTER2: counterId2 === -1 ? null : counterId2,
-        })
-      }
     }
+
+    await knex.transaction(async (trx) => {
+      const upsertPromises = changedCounters.map(async (counter) => {
+        const { machineId, counterId1, counterId2 } = counter
+
+        return trx.raw(`
+          INSERT INTO BFCONSUMPTIONCOUNTERS (MACHINEID, COUNTER1, COUNTER2)
+          VALUES (?, ?, ?)
+          ON DUPLICATE KEY UPDATE
+            COUNTER1 = VALUES(COUNTER1),
+            COUNTER2 = VALUES(COUNTER2)
+        `, [
+          machineId,
+          counterId1 === -1 ? null : counterId1,
+          counterId2 === -1 ? null : counterId2,
+        ])
+      })
+
+      await Promise.all(upsertPromises)
+    })
 
     return { success: true, message: 'CONSUMPTION_COUNTERS_UPDATED' }
   } catch (error: any) {

@@ -11,20 +11,6 @@ export default defineAuthEventHandler(async (event) => {
       })
     }
 
-    // Check if reason already exists (excluding current record)
-    const existingReason = await knex('BFCOMMANDTIMEOUTREASONS')
-      .where('REASONTEXT', reasonText.trim())
-      .where('ISDELETED', 0)
-      .whereNot('ID', id)
-      .first()
-
-    if (existingReason) {
-      throw createError({
-        statusCode: 409,
-        statusMessage: 'REASON_ALREADY_EXISTS',
-      })
-    }
-
     const res = await knex('BFCOMMANDTIMEOUTREASONS')
       .where('ID', id)
       .update({
