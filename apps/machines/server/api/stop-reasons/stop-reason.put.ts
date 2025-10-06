@@ -22,16 +22,6 @@ export default defineAuthEventHandler(async (event) => {
       })
     }
 
-    if (originalStopCode && originalStopCode !== stopCode) {
-      const duplicateCheck = await knex('BFSTOPREASONS').where('STOPCODE', stopCode).first()
-      if (duplicateCheck) {
-        throw createError({
-          statusCode: 409,
-          statusMessage: 'ID_INUSE',
-        })
-      }
-    }
-
     const res = await knex('BFSTOPREASONS').where('STOPCODE', searchStopCode)
       .update({
         STOPCODE: stopCode,

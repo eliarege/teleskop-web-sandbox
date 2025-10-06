@@ -28,7 +28,7 @@ export default defineAuthEventHandler(async (event) => {
       })
     }
 
-    if (error?.code === 'ERR_NO_REFERENCED_ROW' || error?.message?.includes('FOREIGN KEY constraint failed')) {
+    if (isSQLError(error, 547)) {
       throw createError({
         statusCode: 400,
         statusMessage: 'BAD_REQUEST',
