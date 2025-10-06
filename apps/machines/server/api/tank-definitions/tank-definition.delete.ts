@@ -1,14 +1,14 @@
 import { z } from 'zod'
 import { knex } from '~/server/connectionPool'
 
+const deleteSchema = z.object({
+  machineId: z.number(),
+  tankNo: z.number(),
+})
+
 export default defineAuthEventHandler(async (event) => {
   try {
     const { machineId, tankNo } = await readBody(event)
-
-    const deleteSchema = z.object({
-      machineId: z.number(),
-      tankNo: z.number(),
-    })
 
     const parsed = deleteSchema.safeParse({ machineId, tankNo })
     if (!parsed.success) {

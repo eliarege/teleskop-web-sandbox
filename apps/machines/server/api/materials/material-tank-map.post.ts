@@ -1,23 +1,23 @@
 import { z } from 'zod'
 import { knex } from '~/server/connectionPool'
 
+const materialSchema = z.object({
+  materialCode: z.string().min(1, 'INVALID_MATERIAL_CODE'),
+})
+
+const tankSchema = z.object({
+  machineId: z.number({ message: 'MACHINE_ID_REQUIRED' }),
+  tankNo: z.number({ message: 'TANK_NO_REQUIRED' }),
+  materials: z.array(materialSchema).default([]),
+})
+
+const schema = z.object({
+  tankMap: z.array(tankSchema).min(1, 'INVALID_TANK_STRUCTURE'),
+})
+
 export default defineAuthEventHandler(async (event) => {
   try {
     const body = await readBody(event)
-
-    const materialSchema = z.object({
-      materialCode: z.string().min(1, 'INVALID_MATERIAL_CODE'),
-    })
-
-    const tankSchema = z.object({
-      machineId: z.number({ message: 'MACHINE_ID_REQUIRED' }),
-      tankNo: z.number({ message: 'TANK_NO_REQUIRED' }),
-      materials: z.array(materialSchema).default([]),
-    })
-
-    const schema = z.object({
-      tankMap: z.array(tankSchema).min(1, 'INVALID_TANK_STRUCTURE'),
-    })
 
     const parsed = schema.safeParse(body)
     if (!parsed.success) {

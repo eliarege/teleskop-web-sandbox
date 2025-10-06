@@ -1,10 +1,11 @@
 import { z } from 'zod'
 import { knex } from '~/server/connectionPool'
 
+const schema = z.object({ machineId: z.coerce.number({ message: 'MACHINE_ID_REQUIRED' }) })
+
 export default defineAuthEventHandler(async (event) => {
   try {
     const query = getQuery(event)
-    const schema = z.object({ machineId: z.coerce.number({ message: 'MACHINE_ID_REQUIRED' }) })
     const parsed = schema.safeParse(query)
     if (!parsed.success) {
       throw createError({

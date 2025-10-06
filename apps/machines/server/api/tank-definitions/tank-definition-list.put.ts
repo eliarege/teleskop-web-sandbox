@@ -1,6 +1,18 @@
 import { z } from 'zod'
 import { knex } from '~/server/connectionPool'
 
+const updateSchema = z.object({
+  machineId: z.number(),
+  tankNo: z.number(),
+  name: z.string().optional(),
+  highLimit: z.number().optional(),
+  machineConstantHighLimit: z.number().optional(),
+  listOfTransferCommands: z.array(z.number()).default([]),
+  listOfRequestCommands: z.array(z.number()).default([]),
+  listOfCirculationDosageCommands: z.array(z.number()).default([]),
+  listOfCirculationRequestCommands: z.array(z.number()).default([]),
+})
+
 export default defineAuthEventHandler(async (event) => {
   try {
     const {
@@ -14,18 +26,6 @@ export default defineAuthEventHandler(async (event) => {
       listOfCirculationDosageCommands,
       listOfCirculationRequestCommands,
     } = await readBody(event)
-
-    const updateSchema = z.object({
-      machineId: z.number(),
-      tankNo: z.number(),
-      name: z.string().optional(),
-      highLimit: z.number().optional(),
-      machineConstantHighLimit: z.number().optional(),
-      listOfTransferCommands: z.array(z.number()).default([]),
-      listOfRequestCommands: z.array(z.number()).default([]),
-      listOfCirculationDosageCommands: z.array(z.number()).default([]),
-      listOfCirculationRequestCommands: z.array(z.number()).default([]),
-    })
 
     const parsed = updateSchema.safeParse({
       machineId,

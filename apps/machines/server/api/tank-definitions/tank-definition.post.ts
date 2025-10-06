@@ -1,16 +1,17 @@
 import { z } from 'zod'
 import { knex } from '~/server/connectionPool'
 
+const tankDefinitionSchema = z.object({
+  machineId: z.number(),
+  tankNo: z.number(),
+  name: z.string(),
+  highLimit: z.number(),
+  machineConstantHighLimit: z.number(),
+})
+
 export default defineAuthEventHandler(async (event) => {
   try {
     const { machineId, tankNo, name, highLimit, machineConstantHighLimit } = await readBody(event)
-    const tankDefinitionSchema = z.object({
-      machineId: z.number(),
-      tankNo: z.number(),
-      name: z.string(),
-      highLimit: z.number(),
-      machineConstantHighLimit: z.number(),
-    })
 
     const parsed = tankDefinitionSchema.safeParse({ machineId, tankNo, name, highLimit, machineConstantHighLimit })
     if (!parsed.success) {
