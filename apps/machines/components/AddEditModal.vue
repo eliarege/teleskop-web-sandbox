@@ -21,8 +21,9 @@ const formData = defineModel({
 })
 
 const { t, locale } = useI18n()
-const IPV4_RE = /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
 const { notifyError } = useNotify()
+
+const IPV4_RE = /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
 
 const validationError = ref('')
 const duplicateIpError = ref('')
