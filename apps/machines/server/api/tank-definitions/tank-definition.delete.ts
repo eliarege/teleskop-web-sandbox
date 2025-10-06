@@ -21,27 +21,20 @@ export default defineAuthEventHandler(async (event) => {
         },
       })
     }
-    const existingTank = await knex('BFMACHINETANKS')
+    const deletedCount = await knex('BFMACHINETANKS')
       .where({
         MACHINEID: machineId,
         TANKNO: tankNo,
       })
-      .first()
+      .del()
 
-    if (!existingTank) {
+    if (deletedCount === 0) {
       throw createError({
         statusCode: 404,
         statusMessage: 'TANK_DEFINITION_NOT_FOUND',
         data: { message: 'TANK_DEFINITION_NOT_FOUND' },
       })
     }
-
-    await knex('BFMACHINETANKS')
-      .where({
-        MACHINEID: machineId,
-        TANKNO: tankNo,
-      })
-      .del()
 
     return {
       success: true,
