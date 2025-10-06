@@ -21,6 +21,7 @@ const formData = defineModel({
 })
 
 const { t, locale } = useI18n()
+const IPV4_RE = /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
 const { notifyError } = useNotify()
 
 const validationError = ref('')
@@ -96,7 +97,7 @@ watch([() => formData.value.theoricalCharge, () => formData.value.theoricalCharg
 }, { deep: true })
 
 watch(() => formData.value.ip, async (newIp) => {
-  if (newIp && newIp.match(/^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/)) {
+  if (newIp && newIp.match(IPV4_RE)) {
     const isDuplicate = await checkDuplicateIp(newIp, isEdit ? formData.value.machineId : undefined)
     if (isDuplicate) {
       duplicateIpError.value = t('duplicateIpError')
@@ -106,7 +107,7 @@ watch(() => formData.value.ip, async (newIp) => {
   } else {
     duplicateIpError.value = ''
   }
-}, { debounce: 500 })
+})
 
 watch(() => formData.value.machineId, async (newMachineId) => {
   if (newMachineId && !isEdit) { // Sadece yeni makine eklerken kontrol et
@@ -119,7 +120,7 @@ watch(() => formData.value.machineId, async (newMachineId) => {
   } else {
     duplicateIdError.value = ''
   }
-}, { debounce: 500 })
+})
 
 async function onSubmitForm() {
   if (!validateTheoreticalCharge(formData.value)) {
