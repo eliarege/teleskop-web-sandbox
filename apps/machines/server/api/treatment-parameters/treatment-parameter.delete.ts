@@ -4,17 +4,6 @@ import type { TreatmentParameter } from '~/types'
 export default defineAuthEventHandler(async (event) => {
   const { id } = await readBody(event)
 
-  const existingParameter = await knex('BFTREATMENTPARAMETERS')
-    .where('ID', id)
-    .first()
-
-  if (!existingParameter) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'PARAMETER_NOT_FOUND',
-    })
-  }
-
   const result = await knex('BFTREATMENTPARAMETERS')
     .where({
       ID: id,
