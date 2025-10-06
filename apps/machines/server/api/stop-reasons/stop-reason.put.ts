@@ -1,4 +1,5 @@
 import { knex } from '~/server/connectionPool'
+import { isSQLError } from '~/server/utils/error'
 
 export default defineAuthEventHandler(async (event) => {
   try {
@@ -41,7 +42,7 @@ export default defineAuthEventHandler(async (event) => {
     return res
   } catch (error: any) {
     console.log('error msg:', error.message)
-    if (error?.code === 'ERR_DUP_ENTRY' || error?.message?.includes('PRIMARY KEY constraint')) {
+    if (isSQLError(error, 2627) || isSQLError(error, 2601)) {
       throw createError({
         statusCode: 409,
         statusMessage: 'ID_INUSE',
