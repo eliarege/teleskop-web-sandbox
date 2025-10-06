@@ -97,7 +97,7 @@ function onEnd(ev: SortableEvent) {
       tag="div"
       :list="sortableMachines"
       item-key="id"
-      class="w-full grid grid-cols-4 gap-2"
+      class="whitespace-nowrap lg:w-full md:w-1/2 sm:w-1/2 grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 gap-2 md:gap-1 sm:gap-1"
       :options="{
         animation: 150,
         ghostClass: 'ghost',
@@ -106,9 +106,9 @@ function onEnd(ev: SortableEvent) {
       @end="(ev) => onEnd(ev)"
     >
       <template #item="{ element }">
-        <div class="w-full h-full flex justify-start items-center gap-1 whitespace-nowrap p-1 border-1px border-gray-500/50 rounded m-1 hover:(bg-#4b5563 text-white cursor-pointer)">
-          <TwIcon name="i-ic:twotone-list" />
-          {{ element.name }}
+        <div class="w-full h-full flex justify-start items-center gap-1 whitespace-nowrap lg: mg:p-1 p-1 sm:p-2 border-1px border-gray-500/50 rounded m-1 md:m-1 sm:m-0.5 hover:(bg-#4b5563 text-white cursor-pointer) md:text-sm sm:text-xs">
+          <TwIcon name="i-ic:twotone-list" class="md:text-base sm:text-sm" />
+          <span class="md:inline sm:block sm:truncate">{{ element.name }}</span>
         </div>
       </template>
     </Sortable>

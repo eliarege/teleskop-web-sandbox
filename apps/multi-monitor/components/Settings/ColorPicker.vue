@@ -11,15 +11,15 @@ const { t } = useI18n()
       {{ t('settings.color-picker') }}
     </span>
 
-    <div class="flex justify-start gap-3">
-      <div>
+    <div class="w-min lg:(flex flex-row) md:flex sm:flex-col justify-start lg:gap-3 md:gap-3 sm:gap-4">
+      <div class="flex-1">
         <span class="settings-sub-title inline-block mb-2px text-center">
           {{ t('settings.active-color') }}
         </span>
         <q-color v-model="colors.cardActiveBg" />
       </div>
 
-      <div>
+      <div class="flex-1">
         <span class="settings-sub-title inline-block mb-2px text-center">
           {{ t('settings.inactive-color') }}
         </span>
@@ -30,7 +30,7 @@ const { t } = useI18n()
 </template>
 
 <style scoped lang="postcss">
-  .color-picker {
-  @apply at-lg:(flex text-black w-full h-min) lt-sm:(w-100vw flex gap-3);
+.color-picker {
+  @apply flex text-black w-full h-min;
 }
 </style>

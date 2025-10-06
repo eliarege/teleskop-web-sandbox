@@ -30,7 +30,7 @@ function setDefaultSettings() {
   <div class="max-w-full min-w-full w-full h-full bg-white">
     <div class="rounded">
       <div class="flex border-b-1">
-        <span class="settings-title text-center ml-3">
+        <span class="settings-title text-center ml-3 md:ml-3 sm:ml-2">
           {{ t('settings._') }}
         </span>
         <q-space />
@@ -45,27 +45,27 @@ function setDefaultSettings() {
         />
       </div>
 
-      <div class="px-45 w-full h-full overflow-auto max-h-[calc(100vh-134px)]">
-        <div class="h-full w-auto flex flex-col w-full ">
+      <div class="px-45 md:px-45 sm:px-2 w-full h-full overflow-auto max-h-[calc(100vh-134px)]">
+        <div class="h-full w-auto flex flex-col w-full">
           <!-- Makine Ayarları -->
-          <SettingsMachine class="px-11" />
-          <q-separator class="my-10" />
+          <SettingsMachine class="px-11 md:px-11 sm:px-2" />
+          <q-separator class="my-10 md:my-10 sm:my-4" />
           <!-- Görsel Ayarlar -->
-          <SettingsVisual class="px-11" />
-          <q-separator class="my-10" />
+          <SettingsVisual class="px-11 md:px-11 sm:px-2" />
+          <q-separator class="my-10 md:my-10 sm:my-4" />
           <!-- Renk seçici -->
-          <SettingsColorPicker class="px-11" />
-          <q-separator class="my-10" />
+          <SettingsColorPicker class="px-11 md:px-11 sm:px-2" />
+          <q-separator class="my-10 md:my-10 sm:my-4" />
           <!-- Animasyon -->
-          <SettingsAnimation class="px-11" />
+          <SettingsAnimation class="px-11 md:px-11 sm:px-2" />
         </div>
       </div>
     </div>
-    <div class="flex justify-end px-3 py-1 border-t-1">
+    <div class="flex justify-end md:justify-end sm:justify-center px-3 py-1 border-t-1">
       <q-btn
         color="primary"
         outline
-        class="!border-1 !border-primary"
+        class="!border-1 !border-primary md:text-base sm:text-sm"
         label="Varsayılan Ayarlar"
         no-caps
         push
@@ -78,10 +78,21 @@ function setDefaultSettings() {
 <style lang="postcss">
 .settings-title {
   font-weight: 700;
-  @apply text-xl px-1 py-2;
+  @apply text-xl md:text-xl sm:text-lg px-1 py-2;
 }
 .settings-sub-title {
   font-weight: 500;
-  @apply text-l px-1 py-2;
+  @apply text-l md:text-l sm:text-base px-1 py-2;
+}
+
+@media (max-width: 768px) {
+  .settings-title {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  .settings-sub-title {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
 }
 </style>

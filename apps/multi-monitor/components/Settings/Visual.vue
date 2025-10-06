@@ -14,7 +14,7 @@ const store = useDataStore()
       <span class="settings-sub-title inline-block mb-2px">
         {{ t("settings.options") }}
       </span>
-      <div class="">
+      <div class="grid grid-cols-2 md:grid-cols-2 sm:grid-cols-1 gap-2 md:gap-0 sm:gap-1">
         <q-checkbox
           v-model="store.electricity"
           :label="t('settings.electricity')"
@@ -59,14 +59,14 @@ const store = useDataStore()
     <span class="settings-sub-title inline-block mb-2px">
       {{ t("settings.zoom") }} {{ store.zoomLevel }} (0.7 - 1.3)
     </span>
-    <div class="px-3 w-min whitespace-nowrap">
+    <div class="px-3 w-min md:w-min sm:w-full whitespace-nowrap md:whitespace-nowrap sm:whitespace-normal">
       <q-slider
         v-model="store.zoomLevel"
         markers
         :min="0.7"
         :max="1.3"
         :step="0.1"
-        class="min-w-20rem"
+        class="min-w-20rem md:min-w-20rem sm:min-w-full"
       />
     </div>
   </div>

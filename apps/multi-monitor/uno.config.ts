@@ -5,8 +5,8 @@ export default mergeConfigs([baseConfig, {
   theme: {
     breakpoints: {
       lg: '1200px',
-      sm: '768px',
       md: '768px',
+      sm: '370px',
     },
   },
 }])
