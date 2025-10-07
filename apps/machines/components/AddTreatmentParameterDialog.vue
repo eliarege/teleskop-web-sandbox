@@ -6,6 +6,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['close'])
+const { notifyError, notifySuccess } = useNotify()
 
 const kc = useKeycloak()
 
@@ -23,28 +24,59 @@ const { data: params, refresh: refreshParams } = useAuthFetch<TreatmentParameter
 })
 
 async function handleAdd() {
-  await kc.fetch('/api/treatment-parameters/treatment-parameter', {
-    method: 'POST',
-    body: selected.value,
-  })
-  await refreshParams()
+  try {
+    await kc.fetch('/api/treatment-parameters/treatment-parameter', {
+      method: 'POST',
+      body: selected.value,
+    })
+    await refreshParams()
+    selected.value = {
+      id: -1,
+      treatmentParameter: '',
+    }
+    notifySuccess(t('PARAMETER_CREATED_SUCCESSFULLY'))
+  } catch (error: any) {
+    if (error.statusCode === 409) {
+      notifyError(t('PARAMETER_ALREADY_EXISTS'))
+    } else {
+      notifyError(t('PARAMETER_ADD_ERROR'))
+    }
+  }
 }
 async function handleEdit() {
-  await kc.fetch('/api/treatment-parameters/treatment-parameter', {
-    method: 'PUT',
-    body: selected.value,
-  })
-  await refreshParams()
+  try {
+    await kc.fetch('/api/treatment-parameters/treatment-parameter', {
+      method: 'PUT',
+      body: selected.value,
+    })
+    await refreshParams()
+    notifySuccess(t('PARAMETER_UPDATED_SUCCESSFULLY'))
+  } catch (error: any) {
+    if (error.statusCode === 409) {
+      notifyError(t('PARAMETER_ALREADY_EXISTS'))
+    } else {
+      notifyError(t('PARAMETER_UPDATE_ERROR'))
+    }
+  }
 }
 async function handleDelete() {
-  await kc.fetch('/api/treatment-parameters/treatment-parameter', {
-    method: 'DELETE',
-    body: selected.value,
-  })
-  await refreshParams()
-  selected.value = {
-    id: -1,
-    treatmentParameter: '',
+  try {
+    await kc.fetch('/api/treatment-parameters/treatment-parameter', {
+      method: 'DELETE',
+      body: selected.value,
+    })
+    await refreshParams()
+    selected.value = {
+      id: -1,
+      treatmentParameter: '',
+    }
+    notifySuccess(t('PARAMETER_DELETED_SUCCESSFULLY'))
+  } catch (error: any) {
+    if (error.statusCode === 404) {
+      notifyError(t('PARAMETER_NOT_FOUND'))
+    } else {
+      notifyError(t('PARAMETER_DELETE_ERROR'))
+    }
   }
 }
 async function handleGroupClick(obj: TreatmentParameter) {

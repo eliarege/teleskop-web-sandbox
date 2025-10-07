@@ -6,6 +6,7 @@ import type { Machine, MasterCommand } from '~/types'
 
 const { t } = useI18n()
 const kc = useKeycloak()
+const { notifyError, notifySuccess } = useNotify()
 const selectedMachineId = ref()
 const selectedDefinition = ref()
 
@@ -44,6 +45,9 @@ const tank = ref<Partial<TankDefinition>>({
   machineConstantHighLimit: 0,
 })
 
+const originalTankDefinitions = ref<TankDefinition[]>([])
+const hasChanges = ref(false)
+
 const commandLists = reactive<CommandList[]>([
   { name: 'listOfTransferCommands', ref: [] },
   { name: 'listOfCirculationDosageCommands', ref: [] },
@@ -57,6 +61,10 @@ const { data: tankDefinitions, refresh: refreshDefinitions } = useAuthFetch<Tank
   immediate: false,
   default: () => [],
   query: { machineId: selectedMachineId },
+  onResponse({ response }) {
+    originalTankDefinitions.value = klona(response._data)
+    hasChanges.value = false
+  },
 })
 
 const { data: highLimitOptions } = useAuthFetch('/api/machine-parameters/machine-parameters', {
@@ -117,6 +125,20 @@ function filterCommandLists() {
   }
 }
 
+function checkForChanges() {
+  if (!originalTankDefinitions.value.length || !tankDefinitions.value.length) {
+    hasChanges.value = false
+    return
+  }
+
+  const hasChanged = JSON.stringify(originalTankDefinitions.value) !== JSON.stringify(tankDefinitions.value)
+  hasChanges.value = hasChanged
+}
+
+watch(() => tankDefinitions.value, () => {
+  checkForChanges()
+}, { deep: true })
+
 async function handleTankDefinitionClick(tankDef: TankDefinition) {
   selectedDefinition.value = tankDef.tankNo
   tank.value = tankDef
@@ -124,26 +146,45 @@ async function handleTankDefinitionClick(tankDef: TankDefinition) {
 }
 
 async function handleTankDefinitionAdd() {
-  const tankDef = {
-    machineId: selectedMachineId.value,
-    ...tank.value,
+  try {
+    const tankDef = {
+      ...tank.value,
+      machineId: selectedMachineId.value,
+    }
+    const response = await kc.fetch('/api/tank-definitions/tank-definition', {
+      method: 'POST',
+      body: tankDef,
+    })
+    notifySuccess(t(response.message))
+    await refreshDefinitions()
+  } catch (error: any) {
+    const message = error.data?.data?.message || error.data?.message || 'OPERATION_FAILED'
+    notifyError(t(message))
   }
-  await kc.fetch('/api/tank-definitions/tank-definition', {
-    method: 'POST',
-    body: tankDef,
-  })
-  await refreshDefinitions()
 }
 
 async function handleDelete() {
-  await kc.fetch('/api/tank-definitions/tank-definition', {
-    method: 'DELETE',
-    body: {
-      machineId: selectedMachineId.value,
-      tankNo: tank.value.tankNo,
-    },
-  })
-  await refreshDefinitions()
+  try {
+    const response = await kc.fetch('/api/tank-definitions/tank-definition', {
+      method: 'DELETE',
+      body: {
+        machineId: selectedMachineId.value,
+        tankNo: tank.value.tankNo,
+      },
+    })
+    notifySuccess(t(response.message))
+    await refreshDefinitions()
+    selectedDefinition.value = null
+    tank.value = {
+      tankNo: -1,
+      name: '',
+      highLimit: 0,
+      machineConstantHighLimit: 0,
+    }
+  } catch (error: any) {
+    const message = error.data?.data?.message || error.data?.message || 'OPERATION_FAILED'
+    notifyError(t(message))
+  }
 }
 
 async function handleDragDropCommands(e: SortableEvent) {
@@ -151,27 +192,59 @@ async function handleDragDropCommands(e: SortableEvent) {
   const listName = e.item.getAttribute('data-list-name') as NumberArrayKeys<TankDefinition>
 
   const tank = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)
-  if (tank)
+  if (tank) {
     tank[listName] = tank[listName].filter(d => d !== Number(commandNo))
+    checkForChanges()
+  }
 }
 
 async function handleDragDrop(e: SortableEvent, listName: NumberArrayKeys<TankDefinition>) {
   const commandNo = e.item.getAttribute('data-command-no')
-  tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)![listName].push(Number(commandNo))
+  const tank = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)
+  if (tank) {
+    tank[listName].push(Number(commandNo))
+    checkForChanges()
+  }
 }
 
 async function handleSubmit() {
-  const tankDef = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)!
+  try {
+    const tankDef = tankDefinitions.value.find(d => d.tankNo === selectedDefinition.value)
 
-  await kc.fetch('/api/tank-definitions/tank-definition-list', {
-    method: 'PUT',
-    body: tankDef,
-  })
+    const response = await kc.fetch('/api/tank-definitions/tank-definition-list', {
+      method: 'PUT',
+      body: tankDef,
+    })
 
-  await refreshDefinitions()
+    notifySuccess(t(response.message))
+    await refreshDefinitions()
+    // Başarılı kaydetme sonrası değişiklikleri sıfırla
+    hasChanges.value = false
+  } catch (error: any) {
+    const message = error.data?.data?.message || error.data?.message || 'OPERATION_FAILED'
+    notifyError(t(message))
+  }
 }
 
 const copy = ref()
+
+function handleCancel() {
+  // Orijinal verileri geri yükle
+  tankDefinitions.value = klona(originalTankDefinitions.value)
+  hasChanges.value = false
+
+  // Seçimleri sıfırla
+  selectedDefinition.value = null
+  tank.value = {
+    tankNo: -1,
+    name: '',
+    highLimit: 0,
+    machineConstantHighLimit: 0,
+  }
+
+  // Command listlerini temizle
+  commandLists.forEach(list => list.ref = [])
+}
 
 const contextMenuOptions = computed(() => [
   {
@@ -191,16 +264,22 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      for (const tankDef of copy.value) {
-        await kc.fetch('/api/tank-definitions/tank-definition-list', {
-          method: 'PUT',
-          body: {
-            ...tankDef,
-            machineId: selectedMachineId.value,
-          },
-        })
+      try {
+        for (const tankDef of copy.value) {
+          await kc.fetch('/api/tank-definitions/tank-definition-list', {
+            method: 'PUT',
+            body: {
+              ...tankDef,
+              machineId: selectedMachineId.value,
+            },
+          })
+        }
+        notifySuccess(t('TANK_DEFINITIONS_PASTED'))
+        await refreshDefinitions()
+      } catch (error: any) {
+        const message = error.data?.data?.message || error.data?.message || 'OPERATION_FAILED'
+        notifyError(t(message))
       }
-      await refreshDefinitions()
     },
   },
 ])
@@ -214,8 +293,8 @@ const contextMenuOptions = computed(() => [
       @click="option => option.onClick(selectedMachineId)"
     />
     <q-card>
-      <q-card-section class="flex flex-row justify-around">
-        <div class="flex">
+      <q-card-section>
+        <div class="inline-flex gap-3 px-5">
           <div class="mr-8 w-xs">
             <h3>{{ t('machines') }}</h3>
             <q-list
@@ -238,7 +317,6 @@ const contextMenuOptions = computed(() => [
               </q-item>
             </q-list>
           </div>
-
           <div class="w-xs mr-8">
             <h3>{{ t('tankDefinitions') }}</h3>
             <q-list
@@ -261,11 +339,11 @@ const contextMenuOptions = computed(() => [
               </q-item>
             </q-list>
           </div>
-
-          <div class="w-3xl flex flex-col">
+          <div v-show="selectedDefinition" class="w-3xl flex flex-col">
             <div class="grid gap-4 mb-4">
               <q-input
-                v-model="tank.tankNo"
+                v-model.number="tank.tankNo"
+                type="number"
                 :label="t('tankNo')"
                 filled
               />
@@ -280,10 +358,13 @@ const contextMenuOptions = computed(() => [
                 :label="t('highLimit')"
                 option-label="label"
                 option-value="value"
+                emit-value
+                map-options
                 filled
               />
               <q-input
-                v-model="tank.machineConstantHighLimit"
+                v-model.number="tank.machineConstantHighLimit"
+                type="number"
                 filled
                 :label="t('machineConstantHighLimit')"
               />
@@ -299,7 +380,7 @@ const contextMenuOptions = computed(() => [
                 @click="handleDelete"
               />
             </div>
-            <div class="grid gap-4">
+            <div v-if="selectedMachineId && selectedDefinition" class="grid gap-4">
               <div>
                 <h3>{{ t('commands') }}</h3>
                 <Sortable
@@ -360,12 +441,14 @@ const contextMenuOptions = computed(() => [
         <q-btn
           no-caps
           :label="t('cancel')"
-          @click="$router.go(0)"
+          :disabled="!hasChanges"
+          @click="handleCancel"
         />
         <q-btn
           color="primary"
           no-caps
           :label="t('submit')"
+          :disabled="!hasChanges"
           @click="handleSubmit"
         />
       </q-card-actions>

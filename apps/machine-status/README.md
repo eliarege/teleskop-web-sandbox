@@ -18,10 +18,6 @@ Default: `/`
 
 Teleskop bağlantı stringi. Syntax: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16
 
-### `DMEXCHANGE_CONNECTION_STRING`
-
-DmExchange bağlantı stringi. Syntax: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16
-
 ### `MACHINE_STATUS_MAX_AGE`
 
 ### `MACHINE_ERP_MAPPINGS_MAX_AGE`

@@ -1,6 +1,6 @@
 import { db } from '../../db'
 
-export default defineAuthEventHandler(async () => {
+export default defineEventHandler(async () => {
   const availableLocales = await db
     .from('BFPROJECTLOCALE')
     .whereIn('id', function () {

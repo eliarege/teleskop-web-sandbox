@@ -56,6 +56,7 @@ function handleAdd() {
           <q-btn
             :label="t('add')"
             color="primary"
+            :disable="selectedSetting === null"
             @click="handleAdd"
           />
         </q-card-actions>

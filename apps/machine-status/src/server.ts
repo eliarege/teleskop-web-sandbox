@@ -7,13 +7,12 @@ import type { ConnectionOptions } from 'tedious'
 import machineStatus from './api/machine-status'
 import { config } from './config'
 import { createKyselyInstance } from './database'
-import type { DmExchangeDatabase, TeleskopDatabase } from './types'
+import type { TeleskopDatabase } from './types'
 import { logger } from './logger'
 
 declare module 'fastify' {
   interface FastifyInstance {
     teleskop: Kysely<TeleskopDatabase>
-    dmExchange: Kysely<DmExchangeDatabase> | null
   }
 }
 
@@ -28,24 +27,8 @@ export async function main() {
     instanceName: config.teleskopInstanceName,
     options: config.teleskopConnectionOptions as ConnectionOptions,
   })
-  const dmExchange = config.dmExchangeConnectionString || config.dmExchangeEnabled
-    ? createKyselyInstance<DmExchangeDatabase>(config.dmExchangeConnectionString || {
-      host: config.dmExchangeHost,
-      port: config.dmExchangePort,
-      database: config.dmExchangeDatabase,
-      user: config.dmExchangeUser,
-      password: config.dmExchangePassword,
-      instanceName: config.dmExchangeInstanceName,
-      options: config.dmExchangeConnectionOptions as ConnectionOptions,
-    })
-    : null
-
-  if (!dmExchange) {
-    logger.info(`DMEXCHANGE disabled, ERP values will be null`)
-  }
 
   fastify.decorate('teleskop', teleskop)
-  fastify.decorate('dmExchange', dmExchange)
 
   fastify.register(cors, { prefix: config.serverPrefix })
   fastify.register(machineStatus, { prefix: config.serverPrefix })
@@ -65,7 +48,6 @@ export async function main() {
   gracefulShutdown(fastify.server, {
     async onShutdown() {
       await teleskop.destroy()
-      await dmExchange?.destroy()
     },
     finally() {
       logger.info('Server gracefully shut down')

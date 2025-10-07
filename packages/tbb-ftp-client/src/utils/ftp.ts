@@ -64,6 +64,7 @@ export async function upload(client: Client, remotePath: string, content: string
       this.push(null)
     },
   })
+  await client.remove(remotePath).catch(() => {})
   await client.uploadFrom(readableStream, remotePath)
   if (mode) {
     // Device (root user) might have claimed ownership of the file.

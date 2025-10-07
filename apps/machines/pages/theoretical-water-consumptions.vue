@@ -9,6 +9,7 @@ interface Water {
 
 const { t } = useI18n()
 const kc = useKeycloak()
+const { notifySuccess, notifyError } = useNotify()
 const selectedMachineId = ref()
 const selectedCommandNo = ref()
 
@@ -41,7 +42,7 @@ const { data: waterParams } = useAuthFetch<readonly CommandParameter[]>('/api/co
   query: fetchParams,
 })
 
-const { data: waterConsumptions } = useAuthFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+const { data: waterConsumptions, refresh: refreshWaterConsumptions } = useAuthFetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
   immediate: false,
   query: fetchParams,
 })
@@ -59,30 +60,35 @@ async function handleCommandClick(commandNo: number) {
   selectedCommandNo.value = commandNo
 }
 const filteredWaterIO1Options = computed(() => {
-  // Filter waterIO options based on waterIO2 selection
   return (waterIO.value && water.value.waterIO2)
     ? waterIO.value.filter(io => io.ioIndex !== water.value.waterIO2?.ioIndex)
     : waterIO.value ? waterIO.value : []
 })
 const filteredWaterIO2Options = computed(() => {
-  // Filter waterIO options based on waterIO1 selection
   return (waterIO.value && water.value.waterIO1)
     ? waterIO.value.filter(io => io.ioIndex !== water.value.waterIO1?.ioIndex)
     : waterIO.value ? waterIO.value : []
 })
 
 async function handleSubmit() {
-  const obj = {
-    machineId: selectedMachineId.value,
-    commandNo: selectedCommandNo.value,
-    commandIO: water.value.waterIO1 ? water.value.waterIO1.ioIndex : undefined,
-    commandIO2: water.value.waterIO2 ? water.value.waterIO2.ioIndex : undefined,
-    commandParameter: water.value.waterParam ? water.value.waterParam.parameterIndex : undefined,
+  try {
+    const obj = {
+      machineId: selectedMachineId.value,
+      commandNo: selectedCommandNo.value,
+      commandIO: water.value.waterIO1 ? water.value.waterIO1.ioIndex : undefined,
+      commandIO2: water.value.waterIO2 ? water.value.waterIO2.ioIndex : undefined,
+      commandParameter: water.value.waterParam ? water.value.waterParam.parameterIndex : undefined,
+    }
+    await kc.fetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
+      method: 'POST',
+      body: obj,
+    })
+    await refreshWaterConsumptions()
+    notifySuccess(t('savedSuccessfully'))
+  } catch (error) {
+    console.error('Save operation failed:', error)
+    notifyError(t('saveFailed'))
   }
-  await kc.fetch('/api/theoretical-water-consumptions/theoretical-water-consumption', {
-    method: 'POST',
-    body: obj,
-  })
 }
 
 const copy = ref()
@@ -105,10 +111,17 @@ const contextMenuOptions = computed(() => [
     icon: 'content_paste',
     disabled: !selectedMachineId.value || !copy.value,
     onClick: async () => {
-      await kc.fetch('/api/theoretical-water-consumptions/copy', {
-        method: 'POST',
-        body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
-      })
+      try {
+        await kc.fetch('/api/theoretical-water-consumptions/copy', {
+          method: 'POST',
+          body: { sourceMachineId: copy.value, targetMachineId: selectedMachineId.value },
+        })
+        await refreshWaterConsumptions()
+        notifySuccess(t('copiedSuccessfully'))
+      } catch (error) {
+        console.error('Copy operation failed:', error)
+        notifyError(t('copyFailed'))
+      }
     },
   },
 ])

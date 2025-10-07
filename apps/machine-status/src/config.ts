@@ -49,44 +49,6 @@ export const config = defineConfiguration({
   teleskopConnectionString: {
     env: 'TELESKOP_CONNECTION_STRING',
   },
-  /** If `dmExchangeConnectionString` is set, its considered enabled */
-  dmExchangeEnabled: {
-    env: ['DMEXCHANGE_ENABLED', 'NUXT_DMEXCHANGE_ENABLED'],
-    type: 'boolean',
-    default: false,
-  },
-  dmExchangeHost: {
-    env: ['DMEXCHANGE_HOST', 'NUXT_DMEXCHANGE_HOST'],
-    required: dmExchangeRequired,
-  },
-  dmExchangePort: {
-    env: ['DMEXCHANGE_PORT', 'NUXT_DMEXCHANGE_PORT'],
-    type: 'number',
-    default: 1433,
-  },
-  dmExchangeUser: {
-    env: ['DMEXCHANGE_USER', 'NUXT_DMEXCHANGE_USER'],
-    required: dmExchangeRequired,
-  },
-  dmExchangePassword: {
-    env: ['DMEXCHANGE_PASSWORD', 'NUXT_DMEXCHANGE_PASSWORD'],
-    required: dmExchangeRequired,
-  },
-  dmExchangeDatabase: {
-    env: ['DMEXCHANGE_DATABASE', 'NUXT_DMEXCHANGE_DATABASE'],
-    required: dmExchangeRequired,
-  },
-  dmExchangeInstanceName: {
-    env: ['DMEXCHANGE_INSTANCE_NAME', 'NUXT_DMEXCHANGE_INSTANCE_NAME'],
-  },
-  dmExchangeConnectionOptions: {
-    env: ['DMEXCHANGE_CONNECTION_OPTIONS', 'NUXT_DMEXCHANGE_CONNECTION_OPTIONS'],
-    type: 'querystring',
-  },
-  /** DmExchange Connection String. Syntax: https://learn.microsoft.com/en-us/sql/connect/ado-net/connection-string-syntax?view=sql-server-ver16 */
-  dmExchangeConnectionString: {
-    env: 'DMEXCHANGE_CONNECTION_STRING',
-  },
   /** Pino Log Level (debug|info|warn|error|fatal) */
   logLevel: {
     env: ['LOG_LEVEL', 'NUXT_LOG_LEVEL'],
@@ -117,9 +79,4 @@ export const config = defineConfiguration({
 /** Returns `true` if `teleskopConnectionString` is not defined. */
 function teleskopRequired(cfg: Record<string, any>) {
   return !cfg.teleskopConnectionString
-}
-
-/** Returns `true` if dmExchange is enabled and `dmExchangeConnectionString` is not defined. */
-function dmExchangeRequired(cfg: Record<string, any>) {
-  return cfg.dmExchangeEnabled && !cfg.dmExchangeConnectionString
 }

@@ -1,9 +1,19 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineAuthEventHandler(async () => {
-  const timeoutReasons = await knex('BFCOMMANDTIMEOUTREASONS').select(
-    { id: 'ID', reasonText: 'REASONTEXT' },
-  )
+  try {
+    const timeoutReasons = await knex('BFCOMMANDTIMEOUTREASONS')
+      .where('ISDELETED', 0)
+      .select(
+        { id: 'ID', reasonText: 'REASONTEXT' },
+      )
+      .orderBy('REASONTEXT')
 
-  return timeoutReasons
+    return timeoutReasons
+  } catch (error: any) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'FETCH_TIMEOUT_REASONS_FAILED',
+    })
+  }
 })

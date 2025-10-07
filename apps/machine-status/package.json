@@ -26,6 +26,8 @@
     "fastify": "4.26.2",
     "http-graceful-shutdown": "3.1.13",
     "kysely": "0.27.4",
+    "lru-cache": "11.0.2",
+    "p-memoize": "8.0.0",
     "pino": "9.5.0",
     "tarn": "3.0.2",
     "tedious": "18.6.1"

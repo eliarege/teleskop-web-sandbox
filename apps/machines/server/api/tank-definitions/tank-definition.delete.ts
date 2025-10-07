@@ -1,11 +1,53 @@
+import { z } from 'zod'
 import { knex } from '~/server/connectionPool'
 
+const deleteSchema = z.object({
+  machineId: z.number(),
+  tankNo: z.number(),
+})
+
 export default defineAuthEventHandler(async (event) => {
-  const { machineId, tankNo } = await readBody(event)
-  await knex('BFMACHINETANKS')
-    .where({
-      MACHINEID: machineId,
-      TANKNO: tankNo,
+  try {
+    const { machineId, tankNo } = await readBody(event)
+
+    const parsed = deleteSchema.safeParse({ machineId, tankNo })
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'INVALID_REQ_BODY',
+        data: {
+          message: 'INVALID_REQ_BODY',
+          errors: parsed.error.errors,
+        },
+      })
+    }
+    const deletedCount = await knex('BFMACHINETANKS')
+      .where({
+        MACHINEID: machineId,
+        TANKNO: tankNo,
+      })
+      .del()
+
+    if (deletedCount === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'TANK_DEFINITION_NOT_FOUND',
+        data: { message: 'TANK_DEFINITION_NOT_FOUND' },
+      })
+    }
+
+    return {
+      success: true,
+      message: 'TANK_DEFINITION_DELETED',
+    }
+  } catch (error: any) {
+    if (error.statusCode) {
+      throw error
+    }
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'INTERNAL_SERVER_ERROR',
+      data: { message: 'INTERNAL_SERVER_ERROR' },
     })
-    .del()
+  }
 })

@@ -8,7 +8,7 @@ const querySchema = z.object({
     .enum(supportedProjectLocales.map(l => l.code) as [string, ...string[]]),
 })
 
-export default defineAuthEventHandler(async (event) => {
+export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const { locale } = querySchema.parse(query)
   const localeId = supportedProjectLocales.find(l => l.code === locale)!.id

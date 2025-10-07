@@ -70,6 +70,7 @@ async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
     :rows="fails"
     :columns="columns"
     class="overflow-y-auto	h-220"
+    :rows-per-page-options="[0]"
     @update-filter-slots="evt => handleFilterSlotsUpdate(evt)"
   >
     <template #custombody="props">

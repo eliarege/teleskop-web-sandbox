@@ -876,7 +876,7 @@ export async function writeMachineParameterValues(machineId: number, tbb: TbbFtp
   return values
 }
 
-export async function writeUsers(machineId: number, tbb: TbbFtpClient, trx: Knex) {
+export async function writeUsers(tbb: TbbFtpClient, trx: Knex) {
   const users = await trx('BFUSERS').select({
     userId: 'userID',
     userName: 'userName',

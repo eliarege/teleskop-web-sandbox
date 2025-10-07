@@ -276,6 +276,11 @@ export interface DYBFBATCHPLANERPPARAMETERS {
   ERPVALUE: string
   ERPFIELDNAME: string | null
 }
+export interface DYBFBATCHPLANPARAMETERS {
+  PLANKEY: number
+  PARAMSTRING: string
+  VALUE: string | null
+}
 
 export interface DYBFBATCHPLAN {
   lastForJobOrder: number
@@ -294,11 +299,6 @@ export interface TeleskopDatabase {
   BFSTOPREASONS: BFSTOPREASONS
   BFMACHBATCHPARAMETERTYPES: BFMACHBATCHPARAMETERTYPES
   DYBFBATCHPLANERPPARAMETERS: DYBFBATCHPLANERPPARAMETERS
+  DYBFBATCHPLANPARAMETERS: DYBFBATCHPLANPARAMETERS
   DYBFBATCHPLAN: DYBFBATCHPLAN
-}
-
-export interface DmExchangeDatabase {
-  Dyelots: {
-    Dyelot: string
-  }
 }

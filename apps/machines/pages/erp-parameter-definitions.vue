@@ -4,6 +4,7 @@ import type { BatchParam, ErpParameter, Machine } from '~/types'
 
 const kc = useKeycloak()
 const { t } = useI18n()
+const { notifyError, notifySuccess } = useNotify()
 
 const machineColumns = computed<FilterableTableColumn[]>(() => ([
   {
@@ -194,6 +195,18 @@ const showImportBatchParametersDialog = ref(false)
 
 const selectedMachineId = computed(() => selectedMachine.value.machineId)
 
+const canAddParameter = computed(() => {
+  return selectedMachineId.value !== -1
+    && selectedParam.value.paramName?.trim()
+    && selectedParam.value.erpFieldName
+})
+
+const canEditParameter = computed(() => {
+  return selectedParam.value.paramId !== -1
+    && selectedParam.value.paramName?.trim()
+    && selectedParam.value.erpFieldName
+})
+
 const { data: machines } = useAuthFetch('/api/machines/machines', {
   default: () => [],
   method: 'POST',
@@ -240,46 +253,118 @@ async function handleParamSelection(obj: ErpParameter) {
 }
 
 async function addParam() {
-  if (params.value.length) {
-    const paramId = Math.max(...params.value.map(p => p.paramId)) + 1
+  if (selectedMachineId.value === -1) {
+    notifyError(t('pleaseSelectMachine'))
+    return
+  }
+
+  if (!selectedParam.value.paramName?.trim()) {
+    notifyError(t('pleaseEnterParameterName'))
+    return
+  }
+
+  if (!selectedParam.value.erpFieldName) {
+    notifyError(t('pleaseSelectErpFieldName'))
+    return
+  }
+
+  try {
+    const paramId = params.value.length ? Math.max(...params.value.map(p => p.paramId)) + 1 : 1
     await kc.fetch('/api/erp/erp-parameter', {
       method: 'POST',
       body: { paramId, machineId: selectedMachineId.value, erpParameter: selectedParam.value },
     })
     await refreshParams()
+    notifySuccess(t('parameterAddedSuccessfully'))
+
+    selectedParam.value = {
+      paramId: -1,
+      paramName: '',
+      erpFieldName: undefined,
+    }
+  } catch (error) {
+    notifyError(t('errorAddingParameter'))
   }
 }
 
 async function editParam() {
-  await kc.fetch('/api/erp/erp-parameter', {
-    method: 'PUT',
-    body: { erpParameter: selectedParam.value },
-  })
-  await refreshParams()
+  if (selectedParam.value.paramId === -1) {
+    notifyError(t('pleaseSelectParameterToEdit'))
+    return
+  }
+
+  if (!selectedParam.value.paramName?.trim()) {
+    notifyError(t('pleaseEnterParameterName'))
+    return
+  }
+
+  if (!selectedParam.value.erpFieldName) {
+    notifyError(t('pleaseSelectErpFieldName'))
+    return
+  }
+
+  try {
+    await kc.fetch('/api/erp/erp-parameter', {
+      method: 'PUT',
+      body: { erpParameter: selectedParam.value },
+    })
+    await refreshParams()
+    notifySuccess(t('parameterUpdatedSuccessfully'))
+  } catch (error) {
+    notifyError(t('errorUpdatingParameter'))
+  }
 }
 
 async function deleteParam() {
-  return await kc.fetch('/api/erp/erp-parameter', {
-    method: 'DELETE',
-    body: { erpParameter: selectedParam.value },
-  })
-  await refreshParams()
+  if (selectedParam.value.paramId === -1) {
+    notifyError(t('pleaseSelectParameterToDelete'))
+    return
+  }
+
+  try {
+    await kc.fetch('/api/erp/erp-parameter', {
+      method: 'DELETE',
+      body: { erpParameter: selectedParam.value },
+    })
+    await refreshParams()
+    notifySuccess(t('parameterDeletedSuccessfully'))
+
+    selectedParam.value = {
+      paramId: -1,
+      paramName: '',
+      erpFieldName: undefined,
+    }
+  } catch (error) {
+    notifyError(t('errorDeletingParameter'))
+  }
 }
 
-async function addBatchParam(batchParam: BatchParam) {
+async function addBatchParams(batchParams: BatchParam[]) {
   showImportBatchParametersDialog.value = false
-  await kc.fetch('/api/erp/erp-parameter', {
-    method: 'POST',
-    body: {
-      machineId: selectedMachineId.value,
-      paramId: params.value.length ? Math.max(...params.value.map(p => p.paramId)) + 1 : 1,
-      erpParameter: {
-        paramName: batchParam.paramString,
-        erpFieldName: null,
-      },
-    },
-  })
-  await refreshParams()
+
+  try {
+    let nextParamId = params.value.length ? Math.max(...params.value.map(p => p.paramId)) + 1 : 1
+
+    for (const batchParam of batchParams) {
+      await kc.fetch('/api/erp/erp-parameter', {
+        method: 'POST',
+        body: {
+          machineId: selectedMachineId.value,
+          paramId: nextParamId,
+          erpParameter: {
+            paramName: batchParam.paramString,
+            erpFieldName: null,
+          },
+        },
+      })
+      nextParamId++
+    }
+
+    await refreshParams()
+    notifySuccess(t('batchParametersImportedSuccessfully', { count: batchParams.length }))
+  } catch (error) {
+    notifyError(t('errorImportingBatchParameters'))
+  }
 }
 
 enum CopyMode {
@@ -357,16 +442,20 @@ const contextMenuOptions = computed(() => [
         <div class="flex flex-row justify-start input-field">
           <q-input
             v-model="selectedParam.paramName"
-            :label="t('parameterName')"
+            :label="`${t('parameterName')} *`"
             filled
             class="w-xs"
+            :error="!selectedParam.paramName?.trim() && selectedParam.paramName !== ''"
+            :error-message="t('pleaseEnterParameterName')"
           />
           <q-select
             v-model="selectedParam.erpFieldName"
             :options="paramOptions"
-            :label="t('erpFieldName')"
+            :label="`${t('erpFieldName')} *`"
             filled
             class="w-xs"
+            :error="!selectedParam.erpFieldName && selectedParam.erpFieldName !== undefined"
+            :error-message="t('pleaseSelectErpFieldName')"
           />
         </div>
 
@@ -374,12 +463,13 @@ const contextMenuOptions = computed(() => [
           <q-btn
             :label="t('add')"
             no-caps
+            :disable="!canAddParameter"
             @click="addParam"
           />
           <q-btn
             :label="t('edit')"
             no-caps
-            :disable="selectedParam.paramId === -1"
+            :disable="!canEditParameter"
             @click="editParam"
           />
           <q-btn
@@ -402,6 +492,7 @@ const contextMenuOptions = computed(() => [
             :rows="machines"
             :columns="machineColumns"
             class="overflow-y-auto	h-160 w-xl"
+            :rows-per-page-options="[0]"
             @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
           >
             <template #custombody="props">
@@ -425,6 +516,7 @@ const contextMenuOptions = computed(() => [
             :rows="params"
             :columns="parameterColumns"
             class="overflow-y-auto h-160 w-2xl"
+            :rows-per-page-options="[0]"
           >
             <template #custombody="props">
               <q-tr
@@ -449,7 +541,7 @@ const contextMenuOptions = computed(() => [
       v-if="showImportBatchParametersDialog"
       :show="showImportBatchParametersDialog"
       @close="showImportBatchParametersDialog = false"
-      @add-batch-param="addBatchParam"
+      @add-batch-params="addBatchParams"
     />
   </div>
 </template>

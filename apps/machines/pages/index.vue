@@ -443,6 +443,11 @@ function showEditModal() {
 }
 
 async function loadProject() {
+  if (!uuid.value) {
+    notifyError(t('connectionNotReady'))
+    return
+  }
+
   currentOperation.value = 'project'
 
   showSseLogs(projectContext)
@@ -491,6 +496,11 @@ async function loadProjectTranslations() {
 }
 
 async function receiveVersionInfo() {
+  if (!uuid.value) {
+    notifyError(t('connectionNotReady'))
+    return
+  }
+
   try {
     currentOperation.value = 'version'
 

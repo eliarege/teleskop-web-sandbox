@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
@@ -15,9 +16,15 @@ export default defineAuthEventHandler(async (event) => {
     archived: 'ARCHIVED',
   }
 
+  const timezoneOffset = useRuntimeConfig().teleskopTimezoneOffset
+
   const query = knex('BACONTROLLERCLOSEDTIMES')
     .leftJoin('BFMACHINES', 'BFMACHINES.MACHINEID', 'BACONTROLLERCLOSEDTIMES.MACHINEID')
-    .select(selectParams)
+    .select({
+      ...selectParams,
+      startTime: knex.raw('DATEADD(minute, ?, BACONTROLLERCLOSEDTIMES.STARTTIME)', [timezoneOffset]),
+      endTime: knex.raw('DATEADD(minute, ?, BACONTROLLERCLOSEDTIMES.ENDTIME)', [timezoneOffset]),
+    })
 
   if (filters)
     filtersToKnex(filters, selectParams, query)

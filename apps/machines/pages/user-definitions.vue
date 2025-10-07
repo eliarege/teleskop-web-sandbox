@@ -5,6 +5,20 @@ const { t } = useI18n()
 const kc = useKeycloak()
 const userTypeOptions = [{ label: t('Operator'), value: 1 }, { label: t('other'), value: 2 }]
 
+const { notifySuccess, notifyError } = useNotify()
+
+const selected = ref<Partial<User>>({
+  userId: -1,
+  userName: '',
+  userSurname: '',
+  userPass: '',
+  userInfo: '',
+  userActive: 0,
+  userType: -1,
+  userMode: '',
+  userMode2: '',
+})
+
 const columns = computed(() => ({
   userId: {
     label: t('userId'),
@@ -77,6 +91,7 @@ const columns = computed(() => ({
     schema: {
       filled: true,
       validation: 'required',
+      disabled: selected.value?.userId === 0,
     },
   },
   userInfo: {
@@ -116,47 +131,60 @@ const { data: users, refresh } = useAuthFetch('/api/user-definitions/user-defini
 })
 
 const showPermissionsDialog = ref(false)
-const selected = ref<Partial<User>>({
-  userId: -1,
-  userName: '',
-  userSurname: '',
-  userPass: '',
-  userInfo: '',
-  userActive: 0,
-  userType: -1,
-  userMode: '',
-  userMode2: '',
-})
 
 async function handleAdd(formData: Partial<User>) {
-  formData.userMode = selected.value.userMode
-  formData.userMode2 = selected.value.userMode2
-  await kc.fetch('/api/user-definitions/user-definition', {
-    method: 'POST',
-    body: formData,
-  })
-  await refresh()
+  try {
+    formData.userMode = selected.value.userMode
+    formData.userMode2 = selected.value.userMode2
+    await kc.fetch('/api/user-definitions/user-definition', {
+      method: 'POST',
+      body: formData,
+    })
+    await refresh()
+    notifySuccess(t('userAddedSuccessfully'))
+  } catch (error: any) {
+    if (error.statusCode === 409) {
+      if (error.statusMessage === 'ID_INUSE') {
+        notifyError(t('duplicateUserIdError'))
+      } else {
+        notifyError(error.statusMessage || t('duplicateUserIdError'))
+      }
+    } else {
+      notifyError(t('errorAddingUser'))
+    }
+  }
 }
 
 async function handleEdit(formData: Partial<User>) {
-  formData.userMode = selected.value.userMode
-  formData.userMode2 = selected.value.userMode2
-  await kc.fetch('/api/user-definitions/user-definition', {
-    method: 'PUT',
-    body:
-      formData,
-  })
-  await refresh()
+  console.log('formData', formData)
+  try {
+    formData.userMode = selected.value.userMode
+    formData.userMode2 = selected.value.userMode2
+    await kc.fetch('/api/user-definitions/user-definition', {
+      method: 'PUT',
+      body:
+        formData,
+    })
+    await refresh()
+    notifySuccess(t('userUpdatedSuccessfully'))
+  } catch (error: any) {
+    notifyError(error.statusMessage || t('errorUpdatingUser'))
+  }
 }
 
 async function handleDelete(formData: Partial<User>[]) {
-  await kc.fetch('/api/user-definitions/user-definition', {
-    method: 'DELETE',
-    body: {
-      userIds: formData.map(d => d.userId),
-    },
-  })
-  await refresh()
+  try {
+    await kc.fetch('/api/user-definitions/user-definition', {
+      method: 'DELETE',
+      body: {
+        userIds: formData.map(d => d.userId),
+      },
+    })
+    await refresh()
+    notifySuccess(t('userDeletedSuccessfully'))
+  } catch (error: any) {
+    notifyError(error.statusMessage || t('errorDeletingUser'))
+  }
 }
 
 async function handleSelect(formData: Partial<User>[]) {
@@ -165,7 +193,7 @@ async function handleSelect(formData: Partial<User>[]) {
 </script>
 
 <template>
-  <div>
+  <div class="dark:(text-white)">
     <FormTableKit
       :rows="users"
       :columns="columns"

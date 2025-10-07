@@ -3,7 +3,9 @@ import type { Machine, Setting } from '~/types'
 
 const { t } = useI18n()
 const kc = useKeycloak()
+const { notifySuccess, notifyError } = useNotify()
 const showAddMachineSystemSetting = ref(false)
+const isLoading = ref(false)
 
 interface MachineSetting extends Machine {
   check: boolean
@@ -70,9 +72,9 @@ const tokens = {
   ISEMRI_IPTAL_EDILDIGINDE_SEBEP_SOR: 'ISEMRI_IPTAL_EDILDIGINDE_SEBEP_SOR',
   KIMYASAL_BOYA_BILGILERINI_GOSTER: 'KIMYASAL_BOYA_BILGILERINI_GOSTER',
   DIGITAL_IO_EVENT_TIME: 'DIGITAL_IO_EVENT_TIME',
-  DIGITAL_IO_EVENT_TIME_MIN: 5,
-  DIGITAL_IO_EVENT_TIME_MAX: 60,
-  DIGITAL_IO_EVENT_TIME_DEFAULT: 60,
+  DIGITAL_IO_EVENT_TIME_MIN: '5',
+  DIGITAL_IO_EVENT_TIME_MAX: '60',
+  DIGITAL_IO_EVENT_TIME_DEFAULT: '60',
   T7_RIO_SLOT: 'T7_RIO_SLOT',
   ALARM_REPEAT_TIME: 'ALARM_REPEAT_TIME',
   SECOND_PLC_ACTIVE: 'SECOND_PLC_ACTIVE',
@@ -202,13 +204,60 @@ function handleDelete() {
 }
 
 async function handleSend() {
-  await kc.fetch('/api/sync/machine-settings', {
-    method: 'POST',
-    body: {
-      settings: selectedSettings.value,
-      machines: machines.value?.filter(machine => machine.check).map(machine => machine.machineId),
-    },
-  })
+  if (!selectedSettings.value.length) {
+    notifyError(t('pleaseSelectAtLeastOneSetting'))
+    return
+  }
+
+  const selectedMachines = machines.value?.filter(machine => machine.check)
+  if (!selectedMachines?.length) {
+    notifyError(t('pleaseSelectAtLeastOneMachine'))
+    return
+  }
+
+  isLoading.value = true
+
+  try {
+    const response = await kc.fetch('/api/sync/machine-settings', {
+      method: 'POST',
+      body: {
+        settings: selectedSettings.value,
+        machines: selectedMachines.map(machine => machine.machineId),
+      },
+      timeout: 60000,
+    })
+
+    if (response.success) {
+      notifySuccess(t('settingsUpdatedSuccessfully'))
+    } else {
+      const failedMachines = response.results.filter((r: any) => !r.success)
+      if (failedMachines.length > 0) {
+        const failedIps = failedMachines.map((m: any) => m.ip).join(', ')
+        notifyError(t('partialUpdateError', {
+          success: response.successCount,
+          total: response.totalMachines,
+          failedIps,
+        }))
+      }
+    }
+
+    selectedSettings.value = []
+    machines.value?.forEach(machine => machine.check = false)
+  } catch (error: any) {
+    console.error('Machine settings update error:', error)
+
+    if (error.message?.includes('timeout') || error.message?.includes('Timeout')) {
+      notifyError(t('timeoutError'))
+    } else if (error.statusCode === 500) {
+      notifyError(t('serverError'))
+    } else if (error.statusCode === 400) {
+      notifyError(error.statusMessage || t('validationError'))
+    } else {
+      notifyError(t('updateError'))
+    }
+  } finally {
+    isLoading.value = false
+  }
 }
 
 function selectAll() {
@@ -290,11 +339,17 @@ function deselectAll() {
         </div>
       </q-card-section>
       <q-card-actions align="right" class="flex gap-2 m-4">
-        <q-btn :label="t('cancel')" no-caps />
+        <q-btn
+          :label="t('cancel')"
+          no-caps
+          :disable="isLoading"
+        />
         <q-btn
           :label="t('submit')"
           color="primary"
           no-caps
+          :loading="isLoading"
+          :disable="isLoading || !selectedSettings.length || !machines?.some(m => m.check)"
           @click="handleSend"
         />
       </q-card-actions>

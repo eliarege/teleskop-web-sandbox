@@ -16,6 +16,7 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: '',
     teleskopInstanceName: '',
+    teleskopTimezoneOffset: -180,
     sseLoggingEnabled: 'true',
     public: {
       kcClientId: 'machines',

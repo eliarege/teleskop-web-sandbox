@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FilterableTableColumn, FilterableTableFilter } from '@teleskop/nuxt-base'
+import { formatSeconds } from '~/utils/formatSeconds'
 
 const kc = useKeycloak()
 const { t, d } = useI18n()
@@ -103,6 +104,9 @@ async function handleFilterSlotsUpdate(updatedValue: FilterableTableFilter[]) {
           </span>
           <span v-else-if="row.field === 'endTime'">
             {{ d(row.value, 'datetime') }}
+          </span>
+          <span v-else-if="row.field === 'duration'">
+            {{ formatSeconds(row.value) }}
           </span>
           <span v-else>
             {{ row.value }}
