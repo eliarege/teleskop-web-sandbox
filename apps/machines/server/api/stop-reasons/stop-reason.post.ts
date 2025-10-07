@@ -1,5 +1,5 @@
 import { knex } from '~/server/connectionPool'
-import { isSQLError } from '~/server/utils/error'
+import { MSSQL_ERROR, isSQLError } from '~/server/utils/error'
 
 export default defineAuthEventHandler(async (event) => {
   try {
@@ -21,14 +21,14 @@ export default defineAuthEventHandler(async (event) => {
 
     return res
   } catch (error: any) {
-    if (isSQLError(error, 2627) || isSQLError(error, 2601)) {
+    if (isSQLError(error, MSSQL_ERROR.PRIMARY_KEY_VIOLATION)) {
       throw createError({
         statusCode: 409,
-        statusMessage: 'ID_INUSE',
+        statusMessage: 'Duplicate entry',
       })
     }
 
-    if (isSQLError(error, 547)) {
+    if (isSQLError(error, MSSQL_ERROR.FOREIGN_KEY_VIOLATION)) {
       throw createError({
         statusCode: 400,
         statusMessage: 'BAD_REQUEST',
