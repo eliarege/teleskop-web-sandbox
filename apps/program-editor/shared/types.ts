@@ -36,6 +36,9 @@ export interface ProgramTableRow {
   autoChemReq: number
   autoDyeReq: number
   manDyeReq: number
+  saltReq: number
+  genericMat1Req: number
+  genericMat2Req: number
   updatedAtTBB: Date
 }
 
@@ -160,6 +163,9 @@ export interface ProgramHeader {
   autoChemReq: number
   autoDyeReq: number
   manDyeReq: number
+  saltReq: number
+  genericMat1Req: number
+  genericMat2Req: number
 }
 
 export interface ProgramHeaderUpdate {

@@ -51,19 +51,25 @@ export default defineAuthEventHandler(async (event) => {
         const autoChemReq = chemRequestCounters.get(CommandType.AutoChem) || 0
         const manDyeReq = chemRequestCounters.get(CommandType.ManDye) || 0
         const autoDyeReq = chemRequestCounters.get(CommandType.AutoDye) || 0
-        const totalChemReq = manChemReq + autoChemReq
+        const saltReq = chemRequestCounters.get(CommandType.SaltRequest) || 0
+        const genericMat1Req = chemRequestCounters.get(CommandType.GenericMaterial1) || 0
+        const genericMat2Req = chemRequestCounters.get(CommandType.GenericMaterial2) || 0
+        const totalChemReq = manChemReq + autoChemReq + saltReq + genericMat1Req + genericMat2Req
         const totalDyeReq = manDyeReq + autoDyeReq
 
         await trx('BFMASTERPRGHEADER')
           .where('MACHINEID', program.machineId)
           .andWhere('PROGNO', program.programNo)
           .update({
-            TotalChemReq: totalChemReq,
-            TotalDyeReq: totalDyeReq,
             ManChemReq: manChemReq,
             ManDyeReq: manDyeReq,
             AutoChemReq: autoChemReq,
             AutoDyeReq: autoDyeReq,
+            TOTALSALTREQ: saltReq,
+            TOTALGM1REQ: genericMat1Req,
+            TOTALGM2REQ: genericMat2Req,
+            TotalChemReq: totalChemReq,
+            TotalDyeReq: totalDyeReq,
           })
       }
     })
@@ -85,6 +91,9 @@ function createChemicalRequestCountMap(): Map<TCommandType, number> {
     [CommandType.AutoChem, 0],
     [CommandType.ManDye, 0],
     [CommandType.AutoDye, 0],
+    [CommandType.SaltRequest, 0],
+    [CommandType.GenericMaterial1, 0],
+    [CommandType.GenericMaterial2, 0],
   ])
 }
 

@@ -147,6 +147,9 @@ export class TonelloProgramClient implements ProgramClient {
       manDyeReq: 0,
       totalChemReq: 0,
       totalDyeReq: 0,
+      saltReq: 0,
+      genericMat1Req: 0,
+      genericMat2Req: 0,
     }
     for (const tonelloStep of tonelloProgram.steps) {
       const cmd: ProgramStepCommand = {

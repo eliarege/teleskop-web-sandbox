@@ -10,7 +10,7 @@ import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
 import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
-import { AdditiveType, CommandType, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
+import { AdditiveType, CommandType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
@@ -275,6 +275,9 @@ export class MachineController {
         autoChemReq: 'H.AutoChemReq',
         autoDyeReq: 'H.AutoDyeReq',
         manDyeReq: 'H.ManDyeReq',
+        saltReq: 'H.TOTALSALTREQ',
+        genericMat1Req: 'H.TOTALGM1REQ',
+        genericMat2Req: 'H.TOTALGM2REQ',
       })
       .from('BFMASTERPRGHEADER AS H')
       .where('H.MACHINEID', this.id)
@@ -338,6 +341,9 @@ export class MachineController {
         autoChemReq: 'P.AutoChemReq',
         autoDyeReq: 'P.AutoDyeReq',
         manDyeReq: 'P.ManDyeReq',
+        saltReq: 'P.TOTALSALTREQ',
+        genericMat1Req: 'P.TOTALGM1REQ',
+        genericMat2Req: 'P.TOTALGM2REQ',
       })
       .from('BFMASTERPRGHEADER AS P')
       .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
@@ -781,6 +787,9 @@ export class MachineController {
         autoChemReq: 'H.AutoChemReq',
         autoDyeReq: 'H.AutoDyeReq',
         manDyeReq: 'H.ManDyeReq',
+        saltReq: 'H.TOTALSALTREQ',
+        genericMat1Req: 'H.TOTALGM1REQ',
+        genericMat2Req: 'H.TOTALGM2REQ',
       })
       .from(' BFMASTERPRGHEADER AS H')
       .where('PROGNO', programNo)
@@ -930,9 +939,9 @@ export class MachineController {
       DefaultRecipeNo: '',
       ICONNAME: program.icon,
       ORDEROFREQUESTS: '',
-      TOTALSALTREQ: 0,
-      TOTALGM1REQ: 0,
-      TOTALGM2REQ: 0,
+      TOTALSALTREQ: program.saltReq || 0,
+      TOTALGM1REQ: program.genericMat1Req || 0,
+      TOTALGM2REQ: program.genericMat2Req || 0,
       PHASEVERSION: 1,
       INTERVENTIONFREEPROGRAM: 0,
     }]
@@ -1117,6 +1126,9 @@ export class MachineController {
     program.autoChemReq = chemRequests.get(CommandType.AutoChem) ?? 0
     program.autoDyeReq = chemRequests.get(CommandType.AutoDye) ?? 0
     program.manDyeReq = chemRequests.get(CommandType.ManDye) ?? 0
+    program.saltReq = chemRequests.get(CommandType.SaltRequest) ?? 0
+    program.genericMat1Req = chemRequests.get(CommandType.GenericMaterial1) ?? 0
+    program.genericMat2Req = chemRequests.get(CommandType.GenericMaterial2) ?? 0
 
     const steps: StepItem[] = []
     const parameters: StepParameter[] = []
@@ -1143,7 +1155,7 @@ export class MachineController {
       PRGSTATE: program.prgState ?? ProgramStatus.EXISTS_ONLY_ON_DATABASE,
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
-      TotalChemReq: program.manChemReq + program.autoChemReq,
+      TotalChemReq: program.manChemReq + program.autoChemReq + program.saltReq + program.genericMat1Req + program.genericMat2Req,
       TotalDyeReq: program.manDyeReq + program.autoDyeReq,
       ManChemReq: program.manChemReq,
       AutoChemReq: program.autoChemReq,
@@ -1152,9 +1164,9 @@ export class MachineController {
       DefaultRecipeNo: '',
       ICONNAME: program.icon,
       ORDEROFREQUESTS: '',
-      TOTALSALTREQ: 0,
-      TOTALGM1REQ: 0,
-      TOTALGM2REQ: 0,
+      TOTALSALTREQ: program.saltReq,
+      TOTALGM1REQ: program.genericMat1Req,
+      TOTALGM2REQ: program.genericMat2Req,
       PHASEVERSION: 1,
       INTERVENTIONFREEPROGRAM: 0,
     }]
@@ -1738,6 +1750,9 @@ export class MachineController {
       [CommandType.AutoChem, 0],
       [CommandType.ManDye, 0],
       [CommandType.AutoDye, 0],
+      [CommandType.SaltRequest, 0],
+      [CommandType.GenericMaterial1, 0],
+      [CommandType.GenericMaterial2, 0],
     ])
   }
 

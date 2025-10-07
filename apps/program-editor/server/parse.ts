@@ -325,5 +325,8 @@ function createEmptyProgram(): Program {
     autoChemReq: 0,
     autoDyeReq: 0,
     manDyeReq: 0,
+    saltReq: 0,
+    genericMat1Req: 0,
+    genericMat2Req: 0,
   }
 }

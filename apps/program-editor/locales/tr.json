@@ -115,7 +115,10 @@
     "manChemReq": "Man. Kim.",
     "autoChemReq": "Oto. Kim.",
     "autoDyeReq": "Oto. Boya",
-    "manDyeReq": "Man. Boya"
+    "manDyeReq": "Man. Boya",
+    "saltReq": "Tuz İstek",
+    "genericMat1Req": "JM-1 İstek",
+    "genericMat2Req": "JM-2 İstek"
   },
   "command": {
     "icon": "İkon",

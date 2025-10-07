@@ -115,7 +115,10 @@
     "manChemReq": "Man. Chem.",
     "autoChemReq": "Auto. Chem.",
     "autoDyeReq": "Auto. Dye.",
-    "manDyeReq": "Man. Dye."
+    "manDyeReq": "Man. Dye.",
+    "saltReq": "Salt Req.",
+    "genericMat1Req": "GM-1 Req.",
+    "genericMat2Req": "GM-2 Req."
   },
   "command": {
     "icon": "Icon",

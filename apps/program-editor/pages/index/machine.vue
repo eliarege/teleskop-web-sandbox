@@ -402,6 +402,27 @@ const allColumns = ref<ProgramTableColumn[]>([
     align: 'center',
   },
   {
+    name: 'saltReq',
+    label: tt('program.saltReq'),
+    field: 'saltReq',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    name: 'genericMat1Req',
+    label: tt('program.genericMat1Req'),
+    field: 'genericMat1Req',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    name: 'genericMat2Req',
+    label: tt('program.genericMat2Req'),
+    field: 'genericMat2Req',
+    sortable: false,
+    align: 'center',
+  },
+  {
     name: 'updated_at',
     label: tt('program.updated'),
     field: 'updatedAt',
