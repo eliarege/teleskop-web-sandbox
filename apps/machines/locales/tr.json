@@ -676,5 +676,8 @@
   "MACHINE_CONNECTION_TIMEOUT": "Makine bağlantısı zaman aşımına uğradı",
   "MACHINE_UNREACHABLE": "Makineye ulaşılamıyor",
   "FTP_CONNECTION_FAILED": "FTP bağlantısı başarısız",
-  "UPLOAD_DEFINITIONS_FAILED": "Tanımları yükleme başarısız"
+  "UPLOAD_DEFINITIONS_FAILED": "Tanımları yükleme başarısız",
+
+  "calculateRequestCountSuccess": "Program istek sayıları başarıyla hesaplandı",
+  "calculateRequestCountError": "Program istek sayıları hesaplanırken hata oluştu"
 }

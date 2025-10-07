@@ -675,5 +675,8 @@
   "MACHINE_CONNECTION_TIMEOUT": "Connection to machine timed out",
   "MACHINE_UNREACHABLE": "Machine is unreachable",
   "FTP_CONNECTION_FAILED": "FTP connection failed",
-  "UPLOAD_DEFINITIONS_FAILED": "Failed to upload definitions"
+  "UPLOAD_DEFINITIONS_FAILED": "Failed to upload definitions",
+
+  "calculateRequestCountSuccess": "Program request counts calculated successfully",
+  "calculateRequestCountError": "Error while calculating program request counts"
 }

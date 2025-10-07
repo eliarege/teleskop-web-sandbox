@@ -12,6 +12,7 @@ interface commandTypeMap {
 
 const kc = useKeycloak()
 const { t } = useI18n()
+const { notifySuccess, notifyError } = useNotify()
 const selectedMachineId = ref()
 const originalCommandTypes = ref<CommandType[]>([])
 
@@ -101,6 +102,8 @@ function handleDragDrop(e: SortableEvent, commandMap: commandTypeMap) {
   }
 }
 
+const counting = ref(false)
+
 async function handleSubmit() {
   await kc.fetch('/api/commands/command-types', {
     method: 'PUT',
@@ -109,11 +112,20 @@ async function handleSubmit() {
   originalCommandTypes.value = klona(commandTypes.value)
 }
 async function requestCount() {
-  await kc.fetch('/api/commands/calculate-request-count', {
-    method: 'POST',
-    body: { machineId: selectedMachineId.value },
-  })
-  await refresh()
+  counting.value = true
+  try {
+    await kc.fetch('/api/commands/calculate-request-count', {
+      method: 'POST',
+      body: { machineId: selectedMachineId.value },
+    })
+    await refresh()
+    notifySuccess(t('calculateRequestCountSuccess'))
+  } catch (error) {
+    console.error('Error calculating request count:', error)
+    notifyError(t('calculateRequestCountError'))
+  } finally {
+    counting.value = false
+  }
 }
 const copy = ref()
 
@@ -251,6 +263,7 @@ const contextMenuOptions = computed(() => [
         />
         <q-btn
           :label="t('calculateReqCount')"
+          :loading="counting"
           no-caps
           color="primary"
           :disabled="!selectedMachineId"
