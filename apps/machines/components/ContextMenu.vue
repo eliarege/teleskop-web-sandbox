@@ -9,13 +9,11 @@ export interface IContextMenuOption {
 
 const props = defineProps<{
   options: IContextMenuOption[]
-  target?: string | boolean | Element
+  target?: string | Element
 }>()
-
 const emit = defineEmits<{
   click: [option: IContextMenuOption]
 }>()
-
 function handleClick(event: Event, option: IContextMenuOption) {
   if (option.disabled)
     event.preventDefault()
@@ -31,7 +29,7 @@ function handleClick(event: Event, option: IContextMenuOption) {
     context-menu
     class="whitespace-nowrap"
     :transition-duration="0"
-    :target
+    :target="props.target"
   >
     <q-list>
       <q-item

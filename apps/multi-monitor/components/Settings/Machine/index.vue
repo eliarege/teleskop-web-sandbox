@@ -9,7 +9,7 @@ const { t } = useI18n()
   <div class="w-full bg-gray-100 rounded m-1 py-1">
     <span class="settings-title inline-block mb-3">{{ t('settings.machine-settings') }}</span>
     <q-separator />
-    <div class="grid grid-cols-2 w-full">
+    <div class="grid grid-cols-2 md:grid-cols-2 sm:grid-cols-1 w-full gap-4 md:gap-0 sm:gap-4">
       <div>
         <span class="settings-sub-title inline-block mb-2px">
           {{ t("settings.sort-by") }}
@@ -34,7 +34,7 @@ const { t } = useI18n()
       <SettingsMachineSort :machines="store.machines" />
     </div>
     <q-separator class="my-10" />
-    <div class="flex w-full h-full gap-3">
+    <div class="flex md:flex sm:block w-full h-full gap-3 md:gap-3 sm:gap-0">
       <SettingsMachineErpParameters :machines="store.machines" />
     </div>
     <q-separator class="my-10" />

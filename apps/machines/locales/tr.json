@@ -48,6 +48,7 @@
   "duplicateMaterialError": "Bu materyal bu makineye zaten atanmış.",
   "connectionNotReady": "Bağlantı henüz hazır değil. Lütfen sayfayı yenileyip tekrar deneyin.",
   "ipRequired": "Versiyon bilgisi almak için IP adresi gerekli.",
+  "calculateReqCount": "Program İstek Sayısı Hesapla",
   "addMachine": "Makine Ekle",
   "editMachine": "Makine Düzenle",
   "deleteMachines": "Makineleri Sil",
@@ -675,5 +676,8 @@
   "MACHINE_CONNECTION_TIMEOUT": "Makine bağlantısı zaman aşımına uğradı",
   "MACHINE_UNREACHABLE": "Makineye ulaşılamıyor",
   "FTP_CONNECTION_FAILED": "FTP bağlantısı başarısız",
-  "UPLOAD_DEFINITIONS_FAILED": "Tanımları yükleme başarısız"
+  "UPLOAD_DEFINITIONS_FAILED": "Tanımları yükleme başarısız",
+
+  "calculateRequestCountSuccess": "Program istek sayıları başarıyla hesaplandı",
+  "calculateRequestCountError": "Program istek sayıları hesaplanırken hata oluştu"
 }

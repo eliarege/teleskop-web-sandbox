@@ -43,7 +43,7 @@ function toggleAll() {
 </script>
 
 <template>
-  <div :class="selectedMachines.length > 0 ? 'border-1' : ''">
+  <div :class="selectedMachines.length > 0 ? 'border-1' : ''" class="md:max-h-48 sm:max-h-32 overflow-auto">
     <q-list>
       <q-item v-show="erpKey" dense>
         <q-item-section avatar>
@@ -55,7 +55,7 @@ function toggleAll() {
           />
         </q-item-section>
         <q-item-section>
-          Tümünü Seç
+          <span class="md:text-sm sm:text-xs">Tümünü Seç</span>
         </q-item-section>
       </q-item>
 
@@ -73,7 +73,7 @@ function toggleAll() {
           />
         </q-item-section>
         <q-item-section>
-          {{ machine.name }}
+          <span class="md:text-sm sm:text-xs">{{ machine.name }}</span>
         </q-item-section>
       </q-item>
     </q-list>

@@ -1,5 +1,5 @@
 import { knex } from '~/server/connectionPool'
-import { MSSQL_ERROR, isSQLError } from '~/server/utils/error'
+import { MSSQL_ERROR, isSQLError } from '~/server/lib/error'
 import type { User } from '~/types'
 
 export default defineAuthEventHandler(async (event) => {

@@ -45,6 +45,7 @@
   "duplicateMaterialError": "This material is already assigned to this machine.",
   "connectionNotReady": "Connection is not ready yet. Please refresh the page and try again.",
   "ipRequired": "IP address is required to get version information.",
+  "calculateReqCount": "Calculate Program Request Count",
   "addMachine": "Add Machine",
   "editMachine": "Edit Machine",
   "deleteMachines": "Delete Machines",
@@ -110,7 +111,7 @@
   "getDyeHouseDefinitions": "Get Dyehouse Definitions",
   "setDyeHouseDefinitions": "Set Dyehouse Definitions",
   "machineName": "Machine Name",
-  "machineNo": "Machine No.",
+  "machineNo": "Machine No",
   "group": "Group",
   "model": "Model",
   "version": "Version",
@@ -674,5 +675,8 @@
   "MACHINE_CONNECTION_TIMEOUT": "Connection to machine timed out",
   "MACHINE_UNREACHABLE": "Machine is unreachable",
   "FTP_CONNECTION_FAILED": "FTP connection failed",
-  "UPLOAD_DEFINITIONS_FAILED": "Failed to upload definitions"
+  "UPLOAD_DEFINITIONS_FAILED": "Failed to upload definitions",
+
+  "calculateRequestCountSuccess": "Program request counts calculated successfully",
+  "calculateRequestCountError": "Error while calculating program request counts"
 }
