@@ -1,8 +1,97 @@
 # Changelog
 
+## 0.50.0 - 2025-10-07
+
+[Compare Changes](94c8b49fde406d28eac92f71c252d7c818ddfa51...19a0f3dcb2c39dcd019aa29dd1b7bfe7cb11d3f9)
+
+### 🚀 Features
+
+-  **PE**: Fixed errors during program copy, updated component, improved i18n support ([a4e3903](a4e39030c99c515131fc72cf78771fa2a7c1ff57))
+-  **PE**: Added additional process type ([f728fd3](f728fd369d0466e96684940b009168f6f00f7d74))
+- **migration-service**: Add down parameter ([4543227](45432279e500ad8df6582b333454eb16f38716d8))
+-  **PE**: Updated ChangeProcessType diaolog ([8da7df9](8da7df9a2e50e63d906280ffc36e280b64e4d522))
+-  **PE**: Added additional process type in program table. ([4c97cb1](4c97cb1b7d4ee9c987d55785f96246164c6e73d1))
+-  **PE**: Add additional process type migration and update parameter value index ([a5d3c71](a5d3c713caadf1be2f67712b55f096a3b40be79c))
+-  **PE**: Add ADDITIONAL_PROCESS_CODE line to program file ([cd55b59](cd55b59375fb1a50e4d1f05d9ce04b50d5c199fa))
+-  **PE**: Update parse function to handle optional lines ([a9f2104](a9f210473d6e69036e857e054d43b8c11b8c12a2))
+- **migrations**: Add enableLegacyMigrations configuration to control migration execution ([4c67fbb](4c67fbb351859ac990f939258742e1b3bdd9d0a5))
+-  **PE**: Make value field settable for process type ([1627f29](1627f29e20ca9da0e53e564e4542515f5e041547))
+-  **MA**: Add rows-per-page options to FilterableTable component and update machine-access-fails page ([8b784ef](8b784ef0cc713a31fc1cfabfa8289c71592a496e))
+-  **MA**: Add formatSeconds utility for consistent duration formatting ([2215f69](2215f69cf6c651ccc2ba0d738aa5c5559246cd40))
+-  **MA**: Implement request count calculation and update logic for command types ([19321fa](19321fa3731d41a8482c2c3ddec435f35ac1ffb7))
+-  **MA**: Add success and error messages for request count calculation ([21e3432](21e343213620a4a6afe6c385ce647e14d859a117))
+- Iovalues-server ([016a45d](016a45db03188dd5a992d3ff3ada7f2963f731ca))
+-  **PE**: Add support for salt and generic material requests in program calculations and UI ([5a2d51a](5a2d51af95c7daa7ad458e0eff7d4eccec358567))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Resolved isLoading error during program copy & paste ([f694cad](f694cad10d34bc4fa16c42d5a8e67ba381beb8c9))
+-  **PE**: Use onDialogCancel onHide at `CMChangeProgramNoOnPasteDialog` ([a40b5af](a40b5af08da02e9e08e6d8b5b4931f2458a18c30))
+-  **PT**: Correct calculation of realDuration in QueueBased component and update color codes in Tree component ([403697b](403697bd99db0160dbe3c838d12c3d0da8bb48a9))
+-  **PE**: Update process types dialog and resolve existing errors ([61e64b4](61e64b4a444ae79bc23477b0e6bf52d45960a831))
+-  **PE**: Allow process number to be zero ([ca3785c](ca3785c76cc55e43215a81564da60b9904ed511b))
+-  **PE**: Updated parameter group migrations ([9f48cf9](9f48cf95a1dafde2a565b2815663f4cea7c7de35))
+-  **PE**: Replace console with server pino logger ([1ef4f02](1ef4f02a5537db697062bff939b86a1a53beaa4e))
+-  **MM**: Prevent archive link from displaying when runningBatchStatus is 0 ([23ad9af](23ad9af68f29587a320f0f1334aa2a08aee3edc3))
+-  **MM**: Update connection status display logic in MachineCard component ([19448c7](19448c7d07e73ce014d3032aa549389ef39545b7))
+-  **MM**: Adjust layout and styling in various settings components for improved UI consistency ([af7c0d8](af7c0d887c450e4bbb1a0c69d68930d60cf3adff))
+-  **MA**: Improve machine settings update process with error handling and loading state ([ed17816](ed178166218a0f27b7e24f27e26732ae514636e2))
+-  **MA**: Add error handling for user addition and notify on success/failure ([84d12f4](84d12f44edcaeae0e7c45a8c35240377484e4f59))
+-  **MA**: Refactor user selection handling and improve validation logic ([60b0a0f](60b0a0f721050a49d9d29a33876c644e527ee4d2))
+-  **MA**: Adjust timezone handling in machine access fails API and config ([21bac20](21bac202b304d58516f30d1e4b27f1df46e1069b))
+-  **MA**: Update timezone offset environment variable to NUXT_TELESKOP_TIMEZONE_OFFSET ([0703102](07031023f6c4d9bd9eb3716c10a1500eb11d9e2f))
+-  **MA**: Adjust timezone handling in closed times query to use environment variable ([a517215](a517215dd4be5077016efe74f0803a148f3d78bf))
+-  **MA**: Add duration formatting to closed times display ([d987eec](d987eec6426145e8b9a1910b1d7246bb237f7812))
+-  **MA**: Update label for command type parameters to manual reasons ([08e38e7](08e38e72a66393c81b9738e8776f9331422e3235))
+-  **MA**: Refactor stopCode assignment in handleAdd function for clarity ([2e06d91](2e06d912c3f1945904c7842fb7c02ca24ca0bb66))
+-  **MA**: Enhance error handling in stop reasons API and improve response validation ([51cf855](51cf855f3efad59788a2db21c492d5a7ad4db697))
+-  **MA**: Refactor handleAdd function to improve nextId calculation for reasonId ([e51b76c](e51b76c2f0c5b473098568ec68728e1d4da0bb13))
+-  **MA**: Standardize statusMessage formatting for ID_INUSE error across stop and user definition handlers ([9184fd6](9184fd68897051a539a3cd798259b464764a8cc6))
+-  **MA**: Improve error handling and update command number in smart request commands API ([e9c846f](e9c846fd59c13bfef4efb72c99a8bc89f520c89d))
+-  **MA**: Enhance error handling and notifications in machine add, edit, and delete functions ([0f88eb5](0f88eb535d08bec495bed57fe8e7dd2bb4de54a1))
+-  **MA**: Enhance error handling and validation in tank definition API endpoints ([e60eb5f](e60eb5f33272116bb240b28c7affa260acb40dc1))
+-  **MA**: Enhance error handling and validation in material-tank mapping API endpoints ([a720374](a720374ff00f3a97b17ad148881573a545d7b256))
+-  **MA**: Improve material handling in tank management by ensuring state updates on item deletion and drag-drop actions ([f075dd5](f075dd50af5bf6bcfe7245f4827a2f359d0f271f))
+-  **MA**: Update batch parameter handling to support multiple parameters and improve function naming consistency ([f078968](f078968bf9b6cdf9ca3f5985ee8321b319762c4a))
+-  **MA**: Enhance parameter validation and error notifications in ERP parameter management ([83fbe2d](83fbe2dbd817eaad8bc7fae5646e9d16c92380f0))
+-  **MA**: Enhance parameter handling and validation in starting parameter types component ([6e838a5](6e838a53ad0f219d2b2c9b25acb0f2b1583e1e17))
+-  **MA**: Enhance error handling and success notifications in treatment parameter and machine group management ([946b832](946b83290ee00b6d1fa38c1969a0b06f2267a9c2))
+-  **MA**: Enhance error handling and validation in consumption counter management ([aa025c8](aa025c8732f338477b975b42fcce1093682b6a72))
+-  **MA**: Enhance success and error notifications in theoretical water consumption management ([46a5552](46a555258cdf9e85db3cfd5cf54b2a115a133562))
+-  **MA**: Enhance validation and error handling for machine parameters and duplicate checks ([b17b85c](b17b85ca207c07f09d87fc5aded7dd8ffaba2262))
+-  **MA**: Enhance error messages and success notifications in machine management localization ([10c426d](10c426d5ac70e0f362a3c2db3a49835f46b8aa23))
+-  **MA**: Enhance error handling and success notifications for command timeout reasons and machine operations ([bd97c59](bd97c59aa6a3492eaac4070defaeb2e58fc5d6e0))
+-  **MA**: Update dependencies and enhance caching mechanisms in machine status API ([33c6338](33c6338dcaf0fd0e54434b34c8427097138eab7d))
+- **project-translations**: Removed required login for project translations ([7a45544](7a45544422519acba2548ab7a7b972441be46fb6))
+-  **MA**: Simplify duplicate machine ID check logic in API ([12d96d7](12d96d75567b02b454c9ba145855515403451848))
+-  **MA**: Zod schemas moved to top level scope ([47ba8f0](47ba8f0037a5c4817c5f4ab02ef3fcf43e7e0489))
+-  **MA**: Implement isSQLError utility for consistent error handling across APIs ([5bac808](5bac80851a67561fed6c412776c0beb219967eb7))
+-  **MA**: Streamline error handling for foreign key constraints in POST and remove duplicate check in PUT ([503c393](503c393f29489e8b0d871fea4a85f293a63d7f8f))
+-  **MA**: Remove redundant tank existence check before deletion in delete handler ([e2a9895](e2a9895cfe2a7625c4d701cd52f9687cd3c30ca7))
+-  **MA**: Replace inline IP regex with constant for improved readability and maintainability ([c05bd9d](c05bd9d0d0f64d00858f69ecc06aec82e8c2271f))
+-  **MA**: Remove redundant existence checks before deletion in delete handlers for treatment parameters and machine groups ([1c17ac9](1c17ac9d7162de0a521d2d38ad9f372c4debd625))
+-  **MA**: IsSQLError should handle AggregateError ([d662659](d6626599dfd6e4052252c281d489e558f6c05d58))
+-  **MM**: Added missing sortMachine default & bottom margin for defaults button ([d719d3d](d719d3d720eedf123deb41529f92d67aeecc2a3a))
+
+### ♻️ Refactor
+
+-  **PE**: Update process operation functions ([36a75cc](36a75cc05da85784c781888338aa45787f90d0eb))
+-  **PE**: Updated create process type components ([4395021](43950214bc1291f63913418d30cad384af70f2ab))
+-  **MA**: Standardize SQL error handling with MSSQL_ERROR constants ([79bf2f7](79bf2f7e843472e6a865d029cf6d16f68da6d88b))
+
+### 🔧 Miscellaneous Tasks
+
+- Add node-app generator with configuration, database, and server setup ([2115230](2115230a03ce97633008aaaf73a6da893321ecdd))
+- **migration-service**: Update migration files ([1bf9193](1bf9193f12c63e7ef06967860fadf83f5d000c49))
+-  **PE**: Update process type naming ([c615f7c](c615f7ca5c45c4572762cb7b4e0b0059dca9137c))
+- **migrations**: Move changes made in migration files to their separate migration file ([c9c1c4d](c9c1c4d172ae825e45aa241c39117e6f778cd760))
+-  **PE**: Drop redundant PK validations ([5557751](5557751fe9837a3212da0b7100a6a9b37c1f956b))
+-  **MM**: Mobile UI for new settings modal ([452e50b](452e50b422aa0f0f1fd5d6f611569ad34745e4ad))
+- Update lockfile ([19a0f3d](19a0f3dcb2c39dcd019aa29dd1b7bfe7cb11d3f9))
+
 ## 0.49.0 - 2025-09-29
 
-[Compare Changes](b2c8a6f56e69d0c1eb85f30e4f0441e71fb8b630...b183bd8c8cdff4ae3d46663a021372f76eda3162)
+[Compare Changes](b2c8a6f56e69d0c1eb85f30e4f0441e71fb8b630...94c8b49fde406d28eac92f71c252d7c818ddfa51)
 
 ### 🚀 Features
 
