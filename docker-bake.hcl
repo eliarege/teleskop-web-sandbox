@@ -87,6 +87,14 @@ target "dispensing-manager-ui" {
   }
 }
 
+target "iovalues-server" {
+  inherits = ["_common"]
+  target = "node-app"
+  args = {
+    APP_BUILD_DIR = "dist"
+  }
+}
+
 target "machine-status" {
   inherits = ["_common"]
   target = "node-app"
