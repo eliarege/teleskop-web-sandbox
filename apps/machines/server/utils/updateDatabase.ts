@@ -993,60 +993,192 @@ export async function writeCommandAlarmReasons(machineId: number, tbb: TbbFtpCli
 }
 
 export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: Knex) {
-  let maxVersion = -1
+  // Determine new version number
   const trxTime = trx.fn.now()
-  const version = await trx('BAMASTERCOMMANDS').where('MACHINEID', machineId).max('MACHINECOMMANDSETNO as maxVersion')
-  maxVersion = version[0].maxVersion || 0
+  const versionRow = await trx('BAMASTERCOMMANDS')
+    .where('MACHINEID', machineId)
+    .max('MACHINECOMMANDSETNO as maxVersion')
 
-  maxVersion++
+  const previousVersion: number | null = versionRow[0].maxVersion ?? null
+  const newVersion = (previousVersion ?? 0) + 1
 
   try {
-    await trx('BAMASTERCOMMANDS')
-      .update({ RELEASEENDDATE: trxTime })
+    // Close previous version if exists
+    if (previousVersion !== null) {
+      await trx('BAMASTERCOMMANDS')
+        .update({ RELEASEENDDATE: trxTime })
+        .where('MACHINEID', machineId)
+        .andWhere('MACHINECOMMANDSETNO', previousVersion)
+    }
+
+    // Fetch current master data to snapshot
+    const masterCommands = await trx('BFMASTERCOMMANDS')
       .where('MACHINEID', machineId)
-      .andWhere('MACHINECOMMANDSETNO', maxVersion)
+      .select(
+        'COMMANDNO',
+        'FUNCTIONID',
+        'TBBFUNTIONNAME',
+        'NAME',
+        'ACTIVATED',
+        'ADVICELIST',
+        'DONTUSELIST',
+        'ISRUNMANUAL',
+        'COMMANDTYPE',
+        'MOVEPARALLEL',
+        'TBBCHANGETIME',
+        'X',
+        'Y',
+        'A',
+        'B',
+        'MAXA',
+        'ISTEMPERATURE',
+        'ISUNLOAD',
+        'ICON',
+        'GROUPID',
+      )
 
-    await trx('BAMASTERCOMMANDS')
-      .insert(function (this: Knex) {
-        this.select('MACHINEID', trx.raw(maxVersion), trxTime, trx.raw('NULL'), 'COMMANDNO', 'FUNCTIONID', 'TBBFUNTIONNAME', 'BFMASTERCOMMANDS.NAME as NAME', 'ACTIVATED', 'ADVICELIST', 'DONTUSELIST', 'ISRUNMANUAL', 'COMMANDTYPE', 'MOVEPARALLEL', 'TBBCHANGETIME', 'X', 'Y', 'A', 'B', 'MAXA', 'ISTEMPERATURE', 'ISUNLOAD', 'BFMASTERCOMMANDS.ICON', 'BFMASTERCOMMANDS.GROUPID')
-          .from('BFMASTERCOMMANDS')
-          .where('MACHINEID', '=', machineId)
-      })
+    const alarms = await trx('BFMASTERCOMMANDSALARMS')
+      .where('MACHINEID', machineId)
+      .select('COMMANDNO', 'ALARMINDEX', 'ALARMNO', 'ALARM', 'UNIVERSALALARMNO')
 
-    await trx('BAMASTERCOMMANDSALARMS')
-      .insert(function (this: Knex) {
-        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'ALARMINDEX', 'ALARMNO', 'ALARM', 'UNIVERSALALARMNO')
-          .from('BFMASTERCOMMANDSALARMS')
-          .where('MACHINEID', '=', machineId)
-      })
+    const returnValues = await trx('BFMASTERCOMMANDRETURNVALUES')
+      .where('MACHINEID', machineId)
+      .select('COMMANDNO', 'RETURNVALUEINDEX', 'RETURNVALUENAME', 'CANSHOW', 'SPRELATION')
 
-    await trx('BAMASTERCOMMANDRETURNVALUES')
-      .insert(function (this: Knex) {
-        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'RETURNVALUEINDEX', 'RETURNVALUENAME', 'CANSHOW', 'SPRELATION')
-          .from('BFMASTERCOMMANDRETURNVALUES')
-          .where('MACHINEID', '=', machineId)
-      })
+    const commandIOs = await trx('BFCOMMANDINPUTOUTPUTS')
+      .where('MACHINEID', machineId)
+      .select('COMMANDNO', 'IOINDEX', 'IOID', 'IOTYPE', 'NAME')
 
-    await trx('BACOMMANDINPUTOUTPUTS')
-      .insert(function (this: Knex) {
-        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'IOINDEX', 'IOID', 'IOTYPE', 'NAME')
-          .from('BFCOMMANDINPUTOUTPUTS')
-          .where('MACHINEID', '=', machineId)
-      })
+    const selectionList = await trx('BFCOMMANDSELECTIONLIST')
+      .where('MACHINEID', machineId)
+      .select('COMMANDNO', 'IOINDEX', 'SELECTINDEX', 'IOTYPE', 'IOID', 'NAME', 'SELECTEDIOID', 'ISDEFAULT')
 
-    await trx('BACOMMANDSELECTIONLIST')
-      .insert(function (this: Knex) {
-        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'IOINDEX', 'SELECTINDEX', 'IOTYPE', 'IOID', 'NAME', 'SELECTEDIOID', 'ISDEFAULT')
-          .from('BFCOMMANDSELECTIONLIST')
-          .where('MACHINEID', '=', machineId)
-      })
+    const parameters = await trx('BFCOMMANDPARAMETERS')
+      .where('MACHINEID', machineId)
+      .select(
+        'COMMANDNO',
+        'PARAMETERINDEX',
+        'PARAMSTRING',
+        'VALUE',
+        'PARAMETERTYPE',
+        'SELECTIONLIST',
+        'SELECTIONVALUES',
+        'UNITCODE',
+        'PARAMLOWLIMIT',
+        'PARAMHIGHLIMIT',
+        'CONTAINSVARIABLE',
+        'TEMPERATURE',
+        'USEDEFAULT',
+        'ISCOMMANDVARIABLE',
+        'TBBFORMUL',
+        'USEFORMULA',
+      )
 
-    await trx('BACOMMANDPARAMETERS')
-      .insert(function (this: Knex) {
-        this.select(trx.raw(machineId), trx.raw(maxVersion), 'COMMANDNO', 'PARAMETERINDEX', 'PARAMSTRING', 'VALUE', 'PARAMETERTYPE', 'SELECTIONLIST', 'SELECTIONVALUES', 'UNITCODE', 'PARAMLOWLIMIT', 'PARAMHIGHLIMIT', 'CONTAINSVARIABLE', 'TEMPERATURE', 'USEDEFAULT', 'ISCOMMANDVARIABLE', 'TBBFORMUL', 'USEFORMULA')
-          .from('BFCOMMANDPARAMETERS')
-          .where('MACHINEID', '=', machineId)
-      })
+    // Prepare batch insert payloads
+    const masterCommandsInserts = masterCommands.map(mc => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      RELEASESTARTDATE: trxTime,
+      RELEASEENDDATE: null,
+      COMMANDNO: mc.COMMANDNO,
+      FUNCTIONID: mc.FUNCTIONID,
+      TBBFUNTIONNAME: mc.TBBFUNTIONNAME,
+      NAME: mc.NAME,
+      ACTIVATED: mc.ACTIVATED,
+      ADVICELIST: mc.ADVICELIST,
+      DONTUSELIST: mc.DONTUSELIST,
+      ISRUNMANUAL: mc.ISRUNMANUAL,
+      COMMANDTYPE: mc.COMMANDTYPE,
+      MOVEPARALLEL: mc.MOVEPARALLEL,
+      TBBCHANGETIME: mc.TBBCHANGETIME,
+      X: mc.X,
+      Y: mc.Y,
+      A: mc.A,
+      B: mc.B,
+      MAXA: mc.MAXA,
+      ISTEMPERATURE: mc.ISTEMPERATURE,
+      ISUNLOAD: mc.ISUNLOAD,
+      ICON: mc.ICON,
+      GROUPID: mc.GROUPID,
+    }))
+
+    const alarmsInserts = alarms.map(a => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      COMMANDNO: a.COMMANDNO,
+      ALARMINDEX: a.ALARMINDEX,
+      ALARMNO: a.ALARMNO,
+      ALARM: a.ALARM,
+      UNIVERSALALARMNO: a.UNIVERSALALARMNO,
+    }))
+
+    const returnValuesInserts = returnValues.map(r => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      COMMANDNO: r.COMMANDNO,
+      RETURNVALUEINDEX: r.RETURNVALUEINDEX,
+      RETURNVALUENAME: r.RETURNVALUENAME,
+      CANSHOW: r.CANSHOW,
+      SPRELATION: r.SPRELATION,
+    }))
+
+    const commandIOInserts = commandIOs.map(io => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      COMMANDNO: io.COMMANDNO,
+      IOINDEX: io.IOINDEX,
+      IOID: io.IOID,
+      IOTYPE: io.IOTYPE,
+      NAME: io.NAME,
+    }))
+
+    const selectionListInserts = selectionList.map(sl => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      COMMANDNO: sl.COMMANDNO,
+      IOINDEX: sl.IOINDEX,
+      SELECTINDEX: sl.SELECTINDEX,
+      IOTYPE: sl.IOTYPE,
+      IOID: sl.IOID,
+      NAME: sl.NAME,
+      SELECTEDIOID: sl.SELECTEDIOID,
+      ISDEFAULT: sl.ISDEFAULT,
+    }))
+
+    const parametersInserts = parameters.map(p => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      COMMANDNO: p.COMMANDNO,
+      PARAMETERINDEX: p.PARAMETERINDEX,
+      PARAMSTRING: p.PARAMSTRING,
+      VALUE: p.VALUE,
+      PARAMETERTYPE: p.PARAMETERTYPE,
+      SELECTIONLIST: p.SELECTIONLIST,
+      SELECTIONVALUES: p.SELECTIONVALUES,
+      UNITCODE: p.UNITCODE,
+      PARAMLOWLIMIT: p.PARAMLOWLIMIT,
+      PARAMHIGHLIMIT: p.PARAMHIGHLIMIT,
+      CONTAINSVARIABLE: p.CONTAINSVARIABLE,
+      TEMPERATURE: p.TEMPERATURE,
+      USEDEFAULT: p.USEDEFAULT,
+      ISCOMMANDVARIABLE: p.ISCOMMANDVARIABLE,
+      TBBFORMUL: p.TBBFORMUL,
+      USEFORMULA: p.USEFORMULA,
+    }))
+
+    // Perform batched inserts
+    if (masterCommandsInserts.length)
+      await insertBatch(trx, 'BAMASTERCOMMANDS', masterCommandsInserts)
+    if (alarmsInserts.length)
+      await insertBatch(trx, 'BAMASTERCOMMANDSALARMS', alarmsInserts)
+    if (returnValuesInserts.length)
+      await insertBatch(trx, 'BAMASTERCOMMANDRETURNVALUES', returnValuesInserts)
+    if (commandIOInserts.length)
+      await insertBatch(trx, 'BACOMMANDINPUTOUTPUTS', commandIOInserts)
+    if (selectionListInserts.length)
+      await insertBatch(trx, 'BACOMMANDSELECTIONLIST', selectionListInserts)
+    if (parametersInserts.length)
+      await insertBatch(trx, 'BACOMMANDPARAMETERS', parametersInserts)
 
     return true
   } catch (error: any) {
