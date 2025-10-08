@@ -1078,7 +1078,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
     const masterCommandsInserts = masterCommands.map(mc => ({
       MACHINEID: machineId,
       MACHINECOMMANDSETNO: newVersion,
-      RELEASESTARTDATE: trxTime,
+      RELEASEDATE: trxTime,
       RELEASEENDDATE: null,
       COMMANDNO: mc.COMMANDNO,
       FUNCTIONID: mc.FUNCTIONID,
