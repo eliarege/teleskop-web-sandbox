@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { addSeconds, differenceInMilliseconds, format } from 'date-fns'
+import { addSeconds, differenceInMilliseconds, differenceInSeconds, format } from 'date-fns'
 import type { QTableColumn } from 'quasar'
 import { formatSeconds } from '../../composables/helper'
 
@@ -36,10 +36,10 @@ const time = computed(() => {
     let elapsedTime
     if (batchProperties.value?.times.endTime) {
       endTime = batchProperties.value.times.endTime
-      elapsedTime = differenceInMilliseconds(endTime, startTime)
+      elapsedTime = differenceInSeconds(endTime, startTime)
     } else {
       endTime = addSeconds(startTime, props.theoreticalDuration)
-      elapsedTime = differenceInMilliseconds(new Date(), startTime)
+      elapsedTime = differenceInSeconds(new Date(), startTime)
     }
 
     return [
