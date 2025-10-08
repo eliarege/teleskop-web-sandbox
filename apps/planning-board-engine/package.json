@@ -1,7 +1,7 @@
 {
   "name": "planning-board-engine",
   "type": "module",
-  "version": "0.50.0",
+  "version": "0.50.1",
   "private": true,
   "description": "Planlama Tahtası Motoru",
   "license": "UNLICENSED",

@@ -1,8 +1,21 @@
 # Changelog
 
+## 0.50.1 - 2025-10-08
+
+[Compare Changes](f342d66e44b847cba7986b208ddd7610bc7411d7...70f97855025c7b9763765e2fe0d708f13a6f06cd)
+
+### 🐛 Bug Fixes
+
+- Correct variable name for SMTP recipient in release-apps job ([dbc7fe1](dbc7fe1b0644eed0619c054bbd011c6c4ebe6bf1))
+-  **PB**: Update date formatting in Tree.vue and improve type annotations ([70f9785](70f97855025c7b9763765e2fe0d708f13a6f06cd))
+
+### 🔧 Miscellaneous Tasks
+
+- Add iovalues-server target to docker-bake.hcl ([e3b449c](e3b449c72b93c4c21af6593165e2704ec8ca3266))
+
 ## 0.50.0 - 2025-10-07
 
-[Compare Changes](94c8b49fde406d28eac92f71c252d7c818ddfa51...19a0f3dcb2c39dcd019aa29dd1b7bfe7cb11d3f9)
+[Compare Changes](94c8b49fde406d28eac92f71c252d7c818ddfa51...f342d66e44b847cba7986b208ddd7610bc7411d7)
 
 ### 🚀 Features
 
