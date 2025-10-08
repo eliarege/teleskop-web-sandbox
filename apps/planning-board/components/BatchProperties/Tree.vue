@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { addSeconds, differenceInMilliseconds, toDate } from 'date-fns'
+import { addSeconds, differenceInMilliseconds, format } from 'date-fns'
 import type { QTableColumn } from 'quasar'
+import { formatSeconds } from '../../composables/helper'
 
 const props = defineProps<{
   eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
@@ -17,25 +18,29 @@ const { data: batchProperties } = await useAuthFetch('/api/batchProperties', {
   query: { machineId: props.machineId, planKey: props.planKey },
 })
 
+function formatDatetime(date: string | Date | number) {
+  return format(date, 'yyyy-MM-dd HH:mm:ss')
+}
+
 const deviation = computed(() => {
   if (props.deviation)
     return formatSeconds(props.deviation)
   else
     return '00:00:00'
 })
+
 const time = computed(() => {
   if (batchProperties.value?.times.startTime) {
     const startTime = batchProperties.value?.times.startTime
-    let endTime
+    let endTime: Date | string
     let elapsedTime
     if (batchProperties.value?.times.endTime) {
       endTime = batchProperties.value.times.endTime
       elapsedTime = differenceInMilliseconds(endTime, startTime)
     } else {
       endTime = addSeconds(startTime, props.theoreticalDuration)
+      elapsedTime = differenceInMilliseconds(new Date(), startTime)
     }
-    elapsedTime = differenceInMilliseconds(new Date(), startTime)
-    elapsedTime = useDateFormat(elapsedTime, 'HH:mm:ss')
 
     return [
       {
@@ -48,13 +53,13 @@ const time = computed(() => {
         label: `${t('batch-properties.time.deviation')}: ${deviation.value}`,
       },
       {
-        label: `${t('batch-properties.time.start-time')}: ${useDateFormat(new Date(startTime), 'YYYY-MM-DD HH:mm:ss').value}`,
+        label: `${t('batch-properties.time.start-time')}: ${formatDatetime(startTime)}`,
       },
       {
-        label: `${t('batch-properties.time.end-time')}: ${useDateFormat(endTime, 'YYYY-MM-DD HH:mm:ss').value}`,
+        label: `${t('batch-properties.time.end-time')}: ${formatDatetime(endTime)}`,
       },
       {
-        label: `${t('batch-properties.time.elapsed-time')}: ${elapsedTime.value}`,
+        label: `${t('batch-properties.time.elapsed-time')}: ${formatSeconds(elapsedTime)}`,
       },
     ]
   } else {
@@ -62,8 +67,13 @@ const time = computed(() => {
       {
         label: `${t('batch-properties.time.theoretical-duration')}: ${props.theoreticalDuration}`,
       },
-      {
-        label: `${t('batch-properties.time.theoretical-start-time')}: ${useDateFormat(new Date(batchProperties.value?.times.plannedStartTime || ''), 'YYYY-MM-DD HH:mm:ss').value}`,
+      { /* eslint-disable-next-line prefer-template */
+        label: `${t('batch-properties.time.theoretical-start-time')}: `
+        + formatDatetime(
+          batchProperties.value?.times.plannedStartTime
+            ? new Date(batchProperties.value.times.plannedStartTime)
+            : new Date(),
+        ),
       },
     ]
   }
