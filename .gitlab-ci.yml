@@ -165,7 +165,7 @@ release-apps:
     # Send mail with list of failed apps, TODO: attach logs to mail
     - |
       if [ -n "$ERRORS" ]; then
-          ssmtp -C"$SMTP_CONF" "$SSMTP_TO" <<EOF
+          ssmtp -C"$SMTP_CONF" "$SMTP_TO" <<EOF
       From: $SMTP_FROM
       To: $SMTP_TO
       Subject: $CI_PROJECT_NAME | Pipeline Warning | $CI_COMMIT_SHORT_SHA
