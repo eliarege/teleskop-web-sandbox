@@ -16,7 +16,7 @@ export function calcIONumber(ioObject: IOOutput | CommandIO, controllerModel: Pi
       case 'counter': channelSum = 1; break
       default: throw new Error(`Invalid type: ${ioName}`)
     }
-  } else if (['Iris17', 'Tbb6500', 'Tbb6600', 'Tbb7000', 'T7000PLC', 'T7700'].includes(productModel)) {
+  } else if (['Iris17', 'Tbb6500', 'Tbb6600', 'Tbb7000', 'T7000PLC', 'T7700', 'T710'].includes(productModel)) {
     switch (ioName) {
       case 'analog input': channelSum = 8; break
       case 'analog output': channelSum = 8; break
