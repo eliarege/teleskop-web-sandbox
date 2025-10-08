@@ -1,8 +1,7 @@
 import type { Knex } from 'knex'
-import type { CommandIO } from '@teleskop/tbb-ftp-client'
-import type { IOOutput, Machine } from '~/types'
+import type { CommandIO, IOOutput, Machine } from '~/types'
 
-export function calcIONumber(ioObject: IOOutput | CommandIO, controllerModel: Pick<Machine, 'productModel' | 'hardwareModel' | 'plcModel'>, ioName: string) {
+export function calcIONumber(ioObject: Pick<IOOutput | CommandIO, 'id' | 'card' | 'channel'>, controllerModel: Pick<Machine, 'productModel' | 'hardwareModel' | 'plcModel'>, ioName: string) {
   const { productModel, plcModel } = controllerModel
   let channelSum
   if (plcModel.includes('RIO'))

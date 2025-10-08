@@ -13,7 +13,7 @@ export function parseCounter(content: string) {
   const inputs = []
   let match = pattern.exec(content)
   while (match !== null) {
-    const input: Partial<CommandIO> = {
+    const input: Omit<CommandIO, 'commandNo' | 'chooseList'> = {
       id: Number.parseInt(match[1]),
       card: Number.parseInt(match[2]),
       channel: Number.parseInt(match[3]),
