@@ -10,32 +10,63 @@ const { $commandManager } = useNuxtApp()
 const { fetch } = useNuxtApp().$keycloak
 const $q = useQuasar()
 const { t } = useI18n()
+const editor = useEditorStore()
+const { notifySuccess, notifyError } = useNotify()
 
 const items = computed(() => [[
   {
     label: t('machineContextMenu.uploadAllPrograms'),
     disabled: false,
     onClick: async () => {
-      const programs = await fetch(`/api/machine/${props.machineId}/program`)
-      $commandManager.executeCommand(
-        'sendProgram',
-        { $q, fetchPrograms: navigateTo(`/machine/${props.machineId}`) },
-        programs,
-        props.machineId!,
-      )
+      try {
+        editor.isLoading = true
+
+        const response = await fetch(`/api/machine/${props.machineId}/upload-all-programs`, {
+          method: 'POST',
+        })
+
+        if (response.success) {
+          notifySuccess(t('machineContextMenu.uploadSuccess', { count: response.count }))
+        } else {
+          // Backend'den gelen error mesajını direkt kullan
+          throw new Error(response.message || 'Upload failed')
+        }
+      } catch (error) {
+        notifyError(t('machineContextMenu.uploadError', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }))
+      } finally {
+        editor.isLoading = false
+      }
     },
   },
   {
     label: t('machineContextMenu.downloadAllPrograms'),
     disabled: false,
     onClick: async () => {
-      const programs = await fetch(`/api/machine/${props.machineId}/program`)
-      $commandManager.executeCommand(
-        'sendProgram',
-        { $q, fetchPrograms: navigateTo(`/machine/${props.machineId}`) },
-        programs,
-        props.machineId!,
-      )
+      try {
+        editor.isLoading = true
+
+        const response = await fetch(`/api/machine/${props.machineId}/download-all-programs`, {
+          method: 'POST',
+        })
+
+        if (response.success) {
+          notifySuccess(t('machineContextMenu.downloadSuccess', { count: response.count }))
+
+          // Sayfa yenilenerek güncel program listesi gösterilsin
+          await editor.fetchAllPrograms()
+        } else {
+          // Backend'den gelen error mesajını direkt kullan
+          throw new Error(response.message || 'Download failed')
+        }
+      } catch (error) {
+        notifyError(t('machineContextMenu.downloadError', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }))
+      } finally {
+        editor.isLoading = false
+      }
     },
   },
   {
