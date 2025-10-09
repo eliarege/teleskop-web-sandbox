@@ -6,7 +6,7 @@ export default defineAuthEventHandler(async (event) => {
   const machineId = Number.parseInt(machine_id)
 
   if (!Number.isInteger(machineId)) {
-    throw new PError('INVALID_MACHINE_NUMBER', { machineId, programNo: 0 })
+    throw new PError('INVALID_MACHINE_NUMBER', { machineId })
   }
 
   const machine = await machineStore.get(machineId)
