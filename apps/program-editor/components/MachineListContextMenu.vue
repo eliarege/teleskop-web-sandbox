@@ -18,13 +18,26 @@ const items = computed(() => [[
     label: t('machineContextMenu.uploadAllPrograms'),
     disabled: false,
     onClick: async () => {
-      const programs = await fetch(`/api/machine/${props.machineId}/program`)
-      $commandManager.executeCommand(
-        'sendProgram',
-        { $q, fetchPrograms: navigateTo(`/machine/${props.machineId}`) },
-        programs,
-        props.machineId!,
-      )
+      try {
+        editor.isLoading = true
+
+        const response = await fetch(`/api/machine/${props.machineId}/upload-all-programs`, {
+          method: 'POST',
+        })
+
+        if (response.success) {
+          notifySuccess(t('machineContextMenu.uploadSuccess', { count: response.count }))
+        } else {
+          // Backend'den gelen error mesajını direkt kullan
+          throw new Error(response.message || 'Upload failed')
+        }
+      } catch (error) {
+        notifyError(t('machineContextMenu.uploadError', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }))
+      } finally {
+        editor.isLoading = false
+      }
     },
   },
   {

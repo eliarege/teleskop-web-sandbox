@@ -14,7 +14,7 @@ export default defineAuthEventHandler(async (event) => {
     throw new PError('MACHINE_NOT_FOUND', { machineId })
   }
 
-  const result = await machine.downloadAllPrograms()
+  const result = await machine.uploadAllPrograms()
 
   return {
     success: result.success,

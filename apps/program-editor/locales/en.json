@@ -434,7 +434,9 @@
     "findChange": "Find - Change",
     "compareAllPrograms": "Compare All Programs",
     "downloadSuccess": "{count} programs downloaded successfully",
-    "downloadError": "Program download error: {error}"
+    "downloadError": "Program download error: {error}",
+    "uploadSuccess": "{count} programs uploaded successfully",
+    "uploadError": "Program upload error: {error}"
   },
   "comparisonTable": {
     "programName": "Program Name",

@@ -435,7 +435,9 @@
     "findChange": "Bul - Değiştir",
     "compareAllPrograms": "Tüm Programları Karşılaştır",
     "downloadSuccess": "{count} program başarıyla alındı",
-    "downloadError": "Program indirme hatası: {error}"
+    "downloadError": "Program indirme hatası: {error}",
+    "uploadSuccess": "{count} program başarıyla gönderildi",
+    "uploadError": "Program gönderme hatası: {error}"
   },
   "comparisonTable": {
     "programName": "Program İsmi",

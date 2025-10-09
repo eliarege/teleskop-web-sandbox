@@ -1468,6 +1468,73 @@ export class MachineController {
   }
 
   /**
+   * Yerel veritabanındaki tüm programları makineye yükler.
+   * @returns Başarı durumu, yüklenen program sayısı ve mesaj içeren nesne
+   */
+  @withProgramClient
+  @withTransaction
+  async uploadAllPrograms(): Promise<{ success: boolean, count: number, message: string }> {
+    try {
+      // Yerel veritabanından tüm program header'larını al
+      const programHeaders = await this.fetchAllProgramHeaders()
+
+      if (programHeaders.length === 0) {
+        return { success: true, count: 0, message: 'No programs found in database' }
+      }
+
+      // Machine commands listesini al
+      const commands = await this.fetchCommands()
+      let successCount = 0
+      let errorCount = 0
+      const errors: string[] = []
+
+      // Her program için upload işlemi yap
+      for (const programHeader of programHeaders) {
+        try {
+          // Programın tam detaylarını al
+          const { program } = await this.fetchProgram(programHeader.programNo)
+
+          if (!program) {
+            throw new Error(`Program ${programHeader.programNo} details not found`)
+          }
+
+          // Makineye yükle
+          await this.client.uploadProgram(program, commands)
+          successCount++
+
+          logger.info(`Program ${program.programNo} successfully uploaded to machine`)
+        } catch (error) {
+          errorCount++
+          const errorMsg = `Program ${programHeader.programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
+          errors.push(errorMsg)
+          logger.error({ error, programNo: programHeader.programNo }, `Failed to upload program ${programHeader.programNo}`)
+        }
+      }
+
+      // Başarılı yüklemeler için log
+      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `${successCount} programs uploaded`)
+
+      const message = `Uploaded ${successCount}/${programHeaders.length} programs successfully`
+      if (errors.length > 0) {
+        logger.warn({ errors }, 'Some programs failed to upload')
+      }
+
+      return {
+        success: errorCount === 0,
+        count: successCount,
+        message: errors.length > 0 ? `${message}. Errors: ${errors.join(', ')}` : message,
+      }
+    } catch (error) {
+      logger.error({ error }, 'Failed to upload all programs to machine')
+      return {
+        success: false,
+        count: 0,
+        message: `Failed to upload programs: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      }
+    }
+  }
+
+  /**
    * Belirtilen program numarasına sahip tüm arşivlenmiş programların header bilgilerini getirir.
    * @param programNo - Program numarası
    * @returns {Promise<ProgramHeader[]>} - Header bilgilerini içeren bir dizi döndürür
