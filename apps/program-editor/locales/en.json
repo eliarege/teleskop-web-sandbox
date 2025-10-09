@@ -432,7 +432,9 @@
     "copy": "Copy Programs",
     "paste": "Paste Programs",
     "findChange": "Find - Change",
-    "compareAllPrograms": "Compare All Programs"
+    "compareAllPrograms": "Compare All Programs",
+    "downloadSuccess": "{count} programs downloaded successfully",
+    "downloadError": "Program download error: {error}"
   },
   "comparisonTable": {
     "programName": "Program Name",
