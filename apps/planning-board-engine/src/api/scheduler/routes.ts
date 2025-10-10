@@ -91,6 +91,29 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     },
   )
   fastify.get(
+    '/planning_board/auto_add',
+    async (request, reply) => {
+      try {
+        return await getAutoAdd()
+      } catch (err: any) {
+        fastify.log.error(`An error occured while fetching auto add status: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching auto add status: ${err}` })
+      }
+    },
+  )
+  fastify.put(
+    '/planning_board/auto_add',
+    async (request, reply) => {
+      try {
+        await updateAutoAdd()
+        return reply.code(200).send('Successful')
+      } catch (err: any) {
+        fastify.log.error(`An error occured while updating auto add status: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating auto add status: ${err}` })
+      }
+    },
+  )
+  fastify.get(
     '/planning_board/stops',
     async (request: FastifyRequest<{ Querystring: { startDate: string, endDate: string } }>, _reply) => {
       try {

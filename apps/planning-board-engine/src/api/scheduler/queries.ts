@@ -1242,8 +1242,10 @@ export async function getAutoAdd(): Promise<boolean> {
   const result = await knex('DYCTCTSCONFIG').select('AUTOADDTOPLANQUEUE').first()
   return result?.AUTOADDTOPLANQUEUE
 }
-export async function updateAutoAdd(value: boolean) {
-  await knex('DYCTCTSCONFIG').update('AUTOADDTOPLANQUEUE', value)
+export async function updateAutoAdd() {
+  const autoAddValue = await getAutoAdd()
+  const newValue = !autoAddValue
+  await knex('DYCTCTSCONFIG').update('AUTOADDTOPLANQUEUE', newValue)
 }
 
 export async function uploadToTonelloMachine(
