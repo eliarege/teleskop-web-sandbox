@@ -5,6 +5,11 @@ import { preplanJoborders } from '~/api/scheduler/queue-based/queries'
 let lastRowCount = 0
 
 export async function autoPlan(knex: Knex) {
+  const hasAutoAdd = await knex('DYCTCTSCONFIG').select('AUTOADDTOPLANQUEUE').first()
+  if (!hasAutoAdd?.AUTOADDTOPLANQUEUE) {
+    logger.info('AUTOADDTOPLANQUEUE is disabled, skipping autoPlan')
+    return
+  }
   try {
     const result = await knex('DYBFBATCHPLAN').count<{ totalRows: string }[]>('* as totalRows')
     const totalCount = Number.parseInt(result[0].totalRows, 10)

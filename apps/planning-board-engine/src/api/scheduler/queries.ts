@@ -149,6 +149,11 @@ export async function getUnplannedEvents() {
     AND d.PLANKEY not in (select PLANKEY from PTBATCHPLANQUEUE)
     AND d.LASTFORJOBORDER = 1
     AND d.ISDELETESENDTOMANUNITES IS NULL OR d.ISDELETESENDTOMANUNITES = 0
+    AND d.CORRECTIONNUMBER = (
+      SELECT MAX(d2.CORRECTIONNUMBER)
+      FROM DYBFBATCHPLAN d2
+      WHERE d2.JOBORDER = d.JOBORDER
+    )
     ORDER BY d.RECORDTIME DESC
 `)
 
@@ -1084,4 +1089,11 @@ export async function uploadToMachine(machineIp: string, startingParams: { param
   } catch (err) {
     return console.error(err)
   }
+}
+export async function getAutoAdd(): Promise<boolean> {
+  const result = await knex('DYCTCTSCONFIG').select('AUTOADDTOPLANQUEUE').first()
+  return result?.AUTOADDTOPLANQUEUE
+}
+export async function updateAutoAdd(value: boolean) {
+  await knex('DYCTCTSCONFIG').update('AUTOADDTOPLANQUEUE', value)
 }

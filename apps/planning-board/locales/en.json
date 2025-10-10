@@ -188,6 +188,8 @@
     },
     "view-options": "View Options",
     "unplanned-options": "Unplanned Job Orders",
+    "auto-add": "Auto Add",
+    "advanced": "Advanced Settings",
     "data-cleanup": {
       "_": "Data Cleanup",
       "cleanup-message": "This action will refresh the entire planning queue and may result in data loss or inaccuracies. Are you sure you want to proceed?",

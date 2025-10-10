@@ -9,6 +9,7 @@ import {
   dataCleanup,
   deleteEvent,
   deleteNote,
+  getAutoAdd,
   getBatchNotes,
   getBatchProperties,
   getColumnData,
@@ -35,6 +36,7 @@ import {
   scheduleEvents,
   taskValid,
   unpinEvent,
+  updateAutoAdd,
   updateBatchNote,
   updatePlanParameter,
   updateUnplannedColumns,
@@ -56,7 +58,31 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-
+  fastify.get(
+    '/planning_board/auto_add',
+    async (request, reply) => {
+      try {
+        return await getAutoAdd()
+      } catch (err: any) {
+        fastify.log.error(`An error occured while fetching auto add status: ${err}`)
+        return reply.code(500).send({ error: `An error occured while fetching auto add status: ${err}` })
+      }
+    },
+  )
+  fastify.put(
+    '/planning_board/auto_add',
+    async (request: FastifyRequest<{
+      Body: {value:boolean}}>, reply) => {
+      try {
+        const { value } = request.body
+        await updateAutoAdd(value)
+        return reply.code(200).send('Successful')
+      } catch (err: any) {
+        fastify.log.error(`An error occured while updating auto add status: ${err}`)
+        return reply.code(500).send({ error: `An error occured while updating auto add status: ${err}` })
+      }
+    },
+  )
   fastify.get(
     '/planning_board/stops',
     async (request: FastifyRequest<{ Querystring: { startDate: string, endDate: string } }>, reply) => {
