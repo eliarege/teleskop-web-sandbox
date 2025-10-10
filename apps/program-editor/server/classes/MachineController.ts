@@ -2008,4 +2008,32 @@ export class MachineController {
         return ioA.rank - ioB.rank
       })
   }
+
+  /**
+   * Makinenin durumunu kontrol eder (ping)
+   * @param {number} machineId - Makine ID'si (opsiyonel, this.id kullanılır)
+   * @returns {Promise<boolean>} - Makine erişilebilirse true, değilse false
+   */
+  @withTransaction
+  @withProgramClient
+  async getMachineStatus(machineId?: number): Promise<boolean> {
+    const targetMachineId = machineId || this.id
+    const machine: { ip: string, name: string } = await this.trx('BFMACHINES')
+      .first({
+        ip: 'IP',
+        name: 'MACHINECODE',
+      })
+      .where('MACHINEID', targetMachineId)
+
+    if (!machine || !machine.ip) {
+      throw new PError('MACHINE_NOT_FOUND', { machineId: targetMachineId })
+    }
+
+    const isOnline = await this.client.ping()
+    if (!isOnline) {
+      throw new PError('MACHINE_OFFLINE', { machineId: targetMachineId })
+    }
+
+    return isOnline
+  }
 }
