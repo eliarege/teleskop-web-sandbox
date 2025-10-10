@@ -1,8 +1,36 @@
 # Changelog
 
+## 0.51.0 - 2025-10-10
+
+[Compare Changes](496b21970fb3d4af3b5ad842f88968336eb0105c...2fea43cbce8ebef8335848bf86fc1ef406a768d3)
+
+### 🚀 Features
+
+-  **PE**: Design endpoint to fetch all programs, update UI, and add i18n messages ([61227d6](61227d6af8df3d037863aee2abb352bfb9de32ce))
+-  **PE**: Design endpoint to send all programs, update UI, and add i18n messages ([dec1c2c](dec1c2c8fd907dee05b10784be8a569c12e9b7cc))
+- **dms**: Dms added to app root interface ([0b1ddf3](0b1ddf3e7ab1240057e48d0a1bf5b0d8fdf6a5df))
+
+### 🐛 Bug Fixes
+
+-  **PT**: Update elapsed time calculation to use seconds instead of milliseconds ([1536800](1536800f100d0b22b73e446f47bbdb6c66089134))
+-  **MA**: Add 'T710' to supported product models in calcIONumber function ([13c6d8d](13c6d8dfbbc08e09d9d5642b443d2273b4db36e6))
+-  **MA**: Refactor updateArchives function to improve version handling and batch inserts ([a5e6f2d](a5e6f2d3c8f49c79fcbc25cf8fc048a5f5280b2e))
+-  **MA**: Rename RELEASESTARTDATE to RELEASEDATE in updateArchives function ([efb7605](efb7605254b5625fbd97b3e3e14fe1f3d98b3316))
+-  **MA**: Locale key typos for erp parameters update process ([3c5c748](3c5c74830cafef21e6c8aea3aeec1678819e0d12))
+-  **PE**: Removed programNo ([1af1849](1af18498f39c8956c93603ce9cb5547c63f58ac9))
+-  **PT**: Fixed auto add feature with API endpoints and UI integration ([30d0519](30d0519b85e48f988e9b91bfbe60f4bf0e9e3a02))
+
+### ♻️ Refactor
+
+-  **MA**: Update type definitions to use Omit for CommandIO and IOOutput in parser functions ([1d2e9cf](1d2e9cf3d96ff30359e7c8b0238b5d855779cff1))
+
+### 🔧 Miscellaneous Tasks
+
+- Bump git-cliff to 2.10.1 ([af9d1a5](af9d1a51f930340bd12a9f459f7caa50d2672fb8))
+
 ## 0.50.1 - 2025-10-08
 
-[Compare Changes](f342d66e44b847cba7986b208ddd7610bc7411d7...70f97855025c7b9763765e2fe0d708f13a6f06cd)
+[Compare Changes](f342d66e44b847cba7986b208ddd7610bc7411d7...496b21970fb3d4af3b5ad842f88968336eb0105c)
 
 ### 🐛 Bug Fixes
 
