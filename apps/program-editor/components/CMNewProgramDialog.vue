@@ -24,7 +24,7 @@ const programName = ref<string>(
   isRename
     ? props.program.name || ''
     : isSaveAs
-      ? `${props.program.name || ''} ${t('(copy)', { programNo: props.program.programNo })}`
+      ? `${props.program.name || ''}`
       : '',
 )
 

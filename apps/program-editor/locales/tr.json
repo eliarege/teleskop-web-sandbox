@@ -18,7 +18,6 @@
   "programNotUpdated": "Program güncellenemedi",
   "treatmentParameterLimitReached": "{commandNo} numaralı komut {limit}'den fazla kullanılamaz!",
   "cannotParallelCommand": "{parallelCommandNo} numaralı komut, {mainCommandNo} numralı komutun paralelinde kullanılamaz!",
-  "(copy)": "({programNo} Kopya)",
   "noSelection": "Seçim Yok",
   "invalidCommand": "Hatalı komutu kontrol ediniz",
   "emptyCommand": "Komut boş olamaz",
