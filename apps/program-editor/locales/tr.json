@@ -185,7 +185,7 @@
   "saveProgram": {
     "success": "Program kaydedildi",
     "fail": "Program kaydedilirken hata oluştu",
-    "incorrect": "Hatalı değer girdiniz"
+    "incorrect": "Programdaki hatalı değerleri kontrol ediniz"
   },
   "error": {
     "commandNotFound": "Komut Bulunamadı!",

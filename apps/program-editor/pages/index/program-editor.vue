@@ -253,9 +253,11 @@ watch(locale, () => {
 })
 
 editor.isLoading = true
-if (editor.machine.id !== machineId)
+if (editor.machine.id !== machineId) {
   await editor.fetchMachine(machineId)
-await editor.fetchCommandTypes(machineId)
+  await editor.fetchCommandTypes(machineId)
+  await editor.fetchAllPrograms()
+}
 await editor.fetchProgram(machineId, programNo)
 editor.isLoading = false
 editor.selectedPrograms = []
