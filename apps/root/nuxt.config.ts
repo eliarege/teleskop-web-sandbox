@@ -26,6 +26,11 @@ export default defineNuxtConfig({
           img: '/dispensing-manager-ui.png',
         },
         {
+          name: 'dispensing-management-systems',
+          url: '/dispensing-management-systems',
+          img: '/dispensing-management-systems.png',
+        },
+        {
           name: 'program-editor',
           url: '/program-editor',
           img: '//program-editor.png',
