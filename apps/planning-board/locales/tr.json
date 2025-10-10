@@ -189,6 +189,8 @@
     },
     "view-options": "Görünüm Seçenekleri",
     "unplanned-options": "Bekleyen İş Emirleri",
+    "advanced": "Gelişmiş Ayarlar",
+    "auto-add": "Otomatik Ekleme",
     "data-cleanup": {
       "_": "Veri Temizliği",
       "cleanup-message": "Bu işlem, tüm planlama kuyruğunu yenileyecek ve veri kaybına veya tutarsızlıklara neden olabilir. Devam etmek istediğinize emin misiniz?",

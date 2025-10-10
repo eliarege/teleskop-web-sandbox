@@ -1,3 +1,4 @@
+import { insertBatch } from '@teleskop/utils'
 import type { QueueBasedActualEvent, QueueBasedNonActualEvent } from '../../../../types/planning-board'
 import { queueBasedEventStatus } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
@@ -157,10 +158,10 @@ export async function getQueueBasedPlannedEvents(startDate: string, endDate: str
   ORDER BY subQuery.machineId, subQuery.queueNumber
   `, [startDate, endDate])
 
-  return events.map(ev => ({
+  return events.map((ev: any) => ({
     ...ev,
     theoreticalDuration: ev.theoreticalDuration === 0 ? 28800 : ev.theoreticalDuration,
-    erpParameters: ev.erpParameters ? Object.fromEntries(JSON.parse(ev.erpParameters).map(a => [a.paramName, a.value])) : [],
+    erpParameters: ev.erpParameters ? Object.fromEntries(JSON.parse(ev.erpParameters).map((a: { paramName: string, value: string }) => [a.paramName, a.value])) : [],
   }))
 }
 
@@ -244,7 +245,99 @@ export async function getLastQueueNumber(
     .first()
 }
 
+async function updateExistingQueuedPlans(logger: any) {
+  // Step 1: Fetch all plan pairs outside any transaction
+  const oldPlansWithNewPlans = await knex
+    .select(
+      'old_queue.PLANKEY as oldPlanKey',
+      'old_queue.QUEUENUMBER',
+      'old_queue.PINNED',
+      'old_queue.STARTTIME',
+      'old_queue.STATE',
+      'old_plan.JOBORDER',
+      'old_plan.MACHINEIDLIST as oldMachineId',
+      'new_plan.PLANKEY as newPlanKey',
+      'new_plan.MACHINEIDLIST as newMachineId'
+    )
+    .from('PTBATCHPLANQUEUE as old_queue')
+    .leftJoin('DYBFBATCHPLAN as old_plan', 'old_queue.PLANKEY', 'old_plan.PLANKEY')
+    .leftJoin('DYBFBATCHPLAN as new_plan', function () {
+      this.on('old_plan.JOBORDER', '=', 'new_plan.JOBORDER')
+        .andOn('new_plan.lastForJoborder', '=', knex.raw('1'));
+    })
+    .where('old_plan.lastForJoborder', 0);
+
+  if (!oldPlansWithNewPlans.length) return;
+
+  // Step 2: Process each entry in its own transaction
+  for (const plan of oldPlansWithNewPlans) {
+    if (!plan.newPlanKey) {
+      continue
+    }
+    try {
+      await knex.transaction(async (trx) => {
+        const isMachineChanged = plan.newMachineId !== plan.oldMachineId;
+
+        // Always remove the old plan
+        await trx('PTBATCHPLANQUEUE').where('PLANKEY', plan.oldPlanKey).delete();
+
+        if (!isMachineChanged) {
+          // Same machine → reinsert with same queue number
+          await trx('PTBATCHPLANQUEUE').insert({
+            PLANKEY: plan.newPlanKey,
+            MACHINEID: plan.newMachineId,
+            QUEUENUMBER: plan.QUEUENUMBER,
+            PINNED: plan.PINNED,
+            STARTTIME: plan.STARTTIME,
+            STATE: plan.STATE,
+          });
+
+          logger.info(
+            {
+              oldPlanKey: plan.oldPlanKey,
+              newPlanKey: plan.newPlanKey,
+              queueNumber: plan.QUEUENUMBER,
+              machineId: plan.newMachineId,
+            },
+            'Plan updated in PTBATCHPLANQUEUE (same machine)'
+          );
+        } else {
+          // Machine changed → insert at the end of that machine’s queue
+          const [{ maxQueueNumber }] = await trx('PTBATCHPLANQUEUE')
+            .where('MACHINEID', plan.newMachineId)
+            .max('QUEUENUMBER as maxQueueNumber');
+
+          const nextQueueNumber = (maxQueueNumber || 0) + 1;
+
+          await trx('PTBATCHPLANQUEUE').insert({
+            PLANKEY: plan.newPlanKey,
+            MACHINEID: plan.newMachineId,
+            QUEUENUMBER: nextQueueNumber,
+            PINNED: plan.PINNED,
+            STARTTIME: plan.STARTTIME,
+            STATE: plan.STATE,
+          });
+
+          logger.info(
+            {
+              oldPlanKey: plan.oldPlanKey,
+              newPlanKey: plan.newPlanKey,
+              machineId: plan.newMachineId,
+              newQueueNumber: nextQueueNumber,
+            },
+            'Plan inserted in PTBATCHPLANQUEUE (machine changed)'
+          );
+        }
+      });
+    }
+    catch (error) {
+      logger.error({ error }, `Failed to update existing queue plan ${plan.oldPlanKey} -> ${plan.newPlanKey}`)
+    }
+  }
+}
+
 export async function preplanJoborders(logger: any) {
+  await updateExistingQueuedPlans(logger)
   const allUnplannedEvents = await getUnplannedEvents()
   const processed = [] as any[]
 

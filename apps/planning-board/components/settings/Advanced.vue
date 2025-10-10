@@ -3,6 +3,7 @@ import { matStorage } from '@quasar/extras/material-icons'
 import { Toast } from '@bryntum/schedulerpro'
 
 const emit = defineEmits(['updateScheduler'])
+const { data } = await useFetch('/api/autoAdd')
 const refresDataLoading = ref(false)
 const dataCleanupLoading = ref(false)
 const { t } = useI18n()
@@ -55,16 +56,24 @@ function refreshData() {
     })
   })
 }
+
+async function updateAutoAdd(value: boolean) {
+  await kc.fetch('/api/autoAdd', {
+    method: 'PUT',
+    body: { value }
+  })
+}
 </script>
 
 <template>
   <div class="w-full h-full p-2">
-    <div class="w-full flex-center gap-15 py-3">
+    <div class="w-full flex-center gap-15 py-3 whitespace-nowrap">
       <q-btn
         dense
         :label="t('settings.data-cleanup._')"
         color="primary"
         icon="storage"
+        class="whitespace-nowrap"
         :loading="dataCleanupLoading"
         @click="dataCleanup"
       />
@@ -74,8 +83,15 @@ function refreshData() {
         :label="t('settings.data-cleanup.refresh-title')"
         color="primary"
         icon="refresh"
+        class="whitespace-nowrap"
         :loading="refresDataLoading"
         @click="refreshData"
+      />
+      <!--  -->
+      <q-checkbox
+        v-model="data"
+        :label="t('settings.auto-add')"
+        @update:model-value="updateAutoAdd"
       />
     </div>
   </div>
