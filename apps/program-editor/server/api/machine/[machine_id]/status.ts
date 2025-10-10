@@ -1,38 +1,25 @@
 import { machineStore } from '~/server/classes/MachineStore'
-import { PError, isPError } from '~/server/error'
-import { getMachineStatus } from '~/server/functions'
 
-export default defineAuthEventHandler({
-  roles: ['machine-upload'],
-  handler: async (event) => {
-    try {
-      const { machine_id } = getRouterParams(event)
-      const machineId = Number(machine_id)
+export default defineAuthEventHandler(async (event) => {
+  const { machine_id } = getRouterParams(event)
+  const machineId = Number.parseInt(machine_id)
 
-      if (!Number.isInteger(machineId)) {
-        throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo: 0 })
-      }
+  if (!Number.isInteger(machineId)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid machine ID',
+    })
+  }
 
-      const machine = await machineStore.get(machineId)
-      if (!machine) {
-        throw new PError('MACHINE_NOT_FOUND', { machineId })
-      }
-
-      const status = await getMachineStatus(machineId)
-      return status
-    } catch (error: PError | unknown) {
-      if (isPError(error)) {
-        throw createError({
-          statusCode: 400,
-          message: error.code,
-          data: error.detail,
-        })
-      }
-
-      throw createError({
-        statusCode: 500,
-        message: 'INTERNAL_SERVER_ERROR',
-      })
+  try {
+    const machine = await machineStore.get(machineId)
+    if (!machine) {
+      return false
     }
-  },
+
+    return await machine.getMachineStatus()
+  } catch (error) {
+    console.error('Machine status check failed:', error)
+    return false
+  }
 })

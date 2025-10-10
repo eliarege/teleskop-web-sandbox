@@ -389,17 +389,15 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const { fetch } = useKeycloak()
 
     try {
-      return await fetch<boolean>(`/api/machine/${machineId}/status`)
-    } catch (error: any) {
-      let messageKey = 'fail'
+      const status = await fetch<boolean>(`/api/machine/${machineId}/status`)
 
-      if (isProgramError(error, 'MACHINE_NOT_FOUND')) {
-        messageKey = 'machineNotFound'
-      } else if (isProgramError(error, 'MACHINE_OFFLINE')) {
-        messageKey = 'machineOffline'
+      if (!status) {
+        notification(false, t(`contextMenu.status.offline`, { machineId }))
       }
 
-      notification(false, t(`contextMenu.send.${messageKey}`, { machineId }))
+      return status
+    } catch (error: any) {
+      notification(false, t(`contextMenu.status.fail`, { machineId }))
       return false
     }
   }

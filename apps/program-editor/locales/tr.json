@@ -341,6 +341,10 @@
       "machineNotFound": "Makine bulunamadı.",
       "machineOffline": "{machineId} numaralı makine çevrimdışı"
     },
+    "status": {
+      "offline": "Makine {machineId} çevrimdışı",
+      "fail": "Makine {machineId} durumunu kontrol ederken bir hata oluştu."
+    },
     "get": {
       "success": "{programNo} numaralı program makineden başarıyla alındı.",
       "fail": "{programNo} numaralı program makineden alınamadı.",

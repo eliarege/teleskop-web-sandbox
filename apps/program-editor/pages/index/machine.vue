@@ -30,6 +30,10 @@ const tableRef = ref()
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t, router })
 
+onBeforeMount(async () => {
+  await contextMenuStore.getMachineStatus(machineId)
+})
+
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
   $commandManager.executeCommand('newProgram', { $q })

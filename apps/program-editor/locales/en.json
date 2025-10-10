@@ -341,6 +341,10 @@
       "machineNotFound": "Machine {machineId} not found.",
       "machineOffline": "Machine {machineId} is offline"
     },
+    "status": {
+      "offline": "Machine {machineId} is offline",
+      "fail": "An error occurred while checking status of machine {machineId}."
+    },
     "get": {
       "success": "Program {programNo} retrieved successfully.",
       "fail": "An error occured while retrieving program {programNo}.",
