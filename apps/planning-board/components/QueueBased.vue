@@ -278,15 +278,15 @@ function setEventName(event: QueueBasedEvent): Values<QueueBasedEvent> {
 function setId(event: QueueBasedEvent) {
   switch (event.eventType) {
     case 'finished':
-      return event.batchKey
+      return `batch-key-${event.batchKey}`
     case 'manual':
-      return event.batchKey
+      return `batch-key-${event.batchKey}`
     case 'ongoing':
-      return event.batchKey
+      return `batch-key-${event.batchKey}`
     case 'planned':
-      return event.planKey
+      return `plan-key-${event.planKey}`
     case 'unplanned':
-      return event.planKey
+      return `plan-key-${event.planKey}`
     case 'stop':
       return `stop-${event.stopNumber}`
   }
