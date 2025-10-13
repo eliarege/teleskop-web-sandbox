@@ -205,13 +205,13 @@ export const useEditorStore = defineStore('editor', () => {
     newStep.mainCommand.commandId = lastCommandId++
     newStep.parallelCommands.forEach(command => command.commandId = lastCommandId++)
 
-    // Yeni adımı belirtilen konuma ekle
-    program.value.steps.splice(targetIndex + 1, 0, newStep)
+    // Yeni adımı mevcut step'in yerine ekle
+    program.value.steps.splice(targetIndex, 0, newStep)
 
     // Seçim ve kaydırma işlemleri
-    selectedSteps.value = [program.value.steps[targetIndex + 1]]
+    selectedSteps.value = [program.value.steps[targetIndex]]
     nextTick(() => {
-      scrollPage(targetIndex + 1, true)
+      scrollPage(targetIndex, true)
     })
   }
 
@@ -764,6 +764,9 @@ export const useEditorStore = defineStore('editor', () => {
       autoChemReq: 0,
       autoDyeReq: 0,
       manDyeReq: 0,
+      saltReq: 0,
+      genericMat1Req: 0,
+      genericMat2Req: 0,
     }
   }
 
