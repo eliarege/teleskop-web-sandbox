@@ -617,18 +617,28 @@ registerCommand(() => {
 
 registerCommand(() => {
   const { fetch } = useKeycloak()
+  const editor = useEditorStore()
+
   return {
     name: 'refresh',
     async execute(ctx: any, machineId: number) {
-      const editor = useEditorStore()
-
       editor.isLoading = true
-      await fetch(`/api/machine/${machineId}/refresh`, {
-        method: 'POST',
-      })
-      await editor.fetchAllPrograms()
-      editor.isLoading = false
-      return true
+
+      try {
+        const status = await contextMenuStore.getMachineStatus(machineId)
+        if (!status) {
+          return false
+        }
+
+        await fetch(`/api/machine/${machineId}/refresh`, {
+          method: 'POST',
+        })
+
+        await editor.fetchAllPrograms()
+        return true
+      } finally {
+        editor.isLoading = false
+      }
     },
   }
 })
