@@ -760,7 +760,7 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-trash',
             text: t('queue-based.ctx-menu.task-delete'),
             onItem({ eventRecord }: any) {
-              deleteEvent(eventRecord.originalData.id)
+              deleteEvent(eventRecord.originalData.planKey)
                 .then(() => eventRecord.unassign())
                 .catch(err => console.error(err))
             },
@@ -769,7 +769,7 @@ onMounted(async () => {
             icon: 'b-fa-solid b-fa-calendar-xmark',
             text: t('queue-based.ctx-menu.remove-plan'),
             onItem({ eventRecord }: any) {
-              unPlanEvent(eventRecord.originalData.id)
+              unPlanEvent(eventRecord.originalData.planKey)
                 .then(() => {
                   eventRecord.unassign()
                 })
