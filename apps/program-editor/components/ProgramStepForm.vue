@@ -156,11 +156,9 @@ function removeError(commandId: number) {
               />
             </div>
             <QSpace />
-            <QBtn
-              class="delete-btn"
-              icon="close"
-              flat
-              dense
+            <QIcon
+              class="icon cursor-pointer delete-btn"
+              name="close"
               @click.stop="deleteParallelStep(stepIndex, index)"
             />
           </div>
