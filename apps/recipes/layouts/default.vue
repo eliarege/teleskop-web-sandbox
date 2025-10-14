@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { LoadingSpinner } from '@teleskop/ui'
+import LoadingSpinner from '@teleskop/nuxt-base/components/LoadingSpinner.vue'
 import { useStateStore } from '~/store/State'
 import { useDataStore } from '~/store/DataStore'
 

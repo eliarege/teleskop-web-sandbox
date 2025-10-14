@@ -16,7 +16,7 @@ export default defineNuxtConfig({
     dmsUser: 'username',
     dmsPort: '5433',
     dmsPassword: '123456',
-    dmsDatabase: 'test',
+    dmsDatabase: 'testo',
     teleskopHost: '192.168.16.87',
     teleskopUser: 'sa',
     teleskopPort: '7654',
