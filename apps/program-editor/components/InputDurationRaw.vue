@@ -556,7 +556,10 @@ function handleKeydown(event) {
 
   // The following keys will be accepted when the input field is selected
   const acceptedKeys = ['Backspace', 'ArrowDown', 'ArrowUp', 'Tab']
-  if (Number.isNaN(event.key) && !acceptedKeys.includes(event.key)) {
+
+  // Block special characters like -, *, !, ?, etc. - only allow numbers and accepted keys
+  const isNumber = /^[0-9]$/.test(event.key)
+  if (!isNumber && !acceptedKeys.includes(event.key)) {
     event.preventDefault()
     return false
   }
