@@ -18,8 +18,8 @@ export async function updateTonelloInputOutputs(
     (ain, index) => ({
       MACHINEID: machineId,
       ID: index,
-      CARD: 0,
-      CANAL: 0,
+      CARD: 1,
+      CANAL: index + 1,
       NAME: ain.label,
       ENABLED: true,
       ISDELETED: false,
@@ -29,8 +29,8 @@ export async function updateTonelloInputOutputs(
     (aout, index) => ({
       MACHINEID: machineId,
       ID: index,
-      CARD: 0,
-      CANAL: 0,
+      CARD: 1,
+      CANAL: index + 1,
       NAME: aout.label,
       DEFAULTVALUE: 0,
       ENABLED: true,
@@ -41,8 +41,8 @@ export async function updateTonelloInputOutputs(
     (din, index) => ({
       MACHINEID: machineId,
       ID: index,
-      CARD: 0,
-      CANAL: 0,
+      CARD: 1,
+      CANAL: index + 1,
       NAME: din.label,
       ENABLED: true,
       ISDELETED: false,
@@ -52,20 +52,20 @@ export async function updateTonelloInputOutputs(
     (dout, index) => ({
       MACHINEID: machineId,
       ID: index,
-      CARD: 0,
-      CANAL: 0,
+      CARD: 1,
+      CANAL: index + 1,
       NAME: dout.label,
       DEFAULTVALUE: 0,
       ENABLED: true,
       ISDELETED: false,
-    } satisfies BFMACHDOUT),
+    }),
   )
   const counters: BFMACHCOUNTER[] = ioList.counters.map(
     (cnt, index) => ({
       MACHINEID: machineId,
       ID: index,
-      CARD: 0,
-      CANAL: 0,
+      CARD: 1,
+      CANAL: index + 1,
       NAME: cnt.label,
       ENABLED: true,
       ISDELETED: false,
