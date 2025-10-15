@@ -228,7 +228,7 @@ export const useEditorStore = defineStore('editor', () => {
   function getStepIndex(stepId?: number): number {
     const selectedStepId = stepId ?? selectedSteps.value[0]?.stepId
     const mainIndex = program.value.steps.findIndex(step => step.stepId === selectedStepId)
-    const targetIndex = mainIndex >= 0 ? mainIndex : program.value.steps.length - 1
+    const targetIndex = mainIndex >= 0 ? mainIndex : program.value.steps.length
 
     return targetIndex
   }
