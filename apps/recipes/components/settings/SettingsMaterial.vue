@@ -122,13 +122,15 @@ const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
 </script>
 
 <template>
-  <div class="flex-center text-xl">
-    {{ t('settings.Material') }}
+  <div class="flex flex-row align-start justify-center">
+    <div class="text-xl">
+      {{ t('settings.Material') }}
+    </div>
   </div>
   <QSeparator
     class="w-full mt-5 mb-5"
   />
-  <div class="flex-center mb-4">
+  <div class="flex justify-center items-center mb-4">
     <QBtn
       :label="$t('AddNewMaterial')"
       no-caps

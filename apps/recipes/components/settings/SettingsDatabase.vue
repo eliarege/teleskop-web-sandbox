@@ -85,6 +85,13 @@ async function onConnectionCheck() {
 </script>
 
 <template>
+  <div class="flex flex-col items-center">
+    <div class="text-xl">
+      {{ t('settings.Database') }}
+    </div>
+  </div>
+  <QSeparator class="w-full mt-5 mb-5" />
+
   <div class="q-gutter-y-md">
     <QTabs
       v-model="tab"
@@ -111,11 +118,8 @@ async function onConnectionCheck() {
 
   <div class="content-section">
     <QForm ref="formRef" @submit.prevent>
-      <div class="align-start justify-center">
-        <div class="text-xl flex flex-center">
-          {{ t('settings.Database') }}
-        </div>
-        <div class="flex-center flex-col text-size-4 w-full">
+      <div class="flex flex-col items-center">
+        <div class="flex flex-col items-center text-size-4 w-full">
           <div class="flex flex-row flex-center">
             <div class="row-item-db">
               <span class="w-24">{{ t('protocolParameters.dbClient') }}</span>
@@ -217,7 +221,7 @@ async function onConnectionCheck() {
       </div>
     </QForm>
     <div class="buttons-section">
-      <div class="flex-center justify-evenly">
+      <div class="flex justify-center items-center justify-evenly">
         <QBtn
           :label="t('Save')"
           color="primary"

@@ -128,9 +128,7 @@ const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
       @click="refreshPrograms"
     />
 
-    <!-- Default Machine Button/Selection Area -->
     <div class="ml-2" style="min-width: 200px;">
-      <!-- Button shown when selection is hidden -->
       <QBtn
         v-if="!showMachineSelection"
         :label="defaultMachineName"
