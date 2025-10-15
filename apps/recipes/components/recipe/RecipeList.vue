@@ -33,7 +33,7 @@ handleRecipeFilters(recipeFilters.value)
 
 async function fetchRecipeVariants(recipeId: number, machineId: number) {
   try {
-    recipeVariants.value = await $fetch<RecipeVariant[]>(`/api/recipes/variant/${recipeId}`, { query: { machineId }})
+    recipeVariants.value = await $fetch<RecipeVariant[]>(`/api/recipes/variant/${recipeId}`, { query: { machineId } })
   } catch {
     notifyFail(t('Failed'))
   }
@@ -86,7 +86,7 @@ const recipeColumns = [
     label: t('Edit'),
     field: 'actions',
     align: 'right',
-    filterable: false
+    filterable: false,
   },
 ]
 
@@ -119,8 +119,8 @@ const variantColumns = [
 async function handleRecipeFilters(updatedFilters: any) {
   recipeFilters.value = updatedFilters
   recipes.value = await $fetch<RecipeProgramMaster[]>(props.isBatch
-  ? '/api/recipes/master/filtered'
-  : '/api/recipes/master/continue/filtered', { method: 'POST', body: { filters: recipeFilters.value }})
+    ? '/api/recipes/master/filtered'
+    : '/api/recipes/master/continue/filtered', { method: 'POST', body: { filters: recipeFilters.value } })
 }
 async function handleVariantFilters(updatedFilters: any) {
   if (selectedRecipe.value) {
@@ -214,9 +214,9 @@ const pagination = ref({ rowsPerPage: 20 })
 
 <template>
   <div class="flex flex-col">
-    <div class="flex-center my-4">
+    <div class="flex justify-center my-4">
       <QBtn
-        :label="$t('AddNewRecipe')"
+        :label="t('AddNewRecipe')"
         no-caps
         icon="note_add"
         color="primary"
@@ -245,12 +245,12 @@ const pagination = ref({ rowsPerPage: 20 })
           <template #custombody="props">
             <QTr
               :props="props"
-              class="hover:bg-gray-100 dark:hover:bg-gray-700"
+              class="cursor-pointer"
               :class="{
-                'bg-blue-200 dark:bg-blue-800': selectedRecipe?.recipeId === props.row.recipeId && selectedRecipe?.machineId === props.row.machineId,
+                'bg-blue-100 text-blue-900': selectedRecipe?.recipeId === props.row.recipeId && selectedRecipe?.machineId === props.row.machineId && !$q.dark.isActive,
+                'bg-blue-900 text-blue-100': selectedRecipe?.recipeId === props.row.recipeId && selectedRecipe?.machineId === props.row.machineId && $q.dark.isActive,
               }"
-              style="cursor: pointer;"
-              @click="selectedRecipe === props.row? (selectedRecipe = null) : (selectedRecipe = props.row) && fetchRecipeVariants(props.row.recipeId, props.row.machineId); variantFilters = []"
+              @click="selectedRecipe === props.row ? (selectedRecipe = null) : (selectedRecipe = props.row) && fetchRecipeVariants(props.row.recipeId, props.row.machineId); variantFilters = []"
             >
               <QTd
                 v-for="col in props.cols"
@@ -319,7 +319,7 @@ const pagination = ref({ rowsPerPage: 20 })
           <template #custombody="props">
             <QTr
               :props="props"
-              style="cursor: pointer;"
+              class="cursor-pointer"
               @click="onCreateJobOrder(selectedRecipe.recipeId, selectedRecipe.machineId, props.row)"
             >
               <QTd

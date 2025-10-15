@@ -175,14 +175,14 @@ const machinePagination = ref({ rowsPerPage: 20 })
     flex-wrap
   >
     <div class="q-pa-md">
-      <QCard class="flex-center" bordered>
-        <QCardSection class="flex-center items-center">
+      <QCard bordered>
+        <QCardSection class="flex justify-center items-center">
           <QBtn
-            :label="innerWidth > minSize ? $t('AddNewDispenser') : ''"
+            :label="innerWidth > minSize ? t('AddNewDispenser') : ''"
             no-caps
             icon="note_add"
             color="primary"
-            class="mr-4 ml-2 h-12 overflow-hidden"
+            class="mr-4 h-12 overflow-hidden"
             style="white-space: nowrap; text-overflow: ellipsis;"
             clickable
             @click="handleNewDispenser"
@@ -195,7 +195,6 @@ const machinePagination = ref({ rowsPerPage: 20 })
             </QTooltip>
           </QBtn>
           <TeleskopSyncBtn
-            class="mr-4 ml-2"
             type="Dispensers"
             :min-size="1400"
             @click="refreshDispensers"
@@ -274,15 +273,16 @@ const machinePagination = ref({ rowsPerPage: 20 })
         </template>
       </QTable>
     </div>
-    <div class="q-pa-md ">
-      <QCard class="flex-center" bordered>
-        <QCardSection class="flex-center items-center">
+
+    <div class="q-pa-md">
+      <QCard bordered>
+        <QCardSection class="flex justify-center items-center">
           <QBtn
-            :label="innerWidth > minSize ? $t('AddNewMachine') : ''"
+            :label="innerWidth > minSize ? t('AddNewMachine') : ''"
             no-caps
             icon="note_add"
             color="primary"
-            class="mr-4 ml-2 h-12 overflow-hidden"
+            class="mr-4 h-12 overflow-hidden"
             style="white-space: nowrap; text-overflow: ellipsis;"
             clickable
             @click="handleNewMachine"
@@ -295,7 +295,6 @@ const machinePagination = ref({ rowsPerPage: 20 })
             </QTooltip>
           </QBtn>
           <TeleskopSyncBtn
-            class="mr-4 ml-2"
             type="Machines"
             :min-size="1400"
             @click="refreshMachines"

@@ -93,7 +93,7 @@ const pagination = ref({ rowsPerPage: 20 })
   />
   <div class="flex justify-center items-center mb-4">
     <QBtn
-      :label="$t('AddNewMachine')"
+      :label="t('AddNewMachine')"
       no-caps
       icon="note_add"
       color="primary"

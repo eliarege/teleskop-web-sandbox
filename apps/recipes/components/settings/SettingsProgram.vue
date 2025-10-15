@@ -116,7 +116,7 @@ const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
   <div class="flex items-center mb-4" :class="showMachineSelection ? 'justify-start' : 'justify-center'">
     <div class="flex items-center gap-2">
       <QBtn
-        :label="$t('AddNewProgram')"
+        :label="t('AddNewProgram')"
         no-caps
         icon="note_add"
         color="primary"

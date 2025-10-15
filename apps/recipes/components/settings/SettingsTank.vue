@@ -63,19 +63,21 @@ const pagination = ref({ rowsPerPage: 20 })
 </script>
 
 <template>
-  <div class="flex-center text-xl">
-    {{ t('settings.Machine') }}
+  <div class="flex flex-col items-center">
+    <div class="text-xl">
+      {{ t('settings.Tank') }}
+    </div>
   </div>
   <QSeparator
     class="w-full mt-5 mb-5"
   />
-  <div class="flex-center mb-4">
+  <div class="flex justify-center items-center mb-4">
     <QBtn
-      :label="$t('machineFields.AddNewTank')"
+      :label="t('machineFields.AddNewTank')"
       no-caps
       icon="note_add"
       color="primary"
-      class="h-12 mr-2"
+      class="h-12"
       style="white-space: nowrap; text-overflow: ellipsis;"
       clickable
       @click="onTankClick(null, tanks && tanks.length > 0 ? tanks[tanks.length - 1].tankNo + 1 : 1, true)"

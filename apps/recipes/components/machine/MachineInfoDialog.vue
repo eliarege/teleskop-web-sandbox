@@ -270,7 +270,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
               />
             </div>
           </div>
-          <div class="flex-center justify-evenly p-10">
+          <div class="flex justify-center items-center gap-4 mt-6">
             <QBtn
               :label="t('Save')"
               color="primary"

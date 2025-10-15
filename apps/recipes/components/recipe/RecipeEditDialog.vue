@@ -552,7 +552,7 @@ async function onDelete() {
                   </QCard>
 
                   <div class="recipe-materials">
-                      <h4 flex-center text-xl>
+                      <h4 class="flex justify-center text-xl my-2">
                         {{ t('programFields.ChemRequests') }}
                       </h4>
                       <div
@@ -721,7 +721,7 @@ async function onDelete() {
                       </div>
                     <!-- Dye Requests Section -->
                     <div>
-                      <h4 flex-center text-xl>
+                      <h4 class="flex justify-center text-xl my-2">
                         {{ t('programFields.DyeRequests') }}
                       </h4>
                       <div
@@ -899,7 +899,7 @@ async function onDelete() {
 
                     <!-- Salt Requests Section -->
                     <div v-if="program.saltRequests > 0">
-                      <h4 flex-center text-xl>
+                      <h4 class="flex-center text-xl my-2">
                         {{ t('programFields.SaltRequests') }}
                       </h4>
                       <div

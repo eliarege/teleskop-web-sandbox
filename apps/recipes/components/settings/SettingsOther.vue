@@ -84,7 +84,7 @@ function onRowClick(row: any, isNew = false) {
     </QTabs>
 
     <QSeparator class="w-full mt-5 mb-5" />
-    <div class="flex-center mb-4">
+    <div class="flex justify-center items-center mb-4">
       <QBtn
         :label="t('Add')"
         icon="add"

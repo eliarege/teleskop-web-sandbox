@@ -405,7 +405,7 @@ function onMaterialAdded(material: any) {
                 <div class="recipe-materials">
                   <!-- CHEM REQUESTS -->
                   <div v-if="programHeader.chemRequests > 0">
-                    <h4 flex-center text-xl>
+                    <h4 class="flex justify-center text-xl my-2">
                       {{ t('programFields.ChemRequests') }}
                     </h4>
                     <div
@@ -546,7 +546,7 @@ function onMaterialAdded(material: any) {
 
                   <!-- DYE REQUESTS -->
                   <div v-if="programHeader.dyeRequests > 0">
-                    <h4 flex-center text-xl>
+                    <h4 class="flex justify-center text-xl my-2">
                       {{ t('programFields.DyeRequests') }}
                     </h4>
                     <div
@@ -683,7 +683,7 @@ function onMaterialAdded(material: any) {
 
                   <!-- SALT REQUESTS -->
                   <div v-if="programHeader.saltRequests > 0">
-                    <h4 flex-center text-xl>
+                    <h4 class="flex justify-center text-xl my-2">
                       {{ t('programFields.SaltRequests') }}
                     </h4>
                     <div

@@ -112,7 +112,7 @@ async function getRecipeSteps() {
     program.totalWeight = 20
     program.flotte = computed(() => program.flotteRatio * program.totalWeight)
   })
-  await fetchParameters()
+  //await fetchParameters()
   setProgramDefaultTabs()
 }
 async function fetchParameters() {
@@ -676,8 +676,8 @@ async function onCancel() {
           />
         </div>
       </div>
-      <div flex-basis-full>
-        <h4 flex-center>
+      <div class="flex-basis-full">
+        <h4 class="flex justify-center">
           {{ `${t('Machine')} / ${t('Machines')}` }}
         </h4>
         <div class="machine-selection-container">
@@ -706,14 +706,14 @@ async function onCancel() {
           <div
             v-for="(program, programIndex) in selectedRecipe"
             :key="program.programNo"
-            class="row mb-2"
+            class="row my-2"
           >
-            <div class="col">
-              <h3 class="q-mb-sm flex-center">
+            <div class="col mt-10">
+              <h3 class="q-mb-sm flex justify-center text-xl">
                 {{ program.programName }}
               </h3>
 
-              <div class="q-mb-md flex-center items-center">
+              <div class="q-mb-md flex justify-center items-center">
                 <QBtnToggle
                   v-model="activeTabs[program.programNo]"
                   class="toggle-border"
