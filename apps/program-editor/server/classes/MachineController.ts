@@ -9,7 +9,7 @@ import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../consta
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
-import type { BatchParameter, CommandFormula, CommandIO, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { AdditiveType, CommandType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -791,7 +791,7 @@ export class MachineController {
         genericMat1Req: 'H.TOTALGM1REQ',
         genericMat2Req: 'H.TOTALGM2REQ',
       })
-      .from(' BFMASTERPRGHEADER AS H')
+      .from('BFMASTERPRGHEADER AS H')
       .where('PROGNO', programNo)
       .andWhere('MACHINEID', machineId)
       .first()
@@ -991,8 +991,13 @@ export class MachineController {
           IOID: mainIOList[k].physicalId,
           IOTYPE: 5,
         })
+
+        const ioDefs = commands
+          .find(c => c.commandNo === step.mainCommand.commandNo)?.ioList
+          .find(i => i.index === io.ioIndex)?.selections || []
+
         // BAMASTERSTEPSELECTIONLIST
-        io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue: any, n) => {
+        this.sortIOValues(io.value, ioDefs).forEach((ioValue: any, n) => {
           ioSelectionArchive.push({
             MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
@@ -1007,7 +1012,7 @@ export class MachineController {
         })
       })
 
-      step.parallelCommands.forEach((command, j) => {
+      step.parallelCommands.forEach((parallelCommand, j) => {
         // BAMASTERSTEPS
         stepsArchive.push({
           MACHINEID: this.id,
@@ -1015,13 +1020,13 @@ export class MachineController {
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: j + 1,
-          COMMANDNO: command.commandNo,
+          COMMANDNO: parallelCommand.commandNo,
           ISCONDITIONAL: 0,
           CONDITIONSTR: '',
           THEORETICDURATION: 0,
         })
         // BAMASTERSTEPPARAMS
-        command.parameters.forEach((parameter) => {
+        parallelCommand.parameters.forEach((parameter) => {
           parametersArchive.push({
             MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
@@ -1036,8 +1041,8 @@ export class MachineController {
           })
         })
 
-        const paralelIOList = this.getSelectableIO(command.commandNo, commands)
-        command.ioList.forEach((io, m) => {
+        const paralelIOList = this.getSelectableIO(parallelCommand.commandNo, commands)
+        parallelCommand.ioList.forEach((io, m) => {
           if (!paralelIOList[m])
             return
 
@@ -1053,8 +1058,12 @@ export class MachineController {
             IOTYPE: 5,
           })
 
+          const ioDefs = commands
+            .find(c => c.commandNo === parallelCommand.commandNo)?.ioList
+            .find(i => i.index === io.ioIndex)?.selections || []
+
           // BAMASTERSTEPSELECTIONLIST
-          io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue: any, n) => {
+          this.sortIOValues(io.value, ioDefs).forEach((ioValue, n) => {
             ioSelectionArchive.push({
               MACHINEID: this.id,
               MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
@@ -1217,8 +1226,13 @@ export class MachineController {
           IOTYPE: 5,
           ERRORWARNING: 0,
         })
+
+        const ioDefs = machine.commands
+          .find(c => c.commandNo === step.mainCommand.commandNo)?.ioList
+          .find(i => i.index === io.ioIndex)?.selections || []
+
         // BFMASTERSTEPSELECTIONLIST
-        io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue, n) => {
+        this.sortIOValues(io.value, ioDefs).forEach((ioValue, n) => {
           ioSelection.push({
             SELECTIONINDEX: n,
             PROGNO: program.programNo,
@@ -1232,21 +1246,21 @@ export class MachineController {
         })
       })
 
-      step.parallelCommands.forEach((command, j) => {
+      step.parallelCommands.forEach((parallelCommand, j) => {
         // BFMASTERSTEPS
         steps.push({
           MACHINEID: this.id,
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: j + 1,
-          COMMANDNO: command.commandNo,
+          COMMANDNO: parallelCommand.commandNo,
           ISCONDITIONAL: 0,
           CONDITIONSTR: '',
           ERRORS: 0,
           THEORETICDURATION: 0,
         })
         // BFMASTERSTEPPARAMS
-        command.parameters.forEach((parameter) => {
+        parallelCommand.parameters.forEach((parameter) => {
           parameters.push({
             PROGNO: program.programNo,
             MAINSTEP: i,
@@ -1261,8 +1275,8 @@ export class MachineController {
           })
         })
 
-        const paralelIOList = this.getSelectableIO(command.commandNo, commands)
-        command.ioList.forEach((io, m) => {
+        const paralelIOList = this.getSelectableIO(parallelCommand.commandNo, commands)
+        parallelCommand.ioList.forEach((io, m) => {
           if (!paralelIOList[m])
             return
 
@@ -1278,8 +1292,12 @@ export class MachineController {
             ERRORWARNING: 0,
           })
 
+          const ioDefs = machine.commands
+            .find(c => c.commandNo === parallelCommand.commandNo)?.ioList
+            .find(i => i.index === io.ioIndex)?.selections || []
+
           // BFMASTERSTEPSELECTIONLIST
-          io.value.slice(0).sort((a, b) => (a[0] * 100 + a[1]) - (b[0] * 100 + b[1])).forEach((ioValue, n) => {
+          this.sortIOValues(io.value, ioDefs).forEach((ioValue, n) => {
             ioSelection.push({
               SELECTIONINDEX: n,
               PROGNO: program.programNo,
@@ -1961,5 +1979,22 @@ export class MachineController {
     }
 
     return chemRequestCounters
+  }
+
+  private sortIOValues(ioValues: [number, number][], ioDefs: CommandIOSelection[]): [number, number][] {
+    const ioOrderMap = new Map(ioDefs.map((def, idx) => [`${def.type}-${def.physicalId}`, idx]))
+    return ioValues.toSorted((ioA, ioB) => {
+      const rankA = ioOrderMap.get(`${ioA[0]}-${ioA[1]}`)
+      const rankB = ioOrderMap.get(`${ioB[0]}-${ioB[1]}`)
+      if (!isDef(rankA) && !isDef(rankB)) {
+        return 0
+      } else if (!isDef(rankA)) {
+        return 1
+      } else if (!isDef(rankB)) {
+        return -1
+      } else {
+        return rankA - rankB
+      }
+    })
   }
 }
