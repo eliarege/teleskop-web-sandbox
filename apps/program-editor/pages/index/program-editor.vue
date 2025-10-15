@@ -199,7 +199,7 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
   event.preventDefault()
 
   const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
-  const stepIndex = between(currentIndex + 1, 0, editor.program.steps.length - 1) ? currentIndex + 1 : currentIndex
+  const stepIndex = currentIndex < editor.program.steps.length - 1 ? currentIndex + 1 : 0
   editor.selectedSteps = [editor.program.steps[stepIndex]]
 
   editor.scrollPage(editor.selectedSteps[0].stepId)
