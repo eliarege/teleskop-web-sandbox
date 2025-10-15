@@ -104,44 +104,49 @@ const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
 </script>
 
 <template>
-  <div class="flex-center text-xl pt-5 pl-5">
-    {{ t('Programs') }}
+  <div class="flex flex-col items-center mt-5">
+    <div class="text-xl">
+      {{ t('Programs') }}
+    </div>
   </div>
   <QSeparator
     class="w-full mt-5 mb-5"
   />
-  <div class="flex-center mb-4">
-    <QBtn
-      :label="$t('AddNewProgram')"
-      no-caps
-      icon="note_add"
-      color="primary"
-      class="h-12 mr-2"
-      style="white-space: nowrap; text-overflow: ellipsis;"
-      clickable
-      @click="addNewProgram"
-    />
-    <TeleskopSyncBtn
-      class="ml-2"
-      type="Programs"
-      :min-size="800"
-      @click="refreshPrograms"
-    />
 
-    <div class="ml-2" style="min-width: 200px;">
+  <div class="flex items-center mb-4" :class="showMachineSelection ? 'justify-start' : 'justify-center'">
+    <div class="flex items-center gap-2">
       <QBtn
-        v-if="!showMachineSelection"
-        :label="defaultMachineName"
+        :label="$t('AddNewProgram')"
         no-caps
-        icon="computer"
+        icon="note_add"
         color="primary"
         class="h-12"
         style="white-space: nowrap; text-overflow: ellipsis;"
         clickable
+        @click="addNewProgram"
+      />
+      <TeleskopSyncBtn
+        type="Programs"
+        :min-size="800"
+        @click="refreshPrograms"
+      />
+    </div>
+
+    <div v-if="!showMachineSelection" class="flex items-center">
+      <QBtn
+        :label="defaultMachineName"
+        no-caps
+        icon="computer"
+        color="primary"
+        class="h-12 ml-2"
+        style="white-space: nowrap; text-overflow: ellipsis;"
+        clickable
         @click="toggleMachineSelection"
       />
+    </div>
 
-      <div v-else class="bg-primary rounded-md p-2">
+    <div v-else class="flex-1 ml-4">
+      <div class="bg-primary rounded-md p-2">
         <div class="flex justify-between items-center mb-1">
           <h4 class="text-white m-0">
             {{ t('DefaultMachine') }}
@@ -171,6 +176,7 @@ const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
       </div>
     </div>
   </div>
+
   <FilterableTable
     :pagination
     :rows="programs"
