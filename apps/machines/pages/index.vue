@@ -10,8 +10,10 @@ import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 type SseEvent = 'log' | 'uuid' | 'error' | 'error-log' | 'start' | 'reset'
 
 interface SseLog {
-  message: string
   type: SseEvent
+  message: string
+  rawMessage: string
+
   progress: number
 }
 
@@ -78,9 +80,6 @@ onBeforeUnmount(() => {
 
 const percentage = ref(0)
 
-const closeButtonVisible = ref(false)
-let closeButtonTimer: NodeJS.Timeout | null = null
-
 function parseMessage(message?: string) {
   if (!message)
     return ''
@@ -104,6 +103,7 @@ watch(data, (newData) => {
     const sseData = {
       type: event.value as SseEvent,
       message: parseMessage(parsedData.message),
+      rawMessage: parsedData.message,
       progress: parsedData.progress,
     }
 
@@ -174,16 +174,13 @@ function handleSseLogs(ctx: LogContext, sseData: SseLog) {
         },
       })
 
-      if (closeButtonTimer)
-        clearTimeout(closeButtonTimer)
-      if (sseData.message === 'NETWORK_CONN_FAILED')
-        closeButtonTimer = setTimeout(() => {
-          ctx.logDialog?.update({
-            cancel: {
-              label: t('dismiss'),
-            },
-          })
-        }, 1700)
+      if (sseData.rawMessage === 'NETWORK_CONN_FAILED') {
+        ctx.logDialog?.update({
+          cancel: {
+            label: t('dismiss'),
+          },
+        })
+      }
       if (percentage.value === 1) {
         ctx.fullLogs = ctx.logs
           .filter(l => l.type !== 'start')
@@ -193,7 +190,6 @@ function handleSseLogs(ctx: LogContext, sseData: SseLog) {
           ctx.logDialog = null
           ctx.showFullLogDialog = true
           percentage.value = 0
-          closeButtonVisible.value = false
           currentOperation.value = null
         }, 350)
       }
