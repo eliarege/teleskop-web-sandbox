@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import type { ProgramStepCommand } from '~/shared/types'
-
 const props = defineProps<{
   type: 'add' | 'remove' | 'changeParameter'
   commandNo: number
   commandName: string
-  programCommand: ProgramStepCommand
   stepIndex: number
   stepsLength: number
   parameter?: { name: string, value: number | string }

@@ -1,4 +1,5 @@
 import { useQuasar } from 'quasar'
+import { notification } from '~/shared/functions'
 
 export function useNotify() {
   const $q = useQuasar()
@@ -14,6 +15,20 @@ export function useNotify() {
       $q.notify({
         message,
         type: 'negative',
+        position: 'top',
+      })
+    },
+    notifyInfo(message: string) {
+      $q.notify({
+        message,
+        type: 'info',
+        position: 'top',
+      })
+    },
+    notifyWarning(message: string) {
+      $q.notify({
+        message,
+        type: 'warning',
         position: 'top',
       })
     },
