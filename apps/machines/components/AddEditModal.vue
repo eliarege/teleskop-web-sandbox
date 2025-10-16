@@ -448,7 +448,7 @@ async function getVersionInfo(formData: Machine) {
                   @click="getVersionInfo(formData)"
                 />
                 <span :class="versionInfoMessage.color" class="row-start-7">
-                  {{ versionInfoMessage.message }}
+                  {{ versionInfoMessage.message || '&nbsp;' }}
                 </span>
               </div>
             </div>
