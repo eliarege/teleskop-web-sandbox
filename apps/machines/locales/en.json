@@ -566,6 +566,9 @@
   "smartRequestCommandsSaved": "Smart request commands saved successfully.",
   "smartRequestCommandsSaveError": "Error occurred while saving smart request commands. Please try again.",
 
+  "startingVersionUpdate": "Starting Version Update",
+  "startingProjectUpload": "Starting Project Upload",
+
   "errorMessages": {
     "duplicateId": "This ID number is already in use. Please enter a different ID.",
     "connectionError": "Could not connect to the server. Please check your internet connection.",

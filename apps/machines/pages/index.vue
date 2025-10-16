@@ -137,7 +137,9 @@ watch(data, (newData) => {
 
 function showSseLogs(ctx: LogContext) {
   ctx.logDialog = dialog({
-    message: `Starting Project Upload`,
+    message: currentOperation.value === 'project'
+      ? t('startingProjectUpload')
+      : t('startingVersionUpdate'),
     progress: {
       spinner: h(QLinearProgress, {
         color: 'primary',

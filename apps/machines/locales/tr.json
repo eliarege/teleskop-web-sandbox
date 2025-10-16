@@ -567,6 +567,10 @@
   "stopReasonsDeletedSuccessfully": "Seçilen duruş nedenleri başarıyla silindi.",
   "smartRequestCommandsSaved": "Akıllı istek komutları başarıyla kaydedildi.",
   "smartRequestCommandsSaveError": "Akıllı istek komutları kaydedilirken hata oluştu. Lütfen tekrar deneyin.",
+
+  "startingVersionUpdate": "Versiyon Güncellemesi Başlatılıyor",
+  "startingProjectUpload": "Proje Yüklemesi Başlatılıyor",
+
   "errorMessages": {
     "duplicateId": "Bu ID numarası zaten kullanılıyor. Lütfen farklı bir ID girin.",
     "connectionError": "Sunucuya bağlantı kurulamadı. İnternet bağlantınızı kontrol edin.",
