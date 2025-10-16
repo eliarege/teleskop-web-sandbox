@@ -8,6 +8,8 @@ import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
 const { t } = useI18n()
+const $q = useQuasar()
+const { $commandManager } = useNuxtApp()
 
 const sortableOptions = computed<SortableOptions>(() => ({
   sort: false,
@@ -61,10 +63,12 @@ function onDragEnd(event: SortableEvent) {
       const index = Number.parseInt(parent.getAttribute('data-index') || '-1')
       if (index > -1) {
         const res = validateParallelCommands(index)
-        if (!res)
+        if (!res) {
           editor.newParallelStepCommand(draggedCommand.commandNo, index)
-        else
-          notifyError(t('error.notSameCommand', { command: draggedCommand.name }))
+          $commandManager.executeCommand('moveParallelStep', { $q }, 'add', draggedCommand.commandNo, undefined, undefined, index + 1)
+        } else {
+          notifyError(t('error.notSameCommand'))
+        }
       }
     } else {
       editor.addStep(draggedCommand.commandNo, event.newIndex)

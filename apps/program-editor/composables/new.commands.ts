@@ -75,7 +75,7 @@ export interface RegisteredCommands {
   unsavedChanges: [ctx: any, machineId?: number]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, commandNo: number]
-  moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand: ProgramStepCommand, parameter?: ParameterItem]
+  moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand?: ProgramStepCommand, parameter?: ParameterItem, stepIndex?: number]
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
   checkErrors: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
@@ -676,17 +676,16 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'moveParallelStep',
-    execute(ctx: any, type: string, commandNo: number, programCommand: ProgramStepCommand, parameter?: ParameterItem) {
+    execute(ctx: any, type: string, commandNo: number, programCommand?: ProgramStepCommand, parameter?: ParameterItem, stepIndex?: number) {
       const commandName = editor.machine.commands.get(commandNo)?.name
-      const stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
+      const currentStepIndex = stepIndex || editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
       ctx.$q.dialog({
         component: CMMoveParallelStepDialog,
         componentProps: {
           type,
           commandNo,
           commandName,
-          programCommand,
-          stepIndex,
+          stepIndex: currentStepIndex,
           stepsLength: editor.program.steps.length,
           parameter,
         },
@@ -694,7 +693,7 @@ registerCommand(() => {
         if (command.type === 'add') {
           for (let index = command.startIndex; index <= command.endIndex; index++) {
             // Eklenen adıma tekrar ekleme, sadece yoksa ekle
-            if (stepIndex !== index + 1) {
+            if (currentStepIndex !== index + 1) {
               const parallelCommands = editor.program.steps[index].parallelCommands
               const alreadyExists = parallelCommands.some(cmd => cmd.commandNo === command.commandNo)
               if (!alreadyExists) {
