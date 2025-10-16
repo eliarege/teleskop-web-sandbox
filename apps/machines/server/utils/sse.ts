@@ -40,10 +40,12 @@ export function useSSE() {
   const send = (id: string, eventName: string, data: Record<string, any>) => {
     const client = clients.find(c => c.id === id)
     if (client) {
+      // Hacky, add random id to re-trigger watchers on client side
+      data.$id = Math.random().toString(36).substring(2, 16)
       client.event.node.res.write(`event: ${eventName}\n`)
       client.event.node.res.write(`data: ${JSON.stringify(data)}\n\n`)
     }
   }
 
-  return { clients, addClient, removeClient, broadcast, broadcasts , send }
+  return { clients, addClient, removeClient, broadcast, broadcasts, send }
 }
