@@ -19,10 +19,11 @@ export default defineEventHandler(async (event) => {
     .leftJoin('PROGRAM_TEMPLATE_STEP as s', function () {
       this.on('s.program_no', '=', 't.program_no')
         .andOn('s.type', '=', 't.type')
+        .andOnVal('s.machine_id', '=', machineId)
     })
     .leftJoin('PROGRAM_HEADER as p', function () {
       this.on('s.program_no', '=', 'p.program_no')
-        .andOnVal('p.machine_id', machineId)
+        .andOnVal('p.machine_id', '=', machineId)
     })
     .leftJoin('MATERIAL as mat', 's.material_code', 'mat.material_code')
     .where('t.program_no', id)
