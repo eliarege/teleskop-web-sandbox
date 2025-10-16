@@ -190,8 +190,10 @@
     "commandNotFound": "Command Not Found!",
     "machineCommandNotFound": "{commandNo} number command {machineId} machine not found",
     "cannotMainCommand": "{commandNo} number command cannot be main command",
-    "notSameCommand": "Cannot have the same command in one step",
-    "mainStepNotFound": "Main step not found"
+    "notSameCommand": "Cannot have the same command in one step"
+  },
+  "warning": {
+    "mainStepNotFound": "Please select main step"
   },
   "selectAll": "Select all",
   "dropAll": "Drop all",

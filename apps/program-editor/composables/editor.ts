@@ -29,7 +29,7 @@ export const useEditorStore = defineStore('editor', () => {
   const { t } = $i18n
   const route = useRoute()
   const errorIds = ref(new Set<string>())
-  const { notifySuccess, notifyError } = useNotify()
+  const { notifySuccess, notifyError, notifyWarning } = useNotify()
   const kc = useKeycloak()
 
   const isTonello = computed(() => machine.value.tbbModel === 'Tonello')
@@ -283,13 +283,12 @@ export const useEditorStore = defineStore('editor', () => {
   function newParallelStep(): void {
     const targetIndex = getStepIndex()
 
-    // Eğer adım yoksa, işlem yapılmaz
-    if (targetIndex < 0) {
-      notifyError(t('error.mainStepNotFound'))
+    const parallelCommands = program.value.steps[targetIndex]?.parallelCommands
+    if (!parallelCommands) {
+      notifyWarning(t('warning.mainStepNotFound'))
       return
     }
 
-    const parallelCommands = program.value.steps[targetIndex].parallelCommands
     const emptyCommand = createEmptyCommand()
     emptyCommand.commandId = generateParallelStepId(targetIndex)
     parallelCommands.push(emptyCommand)
