@@ -1,6 +1,7 @@
 import { createRouter, useBase } from 'h3'
 import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
+import { PRIMARY_KEY_VIOLATION, isMssqlError } from '~/server/lib/error'
 
 const router = createRouter()
 export default useBase('/api/settings', router.handler)
@@ -515,37 +516,55 @@ router.post('/material-dispenser-connection-filtered', defineAuthEventHandler(as
   return result
 }))
 
-router.post('/material-connection/:materialCode', defineAuthEventHandler({
+interface MaterialRequestBody {
+  materialCode: string
+  materialName: string
+  materialGroup: number
+  density: number
+  ph: number
+  source: string
+  cost: number
+  rerequestable: boolean
+  directTransfer: boolean
+  connectedDisps: number[]
+}
+
+router.post('/material-connection', defineAuthEventHandler({
   roles: ['manage'],
   async handler(event) {
-    const body = await readBody(event)
-    if (!event.context.params) {
-      throw new Error('URL parameters are undefined')
-    }
-    const materialCode = event.context.params.materialCode
-    const isThereMaterial = await knex('DYTFMATERIAL')
-      .where('MATERIALCODE', materialCode)
-    if (isThereMaterial.length > 0)
-      return { code: 400, error: 'Material with given material code is already exist.' }
+    const body = await readBody(event) as MaterialRequestBody
+    const materialCode = body.materialCode
 
-    await knex('DYTFMATERIAL')
-      .insert({
-        MATERIALCODE: materialCode,
-        MATERIALNAME: body.materialName,
-        MADDEGRUPNO: body.materialGroup,
-        YOGUNLUK: body.density,
-        PH: body.ph,
-        SOURCE: body.source,
-        BIRIMMALIYET: body.cost,
-        ReRequestable: body.rerequestable,
-        DirectTransfer: body.directTransfer,
+    try {
+      await knex.transaction(async (trx) => {
+        await trx('DYTFMATERIAL')
+          .insert({
+            MATERIALCODE: materialCode,
+            MATERIALNAME: body.materialName,
+            MADDEGRUPNO: body.materialGroup,
+            YOGUNLUK: body.density,
+            PH: body.ph,
+            SOURCE: body.source,
+            BIRIMMALIYET: body.cost,
+            ReRequestable: body.rerequestable,
+            DirectTransfer: body.directTransfer,
+          })
+
+        for (const disp of body.connectedDisps) {
+          await trx('DYTFCHEMDISPCONNECTION').insert({
+            CHEMCODE: materialCode,
+            DISPENSERID: disp,
+          })
+        }
       })
-    body?.connectedDisps.forEach(async (disp) => {
-      await knex('DYTFCHEMDISPCONNECTION').insert({
-        CHEMCODE: materialCode,
-        DISPENSERID: disp,
-      })
-    })
+    } catch (error) {
+      if (isMssqlError(error, PRIMARY_KEY_VIOLATION)) { // Violation of primary key (material code)
+        return { code: 400, error: 'Material with given material code already exists' }
+      } else {
+        throw error
+      }
+    }
+
     return 1 // return 200
   },
 }))
@@ -553,34 +572,48 @@ router.post('/material-connection/:materialCode', defineAuthEventHandler({
 router.put('/material-connection/:materialCode', defineAuthEventHandler({
   roles: ['manage'],
   async handler(event) {
-    const body = await readBody(event)
-    if (!event.context.params) {
-      throw new Error('URL parameters are undefined')
+    const prevMaterialCode = event.context.params?.materialCode
+    if (!prevMaterialCode) {
+      throw new Error(`URL parameter "materialCode" is empty or undefined`)
     }
-    const materialCode = event.context.params.materialCode
-    await knex('DYTFMATERIAL')
-      .where('MATERIALCODE', materialCode)
-      .update({
-        MATERIALCODE: materialCode,
-        MATERIALNAME: body.materialName,
-        MADDEGRUPNO: body.materialGroup,
-        YOGUNLUK: body.density,
-        PH: body.ph,
-        SOURCE: body.source,
-        BIRIMMALIYET: body.cost,
-        ReRequestable: body.rerequestable,
-        DirectTransfer: body.directTransfer,
+    const body = await readBody(event) as MaterialRequestBody
+    const newMaterialCode = body.materialCode
+    try {
+      await knex.transaction(async (trx) => {
+        await trx('DYTFCHEMDISPCONNECTION')
+          .where('CHEMCODE', prevMaterialCode)
+          .delete()
+
+        await trx('DYTFMATERIAL')
+          .where('MATERIALCODE', prevMaterialCode)
+          .update({
+            MATERIALCODE: body.materialCode,
+            MATERIALNAME: body.materialName,
+            MADDEGRUPNO: body.materialGroup,
+            YOGUNLUK: body.density,
+            PH: body.ph,
+            SOURCE: body.source,
+            BIRIMMALIYET: body.cost,
+            ReRequestable: body.rerequestable,
+            DirectTransfer: body.directTransfer,
+          })
+
+        for (const disp of body.connectedDisps) {
+          await trx('DYTFCHEMDISPCONNECTION')
+            .insert({
+              CHEMCODE: newMaterialCode,
+              DISPENSERID: disp,
+            })
+        }
       })
-    await knex('DYTFCHEMDISPCONNECTION')
-      .where('CHEMCODE', materialCode)
-      .delete()
-    body.connectedDisps.forEach(async (disp) => {
-      await knex('DYTFCHEMDISPCONNECTION')
-        .insert({
-          CHEMCODE: materialCode,
-          DISPENSERID: disp,
-        })
-    })
+    } catch (error) {
+      if (isMssqlError(error, PRIMARY_KEY_VIOLATION)) { // Violation of primary key (material code)
+        return { code: 400, error: 'Material with given material code already exists' }
+      } else {
+        throw error
+      }
+    }
+
     return 1
   },
 }))

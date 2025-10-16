@@ -109,6 +109,7 @@ async function applyFilters(updatedValue: any) {
 }
 
 const expandedRow: Ref<number | null> = ref(null)
+const selectedMaterialCode = ref<string | null>(null)
 const submitDialog = ref(false)
 const givenMaterialCodeExistsWarning = ref(false)
 const materialCodeErrorMessage = ref('')
@@ -116,8 +117,10 @@ const materialCodeErrorMessage = ref('')
 async function toggleRowExpand(row: any, index: number) {
   if (expandedRow.value === index) {
     expandedRow.value = null
+    selectedMaterialCode.value = null
   } else {
     expandedRow.value = index
+    selectedMaterialCode.value = row.materialCode
   }
   resetMaterialInfo(row)
 }
@@ -212,7 +215,7 @@ async function submit(isPut: boolean) {
   }
   /** If create */
   if (!isPut) {
-    isSuccess = await keycloak.fetch(`/api/settings/material-connection/${body.materialCode}`, {
+    isSuccess = await keycloak.fetch(`/api/settings/material-connection`, {
       method: 'post',
       body,
     })
@@ -220,7 +223,11 @@ async function submit(isPut: boolean) {
     expandedRow.value = null
   }
   if (isPut) { /** If it is put */
-    isSuccess = await keycloak.fetch(`/api/settings/material-connection/${body.materialCode}`, {
+    if (!selectedMaterialCode.value) {
+      console.error('No selected material code for put request. This should not happen.')
+      return
+    }
+    isSuccess = await keycloak.fetch(`/api/settings/material-connection/${selectedMaterialCode.value}`, {
       method: 'put',
       body,
     })
@@ -310,247 +317,248 @@ const pagination = ref({ rowsPerPage: 0 })
 </script>
 
 <template>
-  <FilterableTable
-    v-model:pagination="pagination"
-    :rows="rows"
-    :columns="columns"
-    :is-expandable="true"
-    style="height: 90vh;"
-    :empty-first-row="true"
-    :custom-sort-method="customSortMethod"
-    @update-filter-slots="(evt) => applyFilters(evt)"
-  >
-    <template #top-right>
-      <div class="items-center flex justify-center h-full">
-        <q-btn
-          outline
-          class="p-2"
-          icon="edit"
-          @click="handleMultiEdit"
-        >
-          <q-tooltip
-            class="text-body2"
-          >
-            {{ t('multiEditDialog.tooltip') }}
-          </q-tooltip>
-        </q-btn>
-      </div>
-    </template>
-    <template #custombody="props">
-      <q-tr :props="props">
-        <q-td
-          class="cursor-pointer"
-          :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
-          @click="toggleRow(props.row, props.rowIndex, false)"
-        >
+  <div>
+    <FilterableTable
+      v-model:pagination="pagination"
+      :rows="rows"
+      :columns="columns"
+      :is-expandable="true"
+      style="height: 90vh;"
+      :empty-first-row="true"
+      :custom-sort-method="customSortMethod"
+      @update-filter-slots="(evt) => applyFilters(evt)"
+    >
+      <template #top-right>
+        <div class="items-center flex justify-center h-full">
           <q-btn
-            v-if="props.row.materialCode || props.rowIndex"
-            size="sm"
-            :style="`background-color: ${colors.black}; color: white;`"
-            round
-            dense
-            :icon="props.rowIndex === expandedRow ? 'expand_less' : 'expand_more'"
-          />
-          <q-btn
-            v-else
             outline
-            :style="`color: ${colors.black}; font-weight: bold; font-size: larger; `"
-            :label="t('settings.new')"
-            class="w-30"
-            :icon="props.rowIndex === expandedRow ? 'remove' : 'add'"
-          />
-        </q-td>
-        <q-td
-          v-for="col in props.cols"
-          :key="col.name"
-          :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
+            class="p-2"
+            icon="edit"
+            @click="handleMultiEdit"
+          >
+            <q-tooltip
+              class="text-body2"
+            >
+              {{ t('multiEditDialog.tooltip') }}
+            </q-tooltip>
+          </q-btn>
+        </div>
+      </template>
+      <template #custombody="props">
+        <q-tr :props="props">
+          <q-td
+            class="cursor-pointer"
+            :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
+            @click="toggleRow(props.row, props.rowIndex, false)"
+          >
+            <q-btn
+              v-if="props.row.materialCode || props.rowIndex"
+              size="sm"
+              :style="`background-color: ${colors.black}; color: white;`"
+              round
+              dense
+              :icon="props.rowIndex === expandedRow ? 'expand_less' : 'expand_more'"
+            />
+            <q-btn
+              v-else
+              outline
+              :style="`color: ${colors.black}; font-weight: bold; font-size: larger; `"
+              :label="t('settings.new')"
+              class="w-30"
+              :icon="props.rowIndex === expandedRow ? 'remove' : 'add'"
+            />
+          </q-td>
+          <q-td
+            v-for="col in props.cols"
+            :key="col.name"
+            :style="props.rowIndex % 2 ? `background-color: ${colors.tableGray}` : '' "
+            :props="props"
+            class="cursor-pointer"
+            @click="toggleRow(props.row, props.rowIndex, false)"
+          >
+            <span v-if="col.field === 'materialGroup' && col.value !== undefined">
+              {{ t(`recipeTypes.${col.value - 1}`) }}
+            </span>
+            <span v-else>
+              {{ col.value }}
+            </span>
+          </q-td>
+        </q-tr>
+
+        <q-tr
+          v-if="props.rowIndex === expandedRow"
           :props="props"
-          class="cursor-pointer"
-          @click="toggleRow(props.row, props.rowIndex, false)"
+          class="expanded-row"
         >
-          <span v-if="col.field === 'materialGroup' && col.value !== undefined">
-            {{ t(`recipeTypes.${col.value - 1}`) }}
-          </span>
-          <span v-else>
-            {{ col.value }}
-          </span>
-        </q-td>
-      </q-tr>
-
-      <q-tr
-        v-if="props.rowIndex === expandedRow"
-        :props="props"
-        class="expanded-row"
-      >
-        <q-td colspan="100%">
-          <div class="flex">
-            <div class="flex pt-5 w-3/4 justify-center">
-              <div
-                v-for="mate in materialInfo.slice(0, -1)"
-                :key="mate.label"
-                class="flex mt-1"
-              >
-                <div class="flex class-w-70 m-1 items-center">
-                  {{ mate.label }}
-                </div>
-                <div class=" flex class-w-100 pl-2 m-1">
-                  <span v-if="mate.field === 'materialGroup'">
-                    <q-select
-                      v-model="mate.value"
-                      borderless
-                      dense
-                      filled
-                      class="class-w-70"
-                      options-dense
-                      :options="materialGroups"
-                      option-value="materialGroup"
-                      option-label="label"
-                      style="min-width: 150px"
-                    />
-                  </span>
-                  <span v-else-if="mate.field === 'directTransfer' || mate.field === 'rerequestable'">
-                    <q-checkbox v-model="mate.value" />
-                  </span>
-                  <span v-else-if="mate.field === 'materialCode'">
-                    <q-input
-                      v-model="mate.value"
-                      dense
-                      class="class-w-70"
-                      filled
-                      :error="givenMaterialCodeExistsWarning"
-                      :error-message="materialCodeErrorMessage"
-                      type="text"
-                      :placeholder="mate.value"
-                      :disable="props.row.materialCode !== undefined && mate.field === 'materialCode'"
-                      @update:model-value="checkMaterialCodeExist()"
-                    />
-                  </span>
-                  <span v-else>
-                    <q-input
-                      v-model="mate.value"
-                      dense
-                      class="class-w-70"
-                      filled
-                      :type="mate.numeric ? 'number' : 'text'"
-                      :min="mate.field === 'ph' ? 1 : 0"
-                      :max="mate.field === 'ph' ? 14 : ''"
-                      :placeholder="mate.value"
-                      @keydown="(e) => mate.numeric ? onKeydownPreventNonNumerical(e, mate.value) : {}"
-                      @paste="(e) => mate.numeric ? onPastePreventNonNumerical(e) : {}"
-                      @drop="(e) => mate.numeric ? onDrop(e) : {}"
-                    />
+          <q-td colspan="100%">
+            <div class="flex">
+              <div class="flex pt-5 w-3/4 justify-center">
+                <div
+                  v-for="mate in materialInfo.slice(0, -1)"
+                  :key="mate.label"
+                  class="flex mt-1"
+                >
+                  <div class="flex class-w-70 m-1 items-center">
+                    {{ mate.label }}
+                  </div>
+                  <div class=" flex class-w-100 pl-2 m-1">
+                    <span v-if="mate.field === 'materialGroup'">
+                      <q-select
+                        v-model="mate.value"
+                        borderless
+                        dense
+                        filled
+                        class="class-w-70"
+                        options-dense
+                        :options="materialGroups"
+                        option-value="materialGroup"
+                        option-label="label"
+                        style="min-width: 150px"
+                      />
+                    </span>
+                    <span v-else-if="mate.field === 'directTransfer' || mate.field === 'rerequestable'">
+                      <q-checkbox v-model="mate.value" />
+                    </span>
+                    <span v-else-if="mate.field === 'materialCode'">
+                      <q-input
+                        v-model="mate.value"
+                        dense
+                        class="class-w-70"
+                        filled
+                        :error="givenMaterialCodeExistsWarning"
+                        :error-message="materialCodeErrorMessage"
+                        type="text"
+                        :placeholder="mate.value"
+                        @update:model-value="checkMaterialCodeExist()"
+                      />
+                    </span>
+                    <span v-else>
+                      <q-input
+                        v-model="mate.value"
+                        dense
+                        class="class-w-70"
+                        filled
+                        :type="mate.numeric ? 'number' : 'text'"
+                        :min="mate.field === 'ph' ? 1 : 0"
+                        :max="mate.field === 'ph' ? 14 : ''"
+                        :placeholder="mate.value"
+                        @keydown="(e) => mate.numeric ? onKeydownPreventNonNumerical(e, mate.value) : {}"
+                        @paste="(e) => mate.numeric ? onPastePreventNonNumerical(e) : {}"
+                        @drop="(e) => mate.numeric ? onDrop(e) : {}"
+                      />
                     <!-- @update:model-value="evt => mate.value = removeAnyNonNumerical(evt)" -->
-                  </span>
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="flex flex-col w-1/4">
-              <div class="flex max-h-60 pl-2 items-center ">
-                {{ materialInfo[materialInfo.length - 1].label }}
-              </div>
-              <div class="flex max-h-60 overflow-y-scroll">
-                <span class="flex flex-col">
-                  <q-checkbox
-                    v-for="dispenser in disps"
-                    :key="dispenser.dispNo"
-                    v-model="materialInfo[materialInfo.length - 1].value"
-                    :val="dispenser.dispNo"
-                    :label="dispenser.name"
-                  />
-                </span>
-              </div>
+              <div class="flex flex-col w-1/4">
+                <div class="flex max-h-60 pl-2 items-center ">
+                  {{ materialInfo[materialInfo.length - 1].label }}
+                </div>
+                <div class="flex max-h-60 overflow-y-scroll">
+                  <span class="flex flex-col">
+                    <q-checkbox
+                      v-for="dispenser in disps"
+                      :key="dispenser.dispNo"
+                      v-model="materialInfo[materialInfo.length - 1].value"
+                      :val="dispenser.dispNo"
+                      :label="dispenser.name"
+                    />
+                  </span>
+                </div>
               <!-- :display-value=" mate.value && mate.value.length > 1 ? `${mate.value[0]?.name} + ${mate.value?.length - 1} ${t('more')}` : mate.value[0]?.name" -->
+              </div>
             </div>
-          </div>
-          <div class="flex items-center justify-center gap-5 py-10 w-full">
-            <q-btn
-              color="black"
+            <div class="flex items-center justify-center gap-5 py-10 w-full">
+              <q-btn
+                color="black"
               :label="props.rowIndex || props.row.materialCode ? t('settings.submit') : t('settings.new')"
-              outline
-              :disable="materialInfo[0].value === undefined || materialInfo[0].value === '' || givenMaterialCodeExistsWarning"
-              icon="done"
-              @click="submit(props.rowIndex || props.row.dispNo)"
-            />
-            <q-btn
-              color="black"
-              :label="t('settings.cancel')"
-              icon="close"
-              outline
-              @click="toggleRow(props.row, props.rowIndex, true)"
-            />
-            <q-btn
-              v-if="props.rowIndex"
-              color="red"
-              :label="t('settings.delete')"
-              icon="delete"
-              outline
-              @click="cancelDialogVisible = true"
-            />
-          </div>
-        </q-td>
-      </q-tr>
-    </template>
-  </FilterableTable>
-  <q-dialog v-model="cancelDialogVisible" persistent>
-    <q-card>
-      <q-card-section class="row items-center">
-        <q-avatar
-          icon="delete"
-          color="white"
-          text-color="delete"
-        />
-        <span class="q-ml-sm"> {{ t('warnings.deleteRow') }}</span>
-      </q-card-section>
+                outline
+                :disable="materialInfo[0].value === undefined || materialInfo[0].value === '' || givenMaterialCodeExistsWarning"
+                icon="done"
+                @click="submit(props.rowIndex || props.row.dispNo)"
+              />
+              <q-btn
+                color="black"
+                :label="t('settings.cancel')"
+                icon="close"
+                outline
+                @click="toggleRow(props.row, props.rowIndex, true)"
+              />
+              <q-btn
+                v-if="props.rowIndex"
+                color="red"
+                :label="t('settings.delete')"
+                icon="delete"
+                outline
+                @click="cancelDialogVisible = true"
+              />
+            </div>
+          </q-td>
+        </q-tr>
+      </template>
+    </FilterableTable>
+    <q-dialog v-model="cancelDialogVisible" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar
+            icon="delete"
+            color="white"
+            text-color="delete"
+          />
+          <span class="q-ml-sm"> {{ t('warnings.deleteRow') }}</span>
+        </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn
-          v-close-popup
-          :label="t('settings.cancel')"
-          outline
-          color="black"
-          icon="close"
-        />
-        <q-btn
-          v-close-popup
-          outline
-          :label="t('settings.delete')"
-          color="red"
-          icon="delete"
-          @click="deleteRow()"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-  <q-dialog v-model="submitDialog" persistent>
-    <q-card>
-      <q-card-section class="row items-center">
-        <q-avatar
-          icon="question_mark"
-        />
-        <span class="q-ml-sm"> {{ t('warnings.formDidnotSubmit', { type: t('warnings.dispenser') }) }}</span>
-      </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            v-close-popup
+            :label="t('settings.cancel')"
+            outline
+            color="black"
+            icon="close"
+          />
+          <q-btn
+            v-close-popup
+            outline
+            :label="t('settings.delete')"
+            color="red"
+            icon="delete"
+            @click="deleteRow()"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="submitDialog" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar
+            icon="question_mark"
+          />
+          <span class="q-ml-sm"> {{ t('warnings.formDidnotSubmit', { type: t('warnings.dispenser') }) }}</span>
+        </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn
-          v-close-popup
-          :label="t('settings.discard')"
-          outline
-          color="red"
-          icon="close"
-          @click="expandedRow = null"
-        />
-        <q-btn
-          v-close-popup
-          outline
-          :label="t('settings.submit')"
-          color="light-blue-10"
-          icon="done_all"
-          @click="submit(true)"
-        />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+        <q-card-actions align="right">
+          <q-btn
+            v-close-popup
+            :label="t('settings.discard')"
+            outline
+            color="red"
+            icon="close"
+            @click="expandedRow = null"
+          />
+          <q-btn
+            v-close-popup
+            outline
+            :label="t('settings.submit')"
+            color="light-blue-10"
+            icon="done_all"
+            @click="submit(true)"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </div>
 </template>
 
 <style scoped>
