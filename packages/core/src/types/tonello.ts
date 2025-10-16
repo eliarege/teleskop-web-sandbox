@@ -158,12 +158,6 @@ export interface TonelloAlarm {
   label: string
 }
 
-export interface TonelloFunctionBody {
-  layout: {
-    pages: TonelloFunction[]
-  }
-}
-
 export interface TonelloFunction {
   /** Function index */
   index: number | null

@@ -3,7 +3,7 @@ import { getQuery } from 'h3'
 import { inferBoolean } from '@teleskop/utils'
 import { z } from 'zod'
 import type { Knex } from 'knex'
-import type { TonelloConfiguration, TonelloFunctionBody, TonelloInputOutputList, TonelloResponse } from '@teleskop/core'
+import type { TonelloConfiguration, TonelloFunction, TonelloInputOutputList, TonelloResponse } from '@teleskop/core'
 import { TonelloApi } from '@teleskop/core'
 import { ErrorMessageKey } from '~/shared/enums'
 import { knex } from '~/server/connectionPool'
@@ -142,7 +142,7 @@ export default defineAuthEventHandler(async (event) => {
       errors: [],
       messages: [],
     }
-    let functions: TonelloResponse<TonelloFunctionBody>
+    let functions: TonelloResponse<TonelloFunction[]>
     let ioList: TonelloResponse<TonelloInputOutputList>
     let config: TonelloResponse<TonelloConfiguration>
 
@@ -170,7 +170,7 @@ export default defineAuthEventHandler(async (event) => {
     await runSteps([
       {
         fn: async (trx) => {
-          await updateTonelloFunctions(trx, machineId, functions.data.layout.pages, ctx)
+          await updateTonelloFunctions(trx, machineId, functions.data, ctx)
           throwOnError(ctx)
         },
         message: 'functions-updated',

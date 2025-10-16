@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import type {
   TonelloBatch,
   TonelloConfiguration,
-  TonelloFunctionBody,
+  TonelloFunction,
   TonelloInputOutputList,
   TonelloMachineStatus,
   TonelloProgram,
@@ -39,7 +39,7 @@ export class TonelloApi {
     return await this.fetch('/api/v1/getProgramsList')
   }
 
-  async fetchFunctions(): Promise<TonelloResponse<TonelloFunctionBody>> {
+  async fetchFunctions(): Promise<TonelloResponse<TonelloFunction[]>> {
     return await this.fetch('/api/v1/getFunctions')
   }
 
