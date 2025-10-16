@@ -693,9 +693,13 @@ registerCommand(() => {
       }).onOk(async (command: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
         if (command.type === 'add') {
           for (let index = command.startIndex; index <= command.endIndex; index++) {
-            // Eklenen adıma tekrar ekleme
+            // Eklenen adıma tekrar ekleme, sadece yoksa ekle
             if (stepIndex !== index + 1) {
-              editor.newParallelStepCommand(command.commandNo, index)
+              const parallelCommands = editor.program.steps[index].parallelCommands
+              const alreadyExists = parallelCommands.some(cmd => cmd.commandNo === command.commandNo)
+              if (!alreadyExists) {
+                editor.newParallelStepCommand(command.commandNo, index)
+              }
             }
           }
         } else if (command.type === 'remove') {
