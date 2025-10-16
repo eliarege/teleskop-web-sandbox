@@ -181,6 +181,7 @@ async function checkNetworkConnection(formData: Machine) {
       retry: false,
       body: {
         ip: formData.ip,
+        tbbModel: formData.tbbModel,
       },
     })
     networkConnectionMessage.value.message = (t('connection-successful'))
@@ -202,6 +203,9 @@ const versionInfoMessage = ref({
 async function getVersionInfo(formData: Machine) {
   if (!formData.ip) {
     notifyError(t('ipRequired'))
+    return
+  }
+  if (formData.tbbModel === 'Tonello') {
     return
   }
 
@@ -445,6 +449,7 @@ async function getVersionInfo(formData: Machine) {
                 <FormKit
                   type="button"
                   :label="t('receiveVersionInfo')"
+                  :disabled="!formData.tbbModel || formData.tbbModel === 'Tonello'"
                   @click="getVersionInfo(formData)"
                 />
                 <span :class="versionInfoMessage.color" class="row-start-7">

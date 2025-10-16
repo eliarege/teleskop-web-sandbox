@@ -458,6 +458,7 @@ async function loadProject() {
       body: {
         uuid: uuid.value,
         ip: selected.value[0].ip,
+        tbbModel: selected.value[0].tbbModel,
       },
     })
 
