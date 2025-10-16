@@ -473,7 +473,7 @@ const pagination = ref({ rowsPerPage: 0 })
             <div class="flex items-center justify-center gap-5 py-10 w-full">
               <q-btn
                 color="black"
-              :label="props.rowIndex || props.row.materialCode ? t('settings.submit') : t('settings.new')"
+                :label="props.rowIndex || props.row.materialCode ? t('settings.submit') : t('settings.create')"
                 outline
                 :disable="materialInfo[0].value === undefined || materialInfo[0].value === '' || givenMaterialCodeExistsWarning"
                 icon="done"
