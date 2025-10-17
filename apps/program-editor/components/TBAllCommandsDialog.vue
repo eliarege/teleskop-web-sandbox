@@ -8,8 +8,18 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const editor = useEditorStore()
 const { mt } = useProjectTranslations()
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+
+const commandIcons = computed(() =>
+  Object.fromEntries(
+    props.machineCommands.map(cmd => [
+      cmd.commandNo,
+      editor.getCommandIcon(cmd.commandNo),
+    ]),
+  ),
+)
 </script>
 
 <template>
@@ -31,7 +41,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
             @click="onDialogCancel"
           />
         </div>
-        <div class="text-h8 color-gray-6 dark:text-gray-4">
+        <div class="text-h8 text-gray-6 dark:text-gray-4">
           {{ props.machineId }} - {{ props.machineName }}
         </div>
       </q-card-section>
@@ -49,7 +59,19 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
               @click="onDialogOK(command)"
             >
               <q-item-section>
-                {{ command.commandNo }} - {{ mt(command.name, props.machineId) }}
+                <div class="flex items-center gap-2">
+                  <UnoIcon
+                    v-if="commandIcons[command.commandNo]"
+                    :class="commandIcons[command.commandNo]?.name"
+                    :style="{ color: commandIcons[command.commandNo]?.color }"
+                  />
+                  <div v-else class="inline-block w-4 h-4" />
+
+                  <div class="flex items-center text-sm">
+                    <span class="font-medium">{{ command.commandNo }}</span>
+                    <span class="text-gray-6 dark:text-gray-4">&nbsp;/ {{ mt(command.name, props.machineId) }}</span>
+                  </div>
+                </div>
               </q-item-section>
             </q-item>
           </q-list>
