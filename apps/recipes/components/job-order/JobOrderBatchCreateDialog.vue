@@ -13,7 +13,7 @@ const props = defineProps({
   },
   machineId: {
     type: Number,
-    required: false
+    required: false,
   },
   variant: {
     type: Object as PropType<RecipeVariant>,
@@ -78,18 +78,23 @@ function setProgramDefaultTabs() {
     }
   }
 }
-getMachines()
+// getMachines()
 getRecipes()
 getDefaultBatchNo()
 getAdditonalData()
 
 async function getRecipes() {
-  recipes.value = await $fetch('/api/recipes/master', { query: { machineId: stateStore.defaultMachine }})
+  recipes.value = await $fetch('/api/recipes/master',
+  // { query: { machineId: stateStore.defaultMachine } }
+
+  )
   if (props.recipeId && props.machineId)
     updateRecipe(recipes.value.find(recipe => recipe.recipeId === props.recipeId && recipe.machineId === props.machineId))
 }
-async function getMachines() {
-  machines.value = await $fetch('/api/machines')
+async function getMachines(programNumbers: number[]) {
+  machines.value = await $fetch('/api/machines', {
+    query: { programNo: programNumbers },
+  })
   selectedMachines.value = Array(20).fill(machines.value[0])
 }
 async function getDefaultBatchNo() {
@@ -101,10 +106,14 @@ async function getAdditonalData() {
 }
 async function getRecipeSteps() {
   if (props.variant) {
-    selectedRecipe.value = await $fetch(`/api/recipes/variant/${recipeHeader.value?.recipeId}/${encodeURIComponent(props.variant.variantName)}`, { query: { machineId: props.machineId }})
+    selectedRecipe.value = await $fetch(`/api/recipes/variant/${recipeHeader.value?.recipeId}/${encodeURIComponent(props.variant.variantName)}`, { query: { machineId: props.machineId } })
   } else {
-    selectedRecipe.value = await $fetch(`/api/recipes/master/steps/${recipeHeader.value?.recipeId}`, { query: { machineId: recipeHeader.value?.machineId }})
+    selectedRecipe.value = await $fetch(`/api/recipes/master/steps/${recipeHeader.value?.recipeId}`, { query: { machineId: recipeHeader.value?.machineId } })
   }
+
+  // Extract all unique program numbers from selectedRecipe
+  const programNumbers = [...new Set(selectedRecipe.value.map(program => program.programNo))]
+  await getMachines(programNumbers)
 
   selectedMachines.value = Array(20).fill(machines.value.find(m => m.machineId === Number(selectedRecipe.value[0].machineId)))
   selectedRecipe.value.forEach((program) => {
@@ -182,7 +191,7 @@ function getParameterTable(programNo: number) {
 }
 
 function getRecipeLabel(header: RecipeProgramMaster) {
-  return `${header.recipeId} - ${header.recipeName}`
+  return `${header.recipeId} - ${header.recipeName} (${header.machineId})`
 }
 function getAllMaterialsFromSteps(program: RecipeMasterStep) {
   const materials = program.steps.flatMap(step =>
@@ -692,7 +701,6 @@ async function onCancel() {
               borderless
               dense
               filled
-              disable
               options-dense
               option-label="machineName"
               :options="machines"

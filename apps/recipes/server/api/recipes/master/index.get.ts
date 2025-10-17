@@ -3,7 +3,8 @@ import type { RecipeProgramMaster } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
   const { machineId } = getQuery(event)
-  const recipes: Array<RecipeProgramMaster> = await dmsDB('RECIPE_MASTER').select({
+
+  let query = dmsDB('RECIPE_MASTER').select({
     recipeId: 'recipe_id',
     recipeName: 'recipe_name',
     machineId: 'machine_id',
@@ -11,6 +12,12 @@ export default defineEventHandler(async (event) => {
     colorName: 'color_name',
     lastUpdate: 'last_update',
     prepTime: 'prep_time'
-  }).where('machine_id', machineId).orderBy('recipe_id')
+  })
+
+  if (machineId) {
+    query = query.where('machine_id', machineId)
+  }
+
+  const recipes: Array<RecipeProgramMaster> = await query.orderBy('recipe_id')
   return recipes
 })
