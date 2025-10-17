@@ -121,7 +121,9 @@
     "EmptyRecipeSteps": "There are empty steps in the recipe!",
     "MaterialCountMismatch": "Request numbers do not match the material counts. Do you still wish to continue?",
     "JobOrderCancel": "Are you sure you want to quit before starting a job order?",
-    "JobOrderExists": "A job with this job number exists. Do you wish to continue?"
+    "JobOrderExists": "A job with this job number exists. Do you wish to continue?",
+    "CapacityExceeded": "Warning: Total weight exceeds {percentage}% of machine capacity for the following machines:",
+    "ContinueAnyway": "Do you want to continue anyway?"
   },
   "warnings": {
     "MustBeBetween": "Value must be between: "
@@ -168,7 +170,8 @@
     "PreparationDate": "Preparation Date",
     "PreparedBy": "Prepared By",
     "ASNo": "A.S. No",
-    "Yarn": "Yarn"
+    "Yarn": "Yarn",
+    "Of": "of"
   },
   "settings": {
     "App": "App Settings",

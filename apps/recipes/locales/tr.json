@@ -121,7 +121,9 @@
     "EmptyRecipeSteps": "Reçetede boş basamaklar bulunuyor!",
     "MaterialCountMismatch": "İstek sayıları materyal sayılarıyla eşleşmiyor. Yine de devam etmek ister misiniz",
     "JobOrderCancel": "Bir iş emri başlatmadan çıkmak istediğinize emin misiniz?",
-    "JobOrderExists": "Bu numaralı bir iş emri mevcut. Devam etmek istediğinize emin misiniz?"
+    "JobOrderExists": "Bu numaralı bir iş emri mevcut. Devam etmek istediğinize emin misiniz?",
+    "CapacityExceeded": "Uyarı: Toplam ağırlık aşağıdaki makineler için makine kapasitesinin % {percentage}'unu aşıyor:",
+    "ContinueAnyway": "Yine de devam etmek istiyor musunuz?"
   },
   "warnings": {
     "MustBeBetween": "Değerler şu aralıkta olmalıdır: "
@@ -166,7 +168,10 @@
     "ProgramDyeWeightsEnabled": "Boya Hesabında Program Bazlı Ağırlık Kullan",
     "PrintWhenDone": "Tamamlanınca Yazdır",
     "PreparationDate": "Hazırlanış Zamanı",
-    "PreparedBy": "Hazırlayan"
+    "PreparedBy": "Hazırlayan",
+    "ASNo": "A.S. No",
+    "Yarn": "İplik",
+    "Of": "/"
   },
   "settings": {
     "App": "Uygulama Ayarları",

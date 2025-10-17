@@ -70,7 +70,7 @@ const showAddFabricDialog = ref(false)
 const newCustomerName = ref('')
 const newFabricName = ref('')
 const activeTabs = ref<Record<number, 'materials' | 'commands'>>({})
-
+const CAPACITY_THRESHOLD = 0.1
 function setProgramDefaultTabs() {
   for (const prog of selectedRecipe.value) {
     if (!activeTabs.value[prog.programNo]) {
@@ -367,6 +367,53 @@ async function onSave() {
       })
     })
   })
+
+  // Check capacity for each selected machine
+  const capacityWarnings: string[] = []
+  const numberOfJobs = createMultiple.value ? jobOrderParams.value.numberOfJobs : 1
+  const thresholdPercentage = CAPACITY_THRESHOLD * 100
+
+  for (let i = 0; i < numberOfJobs; i++) {
+    const machine = selectedMachines.value[i]
+    if (machine && machine.capacity && machine.capacity > 0) {
+      const capacityLimit = machine.capacity * CAPACITY_THRESHOLD
+      if (jobOrderParams.value.totalWeight > capacityLimit) {
+        capacityWarnings.push(
+          `${machine.machineName}: ${jobOrderParams.value.totalWeight}kg > ${capacityLimit.toFixed(2)}kg (${thresholdPercentage}% ${t('jobOrderParams.Of')} ${machine.capacity}kg)`,
+        )
+      }
+    }
+  }
+
+  // If there are capacity warnings, show confirmation dialog
+  if (capacityWarnings.length > 0) {
+    const proceedWithCapacityWarning = await new Promise<boolean>((resolve) => {
+      q.dialog({
+        component: ConfirmationDialog,
+        componentProps: {
+          bodyText: `${t('confirmationDialogBody.CapacityExceeded', { percentage: thresholdPercentage })}\n\n${capacityWarnings.join('\n')}\n\n${t('confirmationDialogBody.ContinueAnyway')}`,
+          confirmBtn: {
+            label: t('Confirm'),
+            color: 'positive',
+            icon: 'done',
+          },
+          cancelBtn: {
+            label: t('Cancel'),
+            icon: 'close',
+          },
+        },
+      }).onOk(() => {
+        resolve(true)
+      }).onCancel(() => {
+        resolve(false)
+      })
+    })
+
+    if (!proceedWithCapacityWarning) {
+      return
+    }
+  }
+
   try {
     // TODO: Check for multiple jobs if enabled
     const status: number = await $fetch(`/api/dyelots/status/${jobOrderParams.value.jobNo}`)
