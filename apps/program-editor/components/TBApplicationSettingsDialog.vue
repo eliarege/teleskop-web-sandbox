@@ -12,14 +12,6 @@ const fullSelect = Number.parseInt('1'.repeat(commandTypeMaps.length), 2)
 const selectAll = ref(selectedIcons.value === fullSelect)
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 
-const groupCommandsByType = editor.machine.commandTypes.reduce((acc, command) => {
-  if (!acc[command.commandType]) {
-    acc[command.commandType] = []
-  }
-  acc[command.commandType].push(command.commandNo)
-  return acc
-}, {} as Record<number, number[]>)
-
 function toggleSelectAll() {
   selectAll.value = !selectAll.value
   selectedIcons.value = selectAll.value ? fullSelect : 0
@@ -34,7 +26,7 @@ function toggleSelectAll() {
     <q-card>
       <q-card-section>
         <div class="text-h6 flex">
-          {{ t('menu.appSettings') }}
+          {{ t('iconSettingsDialog.title') }}
           <q-space />
           <q-btn
             class="text-gray-4 dark:text-gray-6"
@@ -45,15 +37,13 @@ function toggleSelectAll() {
             @click="onDialogCancel"
           />
         </div>
-        <div class="text-h8 color-gray-6 dark:text-gray-4">
-          {{ t('menu.editorIconSettings') }}
-        </div>
       </q-card-section>
+
       <q-card-section>
         <div class="text-h8 w-100 mb-2 color-gray-6 dark:text-gray-4">
-          {{ t('menu.commandIcons') }}
+          {{ t('iconSettingsDialog.selectIcons') }}
         </div>
-        <div class="h-120 overflow-auto border-2 rounded-md  border-solid pl-3 dark:border-dark-3">
+        <div class="h-120 overflow-auto border-2 rounded pl-3 dark:border-dark-3">
           <div
             v-for="commandType in commandTypeMaps"
             :key="commandType.index"
@@ -66,11 +56,9 @@ function toggleSelectAll() {
               class="mr-2"
             />
             <UnoIcon
-              v-for="commandNo in groupCommandsByType[commandType.value]"
-              :key="commandNo"
-              :class="editor.getStepIcon(commandNo)?.name"
-              :style="{ color: editor.getStepIcon(commandNo)?.color }"
-              class="inline-block mr-1"
+              :key="commandType.icon"
+              :class="commandType.icon"
+              :style="{ color: commandType.color, fontSize: '1rem' }"
             />
           </div>
         </div>
@@ -83,7 +71,7 @@ function toggleSelectAll() {
         </div>
       </q-card-section>
 
-      <QCardActions
+      <q-card-actions
         align="right"
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
@@ -99,7 +87,7 @@ function toggleSelectAll() {
           flat
           @click="onDialogOK(selectedIcons)"
         />
-      </QCardActions>
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>

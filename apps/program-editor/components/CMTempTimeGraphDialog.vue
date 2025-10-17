@@ -2,7 +2,7 @@
 import { useDialogPluginComponent } from 'quasar'
 import { Line } from 'vue-chartjs'
 import type { ChartData, ChartOptions } from 'chart.js'
-import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Title, Tooltip, animator } from 'chart.js'
+import { CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Title, Tooltip } from 'chart.js'
 import { isDef } from '@teleskop/utils'
 import type { CSSProperties } from 'vue'
 import { calculateProgramDurationPoint } from '~/shared/formula'
@@ -46,7 +46,7 @@ function calculateChartData() {
         pointRadius: 4,
         pointHoverRadius: 6,
         pointBackgroundColor: dataPoints.map((_, index) => {
-          const commandIcon = editor.getStepIcon(stepInfo[index]?.commandNo)
+          const commandIcon = editor.getCommandIcon(stepInfo[index]?.commandNo)
           return commandIcon ? commandIcon.color : '#000000'
         }),
       },
@@ -148,7 +148,7 @@ interface Point {
 
 function calcDataPoints(dataPoints: Coordinate[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
   return dataPoints.map(({ x, y }, index) => {
-    const commandIcon = editor.getStepIcon(stepInfo[index]?.commandNo)
+    const commandIcon = editor.getCommandIcon(stepInfo[index]?.commandNo)
     return {
       x,
       y,

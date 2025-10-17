@@ -176,7 +176,7 @@ const items = [
           },
         },
         {
-          label: tt('menu.appSettings'),
+          label: tt('menu.commandIconSettings'),
           onClick() {
             $commandManager.executeCommand('editProgramIcons', { $q })
           },

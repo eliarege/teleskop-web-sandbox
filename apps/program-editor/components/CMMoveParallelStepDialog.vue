@@ -18,7 +18,7 @@ const commandName = mt(props.commandName, editor.machine.id)
 const startIndex = ref(props.stepIndex)
 const endIndex = ref(props.stepsLength)
 
-const commandIcon = computed(() => editor.getStepIcon(commandNo.value!))
+const commandIcon = computed(() => editor.getCommandIcon(commandNo.value!))
 </script>
 
 <template>

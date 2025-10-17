@@ -79,11 +79,9 @@
     "io": "IO",
     "graphic": "Graphic",
     "formula": "Formula",
-    "appSettings": "Application Settings",
-    "editorIconSettings": "Editor Icon Settings",
-    "commandIcons": "Command Icons",
+    "commandIconSettings": "Command Icon Settings",
     "selectedCommandIcons": "Selected Command Icons",
-    "appearance": "Apperance",
+    "appearance": "Appearance",
     "programInfo": "Program Info",
     "versionInfo": "Version Info",
     "tempTimeGraph": "Temperature/Time Graph",
@@ -216,6 +214,10 @@
   "message": {
     "delete_program": "Delete program from Teleskop",
     "program_not_deleted": "Program could not be deleted from Teleskop"
+  },
+  "iconSettingsDialog": {
+    "title": "Command Icon Settings",
+    "selectIcons": "Select icons to be displayed in the editor."
   },
   "printProgramListDialog": {
     "printOptions": "Printing Options",
@@ -402,19 +404,19 @@
     "default": "Default"
   },
   "commandType": {
-    "chemicalRequestCommands": "Chemical Request Commands",
-    "manualChemicalRequestCommands": "Manual Chemical Request Commands",
-    "paintRequestCommands": "Paint Request Commands",
-    "manualPaintRequestCommands": "Manual Paint Request Commands",
-    "chemicalTankTransferCommands": "Chemical Tank Transfer Commands",
-    "paintTankTransferCommands": "Paint Tank Transfer Commands",
-    "reserveTankTransferCommands": "Reserve Tank Transfer Commands",
+    "chemicalRequest": "Chemical Request",
+    "manualChemicalRequest": "Manual Chemical Request",
+    "paintRequest": "Paint Request",
+    "manualPaintRequest": "Manual Paint Request",
+    "chemicalTankTransfer": "Chemical Tank Transfer",
+    "paintTankTransfer": "Paint Tank Transfer",
+    "reserveTankTransfer": "Reserve Tank Transfer",
     "pHControl": "pH Control",
     "takeSample": "Take Sample",
-    "saltRequestCommands": "Salt Request Commands",
+    "saltRequest": "Salt Request",
     "genericMaterial1Request": "Generic Material 1 Request",
     "genericMaterial2Request": "Generic Material 2 Request",
-    "manualMeasurementCommands": "Manual Measurement Commands"
+    "manualMeasurement": "Manual Measurement"
   },
   "apperance": {
     "temperature(c)": "Temperature(°C)",
