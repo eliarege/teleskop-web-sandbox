@@ -79,11 +79,9 @@
     "io": "IO",
     "graphic": "Graphic",
     "formula": "Formula",
-    "appSettings": "Application Settings",
-    "editorIconSettings": "Editor Icon Settings",
-    "commandIcons": "Command Icons",
+    "commandIconSettings": "Command Icon Settings",
     "selectedCommandIcons": "Selected Command Icons",
-    "appearance": "Apperance",
+    "appearance": "Appearance",
     "programInfo": "Program Info",
     "versionInfo": "Version Info",
     "tempTimeGraph": "Temperature/Time Graph",
@@ -216,6 +214,10 @@
   "message": {
     "delete_program": "Delete program from Teleskop",
     "program_not_deleted": "Program could not be deleted from Teleskop"
+  },
+  "iconSettingsDialog": {
+    "title": "Command Icon Settings",
+    "selectIcons": "Select icons to be displayed in the editor."
   },
   "printProgramListDialog": {
     "printOptions": "Printing Options",

@@ -13,12 +13,12 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 </script>
 
 <template>
-  <QDialog
+  <q-dialog
     ref="dialogRef"
     class="select-none"
   >
-    <QCard>
-      <QCardSection>
+    <q-card>
+      <q-card-section>
         <div class="text-h6 flex">
           {{ t('menu.commandList') }}
           <q-space />
@@ -34,38 +34,39 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
         <div class="text-h8 color-gray-6 dark:text-gray-4">
           {{ props.machineId }} - {{ props.machineName }}
         </div>
-      </QCardSection>
-      <QCardSection>
+      </q-card-section>
+
+      <q-card-section>
         <div class="w-100 h-140 overflow-auto">
-          <QList
+          <q-list
             dense
           >
-            <QItem
+            <q-item
               v-for="command in machineCommands"
               :key="command.commandNo"
               v-ripple
               clickable
               @click="onDialogOK(command)"
             >
-              <QItemSection>
+              <q-item-section>
                 {{ command.commandNo }} - {{ mt(command.name, props.machineId) }}
-              </QItemSection>
-            </QItem>
-          </QList>
+              </q-item-section>
+            </q-item>
+          </q-list>
         </div>
-      </QCardSection>
+      </q-card-section>
 
-      <QCardActions
+      <q-card-actions
         align="right"
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
-        <QBtn
+        <q-btn
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           :label="t('menu.close')"
           flat
           @click="onDialogCancel"
         />
-      </QCardActions>
-    </QCard>
-  </QDialog>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>

@@ -26,7 +26,7 @@ function toggleSelectAll() {
     <q-card>
       <q-card-section>
         <div class="text-h6 flex">
-          {{ t('menu.appSettings') }}
+          {{ t('iconSettingsDialog.title') }}
           <q-space />
           <q-btn
             class="text-gray-4 dark:text-gray-6"
@@ -37,15 +37,13 @@ function toggleSelectAll() {
             @click="onDialogCancel"
           />
         </div>
-        <div class="text-h8 color-gray-6 dark:text-gray-4">
-          {{ t('menu.editorIconSettings') }}
-        </div>
       </q-card-section>
+
       <q-card-section>
         <div class="text-h8 w-100 mb-2 color-gray-6 dark:text-gray-4">
-          {{ t('menu.commandIcons') }}
+          {{ t('iconSettingsDialog.selectIcons') }}
         </div>
-        <div class="h-120 overflow-auto border-2 rounded-md  border-solid pl-3 dark:border-dark-3">
+        <div class="h-120 overflow-auto border-2 rounded pl-3 dark:border-dark-3">
           <div
             v-for="commandType in commandTypeMaps"
             :key="commandType.index"
@@ -73,7 +71,7 @@ function toggleSelectAll() {
         </div>
       </q-card-section>
 
-      <QCardActions
+      <q-card-actions
         align="right"
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
@@ -89,7 +87,7 @@ function toggleSelectAll() {
           flat
           @click="onDialogOK(selectedIcons)"
         />
-      </QCardActions>
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
