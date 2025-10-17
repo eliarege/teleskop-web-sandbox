@@ -1,8 +1,52 @@
 # Changelog
 
+## 0.52.0 - 2025-10-17
+
+[Compare Changes](003ff56b91e5bcea4147a5c6af7064d8179dc073...3817b4ad067a6db58976c4f7db613fadb763b9b2)
+
+### 🚀 Features
+
+-  **PE**: Enhance command display with icons and improved layout in TBAllCommandsDialog ([c49e60a](c49e60a0d7aaf35da50d74c1c1c01c3e1f97d8d2))
+-  **PT**: Enhance validation logic and localization messages for task scheduling ([3817b4a](3817b4ad067a6db58976c4f7db613fadb763b9b2))
+
+### 🐛 Bug Fixes
+
+-  **PT**: Update event ID formatting for better clarity ([2dddc19](2dddc1920756084cc5f3f6d90cc5866bd7f3ff2b))
+-  **PT**: Update event deletion and unplanning to use planKey instead of id ([7258e35](7258e35552a29bdd6c148814ea6e07d77a5d6179))
+-  **PE**: Update index of added step ([348723f](348723ffca2c034492944eb10041c51758a69002))
+-  **PE**: Add missing program values to createEmptyProgram ([f35d36b](f35d36b926231d15cc3683fb47bcb1e89ac856cb))
+-  **PE**: Fetch missing program numbers on editor page ([4dab8b8](4dab8b8feb3c62f82775c6c6241c677235b2847d))
+-  **PE**: Prevent special characters input in duration field ([b9c9116](b9c9116dc57e5b0e9e9ffa46850978688de08a54))
+-  **PE**: Update parallel step delete button with q-icon ([0f66db7](0f66db74166ae35e6975c766c9b68c7ba5f6e2af))
+-  **MA**: Update CARD and CANAL values for input/output mappings ([cd23325](cd233251b4e7062616cd2cac233877b31b569e90))
+-  **PE**: Resolve stepId error when adding a new step ([3add808](3add8089d7b8fa614cf36f77f5ce6b6eb806a817))
+-  **PE**: Sort io values according to io selection definitions ([5511179](5511179789f57ea2e3a8fa100449c08e05b43c37))
+-  **PE**: Adjust step index calculation for better navigation behavior ([517c0dc](517c0dc215e8dd93edb62638518a3aed24459286))
+-  **PE**: Prevent duplicate parallel commands when adding new steps ([8e9b9d0](8e9b9d04981821f9c3522191691aa781d8dfe305))
+-  **PE**: Add warning notification for missing main step and update translations ([2125de4](2125de4841964cc42a35136dc4f4164080851583))
+-  **PE**: Update moveParallelStep command to make programCommand optional and add stepIndex parameter ([25bcc52](25bcc520903664b2d27fb2c3136b4834a1dc37d0))
+-  **DM**: Material code should be editable ([3f001a6](3f001a615e5fdae6dbee89849ef96b92659b820c))
+-  **DM**: Update button label to use 'create' instead of 'new' for consistency ([c7ca8ae](c7ca8ae93d5bd6eec7534a4820113d713e4e992f))
+-  **MA**: Ensure version info message displays a non-breaking space when empty ([e89f790](e89f7908aec1f6c06447847284519bf472367c28))
+-  **MA**: Handle network-connection and skip version retrieval for Tonello machines ([b2113a5](b2113a5f001d197ea4d9a30331c66a222b37b790))
+-  **MA**: Add random id to data for re-triggering watchers on client side ([4eb5703](4eb5703ac86efa7350e31172b58598bfee4280c8))
+-  **MA**: Add translation keys for starting version update and project upload ([306131e](306131ec2523b140124dc8b4b5a858ca37c7da45))
+-  **MA**: Add rawMessage field to correctly handle NETWORK_CONN_FAILED errors ([c796d36](c796d36c0e7e1de052a92a26f722bf8994424225))
+- **TonelloApi**: Update fetchFunctions to return TonelloFunction array and adjust related types ([85ee84d](85ee84d6e39aba1ae705f3a963648e8761cdce3c))
+-  **PE**: Update dialog components and translations for command icon settings ([e83842b](e83842b818fecead9e68f422a4089f092abac370))
+
+### ♻️ Refactor
+
+-  **UI**: Remove "(copy)" text from program names ([8c6b1e4](8c6b1e4065e68b9af8a725fefca8040d37300c49))
+-  **PE**: Rename getStepIcon to getCommandIcon and update related usages ([94009c5](94009c5ff280fa1e4c2aba1e0aa59feb7b2cc201))
+
+### 🔧 Miscellaneous Tasks
+
+- Updated lockfile ([a9127d7](a9127d7497de058e41c90fedf69c9094ce3d777c))
+
 ## 0.51.0 - 2025-10-10
 
-[Compare Changes](496b21970fb3d4af3b5ad842f88968336eb0105c...2fea43cbce8ebef8335848bf86fc1ef406a768d3)
+[Compare Changes](496b21970fb3d4af3b5ad842f88968336eb0105c...003ff56b91e5bcea4147a5c6af7064d8179dc073)
 
 ### 🚀 Features
 
