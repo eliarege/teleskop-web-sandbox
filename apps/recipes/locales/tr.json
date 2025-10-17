@@ -291,6 +291,7 @@
     "AddNewTank": "Yeni Tank Ekle",
     "AdditionalCap": "Ek Kapasite",
     "TankType": "Tank Türü",
+    "Capacity": "Kapasite",
     "AutoWaterSystem": "Otomatik Su Sistemi",
     "ExternalWaterSystem": "Harici Su Sistemi",
     "LevelSensorPlcNo": "Seviye Sensörü PLC No",

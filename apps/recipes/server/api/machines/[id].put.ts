@@ -8,7 +8,9 @@ export default defineEventHandler(async (event) => {
     machine_id: machine.machineId,
   }).update({
     machine_name: machine.machineName,
+    capacity: machine.capacity,
     controller_type: machine.controllerType,
+
   })
   await dmsDB('MACHINE_GROUP').where({
     machine_id: machine.machineId,

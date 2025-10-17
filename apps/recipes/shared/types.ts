@@ -167,6 +167,7 @@ export interface Machine {
   machineName: string
   machineGroup: number
   controllerType: number
+  capacity: number | null
   connectedDispensers: Dispenser[] | null
 }
 export interface MachineControllerType {

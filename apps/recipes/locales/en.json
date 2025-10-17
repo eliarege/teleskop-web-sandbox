@@ -293,6 +293,7 @@
     "AddNewTank": "Add New Tank",
     "AdditionalCap": "Additional Capacity",
     "TankType": "Tank Type",
+    "Capacity": "Capacity",
     "AutoWaterSystem": "Automatic Water System",
     "ExternalWaterSystem": "External Water System",
     "LevelSensorPlcNo": "Level Sensor PLC No",

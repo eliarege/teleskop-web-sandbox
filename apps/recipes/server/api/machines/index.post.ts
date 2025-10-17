@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
     const res = await dmsDB('MACHINE').insert({
       machine_id: machine.machineId,
       machine_name: machine.machineName,
+      capacity: machine.capacity,
       controller_type: machine.controllerType,
     })
     await dmsDB('MACHINE_GROUP').where({

@@ -19,7 +19,7 @@ const machineGroupParams = {
 const machineCommandParams = {
   machine_id: 'MACHINEID',
   command_no: 'COMMANDNO',
-  command_name: 'NAME'
+  command_name: 'NAME',
 }
 
 const machineCommandParameterParams = {
@@ -27,7 +27,7 @@ const machineCommandParameterParams = {
   command_no: 'COMMANDNO',
   parameter_index: 'PARAMETERINDEX',
   parameter_name: 'PARAMSTRING',
-  value: 'VALUE'
+  value: 'VALUE',
 }
 
 export default defineEventHandler(async () => {
@@ -36,6 +36,15 @@ export default defineEventHandler(async () => {
 
     const machines = await teleskopDB('dbo.DYTFMACHINES')
       .select(machineParams)
+    const capacities = await teleskopDB('dbo.BFMACHINES')
+      .select(['MACHINEID', 'MACHINECAPACITY'])
+    const capacityMap = Object.fromEntries(
+      capacities.map(row => [row.MACHINEID, row.MACHINECAPACITY]),
+    )
+    machines.forEach((machine) => {
+      machine.capacity = capacityMap[machine.machine_id] ?? null
+    })
+
     const parameterGroups = await teleskopDB('dbo.BFTREATMENTPARAMETERGROUPS')
       .select(parameterGroupParams)
     const machineGroups = await teleskopDB('dbo.BFTREATMENTPARAMETERGROUPMACHINES')

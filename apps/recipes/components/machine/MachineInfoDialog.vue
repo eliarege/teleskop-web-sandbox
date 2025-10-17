@@ -38,6 +38,7 @@ const defaultMachine: Machine = {
   machineId: machines.value && machines.value.length > 0 ? machines.value.at(machines.value.length - 1)!.machineId + 1 : 1,
   machineName: '',
   machineGroup: 1,
+  capacity: -1,
   controllerType: 1,
   connectedDispensers: null,
 }
@@ -205,6 +206,19 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 type="text"
                 filled
                 :placeholder="editedMachine.machineName"
+              />
+            </div>
+            <div class="row-item">
+              <span class="item-label">
+                {{ t('machineFields.Capacity') }}
+              </span>
+              <QInput
+                v-model.number="editedMachine.capacity"
+                class="item-input"
+                dense
+                type="number"
+                filled
+                :placeholder="editedMachine.capacity"
               />
             </div>
             <div class="row-item">

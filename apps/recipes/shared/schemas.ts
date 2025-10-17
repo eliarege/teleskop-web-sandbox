@@ -19,8 +19,9 @@ export const DispenserSchema = z.object({
 export const MachineSchema = z.object({
   machineId: z.number(),
   machineName: z.string(),
-  machineGroup: z.number(),
+  machineGroup: z.number().nullable(),
   controllerType: z.number(),
+  capacity: z.number().nullable(),
   connectedDispensers: z.array(z.any()).nullable(),
 })
 

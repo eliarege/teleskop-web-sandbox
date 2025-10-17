@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
       machineName: 'm.machine_name',
       machineGroup: 'g.group_id',
       controllerType: 'm.controller_type',
+      capacity: dmsDB.raw('CAST(m.capacity AS NUMERIC)'),
       tanks: dmsDB.raw(`
         ARRAY(
           SELECT JSON_BUILD_OBJECT('tankNo', t.tank_no, 'tankName', t.tank_name, 'tankCap', t.tank_cap)
@@ -48,5 +49,9 @@ export default defineEventHandler(async (event) => {
     })
     .orderBy('m.machine_id')
 
-  return machines
+  // Ensure capacity is parsed as a number
+  return machines.map(machine => ({
+    ...machine,
+    capacity: machine.capacity !== null ? Number(machine.capacity) : null,
+  }))
 })
