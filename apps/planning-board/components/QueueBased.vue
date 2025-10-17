@@ -1086,6 +1086,10 @@ div[bgGreen] {
   background-color: rgba(51, 255, 57, 0.3) !important;
 }
 
+div[bgYellow] {
+  background-color: rgba(255, 255, 0, 0.3) !important;
+}
+
 .toolbar-buttons {
   color: white;
   background-color: #03a9f4;

@@ -72,7 +72,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.put(
     '/planning_board/auto_add',
     async (request: FastifyRequest<{
-      Body: {value:boolean}}>, reply) => {
+      Body: { value: boolean }
+    }>, reply) => {
       try {
         const { value } = request.body
         await updateAutoAdd(value)

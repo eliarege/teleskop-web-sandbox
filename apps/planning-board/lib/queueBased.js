@@ -16,6 +16,20 @@ import { io } from 'socket.io-client'
 import { setTargetEvent } from '../composables/helper'
 import { enLocalization, trLocalization } from './localization'
 
+/**
+ * @typedef  {{
+ *   expectedPrograms: string[],
+ *   expectedCapacity: number,
+ *   result: Array<{
+ *     machineId: number,
+ *     valid: boolean,
+ *     capacityWarning: boolean,
+ *     validPrograms: boolean,
+ *     validCapacity: boolean
+ *   }>,
+ * }} IsValidResponse
+ */
+
 const nuxtApp = useNuxtApp()
 
 export function sortEventsByDateDesc(events) {
@@ -47,6 +61,18 @@ let theoreticalDuration
 let endDate
 
 let prevMachineId
+
+function normalizeTipMsg(msg) {
+  msg = Array.isArray(msg) ? msg : [msg]
+  return msg.map((m) => {
+    if (typeof m === 'string') {
+      return { key: m, type: 'error', params: [] }
+    } else {
+      return { key: m.key, type: m.type, params: m.params || [] }
+    }
+  })
+}
+
 export function removeAttributes(element, pattern) {
   if (element) {
     for (const attr of element.attributes) {
@@ -128,18 +154,16 @@ export class QueueDrag extends DragHelper {
     }
 
     context.isValidating = true
-    const isValid = await nuxtApp.$keycloak.fetch('/api/isValid', {
+    /** @type {IsValidResponse} */
+    const validation = await nuxtApp.$keycloak.fetch('/api/isValid', {
       query: { planKey, fabricWeight },
     })
-
-    context.validation = isValid
+    context.validation = validation
     context.isValidating = false
 
     context.relatedElements = selectedRecords
       .sort((r1, r2) => store.indexOf(r1) - store.indexOf(r2))
-      .map(
-        rec => rec !== context.task && grid.rowManager.getRowFor(rec).element,
-      )
+      .map(rec => rec !== context.task && grid.rowManager.getRowFor(rec).element)
       .filter(el => el)
 
     eventTooltip.disabled = true
@@ -149,15 +173,15 @@ export class QueueDrag extends DragHelper {
         align: 'b-t',
         clippedBy: [schedule.timeAxisSubGridElement, schedule.bodyContainer],
         forElement: context.element,
-
         cls: 'b-popup b-sch-event-tooltip noClick',
       })
     }
     if (context.grabbed) {
-      for (let i = 0; i < isValid.length; i++) {
-        const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
-        if (isValid[i].valid) {
-          currentRow?.setAttribute('bgGreen', '')
+      for (let i = 0; i < validation.result.length; i++) {
+        const validationResult = validation.result[i]
+        const currentRow = document.querySelector(`div[data-id="${validationResult.machineId}"]`)
+        if (validationResult.valid) {
+          currentRow?.setAttribute(!validationResult.capacityWarning ? 'bgGreen' : 'bgYellow', '')
         } else {
           currentRow?.setAttribute('bgRed', '')
         }
@@ -167,6 +191,7 @@ export class QueueDrag extends DragHelper {
 
   onDrag({ event, context }) {
     const { schedule } = this
+    /** @type {{ task: Record<string, any>, isValidating: boolean, validation: IsValidResponse }} */
     const { task, isValidating, validation } = context
     const coordinate = DomHelper[`getTranslate${schedule.isHorizontal ? 'X' : 'Y'}`](context.element)
     const machine = context.target && schedule.resolveResourceRecord(context.target, [
@@ -220,8 +245,7 @@ export class QueueDrag extends DragHelper {
     // add fabric weight
     context.isValid = !isValidating
     && Boolean(startDate && machine)
-    && validation.find(a => a.machineId === machine.id)?.valid === true
-
+    && validation.result.find(a => a.machineId === machine.id)?.valid === true
     task.startDate = startDate
     task.endDate = endDate
 
@@ -238,42 +262,72 @@ export class QueueDrag extends DragHelper {
       const endMinuteRotation = (endDate.getMinutes() + endDate.getSeconds() / 60) * 6
       const endHourRotation = (endDate.getHours() % 12 + endDate.getMinutes() / 60) * 30
       const valid = context.isValid
-      const timeDisplay = tipMsg => `
-      <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
-                <div class="b-sch-clock">
-                    <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">${startMonth}</div>
-                    <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">${startDay}</div>
-                    <div class="b-sch-clock-dot"></div>
-                </div>
-                <span class="b-sch-clock-text">${DateHelper.format(startDate, schedule.displayDateFormat)}</span>
+
+      const timeDisplay = (tipMsg) => {
+        tipMsg = normalizeTipMsg(tipMsg)
+        const warnings = tipMsg.filter(msg => msg.type === 'warning')
+        const errors = tipMsg.filter(msg => msg.type !== 'warning')
+        return `
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">${startMonth}</div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">${startDay}</div>
+              <div class="b-sch-clock-dot"></div>
             </div>
-            <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
-                <div class="b-sch-clock">
-                    <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">${endMonth}</div>
-                    <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">${endDay}</div>
-                    <div class="b-sch-clock-dot"></div>
-                </div>
-                <span class="b-sch-clock-text">${DateHelper.format(endDate, schedule.displayDateFormat)}</span>
+            <span class="b-sch-clock-text">${DateHelper.format(startDate, schedule.displayDateFormat)}</span>
+          </div>
+          <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
+            <div class="b-sch-clock">
+              <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">${endMonth}</div>
+              <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">${endDay}</div>
+              <div class="b-sch-clock-dot"></div>
             </div>
-            <div class="b-sch-event-title" style="color: #E07D80 !important">
-          ${this.tip.L(tipMsg)}
-        </div>
-            `
-      if (!valid) {
-        if (!validation.find(a => a.machineId === machine.id).valid) {
-          this.tip.html = timeDisplay('program')
-          this.tip.showBy(context.element)
-        } else if (startDate < new Date()) {
-          this.tip.html = timeDisplay('beforeNow')
-          this.tip.showBy(context.element)
-        } else {
-          this.tip.html = timeDisplay('scheduleConflict')
-          this.tip.showBy(context.element)
-        }
-      } else {
-        this.tip.html = timeDisplay('')
-        this.tip.showBy(context.element)
+            <span class="b-sch-clock-text">${DateHelper.format(endDate, schedule.displayDateFormat)}</span>
+          </div>
+          <div class="b-sch-event-title" style="color: #E07D80 !important">
+            ${errors.map(msg => this.tip.L(msg.key, msg.params)).join('<br>')}
+          </div>
+          <div class="b-sch-event-title" style="color: #F2C14E !important">
+            ${warnings.map(msg => this.tip.L(msg.key, msg.params)).join('<br>')}
+          </div>
+        `
       }
+      const tolerance = 0.1
+      const validationResult = validation.result.find(a => a.machineId === machine.id)
+      const tips = []
+
+      if (validationResult) {
+        if (!validationResult.validPrograms) {
+          tips.push({
+            key: 'missingPrograms',
+            params: [validation.expectedPrograms],
+          })
+        }
+
+        if (!validationResult.validCapacity) {
+          tips.push({
+            key: 'invalidCapacity',
+            params: [validation.expectedCapacity, machine.originalData.machineCapacity, tolerance],
+          })
+        } else if (validationResult.capacityWarning) {
+          tips.push({
+            key: 'capacityWarning',
+            type: 'warning',
+            params: [validation.expectedCapacity, machine.originalData.machineCapacity, tolerance],
+          })
+        }
+      }
+
+      if (startDate < new Date()) {
+        tips.push('beforeNow')
+      }
+
+      if (!valid && !tips.length) {
+        tips.push('scheduleConflict')
+      }
+
+      this.tip.html = timeDisplay(tips)
+      this.tip.showBy(context.element)
     }
   }
 
@@ -334,13 +388,13 @@ export class TaskStore extends EventStore {
     await this.reorderEventsForMachine(targetMachine)
 
     const previousEventData = {
-      planKey: grabbedEvent.id,
+      planKey: grabbedEvent.planKey,
       machineId: previousMachine.id,
       queueNumber: oldQueueNumber,
     }
 
     const newEventData = {
-      planKey: grabbedEvent.id,
+      planKey: grabbedEvent.planKey,
       machineId: targetMachine.id,
       queueNumber: newQueueNumber,
     }
@@ -352,7 +406,7 @@ export class TaskStore extends EventStore {
     const oldQueueNumber = grabbedEvent.originalData.queueNumber
     if (targetMachine.events.length === 0) {
       const newEvent = {
-        planKey: grabbedEvent.id,
+        planKey: grabbedEvent.planKey,
         machineId: targetMachine.id,
       }
       await nuxtApp.$keycloak.fetch('/api/queueBased/scheduleUnplannedFutureEvents', {
@@ -375,13 +429,13 @@ export class TaskStore extends EventStore {
 
     await this.reorderEventsForMachine(targetMachine)
     const previousEventData = {
-      planKey: grabbedEvent.id,
+      planKey: grabbedEvent.planKey,
       machineId: previousMachine.id,
       queueNumber: oldQueueNumber,
     }
 
     const newEventData = {
-      planKey: grabbedEvent.id,
+      planKey: grabbedEvent.planKey,
       machineId: targetMachine.id,
       queueNumber: grabbedEvent.originalData.queueNumber,
     }
@@ -479,24 +533,26 @@ export class QueueSchedule extends SchedulerPro {
         }
 
         context.isFirst = resourceRecord.events[0].name === eventRecords[0].name
-        const planKey = context.task.id
+        const planKey = context.task.planKey
         const fabricWeight = context.task.fabricWeight ? Number(context.task.fabricWeight.replace(',', '.')) : 0
 
         context.isValidating = true
-        const isValid = await nuxtApp.$keycloak.fetch('/api/isValid', {
+        /** @type {IsValidResponse} */
+        const validation = await nuxtApp.$keycloak.fetch('/api/isValid', {
           query: { planKey, fabricWeight },
         })
         if (context.context.grabbed && !context.isDropped) {
-          for (let i = 0; i < isValid.length; i++) {
-            const currentRow = document.querySelector(`div[data-id="${isValid[i].machineId}"]`)
-            if (isValid[i].valid) {
-              currentRow?.setAttribute('bgGreen', '')
+          for (let i = 0; i < validation.result.length; i++) {
+            const validationResult = validation.result[i]
+            const currentRow = document.querySelector(`div[data-id="${validationResult.machineId}"]`)
+            if (validationResult.valid) {
+              currentRow?.setAttribute(!validationResult.capacityWarning ? 'bgGreen' : 'bgYellow', '')
             } else {
               currentRow?.setAttribute('bgRed', '')
             }
           }
         }
-        context.validation = isValid
+        context.validation = validation
         context.isValidating = false
       },
       onEventDrag({ context, domEvent }) {
@@ -541,7 +597,7 @@ export class QueueSchedule extends SchedulerPro {
         }
         context.valid = !isValidating
         && Boolean(startDate && machine)
-        && validation.find(a => a.machineId === machine.id)?.valid === true
+        && validation.result.find(a => a.machineId === machine.id)?.valid === true
       },
       async onEventDrop({ domEvent, resourceRecord, targetResourceRecord, eventRecords, context }) {
         let mouseX

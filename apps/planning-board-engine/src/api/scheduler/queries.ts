@@ -475,58 +475,92 @@ export async function taskValid(planKey: number, fabricWeight: number) {
     validateTaskPrograms(planKey),
     validateTaskCapacityAgainstMachines(fabricWeight),
   ])
-  return taskCapacityAgainstMachines.map(({ machineId, valid }) => ({
-    machineId,
-    valid: valid && taskPrograms.some(tp => tp.machineId === machineId && tp.valid),
-  }))
-}
-export async function validateTaskPrograms(planKey: number) {
-  const taskPrgList: Set<number> = new Set(
-    (
-      await knex({ p: 'dbo.DYBFBATCHPLAN' })
-        .select({ prgList: 'p.PROGRAMNOLIST' })
-        .where('p.PLANKEY', '=', planKey)
-    )[0]?.prgList?.split(',').slice(0, -1).map(a => Number.parseInt(a)) ?? [],
-  )
+  const result: {
+    machineId: number
+    valid: boolean
+    capacityWarning: boolean
+    validPrograms: boolean
+    validCapacity: boolean
+  }[] = []
 
-  const rawPrograms = await knex({ b: 'dbo.BFMASTERPRGHEADER' })
-    .join({ m: 'dbo.BFMACHINES' }, 'b.MACHINEID', 'm.MACHINEID')
+  for (const tp of taskPrograms.result) {
+    const validPrograms = tp.valid
+    const matchedCapacity = taskCapacityAgainstMachines
+      .find(tc => tc.machineId === tp.machineId)
+    const validCapacity = matchedCapacity?.valid || false
+
+    result.push({
+      machineId: tp.machineId,
+      valid: validPrograms && validCapacity,
+      capacityWarning: matchedCapacity?.warning || false,
+      validPrograms,
+      validCapacity,
+    })
+  }
+
+  return {
+    expectedPrograms: taskPrograms.expectedPrograms,
+    expectedCapacity: fabricWeight,
+    result,
+  }
+}
+
+export async function validateTaskPrograms(planKey: number) {
+  const res = await knex({ p: 'dbo.DYBFBATCHPLAN' })
+    .first({ programList: 'p.PROGRAMNOLIST' })
+    .where('p.PLANKEY', '=', planKey) as { programList: string } | undefined
+
+  const batchProgramList = [...new Set(res?.programList
+    .split(',')
+    .slice(0, -1)
+    .map(a => Number.parseInt(a))
+    .filter(a => !Number.isNaN(a)),
+  )]
+
+  const rawPrograms = await knex({ m: 'dbo.BFMACHINES' })
+    .leftJoin({ b: 'dbo.BFMASTERPRGHEADER' }, 'b.MACHINEID', 'm.MACHINEID')
     .where('m.INUSE', '=', true)
     .andWhere('m.USEINTELESKOP', '=', true)
     .select({
-      machineId: 'b.MACHINEID',
+      machineId: 'm.MACHINEID',
       programNo: 'b.PROGNO',
     })
 
-  const machinePrgMap = rawPrograms.reduce((acc, { machineId, programNo }) => {
+  const machineProgramMap = rawPrograms.reduce<Record<number, Set<number>>>((acc, { machineId, programNo }) => {
     if (!acc[machineId])
       acc[machineId] = new Set()
-    acc[machineId].add(programNo)
+    if (programNo !== null)
+      acc[machineId].add(programNo)
     return acc
   }, {} as Record<number, Set<number>>)
 
-  return Object.entries(machinePrgMap).map(([machineId, prgList]) => ({
-    machineId: Number(machineId),
-    valid: [...taskPrgList].every(a => prgList.has(a)),
-  }))
+  return {
+    expectedPrograms: batchProgramList,
+    result: Object.entries(machineProgramMap).map(([machineId, programList]) => ({
+      machineId: Number(machineId),
+      valid: batchProgramList.every(prg => programList.has(prg)),
+    })),
+  }
 }
 
 export async function validateTaskCapacityAgainstMachines(fabricWeight: number) {
+  const tolerance = 0.1
   const capacity = await knex('BFMACHINES as b')
     .select({
       machineId: 'b.MACHINEID',
-      valid: knex.raw(
-        `CASE WHEN b.MACHINECAPACITY >= ? THEN 1 ELSE 0 END`,
-        [fabricWeight],
-      ),
-    },
-    )
+      machineCapacity: 'b.MACHINECAPACITY',
+    })
     .where('b.INUSE', 1)
     .andWhere('b.USEINTELESKOP', 1)
-  return capacity.map(c => ({
-    ...c,
-    valid: c.valid !== 0,
-  }))
+
+  return capacity.map((mc) => {
+    const toleratedCapacity = mc.machineCapacity * (1 + tolerance)
+    return ({
+      machineId: mc.machineId,
+      valid: toleratedCapacity >= fabricWeight,
+      warning: mc.machineCapacity < fabricWeight,
+    })
+  })
 }
 export async function removeFromPlan(planKey: number) {
   const deletedRow = await knex('dbo.PTBATCHPLANQUEUE')

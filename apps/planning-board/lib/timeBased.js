@@ -34,7 +34,8 @@ const trLocalization = {
     search: 'İş Emri Arama',
     overlap: 'Etkinlik, bu kaynaktaki başka bir Etkinlikle çakışıyor!',
     beforeNow: 'İş emrini güncel zamandan önceye planlayamazsın!',
-    program: 'Programlar eşleşmiyor!',
+    missingPrograms: 'Programlar eşleşmiyor!',
+    invalidCapacity: 'Makine kapasitesi yetersiz!',
     unassign: 'Planlanmamış İş Emirleri',
     machine: 'Makine İsmi',
     unassign: 'Planlanmamış İş Emirleri',
@@ -56,7 +57,8 @@ const enLocalization = {
     search: 'Job Order Search',
     overlap: 'Event overlaps existing event for this resource!',
     beforeNow: 'You can not schedule this event before current time!',
-    program: 'Programs does not match',
+    missingPrograms: 'Programs does not match!',
+    invalidCapacity: 'Machine capacity is insufficient!',
     unassign: 'Unassigned Job Orders',
     machine: 'Machine Name',
     unassign: 'Unassigned Job Orders',
@@ -241,32 +243,33 @@ export class TimeDrag extends DragHelper {
       const endHourRotation = (endDate.getHours() % 12 + endDate.getMinutes() / 60) * 30
 
       const timeDisplay = text => `
-      <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
-                <div class="b-sch-clock">
-                    <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">${startMonth}</div>
-                    <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">${startDay}</div>
-                    <div class="b-sch-clock-dot"></div>
-                </div>
-                <span class="b-sch-clock-text">${DateHelper.format(startDate, schedule.displayDateFormat)}</span>
-            </div>
-            <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
-                <div class="b-sch-clock">
-                    <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">${endMonth}</div>
-                    <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">${endDay}</div>
-                    <div class="b-sch-clock-dot"></div>
-                </div>
-                <span class="b-sch-clock-text">${DateHelper.format(endDate, schedule.displayDateFormat)}</span>
-            </div>
-            <div class="b-sch-event-title" style="color: #E07D80 !important">
+        <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-startdate">
+          <div class="b-sch-clock">
+            <div class="b-sch-hour-indicator" style="transform: rotate(${startHourRotation}deg);">${startMonth}</div>
+            <div class="b-sch-minute-indicator" style="transform: rotate(${startMinuteRotation}deg);">${startDay}</div>
+            <div class="b-sch-clock-dot"></div>
+          </div>
+          <span class="b-sch-clock-text">${DateHelper.format(startDate, schedule.displayDateFormat)}</span>
+        </div>
+        <div class="b-sch-clockwrap b-sch-clock-hour b-sch-tooltip-enddate">
+          <div class="b-sch-clock">
+            <div class="b-sch-hour-indicator" style="transform: rotate(${endHourRotation}deg);">${endMonth}</div>
+            <div class="b-sch-minute-indicator" style="transform: rotate(${endMinuteRotation}deg);">${endDay}</div>
+            <div class="b-sch-clock-dot"></div>
+          </div>
+          <span class="b-sch-clock-text">${DateHelper.format(endDate, schedule.displayDateFormat)}</span>
+        </div>
+        <div class="b-sch-event-title" style="color: #E07D80 !important">
           ${this.tip.L(text)}
         </div>
-            `
+      `
+
       if (!context.valid) {
         if (!schedule.isDateRangeAvailable(startDate, endDate, null, machine)) {
           this.tip.html = timeDisplay('overlap')
           this.tip.showBy(context.element)
         } else if (!isValid.find(a => a.machineId === machine.id).valid) {
-          this.tip.html = timeDisplay('program')
+          this.tip.html = timeDisplay('missingPrograms')
         } else {
           this.tip.html = timeDisplay('beforeNow')
           this.tip.showBy(context.element)
