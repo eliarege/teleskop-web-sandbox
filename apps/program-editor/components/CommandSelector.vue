@@ -41,7 +41,7 @@ const availableCommands = computed(() => {
     .map(command => ({
       label: `${command.commandNo} ${mt(command.name, editor.machine.id)}`,
       value: command.commandNo,
-      icon: editor.getStepIcon(command.commandNo),
+      icon: editor.getCommandIcon(command.commandNo),
     }))
 })
 

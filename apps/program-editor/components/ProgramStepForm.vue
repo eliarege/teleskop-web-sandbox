@@ -20,8 +20,8 @@ const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
 const isLastStep = stepIndex.value === editor.program.steps.length - 1
 const stepIcons = computed(() => {
-  const mainIcon = editor.getStepIcon(step.mainCommand.commandNo!)
-  const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getStepIcon(commandNo!))
+  const mainIcon = editor.getCommandIcon(step.mainCommand.commandNo)
+  const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getCommandIcon(commandNo))
   return [mainIcon, ...parallelIcons]
 })
 
@@ -73,7 +73,7 @@ function removeError(commandId: number) {
 
 <template>
   <div class="flex flex-nowrap">
-    <div class="flex items-center">
+    <div class="flex items-center w-4 mr-2">
       <div v-show="!expanded" class="space-y-1">
         <div
           v-for="(icon, key) in stepIcons"
@@ -86,7 +86,7 @@ function removeError(commandId: number) {
               :style="{ color: icon.color }"
             />
             <q-tooltip>
-              {{ icon.name ? icon.label : t('noIcon') }}
+              {{ t(`commandType.${icon.label}`) }}
             </q-tooltip>
           </div>
         </div>

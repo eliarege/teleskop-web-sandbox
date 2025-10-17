@@ -5,7 +5,7 @@ import { useProgramWriteSettings } from './settings'
 import { useErrorStore } from './utils'
 import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
-import { CommandEligibility, CommandIconMapping, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
+import { CommandEligibility, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -982,7 +982,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Ardından, komut tipinin bilinen bir eşlemeyle uyumlu olup olmadığını ve `teleskopSettings` içindeki ikon ayarlarına göre
    * ikonun gösterilip gösterilmeyeceğini belirler. Tüm koşullar sağlanırsa, uygun `StepIcon` döner; aksi takdirde `undefined` döner.
    */
-  function getStepIcon(commandNo: number): StepIcon | undefined {
+  function getCommandIcon(commandNo: number): StepIcon | undefined {
     if (!isDef(commandNo))
       return
 
@@ -994,17 +994,17 @@ export const useEditorStore = defineStore('editor', () => {
     if (!machineCommandType)
       return
 
-    const commandType = commandTypeMaps.find(map => map.value === machineCommandType?.commandType)
+    const commandType = commandTypeMaps.find(map => map.value === machineCommandType.commandType)
     if (!commandType)
       return
 
     const iconSetting = teleskopSettings.value.selectedIcons
     const isSelected = (Number(iconSetting) & (1 << Number(commandType.index))) > 0
 
-    if (!isSelected || !machineCommand)
+    if (!isSelected)
       return
 
-    return CommandIconMapping[machineCommand.icon]
+    return { name: commandType.icon, label: commandType.title, color: commandType.color }
   }
 
   return {
@@ -1053,7 +1053,7 @@ export const useEditorStore = defineStore('editor', () => {
     deleteProcessType,
     updateProcessType,
     scrollPage,
-    getStepIcon,
+    getCommandIcon,
     fetchTeleskopSettings,
     updateTeleskopSettings,
     fetchCommandTypes,

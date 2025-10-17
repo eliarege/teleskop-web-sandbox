@@ -30,6 +30,7 @@ const translatedCommands = computed(() => {
   return commandsArray.map(command => ({
     ...command,
     name: mt(command.name, editor.machine.id),
+    icon: editor.getCommandIcon(command.commandNo),
   }))
 })
 
@@ -112,8 +113,20 @@ function validateParallelCommands(stepIndex: number): boolean {
           @dblclick="editor.addStep(command.commandNo)"
         >
           <QItemSection>
-            <QItemLabel>
-              <span class="font-bold">{{ command.commandNo }}</span> / {{ mt(command.name, editor.machine.id) }}
+            <QItemLabel class="flex items-center gap-2">
+              <div v-if="command.icon">
+                <UnoIcon
+                  class="icon"
+                  :class="command.icon.name"
+                  :style="{ color: command.icon.color }"
+                />
+              </div>
+              <div v-else class="inline-block w-4 h-4" />
+              <span class="font-bold">{{ command.commandNo }}</span>
+              <TruncatedText
+                :text="`/ ${mt(command.name, editor.machine.id)}`"
+                :max-length="24"
+              />
             </QItemLabel>
           </QItemSection>
         </QItem>

@@ -402,19 +402,19 @@
     "default": "Default"
   },
   "commandType": {
-    "chemicalRequestCommands": "Chemical Request Commands",
-    "manualChemicalRequestCommands": "Manual Chemical Request Commands",
-    "paintRequestCommands": "Paint Request Commands",
-    "manualPaintRequestCommands": "Manual Paint Request Commands",
-    "chemicalTankTransferCommands": "Chemical Tank Transfer Commands",
-    "paintTankTransferCommands": "Paint Tank Transfer Commands",
-    "reserveTankTransferCommands": "Reserve Tank Transfer Commands",
+    "chemicalRequest": "Chemical Request",
+    "manualChemicalRequest": "Manual Chemical Request",
+    "paintRequest": "Paint Request",
+    "manualPaintRequest": "Manual Paint Request",
+    "chemicalTankTransfer": "Chemical Tank Transfer",
+    "paintTankTransfer": "Paint Tank Transfer",
+    "reserveTankTransfer": "Reserve Tank Transfer",
     "pHControl": "pH Control",
     "takeSample": "Take Sample",
-    "saltRequestCommands": "Salt Request Commands",
+    "saltRequest": "Salt Request",
     "genericMaterial1Request": "Generic Material 1 Request",
     "genericMaterial2Request": "Generic Material 2 Request",
-    "manualMeasurementCommands": "Manual Measurement Commands"
+    "manualMeasurement": "Manual Measurement"
   },
   "apperance": {
     "temperature(c)": "Temperature(°C)",

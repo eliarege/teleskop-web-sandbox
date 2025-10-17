@@ -395,9 +395,9 @@ export interface CommandTypes {
 }
 
 export interface StepIcon {
-  name: string | undefined
-  label?: string | undefined
-  color?: string | undefined
+  name: string
+  label: string
+  color: string
 }
 export interface TreatmentSettings {
   optimizedEnable: boolean

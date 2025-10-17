@@ -23,7 +23,7 @@ const machineCommand = computed(() => {
   return { editableParameters, selectableIOs }
 })
 
-const commandIcon = computed(() => editor.getStepIcon(programCommand.commandNo!))
+const commandIcon = computed(() => editor.getCommandIcon(programCommand.commandNo!))
 
 /**
  * Parametreleri `BFCOMMANDPARAMETERS.PARAMETERGROUP` alanına göre grupla.
@@ -46,16 +46,18 @@ const groupedParameters = computed(() => {
   <div class="pl-1 pt-1">
     <div class="flex">
       <!-- Command Icon -->
-      <div v-show="expanded" class="flex-center">
-        <div v-if="commandIcon">
-          <UnoIcon
-            class="icon"
-            :class="commandIcon.name"
-            :style="{ color: commandIcon.color }"
-          />
-          <q-tooltip>
-            {{ commandIcon.label }}
-          </q-tooltip>
+      <div v-show="expanded" class="flex-center mr-2">
+        <div class="w-4">
+          <div v-if="commandIcon">
+            <UnoIcon
+              class="icon"
+              :class="commandIcon.name"
+              :style="{ color: commandIcon.color }"
+            />
+            <q-tooltip>
+              {{ t(`commandType.${commandIcon.label}`) }}
+            </q-tooltip>
+          </div>
         </div>
       </div>
 

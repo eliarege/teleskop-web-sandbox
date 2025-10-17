@@ -87,30 +87,29 @@ export const AdditiveType = {
   Dye: 1,
 } as const
 
-export const commandTypeMaps = [
-  { index: 0, ref: [], value: CommandType.AutoChem, title: 'chemicalRequestCommands' },
-  { index: 1, ref: [], value: CommandType.ManChem, title: 'manualChemicalRequestCommands' },
-  { index: 2, ref: [], value: CommandType.AutoDye, title: 'paintRequestCommands' },
-  { index: 3, ref: [], value: CommandType.ManDye, title: 'manualPaintRequestCommands' },
-  { index: 4, ref: [], value: CommandType.ChemTankTransfer, title: 'chemicalTankTransferCommands' },
-  { index: 5, ref: [], value: CommandType.PaintTankTransfer, title: 'paintTankTransferCommands' },
-  { index: 6, ref: [], value: CommandType.ReserveTankTransfer, title: 'reserveTankTransferCommands' },
-  { index: 7, ref: [], value: CommandType.PHControl, title: 'pHControl' },
-  { index: 8, ref: [], value: CommandType.TakeSample, title: 'takeSample' },
-  { index: 9, ref: [], value: CommandType.SaltRequest, title: 'saltRequestCommands' },
-  { index: 10, ref: [], value: CommandType.GenericMaterial1, title: 'genericMaterial1Request' },
-  { index: 11, ref: [], value: CommandType.GenericMaterial2, title: 'genericMaterial2Request' },
-  { index: 12, ref: [], value: CommandType.ManualMeasurement, title: 'manualMeasurementCommands' },
+export interface CommandTypeMap {
+  index: number
+  ref: any[]
+  value: CommandType
+  title: string
+  icon: string
+  color: string
+}
+
+export const commandTypeMaps: CommandTypeMap[] = [
+  { index: 0, ref: [], value: CommandType.AutoChem, title: 'chemicalRequest', icon: 'i-carbon-chemistry', color: '#00CC00' },
+  { index: 1, ref: [], value: CommandType.ManChem, title: 'manualChemicalRequest', icon: 'i-carbon-chemistry', color: '#00CC00' },
+  { index: 2, ref: [], value: CommandType.AutoDye, title: 'paintRequest', icon: 'i-mingcute:paint-line', color: '#FF00FF' },
+  { index: 3, ref: [], value: CommandType.ManDye, title: 'manualPaintRequest', icon: 'i-mingcute:paint-line', color: '#E67E22' },
+  { index: 4, ref: [], value: CommandType.ChemTankTransfer, title: 'chemicalTankTransfer', icon: 'i-ri-exchange-2-line', color: '#228b22' },
+  { index: 5, ref: [], value: CommandType.PaintTankTransfer, title: 'paintTankTransfer', icon: 'i-ri-exchange-2-line', color: '#ff00ff' },
+  { index: 6, ref: [], value: CommandType.ReserveTankTransfer, title: 'reserveTankTransfer', icon: 'i-ri-exchange-2-line', color: '#0000ff' },
+  { index: 7, ref: [], value: CommandType.PHControl, title: 'pHControl', icon: 'i-material-symbols:water-ph-outline', color: '#0000ff' },
+  { index: 8, ref: [], value: CommandType.TakeSample, title: 'takeSample', icon: 'i-ph:eyedropper-sample-fill', color: '#0000ff' },
+  { index: 9, ref: [], value: CommandType.SaltRequest, title: 'saltRequest', icon: 'i-tabler:salt', color: '#00CC00' },
+  { index: 10, ref: [], value: CommandType.GenericMaterial1, title: 'genericMaterial1Request', icon: 'i-streamline:interface-arrows-data-transfer-vertical-arrow-square-data-internet-transfer-network-vertical', color: '#00CC00' },
+  { index: 11, ref: [], value: CommandType.GenericMaterial2, title: 'genericMaterial2Request', icon: 'i-streamline:interface-arrows-data-transfer-vertical-arrow-square-data-internet-transfer-network-vertical', color: '#00CC00' },
+  { index: 12, ref: [], value: CommandType.ManualMeasurement, title: 'manualMeasurement', icon: 'i-mdi:hydraulic-oil-level', color: '#1E90FF' },
 ]
 
 export const ADDITIONAL_PROCESS_CODE_ILAVE = 7
-
-// @unocss-include
-export const CommandIconMapping: Record<string, { name: string, label?: string, color?: string }> = {
-  'AK_Bosalt.gif': { name: 'i-ri-exchange-2-line', label: 'AK_Bosalt', color: '#00CC00' },
-  'Kimyasal_Iste.gif': { name: 'i-carbon-chemistry', label: 'Kimyasal_Iste', color: '#00CC00' },
-  'KK_AK_Transfer.gif': { name: 'i-ri-exchange-2-line', label: 'KK_AK_Transfer', color: '#228b22' },
-  'BK_AK_Dozaj.gif': { name: 'i-icon-park-outline-curve-adjustment', label: 'BK_AK_Dozaj', color: '#e67e22' },
-  'BK_AK_Transfer.gif': { name: 'i-ri-exchange-2-line', label: 'BK_AK_Transfer', color: '#ff00ff' },
-  'KK_RK_Transfer.gif': { name: 'i-ri-exchange-2-line', label: 'KK_RK_Transfer', color: '#0000ff' },
-}
