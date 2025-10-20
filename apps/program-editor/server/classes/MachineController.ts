@@ -997,17 +997,17 @@ export class MachineController {
           .find(i => i.index === io.ioIndex)?.selections || []
 
         // BAMASTERSTEPSELECTIONLIST
-        this.sortIOValues(io.value, ioDefs).forEach((ioValue: any, n) => {
+        this.rankAndSortIOSelections(io.value, ioDefs).forEach((selection) => {
           ioSelectionArchive.push({
             MACHINEID: this.id,
             MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
-            SELECTIONINDEX: n,
+            SELECTIONINDEX: selection.index,
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: 0,
             IOINDEX: mainIOList[k].index,
-            SELECTEDIOID: ioValue[1],
-            IOTYPE: ioValue[0] - 1,
+            SELECTEDIOID: selection.value[1],
+            IOTYPE: selection.value[0] - 1,
           })
         })
       })
@@ -1063,17 +1063,17 @@ export class MachineController {
             .find(i => i.index === io.ioIndex)?.selections || []
 
           // BAMASTERSTEPSELECTIONLIST
-          this.sortIOValues(io.value, ioDefs).forEach((ioValue, n) => {
+          this.rankAndSortIOSelections(io.value, ioDefs).forEach((selection) => {
             ioSelectionArchive.push({
               MACHINEID: this.id,
               MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
-              SELECTIONINDEX: n,
+              SELECTIONINDEX: selection.index,
               PROGNO: program.programNo,
               MAINSTEP: i,
               PARALELSTEP: j + 1,
               IOINDEX: paralelIOList[m].index,
-              SELECTEDIOID: ioValue[1],
-              IOTYPE: ioValue[0] - 1,
+              SELECTEDIOID: selection.value[1],
+              IOTYPE: selection.value[0] - 1,
             })
           })
         })
@@ -1232,16 +1232,16 @@ export class MachineController {
           .find(i => i.index === io.ioIndex)?.selections || []
 
         // BFMASTERSTEPSELECTIONLIST
-        this.sortIOValues(io.value, ioDefs).forEach((ioValue, n) => {
+        this.rankAndSortIOSelections(io.value, ioDefs).forEach((selection) => {
           ioSelection.push({
-            SELECTIONINDEX: n,
+            SELECTIONINDEX: selection.index,
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: 0,
             IOINDEX: mainIOList[k].index,
             MACHINEID: this.id,
-            SELECTEDIOID: ioValue[1],
-            IOTYPE: ioValue[0] - 1,
+            SELECTEDIOID: selection.value[1],
+            IOTYPE: selection.value[0] - 1,
           })
         })
       })
@@ -1297,16 +1297,16 @@ export class MachineController {
             .find(i => i.index === io.ioIndex)?.selections || []
 
           // BFMASTERSTEPSELECTIONLIST
-          this.sortIOValues(io.value, ioDefs).forEach((ioValue, n) => {
+          this.rankAndSortIOSelections(io.value, ioDefs).forEach((selection) => {
             ioSelection.push({
-              SELECTIONINDEX: n,
+              SELECTIONINDEX: selection.index,
               PROGNO: program.programNo,
               MAINSTEP: i,
               PARALELSTEP: j + 1,
               IOINDEX: paralelIOList[m].index,
               MACHINEID: this.id,
-              SELECTEDIOID: ioValue[1],
-              IOTYPE: ioValue[0] - 1,
+              SELECTEDIOID: selection.value[1],
+              IOTYPE: selection.value[0] - 1,
             })
           })
         })
@@ -1981,20 +1981,31 @@ export class MachineController {
     return chemRequestCounters
   }
 
-  private sortIOValues(ioValues: [number, number][], ioDefs: CommandIOSelection[]): [number, number][] {
-    const ioOrderMap = new Map(ioDefs.map((def, idx) => [`${def.type}-${def.physicalId}`, idx]))
-    return ioValues.toSorted((ioA, ioB) => {
-      const rankA = ioOrderMap.get(`${ioA[0]}-${ioA[1]}`)
-      const rankB = ioOrderMap.get(`${ioB[0]}-${ioB[1]}`)
-      if (!isDef(rankA) && !isDef(rankB)) {
-        return 0
-      } else if (!isDef(rankA)) {
-        return 1
-      } else if (!isDef(rankB)) {
-        return -1
-      } else {
-        return rankA - rankB
-      }
-    })
+  private rankAndSortIOSelections(ioValues: [number, number][], ioDefs: CommandIOSelection[]) {
+    const ioDefMap = new Map(ioDefs.map((def, idx) => [
+      `${def.type}-${def.physicalId}`,
+      {
+        rank: idx,
+        index: def.index,
+      },
+    ]))
+
+    return ioValues
+      .map((io) => {
+        const ioDefEntry = ioDefMap.get(`${io[0]}-${io[1]}`)
+        if (ioDefEntry) {
+          return {
+            value: io,
+            rank: ioDefEntry.rank,
+            index: ioDefEntry.index,
+          }
+        } else {
+          return null
+        }
+      })
+      .filter(isDef)
+      .toSorted((ioA, ioB) => {
+        return ioA.rank - ioB.rank
+      })
   }
 }
