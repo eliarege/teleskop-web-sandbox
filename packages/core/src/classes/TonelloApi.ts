@@ -2,6 +2,7 @@ import type { $Fetch } from 'ofetch'
 import { $fetch } from 'ofetch'
 import { format } from 'date-fns'
 import type {
+  TonelloAlarm,
   TonelloBatch,
   TonelloConfiguration,
   TonelloFunction,
@@ -55,11 +56,15 @@ export class TonelloApi {
     return await this.fetch('/api/v1/getConfiguration')
   }
 
-  async getProgram(code: string | number): Promise<TonelloResponse<TonelloProgram>> {
+  async fetchAlarmsList(): Promise<TonelloResponse<{ alarms: TonelloAlarm[] }>> {
+    return await this.fetch('/api/v1/getAlarmsList')
+  }
+
+  async fetchProgram(code: string | number): Promise<TonelloResponse<TonelloProgram>> {
     return await this.fetch('/api/v1/getProgram', { query: { code } })
   }
 
-  async getProgramsList(): Promise<TonelloResponse<TonelloProgramList>> {
+  async fetchProgramsList(): Promise<TonelloResponse<TonelloProgramList>> {
     return await this.fetch('/api/v1/getProgramsList')
   }
 

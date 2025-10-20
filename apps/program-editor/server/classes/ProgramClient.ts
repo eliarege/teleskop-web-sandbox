@@ -122,7 +122,7 @@ export class TonelloProgramClient implements ProgramClient {
     id: number,
     commands: MachineCommand[],
   ): Promise<Program | null> {
-    const { data: tonelloProgram } = await this.api.getProgram(id)
+    const { data: tonelloProgram } = await this.api.fetchProgram(id)
     const teleskopProgram: Program = {
       name: tonelloProgram.name,
       author: '',
@@ -265,7 +265,7 @@ export class TonelloProgramClient implements ProgramClient {
   }
 
   async fetchProgramList(): Promise<number[]> {
-    const list = await this.api.getProgramsList()
+    const list = await this.api.fetchProgramsList()
     return list.data.programs.map(p => Number(p.code))
   }
 
