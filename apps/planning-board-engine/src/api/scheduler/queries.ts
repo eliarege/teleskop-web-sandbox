@@ -1,6 +1,6 @@
 import moo from 'moo'
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
-import type { PlanParameters, QueueBasedEventStop } from 'types/planning-board'
+import type { PlanParameters, QueueBasedActualEvent, QueueBasedBaseEvent, QueueBasedEventStop } from 'types/planning-board'
 import type { Program } from 'typescript'
 import { chunk } from 'lodash-es'
 import { config } from '~/config'
@@ -263,27 +263,21 @@ export async function getBatchNotes(jobOrder: string) {
       showOnScreen: 'p.SHOWONSCREEN',
     }).where('JOBORDER', '=', jobOrder)
 }
-export async function getBatchProperties(machineId: number, planKey: number) {
-  const erpParameters = await knex('PTMACHINEERP as p')
-    .select({
-      paramId: 'p.paramId',
-      paramName: 'p.paramName',
-      value: 'd.VALUE',
-    })
-    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'p.paramId')
-    .where('p.machineId', machineId)
-    .andWhere('p.visible', true)
-    .andWhere('d.PLANKEY', planKey)
-    .groupBy('p.paramId', 'p.paramName', 'd.VALUE')
-    .orderBy('p.paramId')
 
-  const programs = await knex.raw(/* sql */`
-WITH SplitValues AS (
+async function programQuery({ isActual, planKey, batchKey, machineId }: {
+  isActual: boolean
+  planKey?: number
+  batchKey?: number
+  machineId: number
+}) {
+  if (isActual) {
+    return await knex.raw(/* sql */`
+      WITH SplitValues AS (
   SELECT CAST(value AS INT) AS ProgramNo
   FROM STRING_SPLIT(
-    (SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1)
-     FROM DYBFBATCHPLAN d
-     WHERE d.PLANKEY = :planKey),
+    (SELECT LEFT(b.PROGRAMNOLIST, LEN(b.PROGRAMNOLIST) - 1)
+     FROM BADATA b
+     WHERE b.BATCHKEY = :batchKey),
     ','
   )
 ),
@@ -292,11 +286,9 @@ actualDuration AS (
     c.PRGNO,
     c.BATCHKEY,
     DATEDIFF(SECOND, MIN(c.STARTTIME), MAX(c.ENDTIME)) AS duration
-  FROM DYBFBATCHPLAN d
-  LEFT JOIN BADATA b ON b.JOBORDER = d.JOBORDER
+  FROM BADATA b
   LEFT JOIN BAACTUALPRGSTEPS c ON c.BATCHKEY = b.BATCHKEY
-  WHERE d.PLANKEY = :planKey
-    AND d.lastForJoborder = 1
+  WHERE b.BATCHKEY = :batchKey
     AND b.MACHINEID = :machineId
   GROUP BY c.BATCHKEY, c.PRGNO
 )
@@ -312,7 +304,51 @@ LEFT JOIN TFMACHINESTATUS t ON t.MACHINEID = :machineId
 WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
   AND b.MACHINEID = :machineId
 GROUP BY b.PROGNO, b.NAME, b.DURATION, ad.duration, t.RUNNING_PROGRAMID;
+      `, { batchKey, machineId })
+  } else {
+    return await knex.raw(/* sql */`
+WITH SplitValues AS (
+  SELECT CAST(value AS INT) AS ProgramNo
+  FROM STRING_SPLIT(
+    (SELECT LEFT(d.PROGRAMNOLIST, LEN(d.PROGRAMNOLIST) - 1)
+     FROM DYBFBATCHPLAN d
+     WHERE d.PLANKEY = :planKey),
+    ','
+  )
+)
+SELECT
+  b.PROGNO as prgNo,
+  b.NAME as prgName,
+  b.DURATION AS theoreticalDuration,
+  0 AS actualDuration,
+  IIF(t.RUNNING_PROGRAMID = b.PROGNO, CAST(1 AS BIT), CAST(0 AS BIT)) AS currentlyRunning
+FROM BFMASTERPRGHEADER b
+LEFT JOIN TFMACHINESTATUS t ON t.MACHINEID = :machineId
+WHERE b.PROGNO IN (SELECT ProgramNo FROM SplitValues)
+  AND b.MACHINEID = :machineId
+GROUP BY b.PROGNO, b.NAME, b.DURATION, t.RUNNING_PROGRAMID;
   `, { planKey, machineId })
+  }
+}
+
+export async function getBatchProperties(machineId: number, planKey: number, isActual: boolean, batchKey?: number) {
+  const erpParameters = await knex('PTMACHINEERP as p')
+    .select({
+      paramId: 'p.paramId',
+      paramName: 'p.paramName',
+      value: 'd.VALUE',
+    })
+    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'p.paramId')
+    .where('p.machineId', machineId)
+    .andWhere('p.visible', true)
+    .andWhere('d.PLANKEY', planKey)
+    .groupBy('p.paramId', 'p.paramName', 'd.VALUE')
+    .orderBy('p.paramId')
+
+  if (isActual && !batchKey) {
+    throw new Error('batchKey is required when isActual is true')
+  }
+  const programs = await programQuery({ isActual, planKey, batchKey, machineId })
 
   const times = await knex.raw(/* sql */`
   SELECT TOP 1
