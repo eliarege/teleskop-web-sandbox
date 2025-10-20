@@ -11,6 +11,7 @@ const props = defineProps<{
   realDuration: number
   deviation: number
   eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
+  batchKey?: number
 }>()
 const colors = reactive({
   activeBackGround: '#4B5563',
@@ -63,6 +64,7 @@ function cardBackgroundColor(currentAlarmStatus: number, runningBatchStatus: num
           :real-duration
           :deviation
           :event-type
+          :batch-key
         />
       </div>
     </div>

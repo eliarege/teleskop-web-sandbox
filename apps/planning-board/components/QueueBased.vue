@@ -146,8 +146,9 @@ const propertiesModal = reactive({
   deviation: 0,
   planParameters: {},
   eventType: '',
+  batchKey: null,
 })
-function setProperties(machineId: number, jobOrder: string, planKey: number, fabricWeight: number, theoreticalDuration: number, realDuration: number, deviation: number, program: string, isBatchStarted: boolean, eventType: string) {
+function setProperties(machineId: number, jobOrder: string, planKey: number, fabricWeight: number, theoreticalDuration: number, realDuration: number, deviation: number, program: string, isBatchStarted: boolean, eventType: string, batchKey?: number) {
   propertiesModal.show = true
   propertiesModal.planKey = planKey
   propertiesModal.jobOrder = jobOrder
@@ -157,6 +158,7 @@ function setProperties(machineId: number, jobOrder: string, planKey: number, fab
   propertiesModal.realDuration = realDuration
   propertiesModal.deviation = deviation
   propertiesModal.eventType = eventType
+  propertiesModal.batchKey = batchKey || null
 
   setPlanParameters(false, planKey, machineId, program, isBatchStarted, [], false)
 }
@@ -832,12 +834,13 @@ onMounted(async () => {
               const realDuration = eventRecord.originalData.eventType === 'finished' ? differenceInSeconds(eventRecord.originalData.endTime, eventRecord.originalData.startTime) : 0
               const deviation = eventRecord.originalData.eventType === 'finished' ? eventRecord.originalData.deviation : 0
               const eventType = eventRecord.originalData.eventType
+              const batchKey = eventRecord.originalData.batchKey || null
               let program: string = eventRecord.originalData.programList
               if (program.endsWith(',')) {
                 program = program.slice(0, -1)
               }
               const isBatchStarted = eventRecord.originalData.isStarted
-              setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, realDuration, deviation, program, isBatchStarted, eventType)
+              setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, realDuration, deviation, program, isBatchStarted, eventType, batchKey)
             },
           },
           process: {
@@ -1041,6 +1044,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(bryntumLocale))
           :real-duration="propertiesModal.realDuration"
           :deviation="propertiesModal.deviation"
           :event-type="propertiesModal.eventType"
+          :batch-key="propertiesModal.batchKey"
         />
       </template>
     </EliarModal>

@@ -11,11 +11,12 @@ const props = defineProps<{
   fabricWeight: number | string
   realDuration: number
   deviation: number
+  batchKey?: number
 }>()
 const { t } = useI18n()
 
 const { data: batchProperties } = await useAuthFetch('/api/batchProperties', {
-  query: { machineId: props.machineId, planKey: props.planKey },
+  query: { machineId: props.machineId, planKey: props.planKey, isActual: props.eventType !== 'planned', batchKey: props.batchKey },
 })
 
 function formatDatetime(date: string | Date | number) {

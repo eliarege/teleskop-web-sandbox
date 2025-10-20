@@ -257,17 +257,18 @@ async function updateExistingQueuedPlans(logger: any) {
       'old_plan.JOBORDER',
       'old_plan.MACHINEIDLIST as oldMachineId',
       'new_plan.PLANKEY as newPlanKey',
-      'new_plan.MACHINEIDLIST as newMachineId'
+      'new_plan.MACHINEIDLIST as newMachineId',
     )
     .from('PTBATCHPLANQUEUE as old_queue')
     .leftJoin('DYBFBATCHPLAN as old_plan', 'old_queue.PLANKEY', 'old_plan.PLANKEY')
     .leftJoin('DYBFBATCHPLAN as new_plan', function () {
       this.on('old_plan.JOBORDER', '=', 'new_plan.JOBORDER')
-        .andOn('new_plan.lastForJoborder', '=', knex.raw('1'));
+        .andOn('new_plan.lastForJoborder', '=', knex.raw('1'))
     })
-    .where('old_plan.lastForJoborder', 0);
+    .where('old_plan.lastForJoborder', 0)
 
-  if (!oldPlansWithNewPlans.length) return;
+  if (!oldPlansWithNewPlans.length)
+    return
 
   // Step 2: Process each entry in its own transaction
   for (const plan of oldPlansWithNewPlans) {
@@ -276,10 +277,10 @@ async function updateExistingQueuedPlans(logger: any) {
     }
     try {
       await knex.transaction(async (trx) => {
-        const isMachineChanged = plan.newMachineId !== plan.oldMachineId;
+        const isMachineChanged = plan.newMachineId !== plan.oldMachineId
 
         // Always remove the old plan
-        await trx('PTBATCHPLANQUEUE').where('PLANKEY', plan.oldPlanKey).delete();
+        await trx('PTBATCHPLANQUEUE').where('PLANKEY', plan.oldPlanKey).delete()
 
         if (!isMachineChanged) {
           // Same machine → reinsert with same queue number
@@ -290,7 +291,7 @@ async function updateExistingQueuedPlans(logger: any) {
             PINNED: plan.PINNED,
             STARTTIME: plan.STARTTIME,
             STATE: plan.STATE,
-          });
+          })
 
           logger.info(
             {
@@ -299,15 +300,15 @@ async function updateExistingQueuedPlans(logger: any) {
               queueNumber: plan.QUEUENUMBER,
               machineId: plan.newMachineId,
             },
-            'Plan updated in PTBATCHPLANQUEUE (same machine)'
-          );
+            'Plan updated in PTBATCHPLANQUEUE (same machine)',
+          )
         } else {
           // Machine changed → insert at the end of that machine’s queue
           const [{ maxQueueNumber }] = await trx('PTBATCHPLANQUEUE')
             .where('MACHINEID', plan.newMachineId)
-            .max('QUEUENUMBER as maxQueueNumber');
+            .max('QUEUENUMBER as maxQueueNumber')
 
-          const nextQueueNumber = (maxQueueNumber || 0) + 1;
+          const nextQueueNumber = (maxQueueNumber || 0) + 1
 
           await trx('PTBATCHPLANQUEUE').insert({
             PLANKEY: plan.newPlanKey,
@@ -316,7 +317,7 @@ async function updateExistingQueuedPlans(logger: any) {
             PINNED: plan.PINNED,
             STARTTIME: plan.STARTTIME,
             STATE: plan.STATE,
-          });
+          })
 
           logger.info(
             {
@@ -325,12 +326,11 @@ async function updateExistingQueuedPlans(logger: any) {
               machineId: plan.newMachineId,
               newQueueNumber: nextQueueNumber,
             },
-            'Plan inserted in PTBATCHPLANQUEUE (machine changed)'
-          );
+            'Plan inserted in PTBATCHPLANQUEUE (machine changed)',
+          )
         }
-      });
-    }
-    catch (error) {
+      })
+    } catch (error) {
       logger.error({ error }, `Failed to update existing queue plan ${plan.oldPlanKey} -> ${plan.newPlanKey}`)
     }
   }
@@ -349,7 +349,7 @@ export async function preplanJoborders(logger: any) {
     }
 
     const taskResults = await taskValid(planKey, intFabricWeight)
-    const isPlannedMachineValid = taskResults.find(m => m.machineId === machineId)?.valid
+    const isPlannedMachineValid = taskResults.result.find(m => m.machineId === machineId)?.valid
     if (!isPlannedMachineValid) {
       logger.debug({ planKey, machineId }, 'Planned machine is not valid, skipping event')
       continue
