@@ -349,7 +349,7 @@ export async function preplanJoborders(logger: any) {
     }
 
     const taskResults = await taskValid(planKey, intFabricWeight)
-    const isPlannedMachineValid = taskResults.find(m => m.machineId === machineId)?.valid
+    const isPlannedMachineValid = taskResults.result.find(m => m.machineId === machineId)?.valid
     if (!isPlannedMachineValid) {
       logger.debug({ planKey, machineId }, 'Planned machine is not valid, skipping event')
       continue
