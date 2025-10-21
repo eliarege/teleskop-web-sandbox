@@ -16,7 +16,7 @@ const model = defineModel<number>()
       v-model="model"
       :true-value="1"
       :false-value="0"
-      class="text-black text-3"
+      class="text-black !dark:text-white text-3"
       dense
     >
       {{ props.label }}
