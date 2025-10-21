@@ -36,25 +36,29 @@ export interface ContextMenuStore {
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
-  const copiedValues = ref([] as ProgramItem[])
-  const copiedStepValues = ref([] as { machineId: number, programNo: number, steps: ProgramStep[] }[])
-  let comparsionBasket = [] as { machineId: number, programNo: number }[]
+  const copiedValues = ref<ProgramItem[]>([])
+  const copiedStepValues = ref<ProgramStep[]>([])
+  const sourceMachineId = ref<number | null>(null)
+  const sourceMachineCommands = ref<Map<number, MachineCommand>>(new Map())
+  let comparsionBasket: { machineId: number, programNo: number }[] = []
 
   const programVersions = ref([] as ProgramHeaderArchive[])
 
   // const machineId = Number(route.params.machine_id)
-  let t = function (param: string, ...args: any[]) {
+  let t = function (param: string, ..._args: any[]) {
     return param
   }
-  let router: Router = {} as Router
+  let _router: Router = {} as Router
   function setCtx(ctx?: { t: any, router: Router }) {
     t = ctx?.t
-    router = ctx?.router!
+    _router = ctx?.router ?? {} as Router
   }
 
   function copyStep() {
     const editor = useEditorStore()
     copiedStepValues.value = []
+    sourceMachineId.value = editor.machine.id
+    sourceMachineCommands.value = new Map(editor.machine.commands)
     editor.selectedSteps.forEach((step) => {
       copiedStepValues.value.push(step)
     })
@@ -63,80 +67,11 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   /** Kopyalanan adımları mevcut programa yapıştırır ve makine komutlarına göre adapte eder */
   function pasteStep() {
     const editor = useEditorStore()
-    editor.isLoading = true
+    const stepIndex = editor.getStepIndex(editor.selectedSteps[0]?.stepId)
+    const isSameMachine = sourceMachineId.value === editor.machine.id
 
-    const stepIndex = getInsertionIndex(editor)
-    editor.selectedSteps = []
-
-    const copiedSteps = getCopiedStepsValues()
-    copiedSteps?.forEach((step) => {
-      const adaptedStep = adaptStepToMachine(step, editor)
-      editor.selectedSteps.push(adaptedStep)
-    })
-
+    editor.selectedSteps = copiedStepValues.value.map(step => adaptStepToMachine(step, sourceMachineCommands.value, isSameMachine))
     editor.program.steps.splice(stepIndex, 0, ...editor.selectedSteps)
-    editor.isLoading = false
-  }
-
-  /** Adımların ekleneceği pozisyonu belirler (seçili adım varsa onun yerine, yoksa sona) */
-  function getInsertionIndex(editor: ReturnType<typeof useEditorStore>): number {
-    return editor.selectedSteps.length
-      ? editor.program.steps.indexOf(editor.selectedSteps[0])
-      : editor.program.steps.length
-  }
-
-  /** Adımı mevcut makinenin komut yapısına uyacak şekilde adapte eder */
-  function adaptStepToMachine(step: ProgramStep, editor: ReturnType<typeof useEditorStore>): ProgramStep {
-    const emptyStep = editor.createEmptyStep()
-    const machineCommand = editor.machine.commands.get(step.mainCommand.commandNo)
-
-    emptyStep.mainCommand = adaptCommand(step.mainCommand, machineCommand)
-    emptyStep.parallelCommands = step.parallelCommands.map((command) => {
-      const parallelMachineCommand = editor.machine.commands.get(command.commandNo)
-      return adaptCommand(command, parallelMachineCommand)
-    })
-
-    return emptyStep
-  }
-
-  /** Komutu makine komutuna göre parametreler ve IO'larla birlikte adapte eder */
-  function adaptCommand(stepCommand: ProgramStepCommand, machineCommand?: MachineCommand): ProgramStepCommand {
-    return {
-      ...stepCommand,
-      parameters: adaptParameters(stepCommand.parameters, machineCommand?.parameters),
-      ioList: adaptIOList(stepCommand.ioList, machineCommand?.ioList),
-    }
-  }
-
-  /** Parametreleri makine komutuna göre validate eder, eksik değerler için default kullanır */
-  function adaptParameters(stepParams: any[], machineParams?: any[]): any[] {
-    if (!machineParams)
-      return stepParams.map(param => ({ ...param }))
-
-    return machineParams.map((machineParam, index) => {
-      const stepParam = stepParams[index]
-      return {
-        index: machineParam.index,
-        value: stepParam?.value ?? machineParam.value ?? 0,
-        type: machineParam.type,
-        optimized: stepParam?.optimized ?? false,
-      }
-    })
-  }
-
-  /** IO listesini makine komutuna göre validate eder, eksik değerler için default kullanır */
-  function adaptIOList(stepIOList: any[], machineIOList?: any[]): any[] {
-    if (!machineIOList)
-      return stepIOList.map(io => ({ ...io }))
-
-    return machineIOList.map((machineIO, index) => {
-      const stepIO = stepIOList[index]
-      return {
-        ioId: machineIO.physicalId,
-        ioIndex: machineIO.index,
-        value: stepIO?.value ?? [[0, 0]],
-      }
-    })
   }
 
   function getCopiedStepsValues(): ProgramStep[] | undefined {
