@@ -85,8 +85,12 @@ onUnmounted(() => {
 })
 
 async function updateStepCommand(commandNo: number) {
+  const command = editor.machine.commands.get(commandNo)
+  if (!command)
+    return
+
   const isNewCommand = !isDef(programCommand.value.commandNo)
-  editor.updateCommand(commandNo, programCommand.value)
+  editor.updateCommand(command, programCommand.value)
 
   if (!isMainCommand.value && !isLastStep.value && isNewCommand) {
     if (settings.value.confirmAddParallelCommandToSteps)
