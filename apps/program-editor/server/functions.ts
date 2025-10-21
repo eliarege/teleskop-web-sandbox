@@ -1,10 +1,7 @@
 import type { Knex } from 'knex'
-import type { CommandParameter, Machine, MachineGroup, MachineInfo, MachineTbbModel, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
+import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
-import { MSSQL_ERROR } from './constants'
-import type { ProgramClient } from './classes/ProgramClient'
-import { T7ProgramClient } from './classes/ProgramClient'
 
 interface TransactionOptions {
   trx?: Knex.Transaction
