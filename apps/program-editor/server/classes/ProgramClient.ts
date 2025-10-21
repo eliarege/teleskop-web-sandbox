@@ -240,7 +240,7 @@ export class TonelloProgramClient implements ProgramClient {
         if (!paramDef) {
           throw new PError('MACHINE_PARAMETER_NOT_FOUND', paramDetails)
         }
-        if (!paramDef.valueIndex) {
+        if (!isDef(paramDef.valueIndex)) {
           throw new PError('MACHINE_PARAMETER_INVALID', {
             ...paramDetails,
             reason: 'Tonello parameters require valueIndex to be set',
