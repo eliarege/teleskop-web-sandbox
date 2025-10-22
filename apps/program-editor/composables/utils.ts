@@ -505,17 +505,17 @@ export function adaptStepToMachine(step: ProgramStep, sourceMachineCommands: Map
 export function adaptCommand(stepCommand: ProgramStepCommand, sourceMachineCommands: Map<number, MachineCommand>, isSameMachine: boolean): ProgramStepCommand {
   const editor = useEditorStore()
   const targetMachineCommand = editor.machine.commands.get(stepCommand.commandNo)
-  const emptyCommand = editor.createEmptyCommand()
+  const newCommand = editor.createEmptyCommand()
 
   // Komut hedef makinede yok
   if (!targetMachineCommand)
-    return emptyCommand
+    return newCommand
 
   // Aynı makine ise direkt kopyala (yeni commandId ile)
   if (isSameMachine) {
     return {
       ...stepCommand,
-      commandId: emptyCommand.commandId,
+      commandId: newCommand.commandId,
     }
   }
 
@@ -525,14 +525,14 @@ export function adaptCommand(stepCommand: ProgramStepCommand, sourceMachineComma
   if (!sourceMachineCommand
     || !checkParametersCompatibility(sourceMachineCommand.parameters, targetMachineCommand.parameters)
     || !checkIOListCompatibility(sourceMachineCommand.ioList, targetMachineCommand.ioList)) {
-    editor.updateCommand(targetMachineCommand, emptyCommand)
+    editor.updateStepCommandFromDefinition(targetMachineCommand, newCommand)
 
-    return emptyCommand
+    return newCommand
   }
 
   // Komutlar uyumlu, değerleri ve IO kombinasyonlarını aktar
   return {
-    commandId: emptyCommand.commandId,
+    commandId: newCommand.commandId,
     commandNo: stepCommand.commandNo,
     parameters: adaptCompatibleParameters(stepCommand.parameters, targetMachineCommand.parameters),
     ioList: adaptCompatibleIOList(stepCommand.ioList, targetMachineCommand.ioList),

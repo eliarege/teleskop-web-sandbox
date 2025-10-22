@@ -90,7 +90,7 @@ async function updateStepCommand(commandNo: number) {
     return
 
   const isNewCommand = !isDef(programCommand.value.commandNo)
-  editor.updateCommand(command, programCommand.value)
+  editor.updateStepCommandFromDefinition(command, programCommand.value)
 
   if (!isMainCommand.value && !isLastStep.value && isNewCommand) {
     if (settings.value.confirmAddParallelCommandToSteps)

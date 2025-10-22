@@ -160,8 +160,8 @@ export const useEditorStore = defineStore('editor', () => {
         return notifyError(t('error.cannotMainCommand', { commandNo }))
       }
 
-      // Komut bilgilerini güncelle
-      updateCommand(machineCommand, newStep.mainCommand)
+      // Komut bilgilerini tanıma göre güncelle
+      updateStepCommandFromDefinition(machineCommand, newStep.mainCommand)
     }
 
     const targetIndex = stepIndex ?? getStepIndex()
@@ -323,7 +323,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     const newCommand = createEmptyCommand()
     newCommand.commandId = generateParallelStepId(stepIndex)
-    updateCommand(machineCommand, newCommand)
+    updateStepCommandFromDefinition(machineCommand, newCommand)
     program.value?.steps[stepIndex].parallelCommands.push(newCommand)
   }
 
@@ -358,7 +358,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Parametreler, yalnızca düzenlenebilir veya formül kullananlar ile güncellenir ve IO listesi, yalnızca seçilebilir
    * IO'larla doldurulur.
    */
-  function updateCommand(command: MachineCommand, step: ProgramStepCommand): void {
+  function updateStepCommandFromDefinition(command: MachineCommand, step: ProgramStepCommand): void {
     step.commandNo = command.commandNo
 
     step.parameters = command.parameters
@@ -1048,7 +1048,7 @@ export const useEditorStore = defineStore('editor', () => {
     addStep,
     newParallelStep,
     newParallelStepCommand,
-    updateCommand,
+    updateStepCommandFromDefinition,
     deleteProgram,
     deleteStep,
     deleteParallelStep,
