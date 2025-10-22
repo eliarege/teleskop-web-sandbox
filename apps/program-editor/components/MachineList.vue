@@ -1,12 +1,16 @@
 <script lang="ts" setup>
 import type { QList } from 'quasar'
 import type { MachineGroup } from '~/shared/types'
+import { useMachineStatusStore } from '~/composables/machine'
 
+const $q = useQuasar()
+const { t } = useI18n()
 const route = useRoute()
 const editor = useEditorStore()
-const $q = useQuasar()
 const { fetch } = useKeycloak()
 const { $commandManager } = useNuxtApp()
+const machineStatusStore = useMachineStatusStore()
+const { notifyError, notifySuccess } = useNotify()
 
 const machineGroups = await fetch<MachineGroup[]>('/api/machine-group')
 
@@ -38,6 +42,26 @@ function openMachineInNewTab(machineId: number) {
 
 const thumbStyle = { opacity: '0' }
 const currentMachine = ref()
+const retryingMachine = ref<number | null>(null)
+
+function isRetrying(machineId: number): boolean {
+  return retryingMachine.value === machineId
+}
+
+async function retryMachineConnection(machineId: number, event: Event) {
+  if (isRetrying(machineId))
+    return
+
+  event.stopPropagation()
+  retryingMachine.value = machineId
+  const success = await machineStatusStore.checkMachineStatus(machineId)
+  retryingMachine.value = null
+  if (success) {
+    notifySuccess(t('machine.connectionSuccessful'))
+  } else {
+    notifyError(t('machine.connectionFailed', { machineId }))
+  }
+}
 </script>
 
 <template>
@@ -80,6 +104,25 @@ const currentMachine = ref()
               <QItemSection dense>
                 {{ machine.name }}
               </QItemSection>
+              <QItemSection
+                v-if="machineStatusStore.isOffline(machine.id)"
+                side
+              >
+                <QIcon
+                  :name="isRetrying(machine.id) ? 'sync' : 'cloud_off'"
+                  :class="{ rotating: isRetrying(machine.id) }"
+                  color="warning"
+                  size="16px"
+                  class="cursor-pointer pr-1"
+                  @click="retryMachineConnection(machine.id, $event)"
+                >
+                  <QTooltip>
+                    {{ isRetrying(machine.id)
+                      ? t('machine.connecting')
+                      : `${t('machine.connectionFailed')} - ${t('clickToRetry')}` }}
+                  </QTooltip>
+                </QIcon>
+              </QItemSection>
               <QMenu
                 touch-position
                 context-menu
@@ -93,3 +136,18 @@ const currentMachine = ref()
     </QScrollArea>
   </div>
 </template>
+
+<style scoped>
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating {
+  animation: rotate 1s linear infinite;
+}
+</style>
