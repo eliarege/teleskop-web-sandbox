@@ -7,7 +7,7 @@ import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ContextBarButtons, ProgramItem, ProgramTableRow } from '~/shared/types'
+import type { ContextBarButtons, ProgramHeader, ProgramTableRow } from '~/shared/types'
 import { ADDITIONAL_PROCESS_CODE_ILAVE, ProgramStatus } from '~/shared/constants'
 import { formatDuration, useErrorStore } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
@@ -162,8 +162,6 @@ await editor.fetchAllPrograms().then(() => {
   editor.isLoading = false
 })
 
-const versionDialogVisible = ref(false)
-const versions = ref([] as Array<any>)
 const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
 const hasOnlyOnController = computed(() => editor.selectedPrograms.some(
   row => row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
@@ -648,8 +646,7 @@ const contextMenuOptions = computed(() => [
       icon: 'info',
       disabled: isMoreThanOneRowSelected.value,
       onClick: async () => {
-        await fetchVersions(editor.selectedPrograms[0].programNo)
-        versionDialogVisible.value = true
+        $commandManager.executeCommand('programVersionInfo', { $q })
       },
     },
   ],
@@ -657,10 +654,6 @@ const contextMenuOptions = computed(() => [
 ] as TopbarMenuItem[][])
 const ctrl = useKeyModifier('Control')
 const shift = useKeyModifier('Shift')
-
-async function fetchVersions(programNo: number) {
-  versions.value = await contextMenuStore.fetchVersions(programNo, machineId)
-}
 
 function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColumn<T> & { tooltip?: (value: any, row: any) => string }) {
   const value = typeof column.field === 'function' ? column.field(row) : row[column.field]
@@ -672,14 +665,6 @@ function isRowSelected(row: ProgramTableRow) {
 }
 function removeSelection(row: ProgramTableRow) {
   editor.selectedPrograms = editor.selectedPrograms.filter(r => r !== row)
-}
-
-async function handleVersionDelete(deleteVersions: any[]) {
-  editor.isLoading = true
-  await contextMenuStore.deleteVersion(deleteVersions, machineId)
-  await editor.fetchAllPrograms()
-  versions.value = await contextMenuStore.fetchVersions(editor.selectedPrograms[0].programNo, machineId)
-  editor.isLoading = false
 }
 
 function getSelectedString() {
@@ -841,17 +826,6 @@ const columns = computed(() =>
     </div>
 
     <CMProgramStateDialog v-if="!route.params.program_no" />
-
-    <EliarModal v-if="versionDialogVisible">
-      <CMVersionDialog
-        :rows="versions"
-        :machine-id="machineId"
-        :program-no="editor.selectedPrograms[0].programNo"
-        @close="versionDialogVisible = false"
-        @delete="e => handleVersionDelete(e)"
-        @active-version-changed="editor.fetchAllPrograms(), fetchVersions(editor.selectedPrograms[0].programNo)"
-      />
-    </EliarModal>
   </div>
 </template>
 
