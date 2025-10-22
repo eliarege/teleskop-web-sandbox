@@ -282,6 +282,16 @@
       "fail": "An error occured while updating program types."
     }
   },
+  "versionDialog": {
+    "title": "Version Information",
+    "message": "Version {version} will be deleted! Are you sure you want to continue?",
+    "compare": "Compare",
+    "makeDefault": "Make Default",
+    "version": "Version",
+    "programName": "Program Name",
+    "stepCount": "Step Count",
+    "updatedAt": "Updated At"
+  },
   "contextMenu": {
     "copy": "Copy",
     "paste": "Paste",
@@ -327,18 +337,10 @@
       "warning": "Please select the process type you want to change"
     },
     "version": {
-      "_": "Version",
-      "header": "Version Information",
-      "programName": "Program Name",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "stepCount": "Step Count",
-      "time": "Time",
-      "showOnEditor": "Show in Editor",
-      "compare": "Compare",
-      "makeDefault": "Make Default",
-      "setDefaultSuccess": "Active version is set to {version} successfully.",
-      "setDefaultFail": "An error occured while setting active version to {version}"
+      "deleteSuccess": "Version(s) {versions} deleted successfully.",
+      "deleteFail": "An error occurred while deleting version(s).",
+      "setActiveSuccess": "Active version set to {version} successfully.",
+      "setActiveFail": "An error occurred while setting active version to {version}."
     },
     "send": {
       "success": "Program {programNo} sent successfully.",

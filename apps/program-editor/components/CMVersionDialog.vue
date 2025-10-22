@@ -1,188 +1,187 @@
 <script setup lang="ts">
-import { notification } from '~/shared/functions'
+import type { QTableColumn } from 'quasar'
+import type { ProgramHeaderArchive } from '~/shared/types'
+import { contextMenuStore } from '~/utils/context-menu'
 
 const props = defineProps<{
-  rows: any[]
   machineId: number
+  machineName: string
   programNo: number
+  programName: string
+  rows: ProgramHeaderArchive[]
 }>()
-const emit = defineEmits(['close', 'delete', 'activeVersionChanged'])
 
-const { fetch } = useKeycloak()
+const { t, locale } = useI18n()
+const editor = useEditorStore()
+const { dialogRef } = useDialogPluginComponent()
+const { notifySuccess, notifyError } = useNotify()
 
 const deleteVersionDialogVis = ref(false)
-const selectedRows = ref([] as any[])
-const isMoreThanOneRowSelected = computed(() => selectedRows.value.length > 1 || selectedRows.value.length === 0)
-const { t } = useI18n()
-const columns = [
-  { name: 'version', label: t('contextMenu.version._'), field: 'version' },
-  { name: 'name', label: t('contextMenu.version.programName'), field: 'name', tooltip: true },
-  { name: 'changedDate', label: t('contextMenu.version.startDate'), field: 'changedDate' },
-  { name: 'stepCount', label: t('contextMenu.version.stepCount'), field: 'stepCount' },
+const selectedRows = ref<ProgramHeaderArchive[]>([])
+const versions = ref<ProgramHeaderArchive[]>(props.rows)
+const isLoading = ref(false)
+
+const isActiveSelected = computed(() => {
+  const lastVersion = versions.value.at(-1)?.version
+  return selectedRows.value.some(v => v.version === lastVersion)
+})
+
+const columns: QTableColumn<ProgramHeaderArchive>[] = [
+  { name: 'version', label: t('versionDialog.version'), field: 'version', align: 'left' },
+  { name: 'name', label: t('versionDialog.programName'), field: 'name', align: 'left' },
+  { name: 'stepCount', label: t('versionDialog.stepCount'), field: 'stepCount', align: 'center' },
+  { name: 'updatedAt', label: t('versionDialog.updatedAt'), field: 'updatedAt', align: 'right', format: val =>
+    val
+      ? new Date(val).toLocaleString(locale.value, {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      })
+      : '-' },
 ]
 
-function closeDialog() {
-  emit('close')
-}
 async function handleDelete() {
-  emit('delete', selectedRows.value)
-}
+  deleteVersionDialogVis.value = false
+  isLoading.value = true
 
-const ctrl = useKeyModifier('Control')
-function isRowSelected(row: any) {
-  return selectedRows.value.includes(row)
-}
-function removeSelection(row: any) {
-  selectedRows.value = selectedRows.value.filter(r => r !== row)
-}
-async function onRowClick(row: any, isRightClick?: boolean) {
-  if (ctrl.value) {
-    if (isRowSelected(row)) {
-      if (!isRightClick)
-        removeSelection(row)
-    } else
-      selectedRows.value.push(row)
-  } else if (!(isRowSelected(row) && isRightClick)) {
-    selectedRows.value = []
-    selectedRows.value.push(row)
+  try {
+    const versionNos = selectedRows.value.map(v => v.version)
+    const deletedVersions = await contextMenuStore.deleteVersion(props.machineId, props.programNo, versionNos)
+    versions.value = await contextMenuStore.fetchVersions(props.machineId, props.programNo)
+    notifySuccess(t('contextMenu.version.deleteSuccess', { versions: deletedVersions.sort() }))
+  } catch (error) {
+    console.error('Error deleting versions:', error)
+    notifyError(t('contextMenu.version.deleteFail'))
+  } finally {
+    isLoading.value = false
   }
 }
-const selectedVersion = computed(() => selectedRows.value[0]?.version)
+
 async function setActiveVersion() {
-  const check = await fetch(`/api/machine/${props.machineId}/program/${props.programNo}/version/${selectedVersion.value}`, { method: 'POST' })
-  notification(check, check ? t('contextMenu.version.setDefaultSuccess', { version: selectedVersion.value }) : t('contextMenu.version.setDefaultFail', { version: selectedVersion.value }))
-  emit('activeVersionChanged')
+  isLoading.value = true
+
+  try {
+    const version = selectedRows.value[0]?.version
+    await contextMenuStore.setActiveVersion(props.machineId, props.programNo, version)
+    versions.value = await contextMenuStore.fetchVersions(props.machineId, props.programNo)
+    await editor.fetchProgram(props.machineId, props.programNo)
+    notifySuccess(t('contextMenu.version.setActiveSuccess', { version }))
+  } catch (error) {
+    console.error('Error setting active version:', error)
+    notifyError(t('contextMenu.version.setActiveFail', { version: selectedRows.value[0]?.version }))
+  } finally {
+    isLoading.value = false
+  }
 }
 
-/** TODO: Read-only editor component so we can show older versions of programs */
-async function showOnEditor() {
-  // Noop
+function onRowClick(event: Event, row: ProgramHeaderArchive) {
+  selectedRows.value = [row]
 }
-const isActiveSelected = computed(() =>
-  selectedRows.value.some((version: any) =>
-    props.rows[props.rows?.length - 1].version === version.version,
-  ),
-)
 </script>
 
 <template>
-  <div class="w-full h-full">
-    <q-card>
-      <q-card-section class="row items-center">
-        <span class="q-ml-sm"> {{ t('contextMenu.version.header') }}</span>
-      </q-card-section>
+  <q-dialog ref="dialogRef">
+    <q-card class="w-200 select-none">
       <q-card-section>
-        <q-table
-          :columns="columns"
-          :rows="props.rows"
-          :pagination="{ rowsPerPage: 10 }"
-          class="flex h-100 w-200 text-override-left"
-          row-key="id"
-        >
-          <template #body="bodyProps">
-            <q-tr
-              :props="bodyProps"
-              :class="{ 'e-selected': isRowSelected(bodyProps.row) }"
-              @click="onRowClick(bodyProps.row)"
-            >
-              <q-td
-                v-for="col in bodyProps.cols"
-                :key="col.field"
-                :props="bodyProps"
-                class="max-w-20 overflow-hidden"
-              >
-                {{ col.value }}
-                <QTooltip
-                  v-if="col.tooltip"
-                  class="bg-white text-black e-border text-sm"
-                  :transition-duration="0"
-                  :delay="500"
-                >
-                  {{ col.value }}
-                </QTooltip>
-              </q-td>
-            </q-tr>
-          </template>
-        </q-table>
+        <div class="text-h6 flex">
+          {{ t('versionDialog.title') }}
+          <q-space />
+          <q-btn
+            v-close-popup
+            class="text-gray-4 dark:text-gray-6"
+            icon="close"
+            flat
+            round
+            dense
+          />
+        </div>
+        <div class="text-h8 text-gray-6 dark:text-gray-4">
+          {{ props.machineId }} - {{ props.machineName }}
+        </div>
+        <div class="text-h8 text-gray-6 dark:text-gray-4">
+          {{ props.programNo }} - {{ props.programName }}
+        </div>
       </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn
-          :label="t('contextMenu.version.showOnEditor')"
-          outline
-          color="black"
-          :disable="isMoreThanOneRowSelected"
-          @click="showOnEditor()"
+      <q-card-section>
+        <div class="flex gap-2 mb-3">
+          <q-btn
+            :label="t('versionDialog.compare')"
+            class="bg-gray-2 text-dark-4 dark:bg-dark-3 dark:text-gray-4"
+            flat
+            :disable="selectedRows.length !== 2"
+            @click="navigateTo(`/comparison?m=${machineId}&p1=${programNo}&p2=${programNo}&v1=${selectedRows[0].version}&v2=${selectedRows[1].version}`)"
+          />
+          <q-btn
+            :label="t('versionDialog.makeDefault')"
+            class="bg-gray-2 text-dark-4 dark:bg-dark-3 dark:text-gray-4"
+            flat
+            :disable="isActiveSelected || selectedRows.length > 1"
+            @click="setActiveVersion()"
+          />
+          <q-btn
+            :label="t('delete')"
+            class="bg-negative text-white"
+            flat
+            :disable="isActiveSelected || !selectedRows.length"
+            @click="deleteVersionDialogVis = true"
+          />
+        </div>
+        <q-table
+          v-model:selected="selectedRows"
+          class="h-100"
+          :columns="columns"
+          :rows="versions"
+          row-key="version"
+          selection="multiple"
+          hide-bottom
+          bordered
+          flat
+          dense
+          :rows-per-page-options="[0]"
+          @row-click="onRowClick"
         />
-        <q-btn
-          :label="t('contextMenu.version.compare')"
-          outline
-          :disable="selectedRows.length !== 2"
-          color="black"
-          @click="navigateTo(`/comparison?m=${machineId}&p1=${programNo}&p2=${programNo}&v1=${selectedRows[0].version}&v2=${selectedRows[1].version}`)"
-        />
-        <!--  -->
-        <q-btn
-          :label="t('contextMenu.version.makeDefault')"
-          outline
-          color="black"
-          :disable="isMoreThanOneRowSelected || isActiveSelected"
-          @click="setActiveVersion()"
-        />
+      </q-card-section>
+
+      <q-dialog v-model="deleteVersionDialogVis">
+        <q-card>
+          <q-card-section class="row items-center">
+            <q-avatar
+              icon="delete"
+            />
+            <span class="q-ml-sm"> {{ t('contextMenu.deleteVersionDialog.warning', { code: selectedRows.map(e => e.version).sort() }) }}</span>
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn
+              v-close-popup
+              :label="t('cancel')"
+              outline
+              color="black"
+              icon="close"
+            />
+            <q-btn
+              v-close-popup
+              outline
+              :label="t('delete')"
+              color="red"
+              icon="delete"
+              @click="handleDelete"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
+      <q-card-actions
+        align="right"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
+      >
         <q-btn
           v-close-popup
-          outline
-          :label="t('delete')"
-          color="red"
-          icon="delete"
-          :disable="!selectedRows.length || isActiveSelected"
-          @click="deleteVersionDialogVis = true"
-        />
-        <q-btn
-          v-close-popup
-          :label="t('cancel')"
-          outline
-          color="black"
-          icon="close"
-          @click="closeDialog"
+          :label="t('close')"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          flat
         />
       </q-card-actions>
     </q-card>
-    <q-dialog v-model="deleteVersionDialogVis">
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar
-            icon="delete"
-          />
-          <span class="q-ml-sm"> {{ t('contextMenu.deleteVersionDialog.warning', { code: selectedRows.map(e => e.version).sort() }) }}</span>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn
-            v-close-popup
-            :label="t('cancel')"
-            outline
-            color="black"
-            icon="close"
-          />
-          <q-btn
-            v-close-popup
-            outline
-            :label="t('delete')"
-            color="red"
-            icon="delete"
-            @click="handleDelete"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-  </div>
+  </q-dialog>
 </template>
-
-<style scoped>
-.text-override-left :deep(.text-right) {
-  text-align: left;
-  word-break: normal;
-  white-space: normal;
-}
-</style>

@@ -20,7 +20,6 @@ export const useEditorStore = defineStore('editor', () => {
   const allPrograms = ref<ProgramTableRow[]>([])
   const selectedSteps = ref<ProgramStep[]>([])
   const isLoading = ref<boolean>(false)
-  const popupVersionDialog = ref(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
@@ -746,6 +745,7 @@ export const useEditorStore = defineStore('editor', () => {
       icon: '',
       programNo: 0,
       duration: 0,
+      stepCount: 0,
       author: '',
       comment: '',
       typeId: 0,
@@ -1019,7 +1019,6 @@ export const useEditorStore = defineStore('editor', () => {
     selectedSteps,
     isLoading,
     errorIds,
-    popupVersionDialog,
     allProcessTypes,
     allPrograms,
     lastStepId,

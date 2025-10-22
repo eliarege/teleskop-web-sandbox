@@ -9,7 +9,7 @@ import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../consta
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
-import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { AdditiveType, CommandType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -250,7 +250,7 @@ export class MachineController {
   /**
    * Makinenin tüm programlarının headers'larını getirir
    * @param query - Sorgu parametreleri
-   * @returns {Promise<Array<ProgramHeader>>} - Makinenin tüm programlarının dizisi
+   * @returns {Promise<ProgramTableRow[]>} - Makinenin tüm programlarının dizisi
    */
   @withTransaction
   async fetchAllProgramHeaders(query?: any): Promise<ProgramTableRow[]> {
@@ -771,6 +771,7 @@ export class MachineController {
         programNo: 'H.PROGNO',
         name: 'H.NAME',
         duration: 'H.DURATION',
+        stepCount: 'H.TOTALSTEP',
         author: 'H.LOCKEDBY',
         comment: 'H.USERCOMMENT',
         typeId: 'H.PROCESSCODE',
@@ -880,10 +881,10 @@ export class MachineController {
    * Belirtilen programın belirtilen versiyonunu siler
    * @param {number} programNo - Silinecek programın numarası
    * @param {number} versionNo - Silinecek programın versiyon numarası
-   * @returns {Promise<boolean>} - Silinen program
+   * @returns {Promise<number>} - Silinen program sayısını içeren bir Promise
    */
   @withTransaction
-  async deleteVersion(programNo: number, versionNo: number): Promise<boolean> {
+  async deleteVersion(programNo: number, versionNo: number): Promise<number> {
     return await this.trx
       .from('BAMASTERPRGHEADER')
       .where('MACHINEID', this.id)
@@ -1558,7 +1559,7 @@ export class MachineController {
    * @returns {Promise<ProgramHeader[]>} - Header bilgilerini içeren bir dizi döndürür
    */
   @withTransaction
-  async fetchAllHeadersOfArchivedProgram(programNo: number): Promise<ProgramHeader[]> {
+  async fetchAllHeadersOfArchivedProgram(programNo: number): Promise<ProgramHeaderArchive[]> {
     return await this.trx
       .select({
         programNo: 'H.PROGNO',
@@ -1566,8 +1567,8 @@ export class MachineController {
         version: 'H.MACHINEPRGVERSIONNO',
         stepCount: 'H.TOTALSTEP',
         type: 'PT.PROCESSNAME',
-        additionalType: 'APT.PROCESSNAME',
-        changedDate: 'H.CHANGEDATE',
+        // additionalType: 'APT.PROCESSNAME',
+        updatedAt: 'H.CHANGEDATE',
         // updatedAtTBB: 'H.TBBCHANGEDATE',
         // prgState: 'H.PRGSTATE',
         // isChanged: 'H.ISCHANGED',

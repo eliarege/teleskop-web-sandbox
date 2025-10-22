@@ -147,6 +147,7 @@ export interface ProgramHeader {
   programNo: number
   name: string
   duration: number
+  stepCount: number
   author: string | null
   comment: string | null
   typeId: number
@@ -166,6 +167,10 @@ export interface ProgramHeader {
   saltReq: number
   genericMat1Req: number
   genericMat2Req: number
+}
+
+export interface ProgramHeaderArchive extends ProgramHeader {
+  version: number
 }
 
 export interface ProgramHeaderUpdate {
