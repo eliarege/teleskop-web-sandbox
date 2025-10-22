@@ -117,6 +117,12 @@
     "genericMat1Req": "GM-1 Req.",
     "genericMat2Req": "GM-2 Req."
   },
+  "clickToRetry": "Click to retry",
+  "machine": {
+    "connecting": "Connecting...",
+    "connectionSuccessful": "Machine connection successful",
+    "connectionFailed": "Machine {machineId} connection failed"
+  },
   "command": {
     "icon": "Icon",
     "commandNo": "Command No",

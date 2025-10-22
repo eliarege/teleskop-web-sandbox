@@ -117,6 +117,12 @@
     "genericMat1Req": "JM-1 İstek",
     "genericMat2Req": "JM-2 İstek"
   },
+  "clickToRetry": "Tekrar denemek için tıklayın",
+  "machine": {
+    "connecting": "Bağlanılıyor...",
+    "connectionSuccessful": "Makine bağlantısı başarılı",
+    "connectionFailed": "Makine {machineId} bağlantısı başarısız"
+  },
   "command": {
     "icon": "İkon",
     "commandNo": "Komut Numarası",
