@@ -2,7 +2,7 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { isProgramError } from './utils'
 import { notification } from '~/shared/functions'
-import type { CopyItem, MachineInfo, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors, StepError } from '~/shared/types'
+import type { CopyItem, MachineInfo, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors, StepError } from '~/shared/types'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -20,8 +20,9 @@ export interface ContextMenuStore {
   getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
   deleteProgramFromMachine: (programs: ProgramItem[], machines: MachineInfo[], source: string) => Promise<void>
-  deleteVersion: (versions: Array<{ programNo: number, version: number, name: string }>, machineId: number) => Promise<void>
-  fetchVersions: (programNo: number, machineId: number) => Promise<any[]>
+  deleteVersion: (machineId: number, programNo: number, versions: number[]) => Promise<number[]>
+  fetchVersions: (machineId: number, programNo: number) => Promise<ProgramHeaderArchive[]>
+  setActiveVersion: (machineId: number, programNo: number, version: number) => Promise<void>
   concatenatePrograms: (programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
   addToComparisonBasket: (machineId: number, programs: ProgramTableRow[]) => void
@@ -336,22 +337,56 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function deleteVersion(versions: Array<any>, machineId: number) {
+  async function deleteVersion(machineId: number, programNo: number, versions: number[]): Promise<number[]> {
     const { fetch } = useKeycloak()
-    for (const version of versions) {
-      const check = await fetch(`/api/machine/${machineId}/program/${version.programNo}/archive/${version.version}`, {
-        method: 'DELETE',
-      })
-      const status = check ? 'success' : 'fail'
-      notification(check, t(`contextMenu.delete.${status}`, { programNo: version.programNo }))
+    const editor = useEditorStore()
+    const deletedVersions: number[] = []
+    editor.isLoading = true
+
+    try {
+      for (const version of versions) {
+        const response = await fetch(`/api/machine/${machineId}/program/${programNo}/version/${version}`, {
+          method: 'DELETE',
+        })
+        if (response) {
+          deletedVersions.push(version)
+        }
+      }
+
+      return deletedVersions
+    } finally {
+      editor.isLoading = false
     }
   }
 
-  async function fetchVersions(programNo: number, machineId: number): Promise<any[]> {
+  async function fetchVersions(machineId: number, programNo: number): Promise<ProgramHeaderArchive[]> {
     const { fetch } = useKeycloak()
-    const result = await fetch(`/api/machine/${machineId}/program/${programNo}/version`)
+    const editor = useEditorStore()
+    editor.isLoading = true
 
-    return result as any
+    try {
+      return await fetch<ProgramHeaderUpdate[]>(`/api/machine/${machineId}/program/${programNo}/version`, {
+        method: 'GET',
+      })
+    } catch (error) {
+      return []
+    } finally {
+      editor.isLoading = false
+    }
+  }
+
+  async function setActiveVersion(machineId: number, programNo: number, version: number): Promise<void> {
+    const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+    editor.isLoading = true
+
+    try {
+      await fetch(`/api/machine/${machineId}/program/${programNo}/version/${version}`, {
+        method: 'PUT',
+      })
+    } finally {
+      editor.isLoading = false
+    }
   }
 
   async function concatenatePrograms(programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) {
@@ -407,6 +442,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     setCtx,
     paste,
     fetchVersions,
+    setActiveVersion,
     sendProgramToMachines,
     deleteVersion,
     concatenatePrograms,
