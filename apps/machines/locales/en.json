@@ -13,6 +13,7 @@
     "ftp": "An error occurred while retrieving data from the machine. Please try again.",
 
     "db": {
+      "unsupported_version": "The database version is not supported. Please contact support. (Expected: {expectedVersion}, Actual: {actualVersion})",
       "query": "An error occurred while executing a database query. Please try again.",
       "deadlock": "The database transaction is locked. Please try again shortly.",
       "duplicate_key": "A constraint violation occurred while saving data. Please check your input."

@@ -1,7 +1,13 @@
 import type { Knex } from 'knex'
-import type { CommandIO, IOOutput, Machine } from '~/types'
+import type { Machine } from '~/types'
 
-export function calcIONumber(ioObject: Pick<IOOutput | CommandIO, 'id' | 'card' | 'channel'>, controllerModel: Pick<Machine, 'productModel' | 'hardwareModel' | 'plcModel'>, ioName: string) {
+interface IOObject {
+  id: number
+  card: number
+  channel: number
+}
+
+export function calcIONumber(ioObject: IOObject, controllerModel: Pick<Machine, 'productModel' | 'plcModel'>, ioName: string) {
   const { productModel, plcModel } = controllerModel
   let channelSum
   if (plcModel.includes('RIO'))
@@ -58,4 +64,10 @@ export async function getIONames(machineId: number, trx: Knex) {
   }
 
   return ioNames
+}
+
+export function omitUndefined(object: Record<string, any>) {
+  return Object.fromEntries(
+    Object.entries(object).filter(([_, v]) => v !== undefined),
+  )
 }

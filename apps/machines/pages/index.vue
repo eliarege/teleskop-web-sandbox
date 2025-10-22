@@ -15,6 +15,7 @@ interface SseLog {
   rawMessage: string
 
   progress: number
+  details?: Record<string, any>
 }
 
 const kc = useKeycloak()
@@ -80,7 +81,7 @@ onBeforeUnmount(() => {
 
 const percentage = ref(0)
 
-function parseMessage(message?: string) {
+function parseMessage(message?: string, details?: Record<string, any>) {
   if (!message)
     return ''
   const regex = /^version-check-(started|failed|completed)-(\d+)$/
@@ -88,9 +89,9 @@ function parseMessage(message?: string) {
 
   if (match) {
     return t(`version-check-${match[1]}`, { machineId: match[2] })
+  } else {
+    return t(message, details || {})
   }
-
-  return t(message)
 }
 
 const sseErrMessage = ref('')
@@ -102,7 +103,7 @@ watch(data, (newData) => {
     const parsedData = JSON.parse(newData)
     const sseData = {
       type: event.value as SseEvent,
-      message: parseMessage(parsedData.message),
+      message: parseMessage(parsedData.message, parsedData.details),
       rawMessage: parsedData.message,
       progress: parsedData.progress,
     }
@@ -118,7 +119,7 @@ watch(data, (newData) => {
 
     if (sseData.type === 'error') {
       hasError.value = true
-      sseErrMessage.value = t(sseData.message)
+      sseErrMessage.value = t(sseData.message, sseData.details || {})
       if (currentOperation.value === 'project') {
         handleSseLogs(projectContext, sseData)
       } else if (currentOperation.value === 'version') {

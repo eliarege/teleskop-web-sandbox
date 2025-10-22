@@ -8,7 +8,7 @@ import { TonelloApi } from '@teleskop/core'
 import { ErrorMessageKey } from '~/shared/enums'
 import { knex } from '~/server/connectionPool'
 import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateProjectTranslations, updateSystemParams } from '~/server/utils/updateDatabase'
-import { DatabaseQueryError } from '~/server/error'
+import { DatabaseQueryError, UnsupportedDatabaseVersionError } from '~/server/error'
 import type { UpdateContext } from '~/server/lib/types'
 import { updateTonelloFunctions } from '~/server/lib/tonello/functions'
 import { updateTonelloMachineParameters } from '~/server/lib/tonello/machine-constants'
@@ -61,8 +61,9 @@ export default defineAuthEventHandler(async (event) => {
       progress: 100,
     })
     sseId && sse.send(sseId, 'error', {
-      message: userMessage,
       progress: 100,
+      message: userMessage.code,
+      details: userMessage.details,
     })
     console.error(err)
     return createError({
@@ -200,50 +201,59 @@ export default defineAuthEventHandler(async (event) => {
   }
 })
 
-function mapErrorToUserMessage(error: any): ErrorMessageKey {
+function mapErrorToUserMessage(error: any): { code: ErrorMessageKey, details?: any } {
   const msg = error.message ?? ''
 
   // --- Bağlantı / Ağ hataları ---
   if (msg.includes('Timeout')) {
-    return ErrorMessageKey.Timeout
+    return { code: ErrorMessageKey.Timeout }
   }
   if (msg.includes('ECONNREFUSED')) {
-    return ErrorMessageKey.ConnectionRefused
+    return { code: ErrorMessageKey.ConnectionRefused }
   }
   if (msg.includes('ENETUNREACH') || msg.includes('EHOSTUNREACH')) {
-    return ErrorMessageKey.NetworkUnreachable
+    return { code: ErrorMessageKey.NetworkUnreachable }
   }
   if (msg.includes('<no response>')) {
-    return ErrorMessageKey.ApiNoResponse
+    return { code: ErrorMessageKey.ApiNoResponse }
   }
   if (msg.includes('EAI_AGAIN')) {
-    return ErrorMessageKey.AddressResolutionFailed
+    return { code: ErrorMessageKey.AddressResolutionFailed }
   }
 
   // --- FTP / TBB istemcisi ---
   if (msg.includes('FTP') || msg.includes('tbb-ftp-client')) {
-    return ErrorMessageKey.FtpError
+    return { code: ErrorMessageKey.FtpError }
   }
 
   // --- Veritabanı hataları ---
+  if (error instanceof UnsupportedDatabaseVersionError) {
+    return {
+      code: ErrorMessageKey.DatabaseUnsupportedVersion,
+      details: {
+        expectedVersion: error.expectedVersion,
+        actualVersion: error.actualVersion,
+      },
+    }
+  }
   if (error instanceof DatabaseQueryError) {
-    return ErrorMessageKey.DatabaseQueryError
+    return { code: ErrorMessageKey.DatabaseQueryError }
   }
   if (msg.includes('deadlock') || msg.includes('lock wait timeout')) {
-    return ErrorMessageKey.DatabaseDeadlock
+    return { code: ErrorMessageKey.DatabaseDeadlock }
   }
   if (msg.includes('duplicate key') || msg.includes('unique constraint')) {
-    return ErrorMessageKey.DatabaseDuplicateKey
+    return { code: ErrorMessageKey.DatabaseDuplicateKey }
   }
 
   // --- Validation / Geçersiz parametre ---
   if (msg.includes('Invalid machineId')) {
-    return ErrorMessageKey.InvalidMachineId
+    return { code: ErrorMessageKey.InvalidMachineId }
   }
   if (msg.includes('SSE ID REQUIRED')) {
-    return ErrorMessageKey.SseIdRequired
+    return { code: ErrorMessageKey.SseIdRequired }
   }
 
   // --- Genel / bilinmeyen ---
-  return ErrorMessageKey.Unknown
+  return { code: ErrorMessageKey.Unknown }
 }
