@@ -25,6 +25,7 @@ import TBMachineConstantsDialog from '~/components/TBMachineConstantsDialog.vue'
 import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDialog.vue'
 import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
+import { useMachineStatusStore } from '~/composables/machine'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -411,10 +412,12 @@ registerCommand(() => {
     async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
       editor.isLoading = true
       try {
-        const machineStatus = await contextMenuStore.getMachineStatus(machineId)
-        if (machineStatus) {
+        const machineStatusStore = useMachineStatusStore()
+        const status = await machineStatusStore.checkMachineStatus(machineId)
+        if (status) {
           await contextMenuStore.sendProgram(selectedRows, machineId)
           await editor.fetchAllPrograms()
+
           return true
         }
         return false

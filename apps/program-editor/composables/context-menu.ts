@@ -34,6 +34,7 @@ export interface ContextMenuStore {
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
+  const { notifyError } = useNotify()
   const copiedValues = ref([] as ProgramItem[])
   const copiedStepValues = ref([] as { machineId: number, programNo: number, steps: ProgramStep[] }[])
   let comparsionBasket = [] as { machineId: number, programNo: number }[]
@@ -391,13 +392,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     try {
       const status = await fetch<boolean>(`/api/machine/${machineId}/status`)
 
-      if (!status) {
-        notification(false, t(`contextMenu.status.offline`, { machineId }))
-      }
-
       return status
     } catch (error: any) {
-      notification(false, t(`contextMenu.status.fail`, { machineId }))
+      notifyError(t(`contextMenu.status.fail`, { machineId }))
       return false
     }
   }
