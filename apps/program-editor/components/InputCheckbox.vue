@@ -11,6 +11,7 @@ const model = defineModel<number>()
     dense
     outlined
     class="input-checkbox"
+    for=""
   >
     <QCheckbox
       v-model="model"
@@ -18,6 +19,7 @@ const model = defineModel<number>()
       :false-value="0"
       class="text-black !dark:text-white text-3"
       dense
+      name="checkbox"
     >
       {{ props.label }}
     </QCheckbox>
