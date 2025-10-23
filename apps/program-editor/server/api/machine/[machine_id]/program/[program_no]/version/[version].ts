@@ -17,11 +17,11 @@ export default defineAuthEventHandler({
       }
 
       if (!Number.isInteger(programNo)) {
-        throw new PError('INVALID_PROGRAM_NUMBER', { programNo })
+        throw new PError('INVALID_PROGRAM_NUMBER', { machineId, programNo })
       }
 
       if (!Number.isInteger(versionNo) || versionNo < 1) {
-        throw new PError('INVALID_VERSION_NUMBER', { versionNo })
+        throw new PError('INVALID_VERSION_NUMBER', { machineId, programNo, versionNo })
       }
 
       const machine = await machineStore.get(machineId)
@@ -41,7 +41,7 @@ export default defineAuthEventHandler({
         const newVersion = await machine.fetchArchivedProgram(programNo, versionNo)
 
         if (!newVersion) {
-          throw new PError('PROGRAM_VERSION_NOT_FOUND', { programNo, versionNo })
+          throw new PError('PROGRAM_VERSION_NOT_FOUND', { machineId, programNo, versionNo })
         }
 
         newVersion.tbbProgramChangedEvent = isOperatorEditable ? 1 : 0

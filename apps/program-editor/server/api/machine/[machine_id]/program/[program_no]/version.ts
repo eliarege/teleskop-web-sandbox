@@ -16,7 +16,7 @@ export default defineAuthEventHandler({
       }
 
       if (!Number.isInteger(programNo)) {
-        throw new PError('INVALID_PROGRAM_NUMBER', { programNo })
+        throw new PError('INVALID_PROGRAM_NUMBER', { machineId, programNo })
       }
 
       const machine = await machineStore.get(machineId)
