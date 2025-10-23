@@ -120,6 +120,9 @@ export async function updateTonelloFunctions(
         })
         continue
       }
+      if (paramRow.VALUE === null) {
+        paramRow.VALUE = paramRow.PARAMLOWLIMIT.toString()
+      }
       parameters.push(paramRow)
       ctx.messages.push(parseLocalizedString(param.label))
     }
