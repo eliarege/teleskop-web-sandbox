@@ -844,37 +844,34 @@ export class MachineController {
    * @returns {Promise<number | null>} - Güncellenen programı içeren bir Promise
    */
   @withTransaction
-  private async updateLastProgramDate(programNo: number): Promise<number | null> {
-    const version = await this.getLastVersion(programNo)
+  private async updateLastProgramDate(programNo: number, version: number): Promise<boolean> {
+    const result = await this.trx
+      .from('BAMASTERPRGHEADER')
+      .where('MACHINEID', this.id)
+      .andWhere('PROGNO', programNo)
+      .andWhere('MACHINEPRGVERSIONNO', version)
+      .update({ RELEASEENDDATE: this.getCurrentTimestamp() })
 
-    if (version) {
-      await this.trx
-        .from('BAMASTERPRGHEADER')
-        .where('MACHINEID', this.id)
-        .andWhere('PROGNO', programNo)
-        .andWhere('MACHINEPRGVERSIONNO', version)
-        .update({ RELEASEENDDATE: this.getCurrentTimestamp() })
-      return version
-    } else {
-      return null
-    }
+    return !!result
   }
 
   /**
-   * Belirtilen program numarasına ait son versiyonunu döndürür
-   * @param {number} programNo - Son versiyonu alınacak programın numarası
-   * @returns {Promise<number>} - Belirtilen program numarasına ait son versiyon numarasını içeren bir Promise
+   * Belirtilen program numarasına ait son versiyon numarasını döndürür.
+   *
+   * @param programNo - Versiyonu alınacak programın numarası
+   * @returns Belirtilen programın son versiyon numarasını döndüren Promise (yoksa null)
    */
   @withTransaction
   async getLastVersion(programNo: number): Promise<number | null> {
-    const program = await this.trx
-      .from('BAMASTERPRGHEADER')
-      .select('MACHINEPRGVERSIONNO as version')
-      .where('MACHINEID', this.id)
-      .andWhere('PROGNO', programNo)
+    const result = await this.trx('BAMASTERPRGHEADER')
+      .first('MACHINEPRGVERSIONNO as version')
+      .where({
+        MACHINEID: this.id,
+        PROGNO: programNo,
+      })
       .orderBy('MACHINEPRGVERSIONNO', 'desc')
-      .first()
-    return program?.version
+
+    return result ? Number(result.version) : null
   }
 
   /**
@@ -896,13 +893,24 @@ export class MachineController {
   /**
    * Programı arşiv veritabanına ekler
    * @param program - Program objesi
+   * @param isNewVersion - Yeni versiyon mu?
    * @returns {Promise<void>}
    */
   @withTransaction
-  async insertProgramToArchive(program: Program): Promise<void> {
-    const lastVersion = await this.updateLastProgramDate(program.programNo)
-    const commands: MachineCommand[] = await this.fetchCommands()
+  async insertProgramToArchive(program: Program, isNewVersion: boolean = true): Promise<void> {
+    const lastVersion: number | null = await this.getLastVersion(program.programNo)
 
+    // Son versiyon varsa, tarihini güncelle
+    if (isDef(lastVersion)) {
+      await this.updateLastProgramDate(program.programNo, lastVersion)
+    }
+
+    // Yeni versiyon değilse, eski versiyonu sil
+    if (!isNewVersion && isDef(lastVersion)) {
+      await this.deleteProgramFromArchive(program.programNo, lastVersion)
+    }
+
+    const commands = await this.fetchCommands()
     const timestamp = this.getCurrentTimestamp()
 
     const stepsArchive: StepArchiveItem[] = []
@@ -910,10 +918,15 @@ export class MachineController {
     const stepIOArchive: StepArchiveInputOutput[] = []
     const ioSelectionArchive: SelectionArchiveList[] = []
 
+    // Versiyon numarasını belirle
+    const versionNo = isNewVersion
+      ? (lastVersion ?? 0) + 1
+      : lastVersion ?? 1
+
     // BAMASTERPRGHEADER
     const headerArchive = [{
       MACHINEID: this.id,
-      MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+      MACHINEPRGVERSIONNO: versionNo,
       RELEASEDATE: timestamp,
       RELEASEENDDATE: null,
       PROGNO: program.programNo,
@@ -927,10 +940,10 @@ export class MachineController {
       TBBCHANGEDATE: '',
       CREATIONDATE: program.createdAt ?? timestamp,
       USERCOMMENT: program.comment,
-      USERNAME: program.author, // ?
-      CHANGETIME: timestamp, // ?
-      WHATCHANGE: '', // ?
-      PRGSOURCE: 0, // ?
+      USERNAME: program.author,
+      CHANGETIME: timestamp,
+      WHATCHANGE: '',
+      PRGSOURCE: 0,
       TotalChemReq: program.totalChemReq || 0,
       TotalDyeReq: program.totalDyeReq || 0,
       ManChemReq: program.manChemReq || 0,
@@ -948,10 +961,10 @@ export class MachineController {
     }]
 
     program.steps.forEach((step, i) => {
-      // BAMASTERSTEPS
+    // BAMASTERSTEPS
       stepsArchive.push({
         MACHINEID: this.id,
-        MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+        MACHINEPRGVERSIONNO: versionNo,
         PROGNO: program.programNo,
         MAINSTEP: i,
         PARALELSTEP: 0,
@@ -960,11 +973,12 @@ export class MachineController {
         CONDITIONSTR: '',
         THEORETICDURATION: 0,
       })
+
       // BAMASTERSTEPPARAMS
       step.mainCommand.parameters.forEach((parameter) => {
         parametersArchive.push({
           MACHINEID: this.id,
-          MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+          MACHINEPRGVERSIONNO: versionNo,
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: 0,
@@ -984,7 +998,7 @@ export class MachineController {
         // BAMASTERSTEPINPUTOUTPUTS
         stepIOArchive.push({
           MACHINEID: this.id,
-          MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+          MACHINEPRGVERSIONNO: versionNo,
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: 0,
@@ -1001,7 +1015,7 @@ export class MachineController {
         this.rankAndSortIOSelections(io.value, ioDefs).forEach((selection) => {
           ioSelectionArchive.push({
             MACHINEID: this.id,
-            MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+            MACHINEPRGVERSIONNO: versionNo,
             SELECTIONINDEX: selection.index,
             PROGNO: program.programNo,
             MAINSTEP: i,
@@ -1017,7 +1031,7 @@ export class MachineController {
         // BAMASTERSTEPS
         stepsArchive.push({
           MACHINEID: this.id,
-          MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+          MACHINEPRGVERSIONNO: versionNo,
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: j + 1,
@@ -1026,11 +1040,12 @@ export class MachineController {
           CONDITIONSTR: '',
           THEORETICDURATION: 0,
         })
+
         // BAMASTERSTEPPARAMS
         parallelCommand.parameters.forEach((parameter) => {
           parametersArchive.push({
             MACHINEID: this.id,
-            MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+            MACHINEPRGVERSIONNO: versionNo,
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: j + 1,
@@ -1050,7 +1065,7 @@ export class MachineController {
           // BAMASTERSTEPINPUTOUTPUTS
           stepIOArchive.push({
             MACHINEID: this.id,
-            MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+            MACHINEPRGVERSIONNO: versionNo,
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: j + 1,
@@ -1067,7 +1082,7 @@ export class MachineController {
           this.rankAndSortIOSelections(io.value, ioDefs).forEach((selection) => {
             ioSelectionArchive.push({
               MACHINEID: this.id,
-              MACHINEPRGVERSIONNO: lastVersion ? lastVersion + 1 : 1,
+              MACHINEPRGVERSIONNO: versionNo,
               SELECTIONINDEX: selection.index,
               PROGNO: program.programNo,
               MAINSTEP: i,
@@ -1082,13 +1097,13 @@ export class MachineController {
     })
 
     const chunkSize = 50
-    const baTables = [
+    const baTables: [string, any[][]][] = [
       ['BAMASTERPRGHEADER', [headerArchive]],
       ['BAMASTERSTEPS', this.chunkArray(stepsArchive, chunkSize)],
       ['BAMASTERSTEPPARAMS', this.chunkArray(parametersArchive, chunkSize)],
       ['BAMASTERSTEPINPUTOUTPUTS', this.chunkArray(stepIOArchive, chunkSize)],
       ['BAMASTERSTEPSELECTIONLIST', this.chunkArray(ioSelectionArchive, chunkSize)],
-    ] as [string, any[][]][]
+    ]
 
     for (const [table, array] of baTables) {
       for (const item of array) {
@@ -1113,11 +1128,12 @@ export class MachineController {
    * @returns {Promise<void>}
    */
   @withTransaction
-  async insertProgram(program: Program): Promise<void> {
+  async insertProgram(program: Program, isNewVersion: boolean = true): Promise<void> {
     const exists = await this.hasProgram(program.programNo)
     if (exists) {
       throw new PError('PROGRAM_EXISTS', { machineId: this.id, programNo: program.programNo })
     }
+
     const machine = await this.getMachineInfo()
     const commands = machine.commands
     const initialTemp = (await getTeleskopSettings()).initialTemperature
@@ -1331,7 +1347,7 @@ export class MachineController {
       }
     }
 
-    await this.insertProgramToArchive(program)
+    await this.insertProgramToArchive(program, isNewVersion)
     await this.upsertTreatments(program)
   }
 
@@ -1377,7 +1393,7 @@ export class MachineController {
     const tables = ['BAMASTERPRGHEADER', 'BAMASTERSTEPS', 'BAMASTERSTEPPARAMS', 'BAMASTERSTEPINPUTOUTPUTS', 'BAMASTERSTEPSELECTIONLIST']
 
     for (const table of tables) {
-      deletedCount += await this.trx(table).where('MACHINEID', this.id).andWhere('PROGNO', programNo).andWhere('VERSIONNO', versionNo).del()
+      deletedCount += await this.trx(table).where('MACHINEID', this.id).andWhere('PROGNO', programNo).andWhere('MACHINEPRGVERSIONNO', versionNo).del()
     }
 
     return deletedCount > 0
