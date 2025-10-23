@@ -33,6 +33,9 @@ export default defineEventHandler(async (event) => {
 
 async function getTheoreticalPrograms(batch: PartialBatch) {
   const programList = batch.programList.split(',').map(Number)
+  if (!programList.length) {
+    return []
+  }
 
   const rawPrograms = await db
     .from('BAMASTERPRGHEADER as P')
@@ -57,6 +60,10 @@ async function getTheoreticalPrograms(batch: PartialBatch) {
     programNo: number
     programVersion: number
   }[]
+
+  if (!rawPrograms.length) {
+    return []
+  }
 
   const programListWithVersions = () => db.raw(/* sql */`(
     VALUES ${rawPrograms.map((p, i) => `(${p.programNo}, ${i}, ${p.programVersion})`)}
