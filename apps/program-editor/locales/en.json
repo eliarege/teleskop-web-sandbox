@@ -395,7 +395,8 @@
       "fail": "An error occured while taking program {name} with program no {programNo} from machine {machineId}."
     },
     "deleteVersionDialog": {
-      "warning": "Version(s) {code} will be deleted! Are you sure you want to continue?"
+      "title": "Delete Version",
+      "warning": "Version {code} will be deleted! Are you sure you want to continue?"
     },
     "updateHeaderNotification": {
       "success": "Update header operation is succeed for program with program no {programNo}.",

@@ -395,6 +395,7 @@
       "fail": "{programNo} numaralı {name} programı {machineId} makinesinden silinirken hata oluştu."
     },
     "deleteVersionDialog": {
+      "title": "Versiyonu Sil",
       "warning": "Version {code} silinecek! Devam etmek istediğinize emin misiniz?"
     },
     "updateHeaderNotification": {
