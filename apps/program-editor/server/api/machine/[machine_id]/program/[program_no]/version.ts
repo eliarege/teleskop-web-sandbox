@@ -1,6 +1,7 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError, isPError } from '~/server/error'
 import logger from '~/server/logger'
+import { checkPermission } from '~/server/utils/auth'
 
 export default defineAuthEventHandler({
   roles: ['program-view'],
@@ -23,9 +24,24 @@ export default defineAuthEventHandler({
         throw new PError('MACHINE_NOT_FOUND', { machineId })
       }
 
-      logger.info(`User: ${event.context.kauth?.name}. Fetching archived program versions of program ${programNo} of machine ${machineId}.`)
+      if (event.method === 'GET') {
+        logger.info(`User: ${event.context.kauth?.name}. Fetching archived program versions of program ${programNo} of machine ${machineId}.`)
+        return await machine.fetchAllHeadersOfArchivedProgram(programNo)
+      }
 
-      return await machine.fetchAllHeadersOfArchivedProgram(programNo)
+      if (event.method === 'DELETE') {
+        checkPermission(event, 'program-delete')
+        const { versions } = await readBody<{ versions: number[] }>(event)
+
+        if (!Array.isArray(versions) || versions.length === 0) {
+          throw new PError('INVALID_VERSION_LIST', { versions })
+        }
+
+        const deletedCount = await machine.deleteVersions(programNo, versions)
+        logger.info(`User: ${event.context.kauth?.name}. Deleted ${deletedCount} versions of program ${programNo} from machine ${machineId}.`)
+
+        return versions
+      }
     } catch (error: PError | unknown) {
       if (isPError(error)) {
         throw createError({

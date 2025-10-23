@@ -875,18 +875,26 @@ export class MachineController {
   }
 
   /**
-   * Belirtilen programın belirtilen versiyonunu siler
+   * Belirtilen programın belirtilen versiyonlarını siler
    * @param {number} programNo - Silinecek programın numarası
-   * @param {number} versionNo - Silinecek programın versiyon numarası
-   * @returns {Promise<number>} - Silinen program sayısını içeren bir Promise
+   * @param {number[]} versionNos - Silinecek versiyon numaraları
+   * @returns {Promise<number>} - Silinen satır sayısı
    */
   @withTransaction
-  async deleteVersion(programNo: number, versionNo: number): Promise<number> {
-    return await this.trx
-      .from('BAMASTERPRGHEADER')
+  async deleteVersions(programNo: number, versionNos: number[]): Promise<number> {
+    if (!versionNos.length)
+      return 0
+
+    const lastVersion = await this.getLastVersion(programNo)
+    const versionsToDelete = versionNos.filter(v => v !== lastVersion)
+
+    if (!versionsToDelete.length)
+      return 0
+
+    return await this.trx('BAMASTERPRGHEADER')
       .where('MACHINEID', this.id)
       .andWhere('PROGNO', programNo)
-      .andWhere('MACHINEPRGVERSIONNO', versionNo)
+      .whereIn('MACHINEPRGVERSIONNO', versionsToDelete)
       .del()
   }
 

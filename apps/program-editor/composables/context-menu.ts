@@ -2,7 +2,7 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { isProgramError } from './utils'
 import { notification } from '~/shared/functions'
-import type { CopyItem, MachineInfo, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors, StepError } from '~/shared/types'
+import type { CopyItem, MachineInfo, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -20,7 +20,7 @@ export interface ContextMenuStore {
   getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
   deleteProgramFromMachine: (programs: ProgramItem[], machines: MachineInfo[], source: string) => Promise<void>
-  deleteVersion: (machineId: number, programNo: number, versions: number[]) => Promise<number[]>
+  deleteVersions: (machineId: number, programNo: number, versions: number[]) => Promise<number[]>
   fetchVersions: (machineId: number, programNo: number) => Promise<ProgramHeaderArchive[]>
   setActiveVersion: (machineId: number, programNo: number, version: number, isNewVersion: boolean, isOperatorEditable: boolean) => Promise<void>
   concatenatePrograms: (programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
@@ -337,26 +337,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function deleteVersion(machineId: number, programNo: number, versions: number[]): Promise<number[]> {
+  async function deleteVersions(machineId: number, programNo: number, versions: number[]): Promise<number[]> {
     const { fetch } = useKeycloak()
-    const editor = useEditorStore()
-    const deletedVersions: number[] = []
-    editor.isLoading = true
-
-    try {
-      for (const version of versions) {
-        const response = await fetch(`/api/machine/${machineId}/program/${programNo}/version/${version}`, {
-          method: 'DELETE',
-        })
-        if (response) {
-          deletedVersions.push(version)
-        }
-      }
-
-      return deletedVersions
-    } finally {
-      editor.isLoading = false
-    }
+    return await fetch(`/api/machine/${machineId}/program/${programNo}/version`, {
+      method: 'DELETE',
+      body: { versions },
+    }) as any
   }
 
   async function fetchVersions(machineId: number, programNo: number): Promise<ProgramHeaderArchive[]> {
@@ -365,7 +351,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     editor.isLoading = true
 
     try {
-      return await fetch<ProgramHeaderUpdate[]>(`/api/machine/${machineId}/program/${programNo}/version`, {
+      return await fetch<ProgramHeaderArchive[]>(`/api/machine/${machineId}/program/${programNo}/version`, {
         method: 'GET',
       })
     } catch (error) {
@@ -445,7 +431,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     fetchVersions,
     setActiveVersion,
     sendProgramToMachines,
-    deleteVersion,
+    deleteVersions,
     concatenatePrograms,
     deleteProgramFromMachine,
     getRemoteProgram,

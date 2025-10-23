@@ -48,7 +48,7 @@ async function handleDelete() {
 
   try {
     const versionNos = selectedRows.value.map(v => v.version)
-    const deletedVersions = await contextMenuStore.deleteVersion(props.machineId, props.programNo, versionNos)
+    const deletedVersions = await contextMenuStore.deleteVersions(props.machineId, props.programNo, versionNos)
     versions.value = await contextMenuStore.fetchVersions(props.machineId, props.programNo)
     notifySuccess(t('contextMenu.version.deleteSuccess', { versions: deletedVersions.sort() }))
   } catch (error) {

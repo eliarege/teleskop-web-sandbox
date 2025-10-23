@@ -57,8 +57,9 @@ export default defineAuthEventHandler({
 
       if (event.method === 'DELETE') {
         checkPermission(event, 'program-delete')
-        logger.info(`User: ${event.context.kauth?.name}. Deleting archived program ${programNo} of machine ${machineId}.`)
-        return await machine.deleteVersion(programNo, versionNo)
+        logger.info(`User: ${event.context.kauth?.name}. Deleting archived program ${programNo} version ${versionNo} of machine ${machineId}.`)
+        await machine.deleteVersions(programNo, [versionNo])
+        return { success: true }
       }
     } catch (error: PError | unknown) {
       if (isPError(error)) {
