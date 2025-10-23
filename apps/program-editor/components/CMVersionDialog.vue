@@ -113,25 +113,38 @@ function onRowClick(event: Event, row: ProgramHeaderArchive) {
             flat
             :disable="selectedRows.length !== 2"
             @click="navigateTo(`/comparison?m=${machineId}&p1=${programNo}&p2=${programNo}&v1=${selectedRows[0].version}&v2=${selectedRows[1].version}`)"
-          />
+          >
+            <q-tooltip v-if="selectedRows.length !== 2">
+              {{ t('versionDialog.selectTwoVersionsToCompare') }}
+            </q-tooltip>
+          </q-btn>
           <q-btn
             :label="t('versionDialog.makeDefault')"
             class="bg-gray-2 text-dark-4 dark:bg-dark-3 dark:text-gray-4"
             flat
-            :disable="isActiveSelected || selectedRows.length > 1"
+            :disable="isActiveSelected || selectedRows.length !== 1"
             @click="setActiveVersion()"
-          />
+          >
+            <q-tooltip v-if="isActiveSelected">
+              {{ t('versionDialog.alreadyActiveVersion') }}
+            </q-tooltip>
+          </q-btn>
+
           <q-btn
             :label="t('delete')"
             class="bg-negative text-white"
             flat
             :disable="isActiveSelected || !selectedRows.length"
             @click="deleteVersionDialogVis = true"
-          />
+          >
+            <q-tooltip v-if="isActiveSelected">
+              {{ t('versionDialog.cannotDeleteActiveVersion') }}
+            </q-tooltip>
+          </q-btn>
         </div>
         <q-table
           v-model:selected="selectedRows"
-          class="h-100"
+          class="h-70"
           :columns="columns"
           :rows="versions"
           row-key="version"
@@ -141,33 +154,74 @@ function onRowClick(event: Event, row: ProgramHeaderArchive) {
           flat
           dense
           :rows-per-page-options="[0]"
+          table-header-style="position: sticky; top: 0; z-index: 1; height: 40px;"
+          table-header-class="bg-gray-1 dark:bg-dark-4"
           @row-click="onRowClick"
-        />
+        >
+          <template #body-cell="{ value, row, col }">
+            <q-td
+              :props="{ value, row, col }"
+              :class="row.version === versions[versions.length - 1].version ? 'text-green-8' : ''"
+            >
+              {{ value }}
+            </q-td>
+          </template>
+        </q-table>
+      </q-card-section>
+
+      <q-card-section class="pt-0">
+        <div class="flex flex-col gap-2 pl-2">
+          <q-checkbox
+            v-model="isNewVersion"
+            :label="t('versionDialog.newVersion')"
+            dense
+            class="self-start"
+          />
+          <q-checkbox
+            v-model="isOperatorEditable"
+            :label="t('versionDialog.operatorEditable')"
+            dense
+            class="self-start"
+          />
+        </div>
       </q-card-section>
 
       <q-dialog v-model="deleteVersionDialogVis">
         <q-card>
-          <q-card-section class="row items-center">
-            <q-avatar
-              icon="delete"
-            />
-            <span class="q-ml-sm"> {{ t('contextMenu.deleteVersionDialog.warning', { code: selectedRows.map(e => e.version).sort() }) }}</span>
+          <q-card-section>
+            <div class="text-h6 flex">
+              {{ t('contextMenu.deleteVersionDialog.title') }}
+              <q-space />
+              <q-btn
+                v-close-popup
+                class="text-gray-4 dark:text-gray-6"
+                icon="close"
+                flat
+                round
+                dense
+              />
+            </div>
+          </q-card-section>
+          <q-card-section>
+            <div>
+              {{ t('contextMenu.deleteVersionDialog.warning', { code: selectedRows.map(e => e.version).sort() }) }}
+            </div>
           </q-card-section>
 
-          <q-card-actions align="right">
+          <q-card-actions
+            align="right"
+            class="q-pa-md bg-gray-1 dark:bg-dark-4"
+          >
             <q-btn
               v-close-popup
+              class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
               :label="t('cancel')"
-              outline
-              color="black"
-              icon="close"
+              flat
             />
             <q-btn
-              v-close-popup
-              outline
               :label="t('delete')"
-              color="red"
-              icon="delete"
+              class="q-mr-sm bg-red text-white"
+              flat
               @click="handleDelete"
             />
           </q-card-actions>

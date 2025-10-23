@@ -286,7 +286,16 @@
     "title": "Versiyon Bilgisi",
     "message": "Versiyon {version} silinecek! Devam etmek istediğinize emin misiniz?",
     "compare": "Karşılaştır",
-    "makeDefault": "Varsayılan Yap"
+    "makeDefault": "Varsayılan Yap",
+    "version": "Versiyon",
+    "programName": "Program Adı",
+    "stepCount": "Adım Sayısı",
+    "updatedAt": "Güncellenme Tarihi",
+    "selectTwoVersionsToCompare": "Karşılaştırmak için iki versiyon seçiniz",
+    "alreadyActiveVersion": "Bu zaten aktif versiyon",
+    "cannotDeleteActiveVersion": "Aktif versiyon silinemez",
+    "newVersion": "Yeni versiyon olarak kaydet",
+    "operatorEditable": "Operatör müdahale edebilir"
   },
   "contextMenu": {
     "copy": "Kopyala",
@@ -333,10 +342,10 @@
       "warning": "Değiştirmek istediğiniz program tipini seçiniz"
     },
     "version": {
-      "deleteSuccess": "Versiyon {versions} başarıyla silindi.",
-      "deleteFail": "Versiyon silinirken hata oluştu.",
-      "setActiveSuccess": "Aktif versiyon {version} başarıyla ayarlandı.",
-      "setActiveFail": "Aktif versiyon {version} ayarlanırken hata oluştu."
+      "deleteSuccess": "Versiyon {versions} başarıyla silindi",
+      "deleteFail": "Versiyon silinirken hata oluştu",
+      "setActiveSuccess": "Aktif versiyon {version} başarıyla ayarlandı",
+      "setActiveFail": "Aktif versiyon {version} ayarlanırken hata oluştu"
     },
     "send": {
       "success": "{programNo} numaralı program makineye başarıyla gönderildi.",

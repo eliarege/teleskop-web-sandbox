@@ -290,7 +290,12 @@
     "version": "Version",
     "programName": "Program Name",
     "stepCount": "Step Count",
-    "updatedAt": "Updated At"
+    "updatedAt": "Updated At",
+    "selectTwoVersionsToCompare": "Please select two versions to compare",
+    "alreadyActiveVersion": "This is already the active version",
+    "cannotDeleteActiveVersion": "You cannot delete the active version",
+    "newVersion": "Save as new version",
+    "operatorEditable": "Operator can intervene"
   },
   "contextMenu": {
     "copy": "Copy",
@@ -337,10 +342,10 @@
       "warning": "Please select the process type you want to change"
     },
     "version": {
-      "deleteSuccess": "Version(s) {versions} deleted successfully.",
-      "deleteFail": "An error occurred while deleting version(s).",
-      "setActiveSuccess": "Active version set to {version} successfully.",
-      "setActiveFail": "An error occurred while setting active version to {version}."
+      "deleteSuccess": "Version {versions} deleted successfully",
+      "deleteFail": "An error occurred while deleting version",
+      "setActiveSuccess": "Active version set to {version} successfully",
+      "setActiveFail": "An error occurred while setting active version to {version}"
     },
     "send": {
       "success": "Program {programNo} sent successfully.",
