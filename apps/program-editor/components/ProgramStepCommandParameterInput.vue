@@ -67,13 +67,7 @@ function handleInputBlur() {
 </script>
 
 <template>
-  <div class="flex">
-    <DevOnly>
-      <div class="color-gray-5 text-3">
-        {{ props.commandNo }} - {{ props.parameter.index }} - {{ props.parameter.group }}
-      </div>
-    </DevOnly>
-
+  <div class="flex" :class="{ 'parameter-input-error': !!props.parameterError }">
     <template v-if="parameter.type === 'NUMBER'">
       <InputDuration
         v-if="parameter.format === 'DURATION'"
@@ -85,7 +79,6 @@ function handleInputBlur() {
         style="width: 150px;"
         class="text-3"
         hide-bottom-space
-        :class="{ 'border-2 border-red-2': props.parameterError }"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -111,7 +104,6 @@ function handleInputBlur() {
         dense
         :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
         class="text-3 dynamic-min-width"
-        :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -139,7 +131,6 @@ function handleInputBlur() {
         dense
         :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
         class="text-3 q-select-nowrap dynamic-min-width"
-        :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       />
     </template>
 
@@ -157,7 +148,6 @@ function handleInputBlur() {
         dense
         :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
         class="text-3 q-select-nowrap dynamic-min-width"
-        :class="{ 'border-2 border-red rounded-2': props.parameterError }"
       >
         <template #option="scope">
           <QItem
@@ -185,7 +175,6 @@ function handleInputBlur() {
       <InputCheckbox
         v-model="model"
         :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
-        :class="{ 'border-2 border-red rounded-2': props.parameterError }"
         @blur="handleInputBlur"
       />
     </template>
@@ -199,5 +188,22 @@ function handleInputBlur() {
 
 .dynamic-min-width {
   min-width: calc(var(--q-label-length) * 0.6em + 2.5rem);
+}
+</style>
+
+<style>
+.parameter-input-error .q-field--outlined .q-field__control:hover:before {
+  border-color: transparent;
+}
+.parameter-input-error .q-field--outlined .q-field__control:after {
+  border-color: currentColor;
+  border-width: 2px;
+  transform: scale3d(1, 1, 1);
+}
+.parameter-input-error .q-field__label {
+  animation: q-field-label 0.36s;
+}
+.parameter-input-error .q-field__control {
+  color: var(--q-negative);
 }
 </style>
