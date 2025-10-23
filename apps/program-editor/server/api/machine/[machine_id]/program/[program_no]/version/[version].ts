@@ -37,11 +37,18 @@ export default defineAuthEventHandler({
 
       if (event.method === 'PUT') {
         checkPermission(event, 'program-edit')
+        const { isNewVersion, isOperatorEditable } = await readBody<{ isNewVersion: boolean, isOperatorEditable: boolean }>(event)
         const newVersion = await machine.fetchArchivedProgram(programNo, versionNo)
+
+        if (!newVersion) {
+          throw new PError('PROGRAM_VERSION_NOT_FOUND', { programNo, versionNo })
+        }
+
+        newVersion.tbbProgramChangedEvent = isOperatorEditable ? 1 : 0
 
         await machine.withTransaction(async () => {
           await machine.deleteProgramFromDatabase(programNo)
-          await machine.insertProgram(newVersion)
+          await machine.insertProgram(newVersion, isNewVersion)
         })
 
         logger.info(`User: ${event.context.kauth?.name}. Archived program ${programNo} updated for machine ${machineId}.`)

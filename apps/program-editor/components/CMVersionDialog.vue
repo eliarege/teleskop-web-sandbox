@@ -21,6 +21,9 @@ const selectedRows = ref<ProgramHeaderArchive[]>([])
 const versions = ref<ProgramHeaderArchive[]>(props.rows)
 const isLoading = ref(false)
 
+const isNewVersion = ref(true)
+const isOperatorEditable = ref(false)
+
 const isActiveSelected = computed(() => {
   const lastVersion = versions.value.at(-1)?.version
   return selectedRows.value.some(v => v.version === lastVersion)
@@ -61,7 +64,7 @@ async function setActiveVersion() {
 
   try {
     const version = selectedRows.value[0]?.version
-    await contextMenuStore.setActiveVersion(props.machineId, props.programNo, version)
+    await contextMenuStore.setActiveVersion(props.machineId, props.programNo, version, isNewVersion.value, isOperatorEditable.value)
     versions.value = await contextMenuStore.fetchVersions(props.machineId, props.programNo)
     await editor.fetchProgram(props.machineId, props.programNo)
     notifySuccess(t('contextMenu.version.setActiveSuccess', { version }))

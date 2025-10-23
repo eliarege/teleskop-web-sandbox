@@ -22,7 +22,7 @@ export interface ContextMenuStore {
   deleteProgramFromMachine: (programs: ProgramItem[], machines: MachineInfo[], source: string) => Promise<void>
   deleteVersion: (machineId: number, programNo: number, versions: number[]) => Promise<number[]>
   fetchVersions: (machineId: number, programNo: number) => Promise<ProgramHeaderArchive[]>
-  setActiveVersion: (machineId: number, programNo: number, version: number) => Promise<void>
+  setActiveVersion: (machineId: number, programNo: number, version: number, isNewVersion: boolean, isOperatorEditable: boolean) => Promise<void>
   concatenatePrograms: (programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
   addToComparisonBasket: (machineId: number, programs: ProgramTableRow[]) => void
@@ -375,7 +375,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function setActiveVersion(machineId: number, programNo: number, version: number): Promise<void> {
+  async function setActiveVersion(machineId: number, programNo: number, version: number, isNewVersion: boolean, isOperatorEditable: boolean): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
     editor.isLoading = true
@@ -383,6 +383,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     try {
       await fetch(`/api/machine/${machineId}/program/${programNo}/version/${version}`, {
         method: 'PUT',
+        body: JSON.stringify({ isNewVersion, isOperatorEditable }),
       })
     } finally {
       editor.isLoading = false
