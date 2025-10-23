@@ -86,7 +86,7 @@ function onRowDoubleClick(event: Event, row: ProcessType) {
       </q-card-section>
 
       <q-card-section>
-        <div class="actions-row">
+        <div class="flex gap-2 mb-3">
           <q-btn
             :label="t('processTypeDialog.createProcessType.newProcessType')"
             class="bg-gray-2 text-dark-4 dark:bg-dark-3 dark:text-gray-4"
@@ -110,16 +110,18 @@ function onRowDoubleClick(event: Event, row: ProcessType) {
         </div>
         <q-table
           v-model:selected="selectedRow"
-          class="process-type-table"
+          class="h-100"
           :columns="columns"
           :rows="editor.allProcessTypes"
           row-key="value"
-          hide-bottom
-          flat
-          bordered
-          dense
           selection="single"
+          hide-bottom
+          bordered
+          flat
+          dense
           :rows-per-page-options="[0]"
+          table-header-style="position: sticky; top: 0; z-index: 1; height: 40px;"
+          table-header-class="bg-gray-1 dark:bg-dark-4"
           @row-click="onRowClick"
           @row-dblclick="onRowDoubleClick"
         />
@@ -139,14 +141,3 @@ function onRowDoubleClick(event: Event, row: ProcessType) {
     </q-card>
   </q-dialog>
 </template>
-
-<style scoped>
-.actions-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.process-type-table {
-  height: 400px;
-}
-</style>

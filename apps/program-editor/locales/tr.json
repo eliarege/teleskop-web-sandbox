@@ -250,8 +250,8 @@
   },
   "processTypeDialog": {
     "title": "Program Tipleri",
-    "processTypeNo": "Program Tipi No",
-    "processTypeName": "Program Tipi Adı",
+    "processTypeNo": "Tip No",
+    "processTypeName": "Tip Adı",
     "note": "Not",
     "createProcessType": {
       "title": "Yeni Tip Oluştur",

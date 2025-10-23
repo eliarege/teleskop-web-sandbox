@@ -250,8 +250,8 @@
   },
   "processTypeDialog": {
     "title": "Program Types",
-    "processTypeNo": "Program Type No",
-    "processTypeName": "Program Type Name",
+    "processTypeNo": "Type No",
+    "processTypeName": "Type Name",
     "note": "Note",
     "createProcessType": {
       "title": "Create Program Type",
