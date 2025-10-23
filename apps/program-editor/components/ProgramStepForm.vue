@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { Sortable } from 'sortablejs-vue3'
 import type { SortableOptions } from 'sortablejs'
+import { isDef } from '@teleskop/utils'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
 import type { ProgramStep } from '~/shared/types'
 import { calculateProgramStepDuration } from '~/shared/formula'
@@ -22,7 +23,8 @@ const isLastStep = stepIndex.value === editor.program.steps.length - 1
 const stepIcons = computed(() => {
   const mainIcon = editor.getCommandIcon(step.mainCommand.commandNo)
   const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getCommandIcon(commandNo))
-  return [mainIcon, ...parallelIcons]
+
+  return [mainIcon, ...parallelIcons].filter(icon => isDef(icon))
 })
 
 const expanded = ref<boolean>(
@@ -73,13 +75,12 @@ function removeError(commandId: number) {
 
 <template>
   <div class="flex flex-nowrap">
-    <div class="flex items-center w-4 mr-2">
+    <div class="flex items-center min-w-4 mr-2">
       <div v-show="!expanded" class="space-y-1">
         <div
           v-for="(icon, key) in stepIcons"
           :key="key"
         >
-          <div v-if="icon">
             <UnoIcon
               class="icon"
               :class="icon.name"
