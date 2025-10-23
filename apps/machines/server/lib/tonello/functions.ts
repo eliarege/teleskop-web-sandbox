@@ -106,8 +106,8 @@ export async function updateTonelloFunctions(
         paramRow.PARAMLOWLIMIT = 0
       } else if (param.type === 'value') {
         paramRow.PARAMETERTYPE = CommandParameterType.NUMBER
-        paramRow.PARAMHIGHLIMIT = param.max
-        paramRow.PARAMLOWLIMIT = param.min
+        paramRow.PARAMHIGHLIMIT = typeof param.max === 'string' ? Number.parseFloat(param.max) : param.max
+        paramRow.PARAMLOWLIMIT = typeof param.min === 'string' ? Number.parseFloat(param.min) : param.min
       } else {
         ctx.errors.push({
           code: INVALID_PARAMETER_TYPE_ERROR,

@@ -218,8 +218,8 @@ export interface TonelloFunctionParameterList extends TonelloFunctionParameterBa
 export interface TonelloFunctionParameterValue extends TonelloFunctionParameterBase {
   type: 'value'
   default?: number
-  min: number
-  max: number
+  min: number | string
+  max: number | string
   decimals?: number
   hidezero: boolean
 }
