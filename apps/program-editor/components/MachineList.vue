@@ -113,7 +113,7 @@ async function retryMachineConnection(machineId: number, event: Event) {
                   :class="{ rotating: isRetrying(machine.id) }"
                   color="warning"
                   size="16px"
-                  class="cursor-pointer pr-1"
+                  class="cursor-pointer mr-1"
                   @click="retryMachineConnection(machine.id, $event)"
                 >
                   <QTooltip>
