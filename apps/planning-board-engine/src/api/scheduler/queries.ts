@@ -1072,7 +1072,7 @@ export function parseFormulas(formulas: string[]) {
   return tokens
 }
 
-export async function formulaStartingParams(formulas: string[], machineId: number) {
+export async function formulaStartingParams(params: string[], machineId: number) {
   return await knex({ b: 'BFMACHBATCHPARAMETERS' })
     .select({
       machineId: 'b.MACHINEID',
@@ -1081,7 +1081,7 @@ export async function formulaStartingParams(formulas: string[], machineId: numbe
       paramHighLimit: 'b.PARAMHIGHLIMIT',
     })
     .where('b.MACHINEID', machineId)
-    .whereIn('b.PARAMSTRING', formulas)
+    .whereIn('b.PARAMSTRING', params)
 }
 
 export async function getStartingParametersWithValues(params: {
@@ -1089,7 +1089,14 @@ export async function getStartingParametersWithValues(params: {
   paramString: string
   paramLowLimit: number
   paramHighLimit: number
-}[], planKey: number): Promise<{ paramString: string, value: string | number | null }[]> {
+}[], planKey: number): Promise<Array<{
+  paramString: string
+  value: string | number | null
+  planKey: number
+  paramLowLimit: number
+  paramHighLimit: number
+  paramStatus: StartingParameters
+}>> {
   const formattedValues = params.map(param => `('${param.paramString}')`).join(', ')
   const parameters = await knex.raw(/* sql */`
     select

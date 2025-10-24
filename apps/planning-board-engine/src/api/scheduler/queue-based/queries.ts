@@ -2,10 +2,11 @@ import { insertBatch } from '@teleskop/utils'
 import type { QueueBasedActualEvent, QueueBasedNonActualEvent } from '../../../../types/planning-board'
 import { queueBasedEventStatus } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
-import { getUnplannedEvents, planningBoardStops, taskValid } from '../queries'
+import { getFormula, getStartingParametersWithValues, getUnplannedEvents, planningBoardStops, taskValid } from '../queries'
 import { config } from '~/config'
 
 export interface EventReschedule {
+  program: string
   planKey: number
   machineId: number
   queueNumber: number

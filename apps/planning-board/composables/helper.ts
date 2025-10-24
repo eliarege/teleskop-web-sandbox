@@ -1,7 +1,9 @@
 import type { SchedulerPro, SchedulerResourceModel } from '@bryntum/schedulerpro'
 import { DateHelper, Toast } from '@bryntum/schedulerpro'
 import { addMinutes, addSeconds, differenceInMilliseconds, differenceInSeconds } from 'date-fns'
+import { UploadJoborder } from '~/shared/constants'
 import { getRecipeUnitById } from '~/shared/enums'
+import type { PlanParameters } from '~/shared/types'
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
@@ -236,8 +238,9 @@ export function setDropLocation(mouseX, targetEvent, schedule, task, events) {
 }
 
 export async function handleSchedule(schedule: SchedulerPro, task, machine, grid, refreshScheduler: Function) {
-  const { $keycloak } = useNuxtApp()
-  const machineEvents = machine.events.filter(e => e.resourceId === machine.id)
+  const { $keycloak, $i18n } = useNuxtApp()
+  const { setPlanParameters } = usePlanParametersModal()
+  const machineEvents = machine.events.filter((e: any) => e.resourceId === machine.id)
 
   await schedule.scheduleEvent({
     eventRecord: task,
@@ -250,6 +253,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
 
   if (machineEvents.length === 0) {
     const newEvent = {
+      program: task.programList,
       planKey: task.id,
       machineId: machine.id,
     }
@@ -257,19 +261,60 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       method: 'POST',
       body: { newEvent },
     })
+    Toast.show($i18n.t('upload-joborder.upload-succes'))
+    refreshScheduler()
+    schedule.renderRows()
   } else {
     const newEvent = {
+      program: task.programList,
       planKey: task.id,
       machineId: machine.id,
       queueNumber: task.queueNumber || 1,
     }
-    await $keycloak.fetch('/api/queueBased/scheduleUnplannedEvents', {
+    const res: PlanParameters[] | string = await $keycloak.fetch('/api/queueBased/scheduleUnplannedEvents', {
       method: 'POST',
       body: { newEvent },
     })
+    if (res === UploadJoborder.MissingParameter) {
+      Toast.show('Cannot schedule due to missing parameters')
+      refreshScheduler()
+      schedule.renderRows()
+    } else if (typeof res !== 'string' && res.some(f => f.value === null)) {
+      const uploadData = {
+        program: newEvent.program,
+        machineId: newEvent.machineId,
+        planKey: newEvent.planKey,
+      }
+      const onComplete = async () => {
+        const finalRes: PlanParameters[] | string = await $keycloak.fetch('/api/queueBased/scheduleUnplannedEvents', {
+          method: 'POST',
+          body: { newEvent },
+        })
+        if (finalRes === UploadJoborder.MissingParameter || (typeof finalRes !== 'string' && finalRes.some((f: PlanParameters) => f.value === null))) {
+          Toast.show('Cannot schedule due to missing parameters')
+        } else {
+          Toast.show($i18n.t('upload-joborder.upload-succes'))
+        }
+        refreshScheduler()
+        schedule.renderRows()
+      }
+      const onCancel = async () => {
+        task.unassign(machine)
+        grid.store.add(task)
+        await $keycloak.fetch('/api/unplan', {
+          method: 'PUT',
+          query: { planKey: newEvent.planKey },
+        })
+        refreshScheduler()
+        schedule.renderRows()
+      }
+      setPlanParameters(true, newEvent.planKey, newEvent.machineId, newEvent.program, false, res, false, uploadData, onComplete, onCancel)
+    } else {
+      Toast.show($i18n.t('upload-joborder.upload-succes'))
+      refreshScheduler()
+      schedule.renderRows()
+    }
   }
-  refreshScheduler()
-  schedule.renderRows()
 }
 
 export function formatSeconds(second: number): string {

@@ -63,9 +63,20 @@ const { data: machines, refresh: machineRefresh, pending: machinesPending } = aw
 const { data: unScheduledEvents, refresh: unScheduledRefresh } = await useAuthFetch('/api/unplannedEvents', {
   default: () => [],
 })
+
 // #region MODALS
+const { modalState: planParametersModal, setPlanParameters, completeAndClose, cancelAndClose } = usePlanParametersModal()
+
+async function handleModalComplete() {
+  await completeAndClose()
+}
+
+async function handleModalCancel() {
+  await cancelAndClose()
+}
+
 async function uploadJobOrder(planKey: number) {
-  const event: any = scheduler.events.find(e => e.id === planKey)
+  const event: any = scheduler.events.find(e => e.originalData.planKey === planKey)
   const machine: any = scheduler.resources.find(e => e.id === event.resourceId)
 
   let program = event.originalData.programList
@@ -106,33 +117,33 @@ async function uploadJobOrder(planKey: number) {
         machineIp,
         jobOrder,
       }
-      setPlanParameters(true, planKey, machineId, program, batchStart, missingParams, true, uploadData)
-    } else Toast.show(t('job-order.upload-succes'))
+      // Callback: parametreler doldurulduktan sonra tekrar upload et
+      const onComplete = async () => {
+        jobOrderUploadLoading.value = true
+        try {
+          const finalRes: PlanParameters[] | string = await kc.fetch('/api/machineUpload', {
+            method: 'PUT',
+            query: { program, machineId, planKey, machineIp, jobOrder },
+          })
+          if (finalRes === UploadJoborder.MissingParameter) {
+            Toast.show(t('upload-joborder.no-program'))
+          } else if (typeof finalRes !== 'string' && finalRes.some(f => f.value === null)) {
+            Toast.show(t('upload-joborder.missing-params'))
+          } else {
+            Toast.show(t('upload-joborder.upload-succes'))
+          }
+        } catch (err) {
+          Toast.show(t('upload-joborder.fail'))
+        } finally {
+          jobOrderUploadLoading.value = false
+        }
+      }
+      setPlanParameters(true, planKey, machineId, program, batchStart, missingParams, true, uploadData, onComplete)
+    } else Toast.show(t('upload-joborder.upload-succes'))
   } catch (err) {
     Toast.show(t('upload-joborder.fail'))
   }
   jobOrderUploadLoading.value = false
-}
-const planParametersModal = reactive({
-  show: false,
-  planKey: 0,
-  machineId: 0,
-  progNoList: '',
-  isBatchStarted: false,
-  missingParams: [] as PlanParameters[],
-  isSendMachine: false,
-})
-function setPlanParameters(show: boolean, planKey: number, machineId: number, progNoList: string, isBatchStarted: boolean, missingParams: PlanParameters[], isSendMachine: boolean, uploadData?: any) {
-  planParametersModal.show = show
-  planParametersModal.machineId = machineId
-  planParametersModal.progNoList = progNoList
-  planParametersModal.planKey = planKey
-  planParametersModal.isBatchStarted = isBatchStarted
-  planParametersModal.missingParams = missingParams
-  planParametersModal.isSendMachine = isSendMachine
-  if (uploadData) {
-    planParametersModal.uploadData = uploadData
-  }
 }
 
 const propertiesModal = reactive({
@@ -1048,10 +1059,16 @@ LocaleManager.applyLocale(capitalizeFirstLetter(bryntumLocale))
         />
       </template>
     </EliarModal>
-    <EliarModal v-if="planParametersModal.show" @click.stop="planParametersModal.show = false">
+    <EliarModal
+      v-if="planParametersModal.show"
+      @click.stop="planParametersModal.isSendMachine ? (planParametersModal.show = false) : handleModalCancel()"
+    >
       <template #default>
         <div class="w-full h-98vh overflow-auto">
-          <PlanParameters v-bind="planParametersModal" @upload-machine="uploadJobOrder" />
+          <PlanParameters
+            v-bind="planParametersModal"
+            @upload-machine="planParametersModal.isSendMachine ? uploadJobOrder($event) : handleModalComplete()"
+          />
         </div>
       </template>
     </EliarModal>

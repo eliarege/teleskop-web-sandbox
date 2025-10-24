@@ -1,4 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
+import { checkMachineParameterRequest, getFormula, getPlanParameters, getStartingParametersWithValues } from '../queries'
 import type {
   EventReschedule,
 } from './queries'
@@ -11,6 +12,7 @@ import {
   scheduleFutureEvents,
   updateEventQueue,
 } from './queries'
+import { StartingParameters } from '~/composables/enums'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -95,8 +97,26 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request: FastifyRequest<{ Body: { newEvent: EventReschedule } }>, reply) => {
       try {
         const { newEvent } = request.body
-        await queueUnplannedEvent(newEvent)
-        return reply.code(200).send('Succesful!')
+        const planKey = newEvent.planKey
+        const machineId = newEvent.machineId
+        const allParamsRequired = await checkMachineParameterRequest(newEvent.machineId)
+        if (allParamsRequired) {
+          const allParams = await getPlanParameters(planKey, machineId)
+          if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
+            return reply.code(200).send('DONE')
+          } else return allParams
+        } else {
+          const formula = await getFormula(newEvent.program, newEvent.machineId)
+          if (formula.length > 0) {
+            const startingParameterValues = await getStartingParametersWithValues(formula, planKey)
+            const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
+            if (requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct) || requestedStartingParameters.length === 0) {
+              await queueUnplannedEvent(newEvent)
+              return reply.code(200).send('DONE')
+            }
+            return reply.code(200).send(startingParameterValues)
+          } else return reply.code(200).send('NO PARAMETER')
+        }
       } catch (err) {
         fastify.log.error(`An error occured while scheduling events: ${err}`)
         return reply.code(500).send({ error: `An error occured while scheduling events: ${err}` })

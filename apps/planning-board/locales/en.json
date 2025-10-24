@@ -88,6 +88,7 @@
     "param-high-limit": "High Limit",
     "validation-error": "Parameters should be in range of {paramLowLimit} and {paramHighLimit}",
     "resend": "Resend",
+    "confirm": "Confirm",
     "empty-text": "No Parameter",
     "legend": {
       "default": "Added parameter with default value",

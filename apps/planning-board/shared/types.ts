@@ -164,7 +164,7 @@ export interface PlanParameterProps {
     program: string
     machineId: number
     planKey: number
-    jobOrder: string
-    machineIp: string
+    jobOrder?: string
+    machineIp?: string
   }
 }
