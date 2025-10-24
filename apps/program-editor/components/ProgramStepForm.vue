@@ -81,15 +81,14 @@ function removeError(commandId: number) {
           v-for="(icon, key) in stepIcons"
           :key="key"
         >
-            <UnoIcon
-              class="icon"
-              :class="icon.name"
-              :style="{ color: icon.color }"
-            />
-            <q-tooltip>
-              {{ t(`commandType.${icon.label}`) }}
-            </q-tooltip>
-          </div>
+          <UnoIcon
+            class="icon"
+            :class="icon.name"
+            :style="{ color: icon.color }"
+          />
+          <q-tooltip>
+            {{ t(`commandType.${icon.label}`) }}
+          </q-tooltip>
         </div>
       </div>
     </div>
