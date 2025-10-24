@@ -539,7 +539,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
             }[] = await getStartingParametersWithValues(formula, planKey)
             const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
 
-            if (requestedStartingParameters.every(e => e.paramStatus !== 0) || requestedStartingParameters.length === 0) {
+            if (requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct) || requestedStartingParameters.length === 0) {
             // write to machine
               await uploadToMachine(machineIp, startingParameterValues, program, jobOrder)
               return reply.code(200).send('DONE')

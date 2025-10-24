@@ -9,4 +9,4 @@ export const Apps = {
 export const UploadJoborder = {
   MissingParameter: 'NO PARAMETER', // Sent joborder has missing parameter
   OK: 'DONE', // Joborder has no invalid/missing parameter
-}
+} as const

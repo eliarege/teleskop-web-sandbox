@@ -134,9 +134,8 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
         <template #bottom>
           <q-space />
           <q-btn
-            v-if="isSendMachine"
             color="primary"
-            :label="t('plan-parameters.resend')"
+            :label="isSendMachine ? t('plan-parameters.resend') : t('plan-parameters.confirm')"
             :disable="!parameterData
               .filter(e => e.paramStatus !== StartingParameters.NonStartingParameter)
               .every(e => e.value > e.paramLowLimit && e.value < e.paramHighLimit)"
