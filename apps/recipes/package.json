@@ -1,0 +1,48 @@
+{
+  "name": "recipes",
+  "type": "module",
+  "version": "0.52.0",
+  "private": true,
+  "license": "UNLICENSED",
+
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "start": "node .output/server/index.mjs",
+    "typecheck": "nuxt typecheck",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "keycloak": "../../keycloak/keycloak.sh"
+  },
+  "dependencies": {
+    "@rollup/plugin-virtual": "3.0.2",
+    "@teleskop/utils": "workspace:*",
+    "@unocss/reset": "0.64.0",
+    "async-mutex": "0.5.0",
+    "chart.js": "4.4.6",
+    "chartjs-plugin-datalabels": "2.2.0",
+    "execa": "9.5.1",
+    "klona": "2.0.6",
+    "knex": "3.1.0",
+    "pg": "8.13.1",
+    "simple-keyboard": "3.8.16",
+    "tedious": "18.6.1",
+    "unocss": "0.64.0",
+    "vue-chartjs": "5.3.2",
+    "vuedraggable": "4.1.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@teleskop/nuxt-base": "workspace:*",
+    "@types/node": "22.9.0",
+    "@types/pg": "8.11.10",
+    "nuxt": "3.14.159",
+    "typescript": "5.6.3",
+    "vue": "3.5.12",
+    "vue-router": "4.4.5",
+    "vue-tsc": "2.1.10"
+  }
+}
