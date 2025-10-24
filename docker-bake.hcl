@@ -71,7 +71,7 @@ target "archive" {
   target = "nuxt-app"
 }
 
-target "dispensing-management-systems" {
+target "recipes" {
   inherits = ["_common"]
   target = "nuxt-app"
   args = {
