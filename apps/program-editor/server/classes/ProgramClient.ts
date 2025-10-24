@@ -11,6 +11,7 @@ import type { MachineCommand, Program, ProgramStepCommand } from '~/shared/types
 import { ParameterType, ProgramStatus } from '~/shared/constants'
 
 export interface ProgramClient {
+  ping: () => Promise<boolean>
   connect: () => Promise<void>
   disconnect: () => Promise<void>
   downloadProgram: (programNo: number, commands: MachineCommand[]) => Promise<Program | null>
@@ -27,6 +28,12 @@ export class T7ProgramClient implements ProgramClient {
     readonly host: string,
   ) {
     this.ftp = new TbbFtpClient(host)
+  }
+
+  async ping(): Promise<boolean> {
+    await this.ftp.connect()
+    this.ftp.close()
+    return true
   }
 
   async connect(): Promise<void> {
@@ -108,6 +115,11 @@ export class TonelloProgramClient implements ProgramClient {
     readonly host: string,
   ) {
     this.api = new TonelloApi(`http://${host}:1234`)
+  }
+
+  async ping(): Promise<boolean> {
+    await this.api.fetchDatetime()
+    return true
   }
 
   async connect(): Promise<void> {

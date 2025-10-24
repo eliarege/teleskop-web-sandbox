@@ -117,6 +117,12 @@
     "genericMat1Req": "GM-1 Req.",
     "genericMat2Req": "GM-2 Req."
   },
+  "clickToRetry": "Click to retry",
+  "machine": {
+    "connecting": "Connecting...",
+    "connectionSuccessful": "Machine connection successful",
+    "connectionFailed": "Machine {machineId} connection failed"
+  },
   "command": {
     "icon": "Icon",
     "commandNo": "Command No",
@@ -337,12 +343,20 @@
     "send": {
       "success": "Program {programNo} sent successfully.",
       "fail": "An error occurred while sending program {programNo}.",
-      "programHasErrors": "Program {programNo} has errors. Please check."
+      "programHasErrors": "Program {programNo} has errors. Please check.",
+      "machineNotFound": "Machine {machineId} not found.",
+      "machineOffline": "Machine {machineId} is offline"
+    },
+    "status": {
+      "offline": "Machine {machineId} is offline",
+      "fail": "An error occurred while checking status of machine {machineId}."
     },
     "get": {
       "success": "Program {programNo} retrieved successfully.",
       "fail": "An error occured while retrieving program {programNo}.",
-      "programNotFound": "Program {programNo} not found on the machine."
+      "programNotFound": "Program {programNo} not found on the machine.",
+      "machineNotFound": "Machine {machineId} not found.",
+      "machineOffline": "Machine {machineId} is offline"
     },
     "delete": {
       "success": "Program {programNo} is deleted successfully.",

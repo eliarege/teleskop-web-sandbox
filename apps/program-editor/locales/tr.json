@@ -117,6 +117,12 @@
     "genericMat1Req": "JM-1 İstek",
     "genericMat2Req": "JM-2 İstek"
   },
+  "clickToRetry": "Tekrar denemek için tıklayın",
+  "machine": {
+    "connecting": "Bağlanılıyor...",
+    "connectionSuccessful": "Makine bağlantısı başarılı",
+    "connectionFailed": "Makine {machineId} bağlantısı başarısız"
+  },
   "command": {
     "icon": "İkon",
     "commandNo": "Komut Numarası",
@@ -337,13 +343,20 @@
     "send": {
       "success": "{programNo} numaralı program makineye başarıyla gönderildi.",
       "fail": "{programNo} numaralı program makineye gönderilemedi.",
-      "programHasErrors": "{programNo} numaralı programda hatalar var. Lütfen kontrol ediniz."
+      "programHasErrors": "{programNo} numaralı programda hatalar var. Lütfen kontrol ediniz.",
+      "machineNotFound": "Makine bulunamadı.",
+      "machineOffline": "{machineId} numaralı makine çevrimdışı"
+    },
+    "status": {
+      "offline": "Makine {machineId} çevrimdışı",
+      "fail": "Makine {machineId} durumunu kontrol ederken bir hata oluştu."
     },
     "get": {
       "success": "{programNo} numaralı program makineden başarıyla alındı.",
       "fail": "{programNo} numaralı program makineden alınamadı.",
-      "programNotFound": "{programNo} numaralı program makinede bulunamadı."
-
+      "programNotFound": "{programNo} numaralı program makinede bulunamadı.",
+      "machineNotFound": "{machineId} numaralı makine bulunamadı.",
+      "machineOffline": "{machineId} numaralı makine çevrimdışı"
     },
     "delete": {
       "success": "{programNo} numaralı program başarıyla silindi.",

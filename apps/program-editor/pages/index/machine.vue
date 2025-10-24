@@ -13,6 +13,7 @@ import { formatDuration, useErrorStore } from '~/composables/utils'
 import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
+import { useMachineStatusStore } from '~/composables/machine'
 
 definePageMeta({
   path: '/machine/:machine_id',
@@ -25,10 +26,15 @@ const route = useRoute()
 const router = useRouter()
 const editor = useEditorStore()
 const filter = useProgramFilterStore()
+const machineStatusStore = useMachineStatusStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
 const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t, router })
+
+onBeforeMount(async () => {
+  await machineStatusStore.checkMachineStatus(machineId)
+})
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()

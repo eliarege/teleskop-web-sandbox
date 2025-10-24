@@ -2,7 +2,6 @@ import type { Knex } from 'knex'
 import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
-import { MSSQL_ERROR } from './constants'
 
 interface TransactionOptions {
   trx?: Knex.Transaction

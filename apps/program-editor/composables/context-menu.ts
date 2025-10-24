@@ -30,9 +30,11 @@ export interface ContextMenuStore {
   isThereCopiedValue: ComputedRef<boolean>
   copyStep: () => void
   pasteStep: () => void
+  getMachineStatus: (machineId: number) => Promise<boolean>
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
+  const { notifyError } = useNotify()
   const copiedValues = ref([] as ProgramItem[])
   const copiedStepValues = ref([] as { machineId: number, programNo: number, steps: ProgramStep[] }[])
   let comparsionBasket = [] as { machineId: number, programNo: number }[]
@@ -236,15 +238,23 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     editor.isLoading = false
   }
 
-  async function sendProgram(programs: ProgramTableRow[], machineId: number) {
+  async function sendProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    const notificationState = useNotificationStore()
+
     editor.isLoading = true
+    const isMultiplePrograms = programs.length > 3
 
     for (const program of programs) {
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
-        notification(true, t(`contextMenu.send.success`, { programNo: program.programNo }))
+
+        if (isMultiplePrograms) {
+          notificationState.addNotification(t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
+        } else {
+          notification(true, t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
+        }
       } catch (error: any) {
         let messageKey = 'fail'
 
@@ -253,10 +263,19 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         } else if (isProgramError(error, 'PROGRAM_HAS_ERRORS')) {
           messageKey = 'programHasErrors'
         }
-        notification(false, t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
+
+        if (isMultiplePrograms) {
+          notificationState.addNotification(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }), 'warning')
+        } else {
+          notification(false, t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
+        }
       }
     }
     editor.isLoading = false
+
+    if (isMultiplePrograms) {
+      notificationState.showNotificationPopup = true
+    }
   }
 
   async function getRemoteProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
@@ -367,6 +386,19 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
+  async function getMachineStatus(machineId: number): Promise<boolean> {
+    const { fetch } = useKeycloak()
+
+    try {
+      const status = await fetch<boolean>(`/api/machine/${machineId}/status`)
+
+      return status
+    } catch (error: any) {
+      notifyError(t(`contextMenu.status.fail`, { machineId }))
+      return false
+    }
+  }
+
   return {
     getCopiedValues,
     getCopiedStepsValues,
@@ -393,5 +425,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     isThereCopiedValue,
     copyStep,
     pasteStep,
+    getMachineStatus,
   }
 }

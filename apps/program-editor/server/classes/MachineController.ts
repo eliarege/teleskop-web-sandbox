@@ -1,6 +1,6 @@
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { ensureTreatmentGroups, fetchTeleskopSettings, getTeleskopSettings, hasMachine, logEditorOperation } from '../functions'
+import { ensureTreatmentGroups, fetchTeleskopSettings, getTeleskopSettings, logEditorOperation } from '../functions'
 import { db, dmExchange } from '../database'
 import { withProgramClient, withTransaction } from '../decorators'
 import { sql } from '../sql'
@@ -2007,5 +2007,33 @@ export class MachineController {
       .toSorted((ioA, ioB) => {
         return ioA.rank - ioB.rank
       })
+  }
+
+  /**
+   * Makinenin durumunu kontrol eder (ping)
+   * @param {number} machineId - Makine ID'si (opsiyonel, this.id kullanılır)
+   * @returns {Promise<boolean>} - Makine erişilebilirse true, değilse false
+   */
+  @withTransaction
+  @withProgramClient
+  async getMachineStatus(machineId?: number): Promise<boolean> {
+    const targetMachineId = machineId || this.id
+    const machine: { ip: string, name: string } = await this.trx('BFMACHINES')
+      .first({
+        ip: 'IP',
+        name: 'MACHINECODE',
+      })
+      .where('MACHINEID', targetMachineId)
+
+    if (!machine || !machine.ip) {
+      throw new PError('MACHINE_NOT_FOUND', { machineId: targetMachineId })
+    }
+
+    const isOnline = await this.client.ping()
+    if (!isOnline) {
+      throw new PError('MACHINE_OFFLINE', { machineId: targetMachineId })
+    }
+
+    return isOnline
   }
 }

@@ -1,6 +1,7 @@
 export type ErrorCode =
   | 'MACHINE_NOT_FOUND'
   | 'MACHINE_UNAVAILABLE'
+  | 'MACHINE_OFFLINE'
   | 'PROGRAM_NOT_FOUND'
   | 'PROGRAM_EXISTS'
   | 'PROGRAM_INVALID'
@@ -197,6 +198,7 @@ export class PError extends Error {
 
   constructor(code: 'MACHINE_NOT_FOUND', detail: ErrorMachineDetail)
   constructor(code: 'MACHINE_UNAVAILABLE', detail: ErrorMachineDetail)
+  constructor(code: 'MACHINE_OFFLINE', detail: ErrorMachineDetail)
   constructor(code: 'PROGRAM_NOT_FOUND', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_EXISTS', detail: ErrorProgramDetail)
   constructor(code: 'PROGRAM_INVALID', detail: ErrorProgramInvalidDetail)

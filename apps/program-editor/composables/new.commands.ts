@@ -25,6 +25,7 @@ import TBMachineConstantsDialog from '~/components/TBMachineConstantsDialog.vue'
 import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDialog.vue'
 import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
+import { useMachineStatusStore } from '~/composables/machine'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -247,14 +248,15 @@ registerCommand(() => {
   return {
     name: 'deleteProgramFromMultiMachine',
     async execute(ctx: any, selectedRows: ProgramItem[]) {
-      const allMachines = await editor.fetchAllMachine()
-      const machineGroups = await editor.fetchMachineGroup()
+      await editor.fetchAllMachine()
+      await editor.fetchMachineGroups()
+
       ctx.$q.dialog({
         component: CMMachineListDialog,
         componentProps: {
           type: 'deleteFromMultiMachine',
-          allMachines,
-          machineGroups,
+          allMachines: editor.allMachines,
+          machineGroups: editor.machineGroups,
         },
       }).onOk(async (machines: MachineInfo[]) => {
         ctx.$q.dialog({
@@ -408,9 +410,20 @@ registerCommand(() => {
   return {
     name: 'sendProgram',
     async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
-      await contextMenuStore.sendProgram(selectedRows, machineId)
-      await editor.fetchAllPrograms()
-      return false
+      editor.isLoading = true
+      try {
+        const machineStatusStore = useMachineStatusStore()
+        const status = await machineStatusStore.checkMachineStatus(machineId)
+        if (status) {
+          await contextMenuStore.sendProgram(selectedRows, machineId)
+          await editor.fetchAllPrograms()
+
+          return true
+        }
+        return false
+      } finally {
+        editor.isLoading = false
+      }
     },
   }
 })
@@ -420,14 +433,15 @@ registerCommand(() => {
   return {
     name: 'copyAndSend',
     async execute(ctx: any, selectedRows: ProgramItem[], machineId: number) {
-      const allMachines = await editor.fetchAllMachine()
-      const machineGroups = await editor.fetchMachineGroup()
+      await editor.fetchAllMachine()
+      await editor.fetchMachineGroups()
+
       ctx.$q.dialog({
         component: CMMachineListDialog,
         componentProps: {
           type: 'copyAndSend',
-          allMachines,
-          machineGroups,
+          allMachines: editor.allMachines,
+          machineGroups: editor.machineGroups,
         },
       }).onOk(async (machines: MachineInfo[]) => {
         await contextMenuStore.sendProgramToMachines(selectedRows, machines, machineId)
@@ -606,18 +620,28 @@ registerCommand(() => {
 
 registerCommand(() => {
   const { fetch } = useKeycloak()
+  const editor = useEditorStore()
+
   return {
     name: 'refresh',
     async execute(ctx: any, machineId: number) {
-      const editor = useEditorStore()
-
       editor.isLoading = true
-      await fetch(`/api/machine/${machineId}/refresh`, {
-        method: 'POST',
-      })
-      await editor.fetchAllPrograms()
-      editor.isLoading = false
-      return true
+
+      try {
+        const status = await contextMenuStore.getMachineStatus(machineId)
+        if (!status) {
+          return false
+        }
+
+        await fetch(`/api/machine/${machineId}/refresh`, {
+          method: 'POST',
+        })
+
+        await editor.fetchAllPrograms()
+        return true
+      } finally {
+        editor.isLoading = false
+      }
     },
   }
 })
