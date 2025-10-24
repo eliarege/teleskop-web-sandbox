@@ -1,8 +1,85 @@
 # Changelog
 
+## 0.53.0 - 2025-10-24
+
+[Compare Changes](9c3725d3934dc2fcdc91dc95e8ef8684487eff24...329999ca0cb989fb172e6a98fb2fe47fa20b902a)
+
+### 🚀 Features
+
+- **tbb-ftp-client**: Support new format of batch parameters ([96b3d40](96b3d404e39856a8ca6a50b93e36203b68903f1d))
+- **tbb-ftp-client**: Support new format of command parameters ([46fad49](46fad49816d8e34e115c9f955fba6a5a3763048b))
+-  **MA**: Add version utility functions for database version management ([dd4f44b](dd4f44bb9521a39de4f98e6c99d5a49fff7fed32))
+-  **MA**: Add error handling for missing columns in outdated database versions ([4d66eca](4d66ecada19f3b2e9c661b6100f417161ee6ca08))
+-  **PT**: Enhance job order handling and modal management for plan parameters ([3a72460](3a724608881bd661696af95e0becca0ba3aff893))
+- **dms**: Machine selection enabled in job order creation for existing program headers ([4c046b6](4c046b6e548bd40f6d87aa339ed33e1988b2d7eb))
+- **dms**: Capacity field added to Machine ([781bde9](781bde9f11823848ae54bc2ad253895769d1de9f))
+- **dms**: Machine threshold exceed warning added ([321d95f](321d95f7a35f1608bdb2f82e73d02b05a8a457e8))
+-  **PE**: Check machine status during program send and show UI notify messages ([2e25f3a](2e25f3a4a059a9cc52ba58ee9710aa576781a5fa))
+-  **PE**: Store machines and machine groups in editor ([85d9def](85d9defa3cfec527b3d0cc33ad3a38f2e5959f09))
+-  **PE**: Update status endpoint and add error messages ([15fb447](15fb44760af7aff75695ff2572a4f74f181e0c73))
+-  **PE**: Check machine connection status during refresh ([c03cda5](c03cda55e4e8113bd2cb2cb85f40ab1a68aef27b))
+-  **PE**: Implement machine status store and add connection messages ([16fcfd8](16fcfd8bb732e3da34bd48cb874b60bfee4267fa))
+-  **PE**: Add retry connection functionality and improve machine status handling ([9cbf124](9cbf1247eafd129ff066eda85b763c95654ad92b))
+-  **PE**: Integrate machine status check into command execution flow ([ef23509](ef235098df5226625c7cbfa93caad712b94cfb6e))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Insert step selections based on io definitions instead of the index of insertion ([8edb249](8edb2491c665d4299b6630be7a12c904b2a4c9a8))
+-  **PT**: Correct access to task results in preplanJoborders function ([564f3ad](564f3adb03e805b8bf386314e5cc4a49164be4a2))
+-  **PT**: Enhance batch properties API and components to support optional batchKey and isActual parameters ([8170283](817028319206240f2960adfee2322cd5a999e8df))
+-  **PE**: Handle cases where valueIndex can be zero when sending tonello program ([7c9ae77](7c9ae77669c0fdcfa88eaa0360c5eed169ba036f))
+-  **PE**: Update InputCheckbox styling for dark mode compatibility ([b87edb7](b87edb7a03015d6267487abd3c631d109db9d194))
+-  **MA**: More accurate localisation for controller file updates ([6601ecf](6601ecfb871ff946566b71e4ba3d1009bdd26d0b))
+-  **AR**: Handle empty program list and raw programs in getTheoreticalPrograms function ([7ddcfb1](7ddcfb1fb01b371cdb873f4f114c4200bb4efa14))
+-  **PE**: Filter out undefined icons in stepIcons computation and adjust template for minimum width ([009b827](009b827efb7da0663fe00262c498e66ecc575cc3))
+-  **MA**: Allow min and max parameters to be strings in TonelloFunctionParameterValue ([f713875](f713875a0b4364cca14520b7cb7dcc8abd3a6023))
+-  **MA**: Set default VALUE for parameters to PARAMLOWLIMIT when null in updateTonelloFunctions ([225ad06](225ad06901814e0117ddb6866a58bec5232b4f3c))
+-  **PE**: Prevent browser warnings due to `InputCheckbox` having invalid `for` attribute ([bbcef70](bbcef707c83ac5b8a0ef13ed2a7c0481a4505ea9))
+-  **PE**: Enhance error indication for parameter inputs to be in match with quasars highlighting ([afe0c97](afe0c9789786751638da79480c809df549051968))
+-  **PE**: Excessive div ([0974cc8](0974cc8a5ab2e540c3d31569295b5c479c000fca))
+- **dms**: Settings header style fixes ([9fa0d48](9fa0d48bc993c426e6e7255d9f449fbdb73446db))
+- **dms**: SettingsPrograms layout fix ([4dabba4](4dabba40ce7ea39d427ad63892dba57df1ba4b71))
+- **dms**: Prev commit ([73ca157](73ca1577114400a6137a308c68f4d61d90195fcf))
+- **dms**: UI fixes cont ([9de8fc3](9de8fc3dcf90f55f6514c581e9c4df05fc9a4894))
+- **dms**: Wrong program template steps retrieved ([61b2ddf](61b2ddf245a984bab38f1873a57ca37162cdf640))
+- **recipe**: Missing unocss configuration ([cfacf17](cfacf1749fa0f2823bdba6dccb6d287a3b0ea960))
+-  **PE**: Updated ping method ([d78fe87](d78fe872381bc9204f95d2cd05e878522e8bb394))
+-  **PE**: Adjust margin for retry button in machine list ([ecfa89f](ecfa89f075105b7385a293eccaf43fd99e86ee3d))
+
+### ♻️ Refactor
+
+- **TonelloApi**: Rename API methods for consistency and clarity ([3e627ec](3e627ece4cd8ff2c5f9e10445e063c5134f7ea45))
+-  **MA**: Change trx parameter type to Knex.Transaction for consistency ([3422c99](3422c99b1f8b5a32004849355f3a009a58887112))
+-  **MA**: Enhance DatabaseQueryError to include original error context ([357007b](357007b1a56a8019ae12fb552e13a1d588709a02))
+- Replace mssql with tedious in package.json across multiple apps ([6ef19b6](6ef19b6ae4d75375bbbddc61dff788ee5cd93276))
+-  **MA**: Update calcIONumber function to use a more specific IOObject interface ([30b21e3](30b21e3d45d031ac2ad5dec2df4975011abda5fb))
+- Remove connection test from knex initialization in connectionPool ([3e90ec0](3e90ec043976d3df44e791824fb0b24434e0ba5b))
+-  **PE**: Move getMachineStatus function to machineController ([5b995f5](5b995f5af7faad4b20fb7c827be1ac8dbbd9c2a9))
+-  **PE**: Remove unused imports from functions.ts ([23fa8b5](23fa8b5a10424d6a27d90556c031e21f5b220a13))
+
+### 🎨 Styling
+
+-  **PT**: Linting ([4ce8e36](4ce8e36bba74059c6fc208e2ecf2681436a1ac93))
+
+### ✅ Testing
+
+- **tbb-ftp-client**: Enhance parsers tests with variant handling, add tests for new formats of batch parameters and command parameters ([c48e790](c48e79012f030465e827466537054c573995ca64))
+
+### 🔧 Miscellaneous Tasks
+
+- Removed `archive-proxy` since its no longer needed due to `iovalues-server` ([bddeff1](bddeff17e144d6d7c272a946da57c14b5ef5798f))
+- **tbb-ftp-client**: Add  types for BatchParameter and CommandParameter ([c2f4240](c2f42406fc75814bfdd5d87d71a9cc3d2d4b751f))
+- Update lockfile ([070a8f6](070a8f6f805c4573d8a1953b1ac75cc3705a1f1f))
+- Rename dispensing-management-systems app to recipes ([89f23f4](89f23f466148084f6ecf6cbce21d4074876b6e65))
+- **dms**: Dms to recipes refactor ([d180975](d18097522cbebfd5d508560d7c020a4fce8f85d5))
+- **dms**: Unused component removed ([f5f2446](f5f2446e39a3db46bd20847cb64297f3855f3e2d))
+- Sync `recipes` version with rest of the apps ([256f5e5](256f5e5c88aec16bee56c6f9d56e5193833a5b04))
+- Added recipes back to ci process ([d31e51c](d31e51cb5e92081c237213ad8ff8b415ce5b7b5c))
+- **recipes**: Sync dependency versions and update lockfile ([5bc25d3](5bc25d3249295bd6db6b46bbe8b0cfc964d17d4e))
+
 ## 0.52.0 - 2025-10-17
 
-[Compare Changes](003ff56b91e5bcea4147a5c6af7064d8179dc073...3817b4ad067a6db58976c4f7db613fadb763b9b2)
+[Compare Changes](003ff56b91e5bcea4147a5c6af7064d8179dc073...9c3725d3934dc2fcdc91dc95e8ef8684487eff24)
 
 ### 🚀 Features
 
