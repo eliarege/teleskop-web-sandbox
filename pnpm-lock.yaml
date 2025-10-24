@@ -96,82 +96,6 @@ importers:
         specifier: 2.1.10
         version: 2.1.10(typescript@5.6.3)
 
-  apps/dispensing-management-systems:
-    dependencies:
-      '@rollup/plugin-virtual':
-        specifier: 3.0.2
-        version: 3.0.2(rollup@4.25.0)
-      '@teleskop/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-      async-mutex:
-        specifier: 0.5.0
-        version: 0.5.0
-      chart.js:
-        specifier: 4.4.6
-        version: 4.4.6
-      chartjs-plugin-datalabels:
-        specifier: 2.2.0
-        version: 2.2.0(chart.js@4.4.6)
-      execa:
-        specifier: 9.5.1
-        version: 9.5.1
-      klona:
-        specifier: 2.0.6
-        version: 2.0.6
-      knex:
-        specifier: 3.1.0
-        version: 3.1.0(pg@8.13.1)(tedious@18.6.1)
-      pg:
-        specifier: 8.13.1
-        version: 8.13.1
-      simple-keyboard:
-        specifier: 3.8.16
-        version: 3.8.16
-      tedious:
-        specifier: 18.6.1
-        version: 18.6.1
-      vue-chartjs:
-        specifier: 5.3.2
-        version: 5.3.2(chart.js@4.4.6)(vue@3.5.12(typescript@5.6.3))
-      vuedraggable:
-        specifier: 4.1.0
-        version: 4.1.0(vue@3.5.12(typescript@5.6.3))
-      zod:
-        specifier: 3.23.8
-        version: 3.23.8
-    devDependencies:
-      '@teleskop/nuxt-base':
-        specifier: workspace:*
-        version: link:../../packages/nuxt-base
-      '@types/node':
-        specifier: 22.9.0
-        version: 22.9.0
-      '@types/pg':
-        specifier: 8.11.10
-        version: 8.11.10
-      '@unocss/reset':
-        specifier: 0.64.0
-        version: 0.64.0
-      nuxt:
-        specifier: 3.14.159
-        version: 3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.43.1)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.43.1))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.3.3)
-      typescript:
-        specifier: 5.6.3
-        version: 5.6.3
-      unocss:
-        specifier: 0.64.0
-        version: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.43.1))(vue@3.5.12(typescript@5.6.3))
-      vue:
-        specifier: 3.5.12
-        version: 3.5.12(typescript@5.6.3)
-      vue-router:
-        specifier: 4.4.5
-        version: 4.4.5(vue@3.5.12(typescript@5.6.3))
-      vue-tsc:
-        specifier: 2.1.10
-        version: 2.1.10(typescript@5.6.3)
-
   apps/dispensing-manager-ui:
     dependencies:
       '@teleskop/utils':
@@ -861,6 +785,82 @@ importers:
       unocss:
         specifier: 0.64.0
         version: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.43.1))(vue@3.5.12(typescript@5.6.3))
+      vue:
+        specifier: 3.5.12
+        version: 3.5.12(typescript@5.6.3)
+      vue-router:
+        specifier: 4.4.5
+        version: 4.4.5(vue@3.5.12(typescript@5.6.3))
+      vue-tsc:
+        specifier: 2.1.10
+        version: 2.1.10(typescript@5.6.3)
+
+  apps/recipes:
+    dependencies:
+      '@rollup/plugin-virtual':
+        specifier: 3.0.2
+        version: 3.0.2(rollup@4.25.0)
+      '@teleskop/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@unocss/reset':
+        specifier: 0.64.0
+        version: 0.64.0
+      async-mutex:
+        specifier: 0.5.0
+        version: 0.5.0
+      chart.js:
+        specifier: 4.4.6
+        version: 4.4.6
+      chartjs-plugin-datalabels:
+        specifier: 2.2.0
+        version: 2.2.0(chart.js@4.4.6)
+      execa:
+        specifier: 9.5.1
+        version: 9.5.1
+      klona:
+        specifier: 2.0.6
+        version: 2.0.6
+      knex:
+        specifier: 3.1.0
+        version: 3.1.0(pg@8.13.1)(tedious@18.6.1)
+      pg:
+        specifier: 8.13.1
+        version: 8.13.1
+      simple-keyboard:
+        specifier: 3.8.16
+        version: 3.8.16
+      tedious:
+        specifier: 18.6.1
+        version: 18.6.1
+      unocss:
+        specifier: 0.64.0
+        version: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.43.1))(vue@3.5.12(typescript@5.6.3))
+      vue-chartjs:
+        specifier: 5.3.2
+        version: 5.3.2(chart.js@4.4.6)(vue@3.5.12(typescript@5.6.3))
+      vuedraggable:
+        specifier: 4.1.0
+        version: 4.1.0(vue@3.5.12(typescript@5.6.3))
+      zod:
+        specifier: 3.23.8
+        version: 3.23.8
+    devDependencies:
+      '@teleskop/nuxt-base':
+        specifier: workspace:*
+        version: link:../../packages/nuxt-base
+      '@types/node':
+        specifier: 22.9.0
+        version: 22.9.0
+      '@types/pg':
+        specifier: 8.11.10
+        version: 8.11.10
+      nuxt:
+        specifier: 3.14.159
+        version: 3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.43.1)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.43.1))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.3.3)
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
       vue:
         specifier: 3.5.12
         version: 3.5.12(typescript@5.6.3)
@@ -2527,9 +2527,6 @@ packages:
   '@jridgewell/source-map@0.3.11':
     resolution: {integrity: sha512-ZMp1V8ZFcPG5dIWnQLr3NSI1MiCU7UETdS/A0G8V/XWHvJv3ZsFqutJn1Y5RPmAPX6F3BiE397OqveU/9NCuIA==}
 
-  '@jridgewell/source-map@0.3.6':
-    resolution: {integrity: sha512-1ZJTZebgqllO79ue2bm3rIGud/bOe0pP5BjSRCRxxYkEZS8STV7zN84UBbiYu7jy+eCKSnVIUgoWWE/tt+shMQ==}
-
   '@jridgewell/sourcemap-codec@1.5.0':
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
 
@@ -3732,10 +3729,6 @@ packages:
   agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
-
-  agent-base@7.1.1:
-    resolution: {integrity: sha512-H0TSyFNDMomMNJQBn8wFV5YC/2eJ+VXECwOadZJT554xP6cODZHPX3H9QMQECxvrgiSOP1pHjy1sMWQVYJOUOA==}
-    engines: {node: '>= 14'}
 
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
@@ -5643,10 +5636,6 @@ packages:
     resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
     engines: {node: '>= 6'}
 
-  https-proxy-agent@7.0.5:
-    resolution: {integrity: sha512-1e4Wqeblerz+tMKPIq2EMGiiWW1dIjZOksyHWSUm1rmuvw/how9hBHZ38lAGj5ID4Ik6EdkOw7NmWPy6LAwalw==}
-    engines: {node: '>= 14'}
-
   https-proxy-agent@7.0.6:
     resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
     engines: {node: '>= 14'}
@@ -5665,10 +5654,6 @@ packages:
   human-signals@5.0.0:
     resolution: {integrity: sha512-AXcZb6vzzrFAUE61HnN4mpLqd/cSIwNQjtNWR0euPm6y0iqx3G4gOXaIDdtdDwZmhwe82LA6+zinmW4UBWVePQ==}
     engines: {node: '>=16.17.0'}
-
-  human-signals@8.0.0:
-    resolution: {integrity: sha512-/1/GPCpDUCCYwlERiYjxoczfP0zfvZMU/OWgQPMya9AbAE24vseigFdhAMObpc8Q4lc/kjutPfUddDYyAmejnA==}
-    engines: {node: '>=18.18.0'}
 
   human-signals@8.0.1:
     resolution: {integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==}
@@ -5933,10 +5918,6 @@ packages:
   jest-worker@27.5.1:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
-
-  jiti@1.21.6:
-    resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
-    hasBin: true
 
   jiti@1.21.7:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
@@ -7185,10 +7166,6 @@ packages:
     resolution: {integrity: sha512-mQUvGU6aUFQ+rNvTIAcZuWGRT9a6f6Yrg9bHs4ImKF+HZCEK+plBvnAZYSIQztknZF2qnzNtr6F8s0+IuptdlQ==}
     engines: {node: ^14.13.1 || >=16.0.0}
 
-  pretty-ms@9.1.0:
-    resolution: {integrity: sha512-o1piW0n3tgKIKCwk2vpM/vOV13zjJzvP37Ioze54YlTHE06m4tjEbzg9WsKkvTuyYln2DHjo5pY4qrZGI0otpw==}
-    engines: {node: '>=18'}
-
   pretty-ms@9.3.0:
     resolution: {integrity: sha512-gjVS5hOP+M3wMm5nmNOucbIrqudzs9v/57bWRHQWLYklXqoXKrVfYW2W9+glfGsqtPgpiz5WwyEEB+ksXIx3gQ==}
     engines: {node: '>=18'}
@@ -7884,11 +7861,6 @@ packages:
       uglify-js:
         optional: true
 
-  terser@5.36.0:
-    resolution: {integrity: sha512-IYV9eNMuFAV4THUspIRXkLakHnV6XO7FEdtKjf/mDyrnqUg9LnlOn6/RwRvM9SZjR4GUq8Nk8zj67FzVARr74w==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   terser@5.43.1:
     resolution: {integrity: sha512-+6erLbBm0+LROX2sPXlUYx/ux5PyE9K/a92Wrt6oA+WDAoFTdpHE5tCYCI5PNzq2y8df4rA+QgHLJuR4jNymsg==}
     engines: {node: '>=10'}
@@ -8104,10 +8076,6 @@ packages:
   type-fest@3.13.1:
     resolution: {integrity: sha512-tLq3bSNx+xSpwvAJnzrK0Ep5CLNWjvFTOp71URMaAEWBfRb9nnJiBoUe0tF8bI4ZFO3omgBR6NvnbzVUT3Ly4g==}
     engines: {node: '>=14.16'}
-
-  type-fest@4.26.1:
-    resolution: {integrity: sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==}
-    engines: {node: '>=16'}
 
   type-fest@4.41.0:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
@@ -8843,7 +8811,7 @@ snapshots:
       '@azure/core-util': 1.11.0
       '@azure/logger': 1.1.4
       http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.6
+      https-proxy-agent: 7.0.6(supports-color@9.4.0)
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
@@ -9832,11 +9800,6 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.30
 
-  '@jridgewell/source-map@0.3.6':
-    dependencies:
-      '@jridgewell/gen-mapping': 0.3.5
-      '@jridgewell/trace-mapping': 0.3.25
-
   '@jridgewell/sourcemap-codec@1.5.0': {}
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
@@ -10062,7 +10025,7 @@ snapshots:
       dotenv: 16.5.0
       git-url-parse: 15.0.0
       is-docker: 3.0.0
-      jiti: 1.21.6
+      jiti: 1.21.7
       mri: 1.2.0
       nanoid: 5.0.8
       ofetch: 1.4.1
@@ -10271,7 +10234,7 @@ snapshots:
       '@redocly/ajv': 8.11.2
       '@redocly/config': 0.16.0
       colorette: 1.4.0
-      https-proxy-agent: 7.0.5(supports-color@9.4.0)
+      https-proxy-agent: 7.0.6(supports-color@9.4.0)
       js-levenshtein: 1.1.6
       js-yaml: 4.1.0
       lodash.isequal: 4.5.0
@@ -10372,7 +10335,7 @@ snapshots:
     dependencies:
       serialize-javascript: 6.0.2
       smob: 1.5.0
-      terser: 5.36.0
+      terser: 5.43.1
     optionalDependencies:
       rollup: 4.25.0
 
@@ -11583,12 +11546,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  agent-base@7.1.1(supports-color@9.4.0):
-    dependencies:
-      debug: 4.3.7(supports-color@9.4.0)
-    transitivePeerDependencies:
-      - supports-color
-
   agent-base@7.1.4: {}
 
   aggregate-error@3.1.0:
@@ -12607,7 +12564,7 @@ snapshots:
 
   dot-prop@9.0.0:
     dependencies:
-      type-fest: 4.26.1
+      type-fest: 4.41.0
 
   dotenv@16.5.0: {}
 
@@ -13220,7 +13177,7 @@ snapshots:
 
   execa@7.2.0:
     dependencies:
-      cross-spawn: 7.0.5
+      cross-spawn: 7.0.6
       get-stream: 6.0.1
       human-signals: 4.3.1
       is-stream: 3.0.0
@@ -13232,7 +13189,7 @@ snapshots:
 
   execa@8.0.1:
     dependencies:
-      cross-spawn: 7.0.5
+      cross-spawn: 7.0.6
       get-stream: 8.0.1
       human-signals: 5.0.0
       is-stream: 3.0.0
@@ -13245,14 +13202,14 @@ snapshots:
   execa@9.5.1:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
-      cross-spawn: 7.0.5
+      cross-spawn: 7.0.6
       figures: 6.1.0
       get-stream: 9.0.1
-      human-signals: 8.0.0
+      human-signals: 8.0.1
       is-plain-obj: 4.1.0
       is-stream: 4.0.1
       npm-run-path: 6.0.0
-      pretty-ms: 9.1.0
+      pretty-ms: 9.3.0
       signal-exit: 4.1.0
       strip-final-newline: 4.0.0
       yoctocolors: 2.1.1
@@ -13282,7 +13239,7 @@ snapshots:
 
   externality@1.0.2:
     dependencies:
-      enhanced-resolve: 5.17.1
+      enhanced-resolve: 5.18.3
       mlly: 1.7.3
       pathe: 1.1.2
       ufo: 1.5.4
@@ -13431,7 +13388,7 @@ snapshots:
 
   foreground-child@3.3.0:
     dependencies:
-      cross-spawn: 7.0.5
+      cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
   form-data@4.0.1:
@@ -13782,14 +13739,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@7.0.5(supports-color@9.4.0):
-    dependencies:
-      agent-base: 7.1.1(supports-color@9.4.0)
-      debug: 4.3.7(supports-color@9.4.0)
-    transitivePeerDependencies:
-      - supports-color
-
-  https-proxy-agent@7.0.6:
+  https-proxy-agent@7.0.6(supports-color@9.4.0):
     dependencies:
       agent-base: 7.1.4
       debug: 4.3.7(supports-color@9.4.0)
@@ -13803,8 +13753,6 @@ snapshots:
   human-signals@4.3.1: {}
 
   human-signals@5.0.0: {}
-
-  human-signals@8.0.0: {}
 
   human-signals@8.0.1: {}
 
@@ -14060,8 +14008,6 @@ snapshots:
       '@types/node': 22.9.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
-
-  jiti@1.21.6: {}
 
   jiti@1.21.7: {}
 
@@ -15036,7 +14982,7 @@ snapshots:
       debug: 4.3.7(supports-color@9.4.0)
       get-uri: 6.0.5
       http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.6
+      https-proxy-agent: 7.0.6(supports-color@9.4.0)
       pac-resolver: 7.0.1
       socks-proxy-agent: 8.0.5
     transitivePeerDependencies:
@@ -15093,7 +15039,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.26.2
       index-to-position: 0.1.2
-      type-fest: 4.26.1
+      type-fest: 4.41.0
 
   parse-ms@4.0.0: {}
 
@@ -15484,10 +15430,6 @@ snapshots:
 
   pretty-bytes@6.1.1: {}
 
-  pretty-ms@9.1.0:
-    dependencies:
-      parse-ms: 4.0.0
-
   pretty-ms@9.3.0:
     dependencies:
       parse-ms: 4.0.0
@@ -15519,7 +15461,7 @@ snapshots:
       agent-base: 7.1.4
       debug: 4.3.7(supports-color@9.4.0)
       http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.6
+      https-proxy-agent: 7.0.6(supports-color@9.4.0)
       lru-cache: 7.18.3
       pac-proxy-agent: 7.2.0
       proxy-from-env: 1.1.0
@@ -16260,13 +16202,6 @@ snapshots:
       webpack: 5.96.1
     optional: true
 
-  terser@5.36.0:
-    dependencies:
-      '@jridgewell/source-map': 0.3.6
-      acorn: 8.15.0
-      commander: 2.20.3
-      source-map-support: 0.5.21
-
   terser@5.43.1:
     dependencies:
       '@jridgewell/source-map': 0.3.11
@@ -16444,8 +16379,6 @@ snapshots:
   type-fest@0.8.1: {}
 
   type-fest@3.13.1: {}
-
-  type-fest@4.26.1: {}
 
   type-fest@4.41.0: {}
 

@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "rollup": "^4.16.2"
+    "rollup": "4.25.0"
   },
   "peerDependenciesMeta": {
     "rollup": {
