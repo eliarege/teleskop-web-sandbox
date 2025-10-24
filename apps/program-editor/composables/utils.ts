@@ -544,9 +544,6 @@ function checkParametersCompatibility(
   sourceParams: CommandParameter[],
   targetParams: CommandParameter[],
 ): boolean {
-  if (!sourceParams || !targetParams)
-    return sourceParams?.length === targetParams?.length
-
   if (sourceParams.length !== targetParams.length)
     return false
 
@@ -558,9 +555,6 @@ function checkIOListCompatibility(
   sourceIOList: CommandIO[],
   targetIOList: CommandIO[],
 ): boolean {
-  if (!sourceIOList || !targetIOList)
-    return sourceIOList?.length === targetIOList?.length
-
   if (sourceIOList.length !== targetIOList.length)
     return false
 
@@ -618,7 +612,7 @@ function filterValidIOCombinations(
   // Her kombinasyonun hedef makinenin seçeneklerinde olup olmadığını kontrol et
   return sourceCombinations.filter(([id1, id2]) => {
     return targetSelections.some(selection =>
-      selection.physicalId === id1 || selection.physicalId === id2,
+      selection.index === id1 || selection.index === id2,
     )
   })
 }
