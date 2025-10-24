@@ -567,7 +567,7 @@ registerCommand(() => {
         const { programNo, name: programName } = editor.program
 
         editor.isLoading = true
-        const versionRows: ProgramHeaderUpdate[] = await contextMenuStore.fetchVersions(machineId, programNo)
+        await contextMenuStore.fetchVersions(machineId, programNo)
         editor.isLoading = false
 
         ctx.$q.dialog({
@@ -577,7 +577,7 @@ registerCommand(() => {
             machineName,
             programNo,
             programName,
-            rows: versionRows,
+            rows: contextMenuStore.programVersions.value,
           },
         }).onOk(async () => {
           // Dialog closed after successful operation, refresh program

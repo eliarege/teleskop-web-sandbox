@@ -21,14 +21,15 @@ export interface ContextMenuStore {
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
   deleteProgramFromMachine: (programs: ProgramItem[], machines: MachineInfo[], source: string) => Promise<void>
   deleteVersions: (machineId: number, programNo: number, versions: number[]) => Promise<number[]>
-  fetchVersions: (machineId: number, programNo: number) => Promise<ProgramHeaderArchive[]>
-  setActiveVersion: (machineId: number, programNo: number, version: number, isNewVersion: boolean, isOperatorEditable: boolean) => Promise<void>
+  fetchVersions: (machineId: number, programNo: number) => Promise<void>
+  setActiveVersion: (machineId: number, programNo: number, version: number, isOperatorEditable: boolean) => Promise<void>
   concatenatePrograms: (programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) => Promise<boolean>
   comparison: () => void
   addToComparisonBasket: (machineId: number, programs: ProgramTableRow[]) => void
   clearComparisonBasket: () => void
   getComparisonBasket: () => { machineId: number, programNo: number }[]
   isThereCopiedValue: ComputedRef<boolean>
+  programVersions: Ref<ProgramHeaderArchive[]>
   copyStep: () => void
   pasteStep: () => void
   getMachineStatus: (machineId: number) => Promise<boolean>
@@ -39,6 +40,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   const copiedValues = ref([] as ProgramItem[])
   const copiedStepValues = ref([] as { machineId: number, programNo: number, steps: ProgramStep[] }[])
   let comparsionBasket = [] as { machineId: number, programNo: number }[]
+
+  const programVersions = ref([] as ProgramHeaderArchive[])
 
   // const machineId = Number(route.params.machine_id)
   let t = function (param: string, ...args: any[]) {
@@ -345,23 +348,23 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }) as any
   }
 
-  async function fetchVersions(machineId: number, programNo: number): Promise<ProgramHeaderArchive[]> {
+  async function fetchVersions(machineId: number, programNo: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
     editor.isLoading = true
 
     try {
-      return await fetch<ProgramHeaderArchive[]>(`/api/machine/${machineId}/program/${programNo}/version`, {
+      programVersions.value = await fetch<ProgramHeaderArchive[]>(`/api/machine/${machineId}/program/${programNo}/version`, {
         method: 'GET',
       })
     } catch (error) {
-      return []
+      console.error('Error fetching versions:', error)
     } finally {
       editor.isLoading = false
     }
   }
 
-  async function setActiveVersion(machineId: number, programNo: number, version: number, isNewVersion: boolean, isOperatorEditable: boolean): Promise<void> {
+  async function setActiveVersion(machineId: number, programNo: number, version: number, isOperatorEditable: boolean): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
     editor.isLoading = true
@@ -369,7 +372,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     try {
       await fetch(`/api/machine/${machineId}/program/${programNo}/version/${version}`, {
         method: 'PUT',
-        body: JSON.stringify({ isNewVersion, isOperatorEditable }),
+        body: JSON.stringify({ isOperatorEditable }),
       })
     } finally {
       editor.isLoading = false
@@ -446,6 +449,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     clearComparisonBasket,
     getComparisonBasket,
     isThereCopiedValue,
+    programVersions,
     copyStep,
     pasteStep,
     getMachineStatus,

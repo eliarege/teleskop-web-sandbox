@@ -21,7 +21,6 @@ const selectedRows = ref<ProgramHeaderArchive[]>([])
 const versions = ref<ProgramHeaderArchive[]>(props.rows)
 const isLoading = ref(false)
 
-const isNewVersion = ref(true)
 const isOperatorEditable = ref(false)
 
 const isActiveSelected = computed(() => {
@@ -45,33 +44,37 @@ const columns: QTableColumn<ProgramHeaderArchive>[] = [
 async function handleDelete() {
   deleteVersionDialogVis.value = false
   isLoading.value = true
+  const versionNos = selectedRows.value.map(v => v.version)
 
   try {
-    const versionNos = selectedRows.value.map(v => v.version)
     const deletedVersions = await contextMenuStore.deleteVersions(props.machineId, props.programNo, versionNos)
-    versions.value = await contextMenuStore.fetchVersions(props.machineId, props.programNo)
+    await contextMenuStore.fetchVersions(props.machineId, props.programNo)
     notifySuccess(t('contextMenu.version.deleteSuccess', { versions: deletedVersions.sort() }))
   } catch (error) {
     console.error('Error deleting versions:', error)
     notifyError(t('contextMenu.version.deleteFail'))
   } finally {
+    versions.value = contextMenuStore.programVersions.value
+    selectedRows.value = []
     isLoading.value = false
   }
 }
 
 async function setActiveVersion() {
   isLoading.value = true
+  const version = selectedRows.value[0]?.version
 
   try {
-    const version = selectedRows.value[0]?.version
-    await contextMenuStore.setActiveVersion(props.machineId, props.programNo, version, isNewVersion.value, isOperatorEditable.value)
-    versions.value = await contextMenuStore.fetchVersions(props.machineId, props.programNo)
+    await contextMenuStore.setActiveVersion(props.machineId, props.programNo, version, isOperatorEditable.value)
+    await contextMenuStore.fetchVersions(props.machineId, props.programNo)
     await editor.fetchProgram(props.machineId, props.programNo)
     notifySuccess(t('contextMenu.version.setActiveSuccess', { version }))
   } catch (error) {
     console.error('Error setting active version:', error)
     notifyError(t('contextMenu.version.setActiveFail', { version: selectedRows.value[0]?.version }))
   } finally {
+    versions.value = contextMenuStore.programVersions.value
+    selectedRows.value = []
     isLoading.value = false
   }
 }
@@ -170,20 +173,12 @@ function onRowClick(event: Event, row: ProgramHeaderArchive) {
       </q-card-section>
 
       <q-card-section class="pt-0">
-        <div class="flex flex-col gap-2 pl-2">
-          <q-checkbox
-            v-model="isNewVersion"
-            :label="t('versionDialog.newVersion')"
-            dense
-            class="self-start"
-          />
-          <q-checkbox
-            v-model="isOperatorEditable"
-            :label="t('versionDialog.operatorEditable')"
-            dense
-            class="self-start"
-          />
-        </div>
+        <q-checkbox
+          v-model="isOperatorEditable"
+          :label="t('versionDialog.operatorEditable')"
+          dense
+          class="pl-2"
+        />
       </q-card-section>
 
       <q-dialog v-model="deleteVersionDialogVis">

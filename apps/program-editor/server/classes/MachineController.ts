@@ -913,11 +913,6 @@ export class MachineController {
       await this.updateLastProgramDate(program.programNo, lastVersion)
     }
 
-    // Yeni versiyon değilse, eski versiyonu sil
-    if (!isNewVersion && isDef(lastVersion)) {
-      await this.deleteProgramFromArchive(program.programNo, lastVersion)
-    }
-
     const commands = await this.fetchCommands()
     const timestamp = this.getCurrentTimestamp()
 
