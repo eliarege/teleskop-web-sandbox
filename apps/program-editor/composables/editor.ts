@@ -402,7 +402,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Eğer hata yoksa, yeni program eklenir veya mevcut program güncellenir. İşlem sonucunda başarılı
    * veya başarısız bildirimleri yapılır.
    */
-  async function onSubmit(newProgram?: Program): Promise<boolean> {
+  async function onSubmit(newProgram?: Program, isNewVersion?: boolean): Promise<boolean> {
     const firstId = errorIds.value.values().next().value
     if (firstId) {
       const stepId = firstId.split('-')[0]
@@ -429,7 +429,7 @@ export const useEditorStore = defineStore('editor', () => {
           }
         }
       } else {
-        if (await updateProgram()) {
+        if (await updateProgram(undefined, isNewVersion)) {
           originalProgram.value = klona(program.value)
           notifySuccess(t('saveProgram.success'))
         } else {
@@ -781,13 +781,14 @@ export const useEditorStore = defineStore('editor', () => {
    * Özellikle `PROGRAM_TREATMENT_COMMAND_LIMIT` hatası durumunda, ilgili limitin aşıldığına dair bir bildirim gösterilir.
    * Eğer işlem sırasında bir hata oluşursa, hata mesajına göre uygun bir bildirim gösterilir ve `false` döner.
    */
-  async function updateProgram(newProgram?: Program): Promise<boolean> {
+  async function updateProgram(newProgram?: Program, isNewVersion: boolean = true): Promise<boolean> {
     const updatedProgram = newProgram || program.value
     try {
       return await kc.fetch<boolean>(`/api/machine/${route.params.machine_id}/program`, {
         method: 'PUT',
         body: {
           program: updatedProgram,
+          isNewVersion,
         },
       })
     } catch (error: any) {

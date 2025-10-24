@@ -91,7 +91,8 @@
     "machineConstants": "Machine Constants",
     "writeProgramSettings": "Program Write Settings",
     "commandDetails": "Command Details",
-    "checkErrors": "Check Errors"
+    "checkErrors": "Check Errors",
+    "isNewVersion": "Is New Version"
   },
   "program": {
     "name": "Program Name",

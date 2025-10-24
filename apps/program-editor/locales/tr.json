@@ -91,7 +91,8 @@
     "machineConstants": "Makine Sabitleri",
     "writeProgramSettings": "Program Yazma Ayarları",
     "commandDetails": "Komut Detayları",
-    "checkErrors": "Hata Kontrolü"
+    "checkErrors": "Hata Kontrolü",
+    "isNewVersion": "Yeni Versiyon mu?"
   },
   "program": {
     "name": "Program Adı",

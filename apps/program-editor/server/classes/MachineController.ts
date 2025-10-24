@@ -737,7 +737,7 @@ export class MachineController {
    * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
    */
   @withTransaction
-  async updateProgram(program: Program): Promise<boolean> {
+  async updateProgram(program: Program, isNewVersion: boolean = true): Promise<boolean> {
     const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
     if (!isDeleted)
       return false
@@ -747,7 +747,7 @@ export class MachineController {
       program.isChanged = true
     }
 
-    await this.insertProgram(program)
+    await this.insertProgram(program, isNewVersion)
 
     await logEditorOperation(
       ProgramEditorActivityCodes.PROGRAMCHANGED,
@@ -911,6 +911,11 @@ export class MachineController {
     // Son versiyon varsa, tarihini güncelle
     if (isDef(lastVersion)) {
       await this.updateLastProgramDate(program.programNo, lastVersion)
+    }
+
+    // Yeni versiyon değilse, eski versiyonu sil
+    if (!isNewVersion && isDef(lastVersion)) {
+      await this.deleteProgramFromArchive(program.programNo, lastVersion)
     }
 
     const commands = await this.fetchCommands()
