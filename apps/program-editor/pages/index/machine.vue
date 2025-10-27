@@ -738,9 +738,9 @@ function handleRowClass(row: ProgramTableRow): string {
   return 'no-changes'
 }
 
-const columns = computed(() =>
-  allColumns.value.filter(col => !col.hidden),
-)
+onUnmounted(() => {
+  editor.selectedPrograms = []
+})
 </script>
 
 <template>
