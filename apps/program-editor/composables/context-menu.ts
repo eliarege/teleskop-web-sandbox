@@ -259,7 +259,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         if (isMultiplePrograms) {
           notificationState.addNotification(t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
         } else {
-          notifySuccess(t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
+          notifySuccess(t(`contextMenu.send.success`, { programNo: program.programNo }))
         }
       } catch (error: any) {
         let messageKey = 'fail'
