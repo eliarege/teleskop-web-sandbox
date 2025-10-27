@@ -91,7 +91,8 @@
     "machineConstants": "Machine Constants",
     "writeProgramSettings": "Program Write Settings",
     "commandDetails": "Command Details",
-    "checkErrors": "Check Errors"
+    "checkErrors": "Check Errors",
+    "isNewVersion": "Is New Version"
   },
   "program": {
     "name": "Program Name",
@@ -250,8 +251,8 @@
   },
   "processTypeDialog": {
     "title": "Program Types",
-    "processTypeNo": "Program Type No",
-    "processTypeName": "Program Type Name",
+    "processTypeNo": "Type No",
+    "processTypeName": "Type Name",
     "note": "Note",
     "createProcessType": {
       "title": "Create Program Type",
@@ -281,6 +282,21 @@
       "success": "Program types updated successfully.",
       "fail": "An error occured while updating program types."
     }
+  },
+  "versionDialog": {
+    "title": "Version Information",
+    "message": "Version {version} will be deleted! Are you sure you want to continue?",
+    "compare": "Compare",
+    "makeDefault": "Make Default",
+    "version": "Version",
+    "programName": "Program Name",
+    "stepCount": "Step Count",
+    "updatedAt": "Updated At",
+    "selectTwoVersionsToCompare": "Please select two versions to compare",
+    "alreadyActiveVersion": "This is already the active version",
+    "cannotDeleteActiveVersion": "You cannot delete the active version",
+    "newVersion": "Save as new version",
+    "operatorEditable": "Operator can intervene"
   },
   "contextMenu": {
     "copy": "Copy",
@@ -327,18 +343,10 @@
       "warning": "Please select the process type you want to change"
     },
     "version": {
-      "_": "Version",
-      "header": "Version Information",
-      "programName": "Program Name",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "stepCount": "Step Count",
-      "time": "Time",
-      "showOnEditor": "Show in Editor",
-      "compare": "Compare",
-      "makeDefault": "Make Default",
-      "setDefaultSuccess": "Active version is set to {version} successfully.",
-      "setDefaultFail": "An error occured while setting active version to {version}"
+      "deleteSuccess": "Version {versions} deleted successfully",
+      "deleteFail": "An error occurred while deleting version",
+      "setActiveSuccess": "Active version set to {version} successfully",
+      "setActiveFail": "An error occurred while setting active version to {version}"
     },
     "send": {
       "success": "Program {programNo} sent successfully.",
@@ -388,7 +396,8 @@
       "fail": "An error occured while taking program {name} with program no {programNo} from machine {machineId}."
     },
     "deleteVersionDialog": {
-      "warning": "Version(s) {code} will be deleted! Are you sure you want to continue?"
+      "title": "Delete Version",
+      "warning": "Version {code} will be deleted! Are you sure you want to continue?"
     },
     "updateHeaderNotification": {
       "success": "Update header operation is succeed for program with program no {programNo}.",

@@ -13,6 +13,11 @@ export type ErrorCode =
   | 'PROGRAM_TREATMENT_COMMAND_LIMIT'
   | 'NO_COMMANDS_FOUND'
   | 'INVALID_MACHINE_OR_PROGRAM_NUMBER'
+  | 'INVALID_MACHINE_NUMBER'
+  | 'INVALID_PROGRAM_NUMBER'
+  | 'INVALID_VERSION_NUMBER'
+  | 'INVALID_VERSION_LIST'
+  | 'PROGRAM_VERSION_NOT_FOUND'
   | 'COMMAND_NOT_FOUND'
   | 'PROGRAM_IO_NOT_FOUND'
   | 'MACHINE_PARAMETER_NOT_FOUND'
@@ -210,6 +215,11 @@ export class PError extends Error {
   constructor(code: 'PROGRAM_TREATMENT_COMMAND_LIMIT', detail: ErrorTreatmentLimitDetail)
   constructor(code: 'NO_COMMANDS_FOUND', detail: ErrorMachineDetail)
   constructor(code: 'INVALID_MACHINE_OR_PROGRAM_NUMBER', detail: ErrorProgramDetail)
+  constructor(code: 'INVALID_MACHINE_NUMBER', detail: ErrorMachineDetail)
+  constructor(code: 'INVALID_PROGRAM_NUMBER', detail: ErrorProgramDetail)
+  constructor(code: 'INVALID_VERSION_NUMBER', detail: ErrorProgramArchiveDetail)
+  constructor(code: 'INVALID_VERSION_LIST', detail: any)
+  constructor(code: 'PROGRAM_VERSION_NOT_FOUND', detail: ErrorProgramArchiveDetail)
   constructor(code: 'COMMAND_NOT_FOUND', detail: ErrorCommandDetail)
   constructor(code: 'PROGRAM_IO_NOT_FOUND', detail: ErrorProgramIoDetail)
   constructor(code: 'MACHINE_PARAMETER_NOT_FOUND', detail: ErrorMachineParameterDetail)

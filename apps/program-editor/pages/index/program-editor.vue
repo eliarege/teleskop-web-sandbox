@@ -15,6 +15,8 @@ const { $commandManager } = useNuxtApp()
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
 
+const isNewVersion = ref(true)
+
 const ctrl = useKeyModifier('Control')
 
 definePageMeta({
@@ -42,7 +44,17 @@ const buttons = computed<ContextBarButtons[]>(() => [
     icon: 'save',
     disable: editor.isLoading,
     onClick: async () => {
-      await editor.onSubmit()
+      await editor.onSubmit(undefined, isNewVersion.value)
+    },
+  },
+  {
+    label: t('menu.isNewVersion'),
+    originalLabel: t('menu.isNewVersion'),
+    tooltip: t('menu.isNewVersion'),
+    icon: isNewVersion.value ? 'toggle_on' : 'toggle_off',
+    disable: editor.isLoading,
+    onClick: async () => {
+      isNewVersion.value = !isNewVersion.value
     },
   },
   {

@@ -91,7 +91,8 @@
     "machineConstants": "Makine Sabitleri",
     "writeProgramSettings": "Program Yazma Ayarları",
     "commandDetails": "Komut Detayları",
-    "checkErrors": "Hata Kontrolü"
+    "checkErrors": "Hata Kontrolü",
+    "isNewVersion": "Yeni Versiyon mu?"
   },
   "program": {
     "name": "Program Adı",
@@ -250,8 +251,8 @@
   },
   "processTypeDialog": {
     "title": "Program Tipleri",
-    "processTypeNo": "Program Tipi No",
-    "processTypeName": "Program Tipi Adı",
+    "processTypeNo": "Tip No",
+    "processTypeName": "Tip Adı",
     "note": "Not",
     "createProcessType": {
       "title": "Yeni Tip Oluştur",
@@ -281,6 +282,21 @@
       "success": "Program tipleri başarıyla güncellendi.",
       "fail": "Program tipleri güncellenirken hata oluştu."
     }
+  },
+  "versionDialog": {
+    "title": "Versiyon Bilgisi",
+    "message": "Versiyon {version} silinecek! Devam etmek istediğinize emin misiniz?",
+    "compare": "Karşılaştır",
+    "makeDefault": "Varsayılan Yap",
+    "version": "Versiyon",
+    "programName": "Program Adı",
+    "stepCount": "Adım Sayısı",
+    "updatedAt": "Güncellenme Tarihi",
+    "selectTwoVersionsToCompare": "Karşılaştırmak için iki versiyon seçiniz",
+    "alreadyActiveVersion": "Bu zaten aktif versiyon",
+    "cannotDeleteActiveVersion": "Aktif versiyon silinemez",
+    "newVersion": "Yeni versiyon olarak kaydet",
+    "operatorEditable": "Operatör müdahale edebilir"
   },
   "contextMenu": {
     "copy": "Kopyala",
@@ -327,18 +343,10 @@
       "warning": "Değiştirmek istediğiniz program tipini seçiniz"
     },
     "version": {
-      "_": "Versiyon",
-      "header": "Versiyon Bilgileri",
-      "programName": "Program İsmi",
-      "startDate": "Başlangıç Tarihi",
-      "endDate": "Bitiş Tarihi",
-      "stepCount": "Adım Sayısı",
-      "time": "Süre",
-      "showOnEditor": "Editörde Göster",
-      "compare": "Karşılaştır",
-      "makeDefault": "Geçerli Sürüm Yap",
-      "setDefaultSuccess": "Aktif versiyon {version} ile değiştirildi.",
-      "setDefaultFail": "Aktif versiyonu değiştirirken hata oluştu."
+      "deleteSuccess": "Versiyon {versions} başarıyla silindi",
+      "deleteFail": "Versiyon silinirken hata oluştu",
+      "setActiveSuccess": "Aktif versiyon {version} başarıyla ayarlandı",
+      "setActiveFail": "Aktif versiyon {version} ayarlanırken hata oluştu"
     },
     "send": {
       "success": "{programNo} numaralı program makineye başarıyla gönderildi.",
@@ -388,6 +396,7 @@
       "fail": "{programNo} numaralı {name} programı {machineId} makinesinden silinirken hata oluştu."
     },
     "deleteVersionDialog": {
+      "title": "Versiyonu Sil",
       "warning": "Version {code} silinecek! Devam etmek istediğinize emin misiniz?"
     },
     "updateHeaderNotification": {

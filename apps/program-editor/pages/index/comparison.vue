@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DMP from 'diff-match-patch'
 import Main from '~/components/Comparison/Main.vue'
-import type { ContextBarButtons, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff, ProgramVersion, ProgramWithErrors } from '~/shared/types'
+import type { ContextBarButtons, Program, ProgramHeaderArchive, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff } from '~/shared/types'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
 
@@ -35,11 +35,12 @@ if (v1 && v2) {
   paths[0] += `/version/${v1}`
   paths[1] += `/version/${v2}`
 
-  const versions = await kc.fetch<ProgramVersion[]>(`/api/machine/${m}/program/${p1}/version`)
-  const maxVersion = versions.length - 1
-  if (versions[maxVersion].version === Number(v1)) {
+  const versions = await kc.fetch<ProgramHeaderArchive[]>(`/api/machine/${m}/program/${p1}/version`)
+  const lastVersion = versions.at(-1)?.version
+
+  if (lastVersion === Number(v1)) {
     isValid1 = true
-  } else if (versions[maxVersion].version === Number(v2)) {
+  } else if (lastVersion === Number(v2)) {
     isValid2 = true
   }
 } else {
@@ -55,11 +56,11 @@ editor.fetchMachine(Number(m)).then(() => {
   navigateTo('/')
 })
 
-const programOneData = await kc.fetch<ProgramWithErrors>(paths[0])
-const programTwoData = await kc.fetch<ProgramWithErrors>(paths[1])
+const programOneData = await kc.fetch<Program>(paths[0])
+const programTwoData = await kc.fetch<Program>(paths[1])
 
-const programOneCommands = programOneData.program.steps.map(step => step.mainCommand.commandNo)
-const programTwoCommands = programTwoData.program.steps.map(step => step.mainCommand.commandNo)
+const programOneCommands = programOneData.steps.map(step => step.mainCommand.commandNo)
+const programTwoCommands = programTwoData.steps.map(step => step.mainCommand.commandNo)
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
@@ -187,8 +188,8 @@ function processDmpDiffs(): void {
     if (diffType === DiffType.bothSides) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const left = createProgramStepCommandDiff(programOneData.program.steps[leftIndex])
-        const right = createProgramStepCommandDiff(programTwoData.program.steps[rightIndex])
+        const left = createProgramStepCommandDiff(programOneData.steps[leftIndex])
+        const right = createProgramStepCommandDiff(programTwoData.steps[rightIndex])
 
         compareCommands(left, right)
         diffResults.push([left, right])
@@ -198,7 +199,7 @@ function processDmpDiffs(): void {
     } else if (diffType === DiffType.onlyLeft) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const left = createProgramStepCommandDiff(programOneData.program.steps[leftIndex])
+        const left = createProgramStepCommandDiff(programOneData.steps[leftIndex])
         left.mainCommand.diff = true
         diffResults.push([left, null])
         leftIndex++
@@ -206,7 +207,7 @@ function processDmpDiffs(): void {
     } else if (diffType === DiffType.onlyRight) {
       const steps = diffValue.toString().split(',').length
       for (let i = 0; i < steps; i++) {
-        const right = createProgramStepCommandDiff(programTwoData.program.steps[rightIndex])
+        const right = createProgramStepCommandDiff(programTwoData.steps[rightIndex])
         right.mainCommand.diff = true
         diffResults.push([null, right])
         rightIndex++
@@ -218,18 +219,18 @@ function processDmpDiffs(): void {
 processDmpDiffs()
 
 const programOneHeader: ProgramInfoHeader = {
-  programName: programOneData.program.name,
-  programNo: programOneData.program.programNo,
+  programName: programOneData.name,
+  programNo: programOneData.programNo,
   programVersion: Number(v1),
-  stepCount: programOneData.program.steps.length,
+  stepCount: programOneData.steps.length,
   isValid: isValid1,
 }
 
 const programTwoHeader: ProgramInfoHeader = {
-  programName: programTwoData.program.name,
-  programNo: programTwoData.program.programNo,
+  programName: programTwoData.name,
+  programNo: programTwoData.programNo,
   programVersion: Number(v2),
-  stepCount: programTwoData.program.steps.length,
+  stepCount: programTwoData.steps.length,
   isValid: isValid2,
 }
 </script>

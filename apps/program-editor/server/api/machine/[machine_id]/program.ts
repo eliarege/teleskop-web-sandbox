@@ -121,10 +121,11 @@ async function handleCreateProgram(
   }
 }
 
-async function handleUpdateProgram(machine: MachineController, body: any, machineId: number, userName?: string): Promise<boolean> {
+async function handleUpdateProgram(machine: MachineController, body: { program: Program, isNewVersion: boolean }, machineId: number, userName?: string): Promise<boolean> {
   try {
     logger.info(`User: ${userName}. Updated program ${body.program.programNo} of machine ${machineId}.`)
-    return await machine.updateProgram(body.program)
+    const { program, isNewVersion } = body
+    return await machine.updateProgram(program, isNewVersion)
   } catch (err) {
     handleProgramError(err)
     return false

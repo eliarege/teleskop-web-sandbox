@@ -125,7 +125,7 @@ const items = [
           label: tt('menu.versionInfo'),
           icon: 'info',
           onClick: () => {
-            editor.popupVersionDialog = true
+            $commandManager.executeCommand('programVersionInfo', { $q })
           },
         },
         {

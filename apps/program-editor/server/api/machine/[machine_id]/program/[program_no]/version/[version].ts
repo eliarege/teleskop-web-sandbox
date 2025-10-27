@@ -1,42 +1,79 @@
 import { machineStore } from '~/server/classes/MachineStore'
+import { PError, isPError } from '~/server/error'
 import logger from '~/server/logger'
 import { checkPermission } from '~/server/utils/auth'
 
-export default defineAuthEventHandler(async (event) => {
-  const { machine_id, program_no, version } = getRouterParams(event)
-  const machineId = Number.parseInt(machine_id)
-  const programNo = Number.parseInt(program_no)
-  const versionNo = Number.parseInt(version)
-  const machine = await machineStore.get(machineId)
+export default defineAuthEventHandler({
+  roles: ['program-view'],
+  handler: async (event) => {
+    try {
+      const { machine_id, program_no, version } = getRouterParams(event)
+      const machineId = Number.parseInt(machine_id)
+      const programNo = Number.parseInt(program_no)
+      const versionNo = Number.parseInt(version)
 
-  const userName = event.context.kauth?.name
+      if (!Number.isInteger(machineId)) {
+        throw new PError('INVALID_MACHINE_NUMBER', { machineId })
+      }
 
-  if (event.method === 'GET') {
-    logger.info(`User: ${userName}. Fetching archived program ${programNo} of machine ${machineId}.`)
-    return await machine.fetchArchivedProgram(programNo, versionNo)
-  }
+      if (!Number.isInteger(programNo)) {
+        throw new PError('INVALID_PROGRAM_NUMBER', { machineId, programNo })
+      }
 
-  if (event.method === 'POST') {
-    checkPermission(event, 'program-edit')
-    const newVersion = await machine.fetchArchivedProgram(programNo, versionNo)
+      if (!Number.isInteger(versionNo) || versionNo < 1) {
+        throw new PError('INVALID_VERSION_NUMBER', { machineId, programNo, versionNo })
+      }
 
-    await machine.withTransaction(async () => {
-      await machine.deleteProgramFromDatabase(programNo)
-      await machine.insertProgram(newVersion)
-    })
+      const machine = await machineStore.get(machineId)
 
-    logger.info(`User: ${userName}. Archived program ${programNo} updated for machine ${machineId}.`)
-    return { status: 'success', message: 'Program updated successfully' }
-  }
+      if (!machine) {
+        throw new PError('MACHINE_NOT_FOUND', { machineId })
+      }
 
-  if (event.method === 'DELETE') {
-    checkPermission(event, 'program-delete')
-    logger.info(`User: ${userName}. Deleting archived program ${programNo} of machine ${machineId}.`)
-    return await machine.deleteVersion(programNo, versionNo)
-  }
+      if (event.method === 'GET') {
+        logger.info(`User: ${event.context.kauth?.name}. Fetching archived program ${programNo} of machine ${machineId}.`)
+        return await machine.fetchArchivedProgram(programNo, versionNo)
+      }
 
-  throw createError({
-    statusCode: 405,
-    statusMessage: `Method ${event.method} not allowed.`,
-  })
+      if (event.method === 'PUT') {
+        checkPermission(event, 'program-edit')
+        const { isOperatorEditable } = await readBody<{ isOperatorEditable: boolean }>(event)
+        const newVersion = await machine.fetchArchivedProgram(programNo, versionNo)
+
+        if (!newVersion) {
+          throw new PError('PROGRAM_VERSION_NOT_FOUND', { machineId, programNo, versionNo })
+        }
+
+        newVersion.tbbProgramChangedEvent = isOperatorEditable ? 1 : 0
+
+        await machine.withTransaction(async () => {
+          await machine.deleteProgramFromDatabase(programNo)
+          await machine.insertProgram(newVersion)
+        })
+
+        logger.info(`User: ${event.context.kauth?.name}. Archived program ${programNo} updated for machine ${machineId}.`)
+        return { status: 'success', message: 'Program updated successfully' }
+      }
+
+      if (event.method === 'DELETE') {
+        checkPermission(event, 'program-delete')
+        logger.info(`User: ${event.context.kauth?.name}. Deleting archived program ${programNo} version ${versionNo} of machine ${machineId}.`)
+        await machine.deleteVersions(programNo, [versionNo])
+        return { success: true }
+      }
+    } catch (error: PError | unknown) {
+      if (isPError(error)) {
+        throw createError({
+          statusCode: 400,
+          message: error.code,
+          data: error.detail,
+        })
+      }
+
+      throw createError({
+        statusCode: 500,
+        message: 'INTERNAL_SERVER_ERROR',
+      })
+    }
+  },
 })

@@ -5,7 +5,7 @@ import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPast
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, ProcessType, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
+import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -26,6 +26,7 @@ import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDia
 import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { useMachineStatusStore } from '~/composables/machine'
+import CMVersionDialog from '~/components/CMVersionDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -74,6 +75,7 @@ export interface RegisteredCommands {
   saveAsProgram: [ctx: any]
   discardChanges: [ctx: any]
   unsavedChanges: [ctx: any, machineId?: number]
+  programVersionInfo: [ctx: any]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, commandNo: number]
   moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand?: ProgramStepCommand, parameter?: ParameterItem, stepIndex?: number]
@@ -556,6 +558,50 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+
+  return {
+    name: 'programVersionInfo',
+    async execute(ctx: any) {
+      try {
+        const { id: machineId, name: machineName } = editor.machine
+        const { programNo, name: programName } = editor.program
+
+        editor.isLoading = true
+        await contextMenuStore.fetchVersions(machineId, programNo)
+        editor.isLoading = false
+
+        ctx.$q.dialog({
+          component: CMVersionDialog,
+          componentProps: {
+            machineId,
+            machineName,
+            programNo,
+            programName,
+            rows: contextMenuStore.programVersions.value,
+          },
+        }).onOk(async () => {
+          // Dialog closed after successful operation, refresh program
+          editor.isLoading = true
+          try {
+            await editor.fetchProgram(machineId, programNo)
+          } catch (error) {
+            console.error('Error refreshing program:', error)
+          } finally {
+            editor.isLoading = false
+          }
+        })
+        return true
+      } catch (error) {
+        console.error('Error fetching version info:', error)
+        editor.isLoading = false
+        return false
+      }
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
   return {
     name: 'allCommandsList',
     async execute(ctx: any) {
@@ -732,12 +778,16 @@ registerCommand(() => {
                 editor.program.steps[index].parallelCommands.splice(parallelIndex, 1)
             })
           }
-        } else if (command.type === 'changeParameter') {
+        } else if (command.type === 'changeParameter' && programCommand) {
           for (let index = command.startIndex; index <= command.endIndex; index++) {
             editor.program.steps[index].parallelCommands.forEach((command, parallelIndex) => {
-              if (command.commandNo === commandNo)
-                editor.program.steps[index].parallelCommands[parallelIndex].parameters.find(parameter =>
-                  parameter.index === programCommand.parameters[0].index)!.value = programCommand.parameters[0].value
+              if (command.commandNo === commandNo) {
+                const param = editor.program.steps[index].parallelCommands[parallelIndex].parameters.find(parameter =>
+                  parameter.index === programCommand.parameters[0].index)
+                if (param) {
+                  param.value = programCommand.parameters[0].value
+                }
+              }
             })
           }
         }
