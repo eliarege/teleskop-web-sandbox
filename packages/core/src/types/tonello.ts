@@ -7,6 +7,10 @@ export type TonelloResponse<T = unknown, DataKey extends string = 'data'> = {
   result: TonelloResponseResult
 } & (T extends null ? Record<string, never> : { [K in DataKey]: T })
 
+export type TonelloResponseWithoutWrapper<T extends Record<string, any>> = T & {
+  result: TonelloResponseResult
+}
+
 export interface TonelloResponseResult {
   status: string
   code: number

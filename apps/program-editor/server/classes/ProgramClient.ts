@@ -278,7 +278,7 @@ export class TonelloProgramClient implements ProgramClient {
 
   async fetchProgramList(): Promise<number[]> {
     const list = await this.api.fetchProgramsList()
-    return list.data.programs.map(p => Number(p.code))
+    return list.programs.map(p => Number(p.code))
   }
 
   async deleteProgram(_id: number): Promise<void> {

@@ -11,6 +11,7 @@ import type {
   TonelloProgram,
   TonelloProgramList,
   TonelloResponse,
+  TonelloResponseWithoutWrapper,
 } from '../types/tonello'
 
 export class TonelloApi {
@@ -64,7 +65,7 @@ export class TonelloApi {
     return await this.fetch('/api/v1/getProgram', { query: { code } })
   }
 
-  async fetchProgramsList(): Promise<TonelloResponse<TonelloProgramList>> {
+  async fetchProgramsList(): Promise<TonelloResponseWithoutWrapper<TonelloProgramList>> {
     return await this.fetch('/api/v1/getProgramsList')
   }
 
