@@ -5,7 +5,7 @@ import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPast
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramHeaderUpdate, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
+import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -173,6 +173,8 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const contextMenuStore = useContextMenuStore()
+
   return {
     name: 'deleteProgram',
     execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {

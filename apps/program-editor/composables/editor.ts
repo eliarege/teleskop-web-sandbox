@@ -879,10 +879,14 @@ export const useEditorStore = defineStore('editor', () => {
    * @description Bu fonksiyon, verilen adım indeksine göre ilgili adımı seçer veya seçimden çıkarır. Seçilen adımlar `selectedSteps` dizisinde saklanır ve sıralanır.
    */
   function selectStep(ctrlKey: boolean, stepIndex: number): void {
-    const stepId = program.value.steps[stepIndex].stepId
+    const step = program.value.steps[stepIndex]
+    if (!step)
+      return
+
+    const stepId = step.stepId
 
     if (ctrlKey && !isStepSelected(stepId)) {
-      selectedSteps.value.push(program.value.steps.find(step => step.stepId === stepId)!)
+      selectedSteps.value.push(step)
 
       selectedSteps.value.sort((a, b) => {
         const indexA = program.value.steps.findIndex(x => x.stepId === a.stepId)
@@ -896,6 +900,9 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function isStepSelected(stepId: number): boolean {
+    if (!isDef(stepId))
+      return false
+
     return selectedSteps.value.some(step => step && step.stepId === stepId)
   }
 
