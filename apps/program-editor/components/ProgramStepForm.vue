@@ -78,7 +78,7 @@ function removeError(commandId: number) {
 
 <template>
   <div class="flex flex-nowrap">
-    <div class="flex items-center min-w-4 mr-2">
+    <div class="flex items-center min-w-6 mr-2">
       <div v-show="!expanded" class="space-y-1">
         <div
           v-for="(icon, key) in stepIcons"
