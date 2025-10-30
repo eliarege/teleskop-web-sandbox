@@ -1,6 +1,7 @@
 import isEqual from 'fast-deep-equal'
 import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
+import { klona } from 'klona'
 import { useEditorStore } from './editor'
 import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramError, ProgramFilter, ProgramHeader, ProgramStep, ProgramStepCommand, StepError, ioListItem } from '~/shared/types'
 
@@ -524,9 +525,9 @@ export function adaptCommand(stepCommand: ProgramStepCommand, sourceMachineComma
   // Kaynak makine komut bilgisi yoksa veya uyumsuzsa, varsayılan değerlerle devam et
   if (!sourceMachineCommand
     || !checkParametersCompatibility(sourceMachineCommand.parameters, targetMachineCommand.parameters)
-    || !checkIOListCompatibility(sourceMachineCommand.ioList, targetMachineCommand.ioList)) {
+    || !checkIOListCompatibility(sourceMachineCommand.ioList, targetMachineCommand.ioList)
+  ) {
     editor.updateStepCommandFromDefinition(targetMachineCommand, newCommand)
-
     return newCommand
   }
 
@@ -534,8 +535,15 @@ export function adaptCommand(stepCommand: ProgramStepCommand, sourceMachineComma
   return {
     commandId: newCommand.commandId,
     commandNo: stepCommand.commandNo,
-    parameters: adaptCompatibleParameters(stepCommand.parameters, targetMachineCommand.parameters),
-    ioList: adaptCompatibleIOList(stepCommand.ioList, targetMachineCommand.ioList),
+    parameters: klona(stepCommand.parameters),
+    ioList: targetMachineCommand.ioList.map((targetIO, index) => {
+      const stepIO = stepCommand.ioList[index]!
+      return {
+        ioId: targetIO.physicalId,
+        ioIndex: targetIO.index,
+        value: filterValidIOCombinations(stepIO.value, targetIO.selections),
+      }
+    }),
   }
 }
 
@@ -558,57 +566,14 @@ function checkIOListCompatibility(
   if (sourceIOList.length !== targetIOList.length)
     return false
 
-  return sourceIOList.every((sourceIO, i) =>
-    sourceIO.physicalId === targetIOList[i].physicalId
-    && sourceIO.index === targetIOList[i].index,
-  )
-}
-
-/** Uyumlu parametreleri değerleriyle birlikte aktarır */
-function adaptCompatibleParameters(stepParams: ParameterItem[], targetParams: CommandParameter[]): ParameterItem[] {
-  return targetParams.map((targetParam, index) => {
-    const stepParam = stepParams[index]
-    return {
-      index: targetParam.index,
-      value: stepParam?.value ?? targetParam.value ?? 0,
-      type: targetParam.type,
-      optimized: stepParam?.optimized ?? false,
-    }
-  })
-}
-
-/** Uyumlu IO'ları değerleriyle birlikte aktarır, geçersiz kombinasyonları filtreler */
-function adaptCompatibleIOList(stepIOList: ioListItem[], targetIOList: CommandIO[]): ioListItem[] {
-  return targetIOList.map((targetIO, index) => {
-    const stepIO = stepIOList[index]
-
-    if (!stepIO?.value?.length) {
-      return {
-        ioId: targetIO.physicalId,
-        ioIndex: targetIO.index,
-        value: [],
-      }
-    }
-
-    // IO kombinasyonlarını kontrol et ve sadece geçerli olanları aktar
-    const validCombinations = filterValidIOCombinations(stepIO.value, targetIO.selections)
-
-    return {
-      ioId: targetIO.physicalId,
-      ioIndex: targetIO.index,
-      value: validCombinations.length > 0 ? validCombinations : [],
-    }
-  })
+  return sourceIOList.every((sourceIO, i) => sourceIO.index === targetIOList[i].index)
 }
 
 /** IO kombinasyonlarını kontrol eder ve hedef makinede geçerli olanları filtreler */
 function filterValidIOCombinations(
   sourceCombinations: [number, number][],
-  targetSelections: CommandIOSelection[] | undefined,
+  targetSelections: CommandIOSelection[],
 ): [number, number][] {
-  if (!targetSelections?.length)
-    return sourceCombinations
-
   // Her kombinasyonun hedef makinenin seçeneklerinde olup olmadığını kontrol et
   return sourceCombinations.filter(([id1, id2]) => {
     return targetSelections.some(selection =>
