@@ -160,8 +160,8 @@ export const useEditorStore = defineStore('editor', () => {
         return notifyError(t('error.cannotMainCommand', { commandNo }))
       }
 
-      // Komut bilgilerini güncelle
-      updateCommand(commandNo, newStep.mainCommand)
+      // Komut bilgilerini tanıma göre güncelle
+      updateStepCommandFromDefinition(machineCommand, newStep.mainCommand)
     }
 
     const targetIndex = stepIndex ?? getStepIndex()
@@ -323,7 +323,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     const newCommand = createEmptyCommand()
     newCommand.commandId = generateParallelStepId(stepIndex)
-    updateCommand(commandNo, newCommand)
+    updateStepCommandFromDefinition(machineCommand, newCommand)
     program.value?.steps[stepIndex].parallelCommands.push(newCommand)
   }
 
@@ -349,7 +349,7 @@ export const useEditorStore = defineStore('editor', () => {
    *
    * Eğer makine komutu bulunamazsa, kullanıcıya bir hata mesajı gösterilir.
    *
-   * @param {number} newCommandNo - Makine komutunu almak için kullanılan yeni komut numarası.
+   * @param {MachineCommand} command - Makine komutunu almak için kullanılan yeni komut nesnesi.
    * @param {ProgramStepCommand} step - Güncellenmesi gereken program adımı komutu.
    *
    * @returns {void}
@@ -358,15 +358,10 @@ export const useEditorStore = defineStore('editor', () => {
    * Parametreler, yalnızca düzenlenebilir veya formül kullananlar ile güncellenir ve IO listesi, yalnızca seçilebilir
    * IO'larla doldurulur.
    */
-  function updateCommand(newCommandNo: number, step: ProgramStepCommand): void {
-    const machineCommand = machine.value.commands.get(newCommandNo)
-    if (!machineCommand) {
-      return notifyError(t('error.machineCommandNotFound', { commandNo: newCommandNo }))
-    }
+  function updateStepCommandFromDefinition(command: MachineCommand, step: ProgramStepCommand): void {
+    step.commandNo = command.commandNo
 
-    step.commandNo = newCommandNo
-
-    step.parameters = machineCommand.parameters
+    step.parameters = command.parameters
       .filter(parameter => parameter.editable || parameter.useFormula)
       .map(parameter => ({
         index: parameter.index,
@@ -374,7 +369,7 @@ export const useEditorStore = defineStore('editor', () => {
         optimized: false,
       }))
 
-    step.ioList = machineCommand.ioList
+    step.ioList = command.ioList
       .filter(io => io.selectable)
       .map(io => ({
         ioId: io.physicalId,
@@ -1053,7 +1048,7 @@ export const useEditorStore = defineStore('editor', () => {
     addStep,
     newParallelStep,
     newParallelStepCommand,
-    updateCommand,
+    updateStepCommandFromDefinition,
     deleteProgram,
     deleteStep,
     deleteParallelStep,
@@ -1070,5 +1065,6 @@ export const useEditorStore = defineStore('editor', () => {
     fetchCommandTypes,
     hasProgramChanged,
     isStepSelected,
+    getStepIndex,
   }
 })

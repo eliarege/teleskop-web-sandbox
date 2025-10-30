@@ -2,11 +2,11 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { isProgramError } from './utils'
 import { notification } from '~/shared/functions'
-import type { CopyItem, MachineInfo, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
+import type { CopyItem, MachineCommand, MachineInfo, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
-  getCopiedStepsValues: (machineId: number, programNo: number) => { machineId: number, programNo: number, steps: ProgramStep[] } | undefined
+  getCopiedStepsValues: () => ProgramStep[] | undefined
   comparisonBasketLength: () => number
   copy: (fromMachine: number, program: ProgramTableRow[]) => void
   paste: (machineId: number, remains?: CopyItem) => Promise<CopyItem>
@@ -36,74 +36,49 @@ export interface ContextMenuStore {
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
-  const copiedValues = ref([] as ProgramItem[])
-  const copiedStepValues = ref([] as { machineId: number, programNo: number, steps: ProgramStep[] }[])
-  let comparsionBasket = [] as { machineId: number, programNo: number }[]
+  const copiedValues = ref<ProgramItem[]>([])
+  const copiedStepValues = ref<ProgramStep[]>([])
+  const sourceMachineId = ref<number | null>(null)
+  const sourceMachineCommands = ref<Map<number, MachineCommand>>(new Map())
+  let comparsionBasket: { machineId: number, programNo: number }[] = []
 
   const programVersions = ref([] as ProgramHeaderArchive[])
 
   // const machineId = Number(route.params.machine_id)
-  let t = function (param: string, ...args: any[]) {
+  let t = function (param: string, ..._args: any[]) {
     return param
   }
-  let router: Router = {} as Router
+  let _router: Router = {} as Router
   function setCtx(ctx?: { t: any, router: Router }) {
     t = ctx?.t
-    router = ctx?.router!
+    _router = ctx?.router ?? {} as Router
   }
 
   function copyStep() {
     const editor = useEditorStore()
     copiedStepValues.value = []
+    sourceMachineId.value = editor.machine.id
+    sourceMachineCommands.value = new Map(editor.machine.commands)
     editor.selectedSteps.forEach((step) => {
-      const hasValue = copiedStepValues.value.find(value => value.machineId === editor.machine.id && value.programNo === editor.program.programNo)
-      if (hasValue) {
-        hasValue.steps.push(step)
-      } else {
-        copiedStepValues.value.push({ machineId: editor.machine.id, programNo: editor.program.programNo, steps: [step] })
-      }
+      copiedStepValues.value.push(step)
     })
   }
 
+  /** Kopyalanan adımları mevcut programa yapıştırır ve makine komutlarına göre adapte eder */
   function pasteStep() {
     const editor = useEditorStore()
-    editor.isLoading = true
+    const stepIndex = editor.getStepIndex(editor.selectedSteps[0]?.stepId)
+    const isSameMachine = sourceMachineId.value === editor.machine.id
 
-    let stepIndex = editor.program.steps.length
-    if (editor.selectedSteps.length) {
-      stepIndex = editor.program.steps.indexOf(editor.selectedSteps[0])
-    }
-
-    editor.selectedSteps = []
-
-    const copiedSteps = getCopiedStepsValues(editor.machine.id, editor.program.programNo)
-
-    copiedSteps?.steps.forEach((step) => {
-      const emptyStep = editor.createEmptyStep()
-      emptyStep.mainCommand = { ...step.mainCommand }
-      emptyStep.parallelCommands = step.parallelCommands.map((command) => {
-        return { ...command }
-      })
-      for (const command of emptyStep.parallelCommands) {
-        const emptyCommand = editor.createEmptyCommand()
-        emptyCommand.parameters = command.parameters.map((parameter) => {
-          return { ...parameter }
-        })
-        emptyCommand.ioList = command.ioList.map((io) => {
-          return { ...io }
-        })
-      }
-      editor.selectedSteps.push(emptyStep)
-    })
+    editor.selectedSteps = copiedStepValues.value.map(step => adaptStepToMachine(step, sourceMachineCommands.value, isSameMachine))
     editor.program.steps.splice(stepIndex, 0, ...editor.selectedSteps)
-    editor.isLoading = false
   }
 
-  function getCopiedStepsValues(machineId: number, programNo: number): { machineId: number, programNo: number, steps: ProgramStep[] } | undefined {
-    return copiedStepValues.value.find(value => value.machineId === machineId && value.programNo === programNo)
+  function getCopiedStepsValues(): ProgramStep[] | undefined {
+    return copiedStepValues.value
   }
 
-  function getCopiedValues() {
+  function getCopiedValues(): ProgramItem[] {
     return copiedValues.value
   }
 

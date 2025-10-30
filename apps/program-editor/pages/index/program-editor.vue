@@ -295,7 +295,7 @@ onBeforeRouteLeave(() => {
       <DevOnly>
         <div class="flex flex-col color-gray-5 text-3">
           <span> {{ `selectedStep: ${editor.selectedSteps.map(x => x?.stepId)}` }} </span>
-          <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues(editor.machine.id, editor.program.programNo)?.steps.map(x => x?.stepId) || ''}` }} </span>
+          <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues()?.map(x => x?.stepId) || ''}` }} </span>
           <span> {{ `errorIds: ${Array.from(editor.errorIds)}` }} </span>
         </div>
       </DevOnly>

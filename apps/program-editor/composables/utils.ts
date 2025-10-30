@@ -1,8 +1,9 @@
 import isEqual from 'fast-deep-equal'
 import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
+import { klona } from 'klona'
 import { useEditorStore } from './editor'
-import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramError, ProgramFilter, ProgramHeader, ProgramStepCommand, StepError, ioListItem } from '~/shared/types'
+import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramError, ProgramFilter, ProgramHeader, ProgramStep, ProgramStepCommand, StepError, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -479,4 +480,104 @@ export function isProgramError(error: any, message: string): boolean {
     return true
 
   return false
+}
+
+/** Adımı mevcut makinenin komut yapısına uyacak şekilde adapte eder */
+export function adaptStepToMachine(step: ProgramStep, sourceMachineCommands: Map<number, MachineCommand>, isSameMachine: boolean): ProgramStep {
+  const editor = useEditorStore()
+  const emptyStep = editor.createEmptyStep()
+
+  emptyStep.mainCommand = adaptCommand(step.mainCommand, sourceMachineCommands, isSameMachine)
+  emptyStep.parallelCommands = step.parallelCommands
+    .map(command => adaptCommand(command, sourceMachineCommands, isSameMachine))
+    .filter(command => command.commandNo !== null)
+
+  return emptyStep
+}
+
+/**
+ * Komutu makine komutuna göre parametreler ve IO'larla birlikte adapte eder
+ * Uyumluluk kontrolü akışı:
+ * 1. Komut numarası hedef makinede var mı?
+ * 2. Parametre sayıları ve indeksleri aynı mı?
+ * 3. IO sayıları ve ID'leri aynı mı?
+ * 4. Uyumluysa, IO kombinasyonlarını kontrol et ve geçerli olanları aktar
+ */
+export function adaptCommand(stepCommand: ProgramStepCommand, sourceMachineCommands: Map<number, MachineCommand>, isSameMachine: boolean): ProgramStepCommand {
+  const editor = useEditorStore()
+  const targetMachineCommand = editor.machine.commands.get(stepCommand.commandNo)
+  const newCommand = editor.createEmptyCommand()
+
+  // Komut hedef makinede yok
+  if (!targetMachineCommand)
+    return newCommand
+
+  // Aynı makine ise direkt kopyala (yeni commandId ile)
+  if (isSameMachine) {
+    return {
+      ...stepCommand,
+      commandId: newCommand.commandId,
+    }
+  }
+
+  const sourceMachineCommand = sourceMachineCommands.get(stepCommand.commandNo)
+
+  // Kaynak makine komut bilgisi yoksa veya uyumsuzsa, varsayılan değerlerle devam et
+  if (!sourceMachineCommand
+    || !checkParametersCompatibility(sourceMachineCommand.parameters, targetMachineCommand.parameters)
+    || !checkIOListCompatibility(sourceMachineCommand.ioList, targetMachineCommand.ioList)
+  ) {
+    editor.updateStepCommandFromDefinition(targetMachineCommand, newCommand)
+    return newCommand
+  }
+
+  // Komutlar uyumlu, değerleri ve IO kombinasyonlarını aktar
+  return {
+    commandId: newCommand.commandId,
+    commandNo: stepCommand.commandNo,
+    parameters: klona(stepCommand.parameters),
+    ioList: targetMachineCommand.ioList.map((targetIO, index) => {
+      const stepIO = stepCommand.ioList[index]!
+      return {
+        ioId: targetIO.physicalId,
+        ioIndex: targetIO.index,
+        value: filterValidIOCombinations(stepIO.value, targetIO.selections),
+      }
+    }),
+  }
+}
+
+/** Parametre uyumluluğunu kontrol eder */
+function checkParametersCompatibility(
+  sourceParams: CommandParameter[],
+  targetParams: CommandParameter[],
+): boolean {
+  if (sourceParams.length !== targetParams.length)
+    return false
+
+  return sourceParams.every((sourceParam, i) => sourceParam.index === targetParams[i].index)
+}
+
+/** IO uyumluluğunu kontrol eder */
+function checkIOListCompatibility(
+  sourceIOList: CommandIO[],
+  targetIOList: CommandIO[],
+): boolean {
+  if (sourceIOList.length !== targetIOList.length)
+    return false
+
+  return sourceIOList.every((sourceIO, i) => sourceIO.index === targetIOList[i].index)
+}
+
+/** IO kombinasyonlarını kontrol eder ve hedef makinede geçerli olanları filtreler */
+function filterValidIOCombinations(
+  sourceCombinations: [number, number][],
+  targetSelections: CommandIOSelection[],
+): [number, number][] {
+  // Her kombinasyonun hedef makinenin seçeneklerinde olup olmadığını kontrol et
+  return sourceCombinations.filter(([id1, id2]) => {
+    return targetSelections.some(selection =>
+      selection.index === id1 || selection.index === id2,
+    )
+  })
 }
