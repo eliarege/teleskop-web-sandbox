@@ -14,57 +14,57 @@ import { last } from '~/server/utils/functions'
 
 const tasks: Array<{ message: string, method: (event: H3Event, result: any) => Promise<void> }> = [
   {
-    message: 'Loading Machine Info',
+    message: 'loadingMachineInfo',
     method: async (event, result) => {
       const machine = await machineGet(event)
       result.machine = machine
     },
   },
   {
-    message: 'Loading Job Order Info',
+    message: 'loadingJobOrderInfo',
     method: async (event, result) => {
       const joborderInfo = await batchInfoGet(event)
       result.joborderInfo = joborderInfo
     },
   },
   {
-    message: 'Loading Batch Parameters',
+    message: 'loadingBatchParameters',
     method: async (event, result) => {
       result.batchParameters = await batchParametersGet(event)
     },
   },
   {
-    message: 'Loading Interventions',
+    message: 'loadingInterventions',
     method: async (event, result) => {
       result.interventions = await interventionsGet(event)
     },
   },
   {
-    message: 'Loading Alarms',
+    message: 'loadingAlarms',
     method: async (event, result) => {
       result.alarms = await alarmsGet(event)
     },
   },
   {
-    message: 'Loading Actual Commands',
+    message: 'loadingActualCommands',
     method: async (event, result) => {
       result.actualCommands = await actualCommandsGet(event)
     },
   },
   {
-    message: 'Loading Merged Commands',
+    message: 'loadingMergedCommands',
     method: async (event, result) => {
       result.mergedCommands = await mergedCommandsGet(event)
     },
   },
   {
-    message: 'Loading Theoretical Programs',
+    message: 'loadingTheoreticalPrograms',
     method: async (event, result) => {
       result.theoreticalPrograms = await theoreticalProgramsGet(event)
     },
   },
   {
-    message: 'Loading I/O Values',
+    message: 'loadingIOValues',
     method: async (event, result: Batch) => {
       const ios = await ioGet(event)
       Object.assign(result, ios)

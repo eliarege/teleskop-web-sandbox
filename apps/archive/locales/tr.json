@@ -338,5 +338,16 @@
     "_": "İş Emri yüklenirken hata oluştu: {message}",
     "BATCH_NOT_FOUND": "İş Emri bulunamadı",
     "UNKNOWN_ERROR": "Bilinmeyen bir hata oluştu"
+  },
+  "loading": {
+    "loadingMachineInfo": "Makine Bilgileri Yükleniyor",
+    "loadingJobOrderInfo": "İş Emri Bilgileri Yükleniyor",
+    "loadingBatchParameters": "Batch Parametreleri Yükleniyor",
+    "loadingInterventions": "Müdahaleler Yükleniyor",
+    "loadingAlarms": "Alarmlar Yükleniyor",
+    "loadingActualCommands": "Çalışan Komutlar Yükleniyor",
+    "loadingMergedCommands": "Birleştirilmiş Komutlar Yükleniyor",
+    "loadingTheoreticalPrograms": "Teorik Programlar Yükleniyor",
+    "loadingIOValues": "Giriş/Çıkış Değerleri Yükleniyor"
   }
 }

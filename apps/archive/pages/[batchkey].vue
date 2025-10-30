@@ -100,7 +100,7 @@ async function trackTaskProgress() {
         $q.loading.show({
           messageColor: 'white',
           spinnerColor: 'green',
-          message: data.message,
+          message: t(`loading.${data.message}`),
         })
       } else if (data.state === 'failed') {
         throw new Error(data.message || 'UNKNOWN_ERROR')
@@ -842,7 +842,7 @@ const items = [
   <QPage>
     <div
       ref="element"
-      style="width: 100%; height: calc(100vh - 42px)"
+      style="width: 100%; height: calc(100vh - 42px);"
       class="overflow-hidden w-full"
     >
       <teleport

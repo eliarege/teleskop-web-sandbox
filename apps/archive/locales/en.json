@@ -340,5 +340,16 @@
     "_": "Error while loading Job Order data: {message}",
     "BATCH_NOT_FOUND": "Job Order not found.",
     "UNKNOWN_ERROR": "Unknown error occurred."
+  },
+  "loading": {
+    "loadingMachineInfo": "Loading Machine Info",
+    "loadingJobOrderInfo": "Loading Job Order Info",
+    "loadingBatchParameters": "Loading Batch Parameters",
+    "loadingInterventions": "Loading Interventions",
+    "loadingAlarms": "Loading Alarms",
+    "loadingActualCommands": "Loading Actual Commands",
+    "loadingMergedCommands": "Loading Merged Commands",
+    "loadingTheoreticalPrograms": "Loading Theoretical Programs",
+    "loadingIOValues": "Loading I/O Values"
   }
 }
