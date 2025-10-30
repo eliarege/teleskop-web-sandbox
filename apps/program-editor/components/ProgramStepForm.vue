@@ -19,13 +19,15 @@ const { $commandManager } = useNuxtApp()
 
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
-const isLastStep = stepIndex.value === editor.program.steps.length - 1
 const stepIcons = computed(() => {
   const mainIcon = editor.getCommandIcon(step.mainCommand.commandNo)
   const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getCommandIcon(commandNo))
 
   return [mainIcon, ...parallelIcons].filter(icon => isDef(icon))
 })
+function isLastStep(index: number): boolean {
+  return editor.program.steps.length - 1 === index
+}
 
 const expanded = ref<boolean>(
   errorStore.getStepErrors(editor.machine.id, editor.program.programNo, step.stepId).length > 0
@@ -57,8 +59,9 @@ const duration = computed(() => {
 function deleteParallelStep(stepIndex: number, index: number): void {
   editor.selectedSteps = [editor.program.steps[stepIndex]]
   const settings = useProgramWriteSettings()
-  if (!isLastStep && settings.value.removeParallelCommandFromOtherSteps) {
-    $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', editor.program.steps[stepIndex].parallelCommands[index].commandNo, editor.program.steps[stepIndex].parallelCommands[index])
+  if (!isLastStep(stepIndex) && settings.value.removeParallelCommandFromOtherSteps) {
+    const parallelStep = editor.program.steps[stepIndex].parallelCommands[index]
+    $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', parallelStep.commandNo, parallelStep)
   }
   editor.deleteParallelStep(stepIndex, index)
 }
