@@ -132,11 +132,13 @@ const buttons = computed<ContextBarButtons[]>(() => [
     tooltip: t('menu.commandDetails'),
     shortcut: '',
     icon: 'info',
-    disable: editor.isLoading || !editor.selectedSteps[0]?.mainCommand.commandNo,
+    disable: editor.isLoading
+    || !editor.selectedSteps[0]?.mainCommand.commandNo
+    || !editor.machine.commands.has(editor.selectedSteps[0]?.mainCommand.commandNo),
     onClick() {
-      const commandNo = editor.selectedSteps[0]?.mainCommand?.commandNo
-      if (commandNo) {
-        $commandManager.executeCommand('commandDetails', { $q }, commandNo)
+      const command = editor.selectedSteps[0]?.mainCommand
+      if (command.commandNo && editor.machine.commands.has(command.commandNo)) {
+        $commandManager.executeCommand('commandDetails', { $q }, command.commandNo)
       }
     },
   },
@@ -272,7 +274,6 @@ if (editor.machine.id !== machineId) {
 }
 await editor.fetchProgram(machineId, programNo)
 editor.isLoading = false
-editor.selectedPrograms = []
 
 onBeforeRouteLeave(() => {
   const hasChanged = editor.hasProgramChanged()

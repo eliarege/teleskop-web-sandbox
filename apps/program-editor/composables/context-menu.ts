@@ -36,7 +36,6 @@ export interface ContextMenuStore {
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
-  const { notifyError } = useNotify()
   const copiedValues = ref([] as ProgramItem[])
   const copiedStepValues = ref([] as { machineId: number, programNo: number, steps: ProgramStep[] }[])
   let comparsionBasket = [] as { machineId: number, programNo: number }[]
@@ -182,6 +181,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function deleteProgram(selectedRows: ProgramTableRow[], selectedOption: string, machineId: number) {
     const { fetch } = useKeycloak()
+    const { notifyError } = useNotify()
     const query = `source=${selectedOption}`
 
     for (const program of selectedRows) {
@@ -191,11 +191,11 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         })
 
         if (!response) {
-          notification(false, t('contextMenu.delete.fail', { programNo: program.programNo }))
+          notifyError(t('contextMenu.delete.fail', { programNo: program.programNo }))
         }
       } catch (error) {
         console.error(`Error deleting program ${program.programNo}:`, error)
-        notification(false, t('contextMenu.delete.fail', { programNo: program.programNo }))
+        notifyError(t('contextMenu.delete.fail', { programNo: program.programNo }))
       }
     }
   }
@@ -226,6 +226,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function changeProcessType(machineId: number, programs: ProgramTableRow[], typeData: { type: number, additionalType: number | null }) {
     const editor = useEditorStore()
+    const { notifyError } = useNotify()
     editor.isLoading = true
 
     for (const program of programs) {
@@ -236,7 +237,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
           additionalTypeId: typeData.additionalType,
         })
       } catch (e) {
-        notification(false, t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
+        notifyError(t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
       }
     }
     editor.isLoading = false
@@ -246,6 +247,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
     const notificationState = useNotificationStore()
+    const { notifySuccess, notifyError } = useNotify()
 
     editor.isLoading = true
     const isMultiplePrograms = programs.length > 3
@@ -257,7 +259,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         if (isMultiplePrograms) {
           notificationState.addNotification(t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
         } else {
-          notification(true, t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
+          notifySuccess(t(`contextMenu.send.success`, { programNo: program.programNo }))
         }
       } catch (error: any) {
         let messageKey = 'fail'
@@ -271,7 +273,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         if (isMultiplePrograms) {
           notificationState.addNotification(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }), 'warning')
         } else {
-          notification(false, t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
+          notifyError(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
         }
       }
     }
@@ -285,19 +287,20 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function getRemoteProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    const { notifySuccess, notifyError } = useNotify()
     editor.isLoading = true
 
     for (const program of programs) {
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-        notification(true, t(`contextMenu.get.success`, { programNo: program.programNo }))
+        notifySuccess(t(`contextMenu.get.success`, { programNo: program.programNo }))
       } catch (error: any) {
         let messageKey = 'fail'
 
         if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
           messageKey = 'programNotFound'
         }
-        notification(false, t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
+        notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
       }
     }
     editor.isLoading = false
@@ -306,15 +309,21 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function sendProgramToMachines(programs: ProgramItem[], machines: MachineInfo[], machineId: number): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    const { notifySuccess, notifyError } = useNotify()
     editor.isLoading = true
 
     for (const machine of machines) {
       for (const program of programs) {
         try {
-          const check = await fetch(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: machine.id } })
-          notification(check, t(`contextMenu.getInMachine.${check ? 'success' : 'fail'}`, { name: program.name, machine: machine.name }))
+          const check = await fetch<boolean>(`/api/machine/${machineId}/program/${program.programNo}/uploadTo`, { method: 'POST', body: { machineId: machine.id } })
+
+          if (check) {
+            notifySuccess(t(`contextMenu.sendToMachine.success`, { name: program.name, machine: machine.name }))
+          } else {
+            notifyError(t(`contextMenu.sendToMachine.fail`, { name: program.name, machine: machine.name }))
+          }
         } catch (error) {
-          notification(false, t(`contextMenu.getInMachine.fail`, { name: program.name, machine: machine.name }))
+          notifyError(t(`contextMenu.getInMachine.fail`, { name: program.name, machine: machine.name }))
         }
       }
     }
@@ -324,15 +333,19 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function deleteProgramFromMachine(programs: ProgramItem[], machines: MachineInfo[], source: string): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    const { notifySuccess, notifyError } = useNotify()
 
     for (const machine of machines) {
       for (const program of programs) {
         try {
           editor.isLoading = true
-          const check = await fetch(`/api/machine/${machine.id}/program/${program.programNo}`, { method: 'DELETE', query: { source } })
-          notification(check, t(`contextMenu.deleteFromMultiMachineNotification.${check ? 'success' : 'fail'}`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
+          const check = await fetch<boolean>(`/api/machine/${machine.id}/program/${program.programNo}`, { method: 'DELETE', query: { source } })
+          if (check)
+            notifySuccess(t(`contextMenu.deleteFromMultiMachineNotification.success`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
+          else
+            notifyError(t(`contextMenu.deleteFromMultiMachineNotification.fail`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
         } catch (error) {
-          notification(false, t(`contextMenu.deleteFromMultiMachineNotification.fail`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
+          notifyError(t(`contextMenu.deleteFromMultiMachineNotification.fail`, { name: program.name, programNo: program.programNo, machineId: machine.id }))
         } finally {
           editor.isLoading = false
         }
@@ -342,10 +355,11 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function deleteVersions(machineId: number, programNo: number, versions: number[]): Promise<number[]> {
     const { fetch } = useKeycloak()
-    return await fetch(`/api/machine/${machineId}/program/${programNo}/version`, {
+
+    return await fetch<number[]>(`/api/machine/${machineId}/program/${programNo}/version`, {
       method: 'DELETE',
       body: { versions },
-    }) as any
+    })
   }
 
   async function fetchVersions(machineId: number, programNo: number): Promise<void> {
@@ -381,6 +395,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function concatenatePrograms(programs: ProgramTableRow[], programDetails: ProgramHeader, machineId: number) {
     const editor = useEditorStore()
+    const { notifySuccess, notifyError } = useNotify()
 
     const newProgram = editor.createEmptyProgram()
 
@@ -399,12 +414,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
       await editor.insertProgram(newProgram, false)
 
-      notification(true, t('contextMenu.pasteNotification.success', { name: newProgram.name, programNo: newProgram.programNo }))
+      notifySuccess(t('contextMenu.pasteNotification.success', { name: newProgram.name, programNo: newProgram.programNo }))
       return true
     } catch (error) {
       console.error('Error during program concatenation:', error)
 
-      notification(false, t('contextMenu.pasteNotification.fail', { name: newProgram.name, programNo: newProgram.programNo }))
+      notifyError(t('contextMenu.pasteNotification.fail', { name: newProgram.name, programNo: newProgram.programNo }))
       return false
     } finally {
       editor.isLoading = false
@@ -413,6 +428,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function getMachineStatus(machineId: number): Promise<boolean> {
     const { fetch } = useKeycloak()
+    const { notifyError } = useNotify()
 
     try {
       const status = await fetch<boolean>(`/api/machine/${machineId}/status`)

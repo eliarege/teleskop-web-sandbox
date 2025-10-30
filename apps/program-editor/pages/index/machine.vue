@@ -29,7 +29,6 @@ const filter = useProgramFilterStore()
 const machineStatusStore = useMachineStatusStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
-const tt = (key: string) => toRef(() => t(key))
 contextMenuStore.setCtx({ t, router })
 
 onBeforeMount(async () => {
@@ -278,7 +277,7 @@ function tooltip(value: Date): string {
 
 interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
   name: string
-  label: string | Readonly<Ref<string>>
+  label: string
   field: keyof ProgramTableRow | ((row: ProgramTableRow) => any)
   sortable?: boolean
   hidden?: boolean
@@ -297,150 +296,150 @@ function getProcessTypeName(typeValue: number): string {
   return editor.allProcessTypes.find(pt => pt.value === typeValue)?.label || ''
 }
 
-const allColumns = ref<ProgramTableColumn[]>([
-  {
-    name: 'programNo',
-    label: '#',
-    field: 'programNo',
-    sortable: true,
-    align: 'left',
-  },
-  {
-    name: 'name',
-    label: tt('program.name'),
-    field: 'name',
-    sortable: true,
-    align: 'left',
-  },
-  {
-    name: 'errorCount',
-    label: tt('program.errorCount'),
-    field: (row: ProgramTableRow) => getErrorCount(row),
-    align: 'center',
-    sortable: false,
-  },
-  {
-    name: 'duration',
-    label: tt('program.theoreticalDuration'),
-    field: (value: { duration: number }) => {
-      return formatDuration(value.duration)
+const columns = computed<ProgramTableColumn[]>(() =>
+  [
+    {
+      name: 'programNo',
+      label: '#',
+      field: 'programNo',
+      sortable: true,
+      align: 'left',
     },
-    sortable: true,
-    align: 'center',
-  },
-  {
-    name: 'step_count',
-    label: tt('program.stepCount'),
-    field: 'stepCount',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    name: 'type',
-    label: tt('program.type'),
-    field: (row: ProgramTableRow) => getProcessTypeName(row.type),
-    sortable: true,
-    align: 'center',
-    hidden: editor.isTonello,
-  },
-  {
-    name: 'additionalType',
-    label: tt('program.additionalType'),
-    field: (row: ProgramTableRow) => {
-      if (row.type === ADDITIONAL_PROCESS_CODE_ILAVE && row.additionalType) {
-        return getProcessTypeName(row.additionalType)
-      }
-      return ''
+    {
+      name: 'name',
+      label: t('program.name'),
+      field: 'name',
+      sortable: true,
+      align: 'left',
     },
-    sortable: true,
-    align: 'center',
-    hidden: editor.isTonello,
-  },
-  {
-    name: 'operator',
-    label: tt('program.opMud'),
-    field: 'operator',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    name: 'totalChemReq',
-    label: tt('program.totalChemReq'),
-    field: 'totalChemReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'totalDyeReq',
-    label: tt('program.totalDyeReq'),
-    field: 'totalDyeReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'manChemReq',
-    label: tt('program.manChemReq'),
-    field: 'manChemReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'autoChemReq',
-    label: tt('program.autoChemReq'),
-    field: 'autoChemReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'autoDyeReq',
-    label: tt('program.autoDyeReq'),
-    field: 'autoDyeReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'manDyeReq',
-    label: tt('program.manDyeReq'),
-    field: 'manDyeReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'saltReq',
-    label: tt('program.saltReq'),
-    field: 'saltReq',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'genericMat1Req',
-    label: tt('program.genericMat1Req'),
-    field: 'genericMat1Req',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'genericMat2Req',
-    label: tt('program.genericMat2Req'),
-    field: 'genericMat2Req',
-    sortable: false,
-    align: 'center',
-  },
-  {
-    name: 'updated_at',
-    label: tt('program.updated'),
-    field: 'updatedAt',
-    sortable: true,
-    align: 'right',
-    format,
-    tooltip,
-  },
-])
+    {
+      name: 'errorCount',
+      label: t('program.errorCount'),
+      field: (row: ProgramTableRow) => getErrorCount(row),
+      align: 'center',
+      sortable: false,
+    },
+    {
+      name: 'duration',
+      label: t('program.theoreticalDuration'),
+      field: (row: ProgramTableRow) => formatDuration(row.duration),
+      sortable: true,
+      align: 'center',
+    },
+    {
+      name: 'step_count',
+      label: t('program.stepCount'),
+      field: 'stepCount',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      name: 'type',
+      label: t('program.type'),
+      field: (row: ProgramTableRow) => getProcessTypeName(row.type),
+      sortable: true,
+      align: 'center',
+      hidden: editor.isTonello,
+    },
+    {
+      name: 'additionalType',
+      label: t('program.additionalType'),
+      field: (row: ProgramTableRow) => {
+        if (row.type === ADDITIONAL_PROCESS_CODE_ILAVE && row.additionalType) {
+          return getProcessTypeName(row.additionalType)
+        }
+        return ''
+      },
+      sortable: true,
+      align: 'center',
+      hidden: editor.isTonello,
+    },
+    {
+      name: 'operator',
+      label: t('program.opMud'),
+      field: 'operator',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      name: 'totalChemReq',
+      label: t('program.totalChemReq'),
+      field: 'totalChemReq',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'totalDyeReq',
+      label: t('program.totalDyeReq'),
+      field: 'totalDyeReq',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'manChemReq',
+      label: t('program.manChemReq'),
+      field: 'manChemReq',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'autoChemReq',
+      label: t('program.autoChemReq'),
+      field: 'autoChemReq',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'autoDyeReq',
+      label: t('program.autoDyeReq'),
+      field: 'autoDyeReq',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'manDyeReq',
+      label: t('program.manDyeReq'),
+      field: 'manDyeReq',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'saltReq',
+      label: t('program.saltReq'),
+      field: 'saltReq',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'genericMat1Req',
+      label: t('program.genericMat1Req'),
+      field: 'genericMat1Req',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'genericMat2Req',
+      label: t('program.genericMat2Req'),
+      field: 'genericMat2Req',
+      sortable: false,
+      align: 'center',
+    },
+    {
+      name: 'updated_at',
+      label: t('program.updated'),
+      field: 'updatedAt',
+      sortable: true,
+      align: 'right',
+      format,
+      tooltip,
+    },
+  ].filter(col => !col.hidden) as ProgramTableColumn[],
+)
 
 const contextMenuOptions = computed(() => [
   [
     {
-      label: tt('contextMenu.copy'),
+      label: t('contextMenu.copy'),
       shortcut: 'Ctrl+C',
       icon: 'content_copy',
       disabled: false,
@@ -449,7 +448,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.paste'),
+      label: t('contextMenu.paste'),
       shortcut: 'Ctrl+V',
       icon: 'content_paste',
       disabled: !contextMenuStore.isThereCopiedValue.value,
@@ -460,7 +459,7 @@ const contextMenuOptions = computed(() => [
   ],
   [
     {
-      label: tt('contextMenu.newProgram'),
+      label: t('contextMenu.newProgram'),
       category: 'edit',
       shortcut: 'F2',
       icon: 'add',
@@ -470,7 +469,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.editProgram'),
+      label: t('contextMenu.editProgram'),
       shortcut: 'F3',
       icon: 'edit',
       disabled: isMoreThanOneRowSelected.value
@@ -483,7 +482,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.deleteProgram'),
+      label: t('contextMenu.deleteProgram'),
       shortcut: 'Delete',
       icon: 'delete',
       disabled: false,
@@ -498,7 +497,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.deleteProgramsFromMachine'),
+      label: t('contextMenu.deleteProgramsFromMachine'),
       icon: '',
       disabled: false,
       onClick: () => {
@@ -511,7 +510,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.concatPrograms'),
+      label: t('contextMenu.concatPrograms'),
       shortcut: '',
       icon: '',
       disabled: !isMoreThanOneRowSelected.value,
@@ -526,7 +525,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.renameProgram'),
+      label: t('contextMenu.renameProgram'),
       shortcut: '',
       icon: 'edit_note',
       disabled: isMoreThanOneRowSelected.value
@@ -544,7 +543,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.changeProcessType'),
+      label: t('contextMenu.changeProcessType'),
       shortcut: '',
       icon: '',
       disabled: editor.selectedPrograms.some(
@@ -565,7 +564,7 @@ const contextMenuOptions = computed(() => [
   ],
   [
     {
-      label: tt('contextMenu.sendProgram'),
+      label: t('contextMenu.sendProgram'),
       shortcut: '',
       icon: 'send',
       disabled: hasOnlyOnController.value,
@@ -580,7 +579,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.copyToMachinesAndSend'),
+      label: t('contextMenu.copyToMachinesAndSend'),
       shortcut: '',
       icon: '',
       disabled: hasOnlyOnController.value,
@@ -595,7 +594,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.getProgram'),
+      label: t('contextMenu.getProgram'),
       shortcut: '',
       icon: 'get_app',
       disabled: false,
@@ -611,7 +610,7 @@ const contextMenuOptions = computed(() => [
   ],
   [
     {
-      label: tt('contextMenu.addToComparison'),
+      label: t('contextMenu.addToComparison'),
       shortcut: '',
       icon: 'playlist_add',
       disabled: hasOnlyOnController.value,
@@ -620,7 +619,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.compareWith'),
+      label: t('contextMenu.compareWith'),
       shortcut: '',
       icon: 'compare_arrows',
       disabled: !contextMenuStore.comparisonBasketLength() || hasOnlyOnController.value,
@@ -630,7 +629,7 @@ const contextMenuOptions = computed(() => [
       },
     },
     {
-      label: tt('contextMenu.clearComparisonBasket'),
+      label: t('contextMenu.clearComparisonBasket'),
       shortcut: '',
       icon: 'clear',
       disabled: !contextMenuStore.comparisonBasketLength(),
@@ -641,7 +640,7 @@ const contextMenuOptions = computed(() => [
   ],
   [
     {
-      label: tt('contextMenu.programVersion'),
+      label: t('contextMenu.programVersion'),
       shortcut: '',
       icon: 'info',
       disabled: isMoreThanOneRowSelected.value,
@@ -738,9 +737,9 @@ function handleRowClass(row: ProgramTableRow): string {
   return 'no-changes'
 }
 
-const columns = computed(() =>
-  allColumns.value.filter(col => !col.hidden),
-)
+onUnmounted(() => {
+  editor.selectedPrograms = []
+})
 </script>
 
 <template>
@@ -760,13 +759,12 @@ const columns = computed(() =>
         ref="tableRef"
         v-model:selected="editor.selectedPrograms"
         :rows="filteredPrograms"
-        :columns
+        :columns="columns"
         row-key="programNo"
         :rows-per-page-options="[0]"
         class="program-table bg-gray-1 dark:bg-dark-4"
         selection="multiple"
         :selected-rows-label="getSelectedString"
-        :filter="searchFilter"
         dense
         flat
         table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
@@ -776,6 +774,24 @@ const columns = computed(() =>
         @row-dblclick="onRowDoubleClick"
         @row-contextmenu="handleContextMenu"
       >
+        <template #top>
+          <QInput
+            v-model="searchFilter"
+            class="w-xs"
+            :placeholder="t('search')"
+            autocomplete="false"
+            debounce="100"
+            clearable
+            outlined
+            dense
+          >
+            <template #prepend>
+              <QIcon name="search" />
+            </template>
+          </QInput>
+          <QSpace />
+          <ProgramFilterButton />
+        </template>
         <template #body-cell="{ value, row, col }">
           <QTd
             :class="[handleRowClass(row), col.__tdClass?.(row)]"
@@ -795,24 +811,6 @@ const columns = computed(() =>
               {{ formatTooltip(row, col) }}
             </QTooltip>
           </QTd>
-        </template>
-        <template #top>
-          <QInput
-            v-model="searchFilter"
-            class="w-xs"
-            :placeholder="t('search')"
-            autocomplete="false"
-            debounce="100"
-            clearable
-            outlined
-            dense
-          >
-            <template #prepend>
-              <QIcon name="search" />
-            </template>
-          </QInput>
-          <QSpace />
-          <ProgramFilterButton />
         </template>
       </QTable>
 

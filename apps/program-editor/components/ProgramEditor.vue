@@ -8,6 +8,8 @@ import { useEditorStore } from '~~/composables/editor'
 import type { ProgramStep } from '~/shared/types'
 
 const editor = useEditorStore()
+const steps = computed<ProgramStep[]>(() => editor.program?.steps || [])
+
 let dragged: ProgramStep | null = null
 
 const sortableOptions: SortableOptions & AutoScrollOptions = {
@@ -38,19 +40,18 @@ function onDragEnd(event: SortableEvent) {
 <template>
   <Sortable
     class="program-editor e-div-y"
-    :list="// eslint-disable-next-line vue/no-extra-parens
-      (editor.program?.steps as ProgramStep[])"
+    :list="steps"
     item-key="stepId"
     :options="sortableOptions"
     @start="onDragStart"
     @end="onDragEnd"
     @click="editor.selectedSteps = []"
   >
-    <template #item="{ index }: { index: number, element: any }">
+    <template #item="{ index, element }: { index: number; element: ProgramStep }">
       <QItem
         dense
         class="program-step"
-        :class="{ __selected: editor.isStepSelected(editor.program.steps[index].stepId) }"
+        :class="{ __selected: editor.isStepSelected(element.stepId) }"
         @click.stop
       >
         <QItemSection side @click.stop="editor.selectStep($event.ctrlKey, index)">
@@ -58,14 +59,10 @@ function onDragEnd(event: SortableEvent) {
             {{ index + 1 }}
           </QItemLabel>
         </QItemSection>
-        <QItemSection
-          class="pl-2"
-          @click.stop="editor.selectStep($event.ctrlKey, index)"
-        >
+
+        <QItemSection class="pl-2" @click.stop="editor.selectStep($event.ctrlKey, index)">
           <div :id="`step-${index}`">
-            <ProgramStepForm
-              :path="`steps.${index}`"
-            />
+            <ProgramStepForm :path="`steps.${index}`" />
           </div>
         </QItemSection>
 
@@ -73,12 +70,9 @@ function onDragEnd(event: SortableEvent) {
           <QIcon
             class="icon absolute top-2 cursor-pointer"
             name="close"
-            @click.stop="editor.deleteStep(editor.program.steps[index].stepId)"
+            @click.stop="editor.deleteStep(element.stepId)"
           />
-          <QIcon
-            class="icon command-drag-handle mt-7 cursor-move"
-            name="drag_handle"
-          />
+          <QIcon class="icon command-drag-handle mt-7 cursor-move" name="drag_handle" />
         </QItemSection>
       </QItem>
     </template>

@@ -1,8 +1,8 @@
 import { useQuasar } from 'quasar'
-import { notification } from '~/shared/functions'
 
 export function useNotify() {
   const $q = useQuasar()
+
   return {
     notifySuccess(message: string) {
       $q.notify({
