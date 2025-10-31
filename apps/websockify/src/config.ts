@@ -50,31 +50,31 @@ export const config = defineConfiguration({
   dmsEnabled: {
     type: 'boolean',
     default: false,
-    env: 'DMS_ENABLED',
+    env: ['DMS_ENABLED', 'RECIPES_DB_ENABLED'],
   },
   dmsHost: {
     type: 'string',
     default: 'localhost',
-    env: 'DMS_HOST',
+    env: ['DMS_HOST', 'RECIPES_DB_HOST', 'NUXT_RECIPES_DB_HOST'],
   },
   dmsPort: {
     type: 'integer',
     default: 5432,
-    env: 'DMS_PORT',
+    env: ['DMS_PORT', 'RECIPES_DB_PORT', 'NUXT_RECIPES_DB_PORT'],
   },
   dmsUser: {
     type: 'string',
     required: process.env.NODE_ENV === 'production' && inferBoolean(process.env.DMS_ENABLED),
-    env: 'DMS_USER',
+    env: ['DMS_USER', 'RECIPES_DB_USER', 'NUXT_RECIPES_DB_USER'],
   },
   dmsPassword: {
     type: 'string',
-    env: 'DMS_PASSWORD',
+    env: ['DMS_PASSWORD', 'RECIPES_DB_PASSWORD', 'NUXT_RECIPES_DB_PASSWORD'],
     required: process.env.NODE_ENV === 'production' && inferBoolean(process.env.DMS_ENABLED),
   },
   dmsDatabase: {
     type: 'string',
-    env: 'DMS_DATABASE',
+    env: ['DMS_DATABASE', 'RECIPES_DB_DATABASE', 'NUXT_RECIPES_DB_DATABASE'],
   },
   /** Pino Log Level (debug|info|warn|error|fatal) */
   logLevel: {
