@@ -7,11 +7,11 @@ const config = useRuntimeConfig()
 const dmsDB = Knex({
   client: 'pg',
   connection: {
-    host: config.dmsHost,
-    port: Number.parseInt(config.dmsPort),
-    user: config.dmsUser,
-    password: config.dmsPassword,
-    database: config.dmsDatabase,
+    host: config.recipesDbHost,
+    port: Number.parseInt(config.recipesDbPort),
+    user: config.recipesDbUser,
+    password: config.recipesDbPassword,
+    database: config.recipesDbDatabase,
   },
   migrations: {
     migrationSource: MigrationSource,
