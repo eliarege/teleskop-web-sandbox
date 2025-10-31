@@ -5,7 +5,7 @@ import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPast
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { CopyItem, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
+import type { CopyItem, Machine, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -69,8 +69,8 @@ export interface RegisteredCommands {
   editProgramIcons: [ctx: any]
   exportToExcel: [ctx: any]
   refresh: [ctx: any, machineId: number]
-  tempTimeGraph: [ctx: any]
-  stepCommandGraph: [ctx: any]
+  tempTimeGraph: [ctx: any, machine: Machine, program: Program, initialTemperature: number]
+  stepCommandGraph: [ctx: any, machine: Machine, program: Program]
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
   discardChanges: [ctx: any]
@@ -150,9 +150,14 @@ registerCommand(() => {
 registerCommand(() => {
   return {
     name: 'tempTimeGraph',
-    execute(ctx: any) {
+    execute(ctx: any, machine: Machine, program: Program, initialTemperature: number) {
       ctx.$q.dialog({
         component: CMTempTimeGraphDialog,
+        componentProps: {
+          machine,
+          program,
+          initialTemperature,
+        },
       })
       return true
     },
@@ -162,9 +167,13 @@ registerCommand(() => {
 registerCommand(() => {
   return {
     name: 'stepCommandGraph',
-    execute(ctx: any) {
+    execute(ctx: any, machine: Machine, program: Program) {
       ctx.$q.dialog({
         component: CMStepCommandGraphDialog,
+        componentProps: {
+          machine,
+          program,
+        },
       })
       return true
     },

@@ -172,12 +172,15 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
 
 onKeyStroke(['F7'], (event: KeyboardEvent) => {
   event.preventDefault()
-  $commandManager.executeCommand('stepCommandGraph', { $q })
+  const { machine, program } = editor
+  $commandManager.executeCommand('stepCommandGraph', { $q }, machine, program)
 })
 
 onKeyStroke(['F8'], (event: KeyboardEvent) => {
   event.preventDefault()
-  $commandManager.executeCommand('tempTimeGraph', { $q })
+  const { machine, program, teleskopSettings } = editor
+  const initialTemperature = teleskopSettings.initialTemperature
+  $commandManager.executeCommand('tempTimeGraph', { $q }, machine, program, initialTemperature)
 })
 
 onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
