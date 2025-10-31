@@ -1,8 +1,62 @@
 # Changelog
 
+## 0.54.0 - 2025-10-31
+
+[Compare Changes](2a1b3de0fe591ee7dc3a5216fa273a82ecdbbf22...863553c66eaf02484d503eb88788856bbc32ab35)
+
+### 🚀 Features
+
+-  **PE**: Enhance context menu functionality with version management commands ([1e73311](1e73311778a7f6c12039b2435d97841d05c46d35))
+-  **PE**: Update copy/paste functions and add invalid step validation ([c28414d](c28414dfd83b4341599d40dacd1cc71fdba9cada))
+-  **PE**: Enhance step adaptation logic for machine command compatibility ([aef37e3](aef37e3d4ab8e26b5afc76f6d2371817b30ea917))
+-  **MA**: Enhance command type maps with icons and colors for better UI representation ([b959481](b95948180134900e75f67de85074bb7e812f54b7))
+
+### 🐛 Bug Fixes
+
+- **TonelloApi**: Update fetchProgramsList to return response without wrapper ([230e384](230e384523f19bda777c7a598da60ce2c27a82af))
+-  **PE**: Resolve Vue warn warning ([10e4340](10e43407c235e5707e5ac76471f8986949b9b7a7))
+-  **PE**: Handle undefined steps in selectStep and isStepSelected functions ([ad0d62c](ad0d62c37f112925790b4ca191c3dfa481532022))
+-  **PE**: Enhance command execution logic by validating command existence in machine commands ([5b1c719](5b1c719f3efbef106d0c10d9e2596b5c5fe5aec6))
+-  **PE**: Removed parameter ([b429761](b429761a62a8bd8d89b218aee6a91f6632b3b970))
+-  **PE**: Update command handling to use machineCommand instead of commandNo ([e894385](e894385ddf496bbaf62ecd95f1b0ea924e10a447))
+-  **PE**: Rename updateCommand to updateStepCommandFromDefinition for clarity and consistency ([bc65f47](bc65f47f93e109fe4bdee5a097be9996aeb67ffb))
+-  **PE**: Remove redundant checks for parameter and IO list compatibility ([ccbdf60](ccbdf6047e9ff0ca7f04d1b72c5a697b3ac4dc06))
+-  **PE**: Refactor isLastStep function for clarity and update its usage in deleteParallelStep ([da04957](da04957388815ea9af99405f4b6b3b5b1d76d576))
+-  **PE**: Adjust minimum width of step icon container for aligned layout ([c8c79e4](c8c79e47c51214abc77efd39ef5b04b755b2d37d))
+-  **AR**: Improve formatSecondsToHHMMSS function to handle negative values ([f038682](f03868256e3182dcf1014e8ff641e5d7290731d7))
+-  **AR**: Add loading messages for machine info, job order, batch parameters, interventions, alarms, actual commands, merged commands, theoretical programs, and I/O values ([cb57b23](cb57b236a5528e5d609390b8706156b8a4b74c2a))
+-  **AR**: Update Turkish to English translations in batch summary ([db1c4c4](db1c4c487f0f1eb21c77f0bb93325aa409c76345))
+- **recipes**: Update database configuration keys ([821d3fb](821d3fb573756e8189e935efa3c2b7d8931a79b1))
+- **recipes**: Rename remaining dispensing-management-systems references ([18f1c4c](18f1c4c85be114152231fa7660245c5212dcb7e0))
+- **websockify**: Update environment variables for DMS configuration ([863553c](863553c66eaf02484d503eb88788856bbc32ab35))
+
+### ♻️ Refactor
+
+-  **PE**: Streamline CMVersionDialog component structure and improve version handling logic ([42b8616](42b86162e6a93bd76abbebd83f6e077df376768b))
+-  **PE**: Enhance error handling and method validation in program version API ([c03ab77](c03ab7721e3287880ba627dff40013456298fe98))
+-  **PE**: Update program version handling by removing unused version dialog and related logic ([406f547](406f5470e3a5507c22d7c568d0b498b39c992f5b))
+-  **PE**: Update program version handling in MachineController for improved logic and clarity ([933a2d5](933a2d55c1e9180214c52bfb5ac3398ba6c89a99))
+-  **PE**: Enhance setActiveVersion method to include new version and operator editable flags ([2d069b9](2d069b9352159aaa8fb7a0a2b8ecbc6646730c9b))
+-  **PE**: Enhance CMVersionDialog with tooltips and new version flags for improved user experience ([f73ad86](f73ad86d3329e0280c16776b94a904ca5836b1e3))
+-  **PE**: Update process type dialog labels for clarity and consistency ([e304a6c](e304a6cb7923e0310bec908a3a936a0d87fe23b3))
+-  **PE**: Update delete version dialog titles for consistency ([6190931](6190931366c0ff2f3ddc7f187a8fe6b2ca7ef745))
+-  **PE**: Rename deleteVersion to deleteVersions for consistency and update related logic ([0d1e2c9](0d1e2c9ca68b1c4477d58bf7fc39601dde07bed0))
+-  **PE**: Enhance error handling by including machineId and programNo in PError details ([a0762cf](a0762cf19bff66f7d24a3ad62e3c75706920ccb5))
+-  **PE**: Update program data handling to improve type consistency and simplify access ([d05507b](d05507be2801f7688bc5806d331c2b6a83620cee))
+-  **PE**: Streamline version handling by removing isNewVersion flag and updating related logic ([a41bdd7](a41bdd7fb08ef00898b46081a4b5c4edde6c35c4))
+-  **PE**: Update onSubmit and updateProgram functions to include isNewVersion parameter for better version handling ([2355b01](2355b0141e5c47bd8e215670042fb941ae5c0cc5))
+-  **PE**: Simplify column definitions and update translation usage in machine table ([ffa8d57](ffa8d5795799454f3c0f62c4dfa4610502bb927e))
+-  **PE**: Replace notification calls with notifySuccess and notifyError in context menu ([d21051c](d21051c4752a020e4efe91cb0a20c48d9974f1ff))
+-  **PE**: Streamline step handling in ProgramEditor component ([3c10c4e](3c10c4e00204f02334807d1f8f6890b6d8e69539))
+-  **PE**: Simplify adaptCommand function and improve IO list handling ([0abb198](0abb19821a9da1654f2b2cc088ded25e77b94e5f))
+
+### 🔧 Miscellaneous Tasks
+
+- **recipes**: Samba dependencies removed ([22c90da](22c90dae74c1457feaed9809bd7a141cc9e4cadd))
+
 ## 0.53.0 - 2025-10-24
 
-[Compare Changes](9c3725d3934dc2fcdc91dc95e8ef8684487eff24...329999ca0cb989fb172e6a98fb2fe47fa20b902a)
+[Compare Changes](9c3725d3934dc2fcdc91dc95e8ef8684487eff24...2a1b3de0fe591ee7dc3a5216fa273a82ecdbbf22)
 
 ### 🚀 Features
 
