@@ -85,18 +85,25 @@ export function getCommandsWithClosestTimeDigital(
     }
   })
 }
+
 function formatSecondsToHHMMSS(sec: number) {
+  const sign = sec < 0 ? '-' : ''
+  sec = Math.abs(sec)
+
   const hours = Math.floor(sec / 3600)
   const minutes = Math.floor((sec % 3600) / 60)
-  const seconds = Math.floor((sec % 60))
+  const seconds = Math.floor(sec % 60)
 
-  // Format as 'hh:mm:ss'
-  return [
-    hours.toString().padStart(2, '0'),
-    minutes.toString().padStart(2, '0'),
-    seconds.toString().padStart(2, '0'),
-  ].join(':')
+  return (
+    sign
+    + [
+      hours.toString().padStart(2, '0'),
+      minutes.toString().padStart(2, '0'),
+      seconds.toString().padStart(2, '0'),
+    ].join(':')
+  )
 }
+
 export async function printJoborderRecipe(batchKey: number, joborderInfo: BatchInfo, programs: BasicProgram[]) {
   const recipe = await $fetch(`/api/batch/${batchKey}/recipe`)
 
