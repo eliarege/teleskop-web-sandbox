@@ -28,7 +28,7 @@ export default defineNuxtConfig({
     public: {
       kcUrl: 'http://localhost:8080',
       kcRealm: 'teleskop-web',
-      kcClientId: 'dispensing-management-systems',
+      kcClientId: 'recipes',
       kcEnabled: false,
       websockifyUrl: 'ws://localhost:6800',
     },
