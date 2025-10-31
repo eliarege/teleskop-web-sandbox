@@ -293,40 +293,11 @@ async function processRequest(status: string, order: JobOrder) {
 }
 async function setStatus(status: string, order: JobOrder) {
   try {
-    await handleFile(status, order)
     await $fetch('/api/job-orders/set-status', { method: 'POST', query: { status: status === 'complete' ? 3 : 8, reqNo: order.jobId } })
     notifySuccess(t('Success'))
     getJobOrders()
   } catch (e) {
     notifyFail(t('Failed'))
-  }
-}
-async function handleFile(status: any, data: any) {
-  const dispenser = dataStore.getDispenser(data.dispenserId)
-  if (dispenser?.dispenserBrandId === 1) // Eliar
-  {
-    const countInProgram = await $fetch('/api/job-orders/step-count', {
-      query: {
-        batchNo: data.batchNo,
-        correctionNo: data.batchCorrectionNo,
-        recipeProcessNo: data.recipeProcessNo,
-      },
-    })
-    const content = [
-      status === 'retry' ? 1 : 8,
-      data.priority,
-      data.machineId,
-      data.tankNo,
-      data.batchNo,
-      data.programNo,
-      data.stepNo,
-      data.recipeStepNo,
-      countInProgram,
-      data.recipeType,
-      data.recipeProcessNo,
-      status === 'retry' ? 1 : 0,
-    ]
-    await $fetch('/api/file/write-step', { method: 'POST', body: { content, reqFilePath: '/SiviKimyasal/req' } })
   }
 }
 </script>

@@ -74,9 +74,6 @@ target "archive" {
 target "recipes" {
   inherits = ["_common"]
   target = "nuxt-app"
-  args = {
-    APP_DEPENDENCIES = "samba"
-  }
 }
 
 target "dispensing-manager-ui" {

@@ -16,7 +16,3 @@ npm install knex -g
 sudo snap install novnc
 novnc --listen 5900 --vnc ${VNC_IP}:${VNC_SOCKET}
 ```
-- Samba Client:
-```
-sudo apt install smbclient
-```

@@ -22,9 +22,6 @@ export default defineNuxtConfig({
     teleskopPort: '7654',
     teleskopPassword: '12345678tT',
     teleskopDatabase: 'Teleskop',
-    sambaPath: '//192.168.19.13/Dms',
-    sambaUser: 'root',
-    sambaPassword: '1422',
     public: {
       kcUrl: 'http://localhost:8080',
       kcRealm: 'teleskop-web',
