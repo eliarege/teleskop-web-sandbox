@@ -10,8 +10,17 @@ const stateStore = useStateStore()
 const { notifySuccess, notifyFail } = useNotify()
 const filters = ref([])
 const options = [{ programType: 0, name: t('programTypes.0') }, { programType: 1, name: t('programTypes.1') }, { programType: 2, name: t('programTypes.2') }, { programType: 3, name: t('programTypes.3') }, { programType: 4, name: t('programTypes.4') }, { programType: 5, name: t('programTypes.5') }, { programType: 6, name: t('programTypes.6') }, { programType: 7, name: t('programTypes.7') }]
-const { data: programs, refresh: refreshPrograms } = await useFetch<ProgramHeader[]>('/api/programs/headers/filtered', { method: 'POST', body: { filters: filters.value, machineId: stateStore.defaultMachine } })
+const programs = ref<ProgramHeader[]>([])
 const { data: machines } = await useFetch<Machine[]>('/api/machines')
+
+async function refreshPrograms() {
+  programs.value = await $fetch('/api/programs/headers/filtered', {
+    method: 'POST',
+    body: { filters: filters.value, machineId: stateStore.defaultMachine },
+  })
+}
+await refreshPrograms()
+
 const columns = ref([
   {
     name: 'programNo',
@@ -97,7 +106,7 @@ function onMachineSelected(value) {
 
 async function handleFilterSlotsUpdate(updatedFilters: any) {
   filters.value = updatedFilters
-  programs.value = await $fetch('/api/programs/headers/filtered', { method: 'POST', body: { filters: filters.value, machineId: stateStore.defaultMachine } })
+  await refreshPrograms()
 }
 
 const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
