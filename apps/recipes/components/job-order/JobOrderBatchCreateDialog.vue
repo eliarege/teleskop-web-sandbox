@@ -45,7 +45,7 @@ const dataStore = useDataStore()
 const colorStore = useColorStore()
 const stateStore = useStateStore()
 const createMultiple = ref(false)
-const programWeightsEnabled = ref(true)
+const programWeightsEnabled = ref(false)
 const printWhenDone = ref(true)
 const flotte = computed(() => jobOrderParams.value.flotteRatio! * jobOrderParams.value.totalWeight)
 const customers = ref<Customer[]>([])
@@ -71,12 +71,48 @@ const newCustomerName = ref('')
 const newFabricName = ref('')
 const activeTabs = ref<Record<number, 'materials' | 'commands'>>({})
 const CAPACITY_THRESHOLD = 0.1
+const recipeFilter = ref('')
+const showRecipeOptions = ref(false)
+const selectedRecipeLabel = ref('')
+
+const filteredRecipes = computed(() => {
+  if (!recipeFilter.value) {
+    return recipes.value
+  }
+  const filterLower = recipeFilter.value.toLowerCase()
+  return recipes.value.filter(recipe =>
+    getRecipeLabel(recipe).toLowerCase().includes(filterLower)
+    || recipe.recipeId.toString().includes(filterLower)
+    || recipe.recipeName.toLowerCase().includes(filterLower)
+    || recipe.machineId.toString().includes(filterLower),
+  )
+})
+
 function setProgramDefaultTabs() {
   for (const prog of selectedRecipe.value) {
     if (!activeTabs.value[prog.programNo]) {
       activeTabs.value[prog.programNo] = 'materials'
     }
   }
+}
+
+function selectRecipe(recipe: RecipeProgramMaster) {
+  selectedRecipeLabel.value = getRecipeLabel(recipe)
+  recipeFilter.value = selectedRecipeLabel.value
+  updateRecipe(recipe)
+  showRecipeOptions.value = false
+}
+
+function onRecipeInputChange(val: string | number | null) {
+  if (typeof val !== 'string') return
+  showRecipeOptions.value = true
+  if (val !== selectedRecipeLabel.value) {
+    selectedRecipeLabel.value = ''
+  }
+}
+
+function onRecipeFocus() {
+  showRecipeOptions.value = true
 }
 // getMachines()
 getRecipes()
@@ -121,7 +157,7 @@ async function getRecipeSteps() {
     program.totalWeight = 20
     program.flotte = computed(() => program.flotteRatio * program.totalWeight)
   })
-  //await fetchParameters()
+  // fetchParameters()
   setProgramDefaultTabs()
 }
 async function fetchParameters() {
@@ -213,56 +249,32 @@ function updateAmount(programIndex: number, row: RecipeMasterMaterial) {
   material!.amount = row.amount
 }
 function calculateAmount(row: any, program: any) {
-  if (row.type === RecipeType.DYE) {
-    const weightSource = programWeightsEnabled.value ? program : jobOrderParams.value
-    const flotteSource = programWeightsEnabled.value ? program : flotte.value
+  const weightSource = programWeightsEnabled.value ? program.totalWeight : jobOrderParams.value.totalWeight
+  const flotteSource = programWeightsEnabled.value ? program.flotte : flotte.value
 
-    if (row.unit === 0) {
-      return `${row.amount * weightSource.totalWeight * 10} g`
-    } else if (row.unit === 1) {
-      return `${row.amount * flotteSource.flotte} g`
-    } else if (row.unit === 2) {
-      return `${row.amount * flotteSource.flotte} cc`
-    } else {
-      return `${row.amount} ${t(`units.${row.unit}`)}`
-    }
+  if (row.unit === 0) {
+    return `${row.amount * weightSource * 10} g`
+  } else if (row.unit === 1) {
+    return `${row.amount * flotteSource} g`
+  } else if (row.unit === 2) {
+    return `${row.amount * flotteSource} cc`
   } else {
-    if (row.unit === 0) {
-      return `${row.amount * jobOrderParams.value.totalWeight * 10} g`
-    } else if (row.unit === 1) {
-      return `${row.amount * flotte.value} g`
-    } else if (row.unit === 2) {
-      return `${row.amount * flotte.value} cc`
-    } else {
-      return `${row.amount} ${t(`units.${row.unit}`)}`
-    }
+    return `${row.amount} ${t(`units.${row.unit}`)}`
   }
 }
 
 function calculateAmountVal(row: any, program: any) {
-  if (row.type === RecipeType.DYE) {
-    const weightSource = programWeightsEnabled.value ? program : jobOrderParams.value
-    const flotteSource = programWeightsEnabled.value ? program : flotte.value
+  const weightSource = programWeightsEnabled.value ? program.totalWeight : jobOrderParams.value.totalWeight
+  const flotteSource = programWeightsEnabled.value ? program.flotte : flotte.value
 
-    if (row.unit === 0) {
-      return row.amount * weightSource.totalWeight * 10
-    } else if (row.unit === 1) {
-      return row.amount * flotteSource.flotte
-    } else if (row.unit === 2) {
-      return row.amount * flotteSource.flotte
-    } else {
-      return row.amount
-    }
+  if (row.unit === 0) {
+    return row.amount * weightSource * 10
+  } else if (row.unit === 1) {
+    return row.amount * flotteSource
+  } else if (row.unit === 2) {
+    return row.amount * flotteSource
   } else {
-    if (row.unit === 0) {
-      return row.amount * jobOrderParams.value.totalWeight * 10
-    } else if (row.unit === 1) {
-      return row.amount * flotte.value
-    } else if (row.unit === 2) {
-      return row.amount * flotte.value
-    } else {
-      return row.amount
-    }
+    return row.amount
   }
 }
 function onParameterChange(type: string, newVal: number) {
@@ -533,20 +545,51 @@ async function onCancel() {
         <h2>{{ t('NewBatchJobOrder') }}</h2>
       </div>
       <div class="flex flex-row flex-wrap justify-center">
-        <div v-if="!variant" class="row-item">
+        <div
+          v-if="!variant"
+          class="row-item"
+          style="position: relative;"
+        >
           <span class="item-label">{{ t('Recipe') }}</span>
-          <QSelect
-            v-model="recipeHeader"
+          <QInput
+            v-model="recipeFilter"
             borderless
             dense
             filled
-            emit-value
-            map-options
-            options-dense
-            :option-label="getRecipeLabel"
-            :options="recipes"
-            @update:model-value="updateRecipe"
-          />
+            :placeholder="t('Recipe')"
+            @update:model-value="onRecipeInputChange"
+            @focus="onRecipeFocus"
+          >
+            <template #append>
+              <QIcon name="search" />
+            </template>
+          </QInput>
+          <QMenu
+            v-model="showRecipeOptions"
+            no-parent-event
+            max-height="300px"
+            fit
+          >
+            <QList dense>
+              <QItem
+                v-for="recipe in filteredRecipes"
+                :key="`${recipe.recipeId}-${recipe.machineId}`"
+                clickable
+                @click="selectRecipe(recipe)"
+              >
+                <QItemSection>
+                  <QItemLabel>{{ getRecipeLabel(recipe) }}</QItemLabel>
+                </QItemSection>
+              </QItem>
+              <QItem v-if="filteredRecipes.length === 0">
+                <QItemSection>
+                  <QItemLabel class="text-grey">
+                    {{ t('NoResults') }}
+                  </QItemLabel>
+                </QItemSection>
+              </QItem>
+            </QList>
+          </QMenu>
         </div>
         <div class="row-item">
           <span class="item-label">{{ t('Customer') }}</span>
@@ -618,6 +661,7 @@ async function onCancel() {
             type="number"
             min="0"
             filled
+            :disable="programWeightsEnabled"
             @update:model-value="(value) => onParameterChange('weight', value)"
           />
         </div>
@@ -630,6 +674,7 @@ async function onCancel() {
             type="number"
             min="0"
             filled
+            :disable="programWeightsEnabled"
             @update:model-value="(value) => onParameterChange('flotteRatio', value)"
           />
         </div>
@@ -723,7 +768,7 @@ async function onCancel() {
           <QCheckbox
             v-model="programWeightsEnabled"
             dense
-            :label="t('jobOrderParams.ProgramDyeWeightsEnabled')"
+            :label="t('jobOrderParams.ProgramFlotteEnabled')"
           />
           <QCheckbox
             v-model="printWhenDone"
@@ -732,8 +777,8 @@ async function onCancel() {
           />
         </div>
       </div>
-      <div class="flex-basis-full">
-        <h4 class="flex justify-center">
+      <div flex-basis-full>
+        <h4 flex-center>
           {{ `${t('Machine')} / ${t('Machines')}` }}
         </h4>
         <div class="machine-selection-container">
@@ -761,14 +806,14 @@ async function onCancel() {
           <div
             v-for="(program, programIndex) in selectedRecipe"
             :key="program.programNo"
-            class="row my-2"
+            class="row mb-2"
           >
-            <div class="col mt-10">
-              <h3 class="q-mb-sm flex justify-center text-xl">
+            <div class="col">
+              <h3 class="q-mb-sm flex-center">
                 {{ program.programName }}
               </h3>
 
-              <div class="q-mb-md flex justify-center items-center">
+              <div class="q-mb-md flex-center items-center">
                 <QBtnToggle
                   v-model="activeTabs[program.programNo]"
                   class="toggle-border"
@@ -784,10 +829,10 @@ async function onCancel() {
               </div>
 
               <div v-show="activeTabs[program.programNo] === 'materials'">
-                <div class="row flex-center justify-evenly mb-2">
+                <div v-show="programWeightsEnabled" class="row flex-center justify-evenly mb-2">
                   <div class="row">
-                    <div v-show="programWeightsEnabled" class="mr-2">
-                      <span class="item-label">{{ t('jobOrderParams.DyeWeight') }}</span>
+                    <div class="mr-2">
+                      <span class="item-label">{{ t('jobOrderParams.TotalWeight') }}</span>
                       <QInput
                         v-model="program.totalWeight"
                         class="item-input"

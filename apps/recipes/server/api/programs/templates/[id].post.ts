@@ -20,7 +20,9 @@ export default defineEventHandler(async (event) => {
       stepData.push({ program_no: id, machine_id: machineId, type: RecipeType.SALT })
     }
 
-    await dmsDB('PROGRAM_TEMPLATE').insert(stepData)
+    if (stepData.length > 0) {
+      await dmsDB('PROGRAM_TEMPLATE').insert(stepData)
+    }
 
     const materialData: any[] = []
     template.chemSteps?.forEach((step) => {
