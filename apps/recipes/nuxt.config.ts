@@ -14,9 +14,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     recipesDbHost: 'localhost',
     recipesDbUser: 'username',
-    recipesDbPort: '5433',
+    recipesDbPort: '5432',
     recipesDbPassword: '123456',
-    recipesDbDatabase: 'testo',
+    recipesDbName: 'recipes',
     teleskopHost: '192.168.16.87',
     teleskopUser: 'sa',
     teleskopPort: '7654',

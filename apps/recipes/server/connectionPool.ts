@@ -11,7 +11,7 @@ const dmsDB = Knex({
     port: Number.parseInt(config.recipesDbPort),
     user: config.recipesDbUser,
     password: config.recipesDbPassword,
-    database: config.recipesDbDatabase,
+    database: config.recipesDbName,
   },
   migrations: {
     migrationSource: MigrationSource,
