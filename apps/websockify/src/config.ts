@@ -74,7 +74,7 @@ export const config = defineConfiguration({
   },
   dmsDatabase: {
     type: 'string',
-    env: ['DMS_DATABASE', 'RECIPES_DB_DATABASE', 'NUXT_RECIPES_DB_DATABASE'],
+    env: ['DMS_DATABASE', 'RECIPES_DB_NAME', 'NUXT_RECIPES_DB_NAME'],
   },
   /** Pino Log Level (debug|info|warn|error|fatal) */
   logLevel: {
