@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { changeLocale } from '@formkit/i18n'
+import { isDef } from '@teleskop/utils'
 import type { Machine, MachineGroup } from '~/types'
 
 const { isEdit } = defineProps<{
@@ -12,11 +13,12 @@ const { isEdit } = defineProps<{
   mtTempIoOptions: { machineId: number, label: string, value: number | string }[]
   steamValveDoOptions: { machineId: number, label: string, value: number | string }[]
 }>()
+
 const emit = defineEmits([...useDialogPluginComponent.emits, 'submit'])
 const kc = useKeycloak()
 const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent()
 const formData = defineModel({
-  type: Object,
+  type: Object as PropType<Machine>,
   required: true,
 })
 
@@ -29,7 +31,7 @@ const validationError = ref('')
 const duplicateIpError = ref('')
 const duplicateIdError = ref('')
 
-function validateTheoreticalCharge(formData: any): boolean {
+function validateTheoreticalCharge(formData: Machine): boolean {
   const theoricalCharge = Number(formData.theoricalCharge)
   const theoricalChargeDuration = Number(formData.theoricalChargeDuration)
 
@@ -136,6 +138,26 @@ async function onSubmitForm() {
   validationError.value = ''
   duplicateIpError.value = ''
   duplicateIdError.value = ''
+
+  // Ensure boolean fields have proper false values instead of undefined
+  const booleanFields = [
+    'additionalTank1',
+    'additionalTank2',
+    'additionalTank3',
+    'additionalTank4',
+    'reserveTank',
+    'storeElectricityAsInc',
+    'theoreticalWater',
+    'theoreticalSteam',
+    'inUse',
+  ]
+
+  booleanFields.forEach((field) => {
+    if (!isDef(formData.value[field])) {
+      formData.value[field] = false
+    }
+  })
+
   emit('submit', formData.value)
   onDialogHide()
 }
