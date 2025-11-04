@@ -237,7 +237,20 @@ function selectAll() {
             :key="col.name"
             :props="bodyProps"
           >
-            <div v-if="typeof col.value === 'boolean'">
+            <div v-if="col.name === 'theoricalChargeDuration'" class="flex items-center gap-2">
+              <span>{{ col.value }}</span>
+              <q-icon
+                v-if="Number(bodyProps.row.theoricalCharge) * Number(bodyProps.row.theoricalChargeDuration) > 1440"
+                name="warning"
+                color="red"
+                size="20px"
+              >
+                <q-tooltip>
+                  {{ t('chargeExceeds1440Minutes') }}
+                </q-tooltip>
+              </q-icon>
+            </div>
+            <div v-else-if="typeof col.value === 'boolean'">
               <TwIcon
                 :name="col.value ? 'i-mdi-check' : 'i-mdi-close'"
                 size="20px"

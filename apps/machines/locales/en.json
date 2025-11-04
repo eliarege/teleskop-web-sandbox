@@ -129,6 +129,7 @@
   "pleaseSelectaRowToEdit": "Please select a row to edit",
   "theoricalCharge": "Theorical Charge",
   "theoricalChargeDuration": "Theorical Charge Duration",
+  "chargeExceeds1440Minutes": "Theorical charge duration exceeds 1440 minutes!",
   "tankSettings": "Tank Settings",
   "notificationSettings": "Notification Settings",
   "commandTypeParameters": "Command Type Parameters",

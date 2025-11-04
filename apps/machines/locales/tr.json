@@ -113,6 +113,7 @@
   "formulas": "Formüller",
   "theoricalCharge": "Teorik Şarj Sayısı",
   "theoricalChargeDuration": "Teorik Şarj Süresi (dk)",
+  "chargeExceeds1440Minutes": "Teorik şarj süresi 1440 dakikayı aşıyor!",
   "nozzleCount": "Düze Sayısı",
   "steamUnit": "Buhar Birimi",
   "inUse": "Kullanımda",
