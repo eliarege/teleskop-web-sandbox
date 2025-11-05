@@ -164,7 +164,7 @@
   "manualCommandStarting": "Manuel Komut Çalıştırma",
   "accessingToSystemMenu": "Sistem Menülerine Erişim",
   "modifyingProgramAtRunTime": "Çalışırken Program Değiştirme",
-  "test": "Test",
+  "testAuth": "Test Yetkilendirmesi",
   "accessingToDyeHouseParameters": "İşletme Parametrelerine Erişim",
   "ioSettings": "I/O Ayarlama Yetkisi",
   "updatingIOAndLanguage": "I/O Güncelleme ve Dil",
@@ -685,5 +685,7 @@
   "UPLOAD_DEFINITIONS_FAILED": "Tanımları yükleme başarısız",
 
   "calculateRequestCountSuccess": "Program istek sayıları başarıyla hesaplandı",
-  "calculateRequestCountError": "Program istek sayıları hesaplanırken hata oluştu"
+  "calculateRequestCountError": "Program istek sayıları hesaplanırken hata oluştu",
+
+  "user-permissions": "Kullanıcı İzinleri"
 }

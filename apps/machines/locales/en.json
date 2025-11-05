@@ -166,7 +166,7 @@
   "manualCommandStarting": "Manual Command Starting",
   "accessingToSystemMenu": "Accessing to System Menu",
   "modifyingProgramAtRunTime": "Modifying Program At Run Time",
-  "test": "Test",
+  "testAuth": "Test Authorization",
   "accessingToDyeHouseParameters": "Accessing to Dye House Parameters",
   "ioSettings": "I/O Settings",
   "updatingIOAndLanguage": "Updating I/O And Language",
@@ -683,5 +683,7 @@
   "UPLOAD_DEFINITIONS_FAILED": "Failed to upload definitions",
 
   "calculateRequestCountSuccess": "Program request counts calculated successfully",
-  "calculateRequestCountError": "Error while calculating program request counts"
+  "calculateRequestCountError": "Error while calculating program request counts",
+
+  "user-permissions": "User Permissions"
 }
