@@ -150,6 +150,7 @@ export class TonelloProgramClient implements ProgramClient {
       author: '',
       comment: tonelloProgram.description,
       steps: [],
+      stepCount: tonelloProgram.stepsCount,
       machineId: this.id,
       programNo: id,
       typeId: 0,
@@ -222,7 +223,7 @@ export class TonelloProgramClient implements ProgramClient {
   ): Promise<boolean> {
     const tonelloProgram: TonelloProgram = {
       // TODO: Tonnelo'ya sorulacak numara mı olacak bu diye
-      code: program.programNo,
+      code: `${program.programNo}`,
       name: program.name,
       description: program.comment || '',
       type: 'program',
@@ -288,7 +289,10 @@ export class TonelloProgramClient implements ProgramClient {
 
   async fetchProgramList(): Promise<number[]> {
     const list = await this.api.fetchProgramsList()
-    return list.programs.map(p => Number(p.code))
+    const isIntegerRe = /^\d+$/
+    return list.programs
+      .filter(p => isIntegerRe.test(p.code))
+      .map(p => Number(p.code))
   }
 
   async deleteProgram(_id: number): Promise<void> {

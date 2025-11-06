@@ -86,13 +86,13 @@ export interface TonelloProgramList {
 }
 
 export interface TonelloProgramHeader {
-  code: number
+  code: string
   name: string
 }
 
 export interface TonelloProgram {
   /** TODO: Tell tonello to make this number */
-  code: number
+  code: string
   name: string
   description: string
   type: 'program' | 'macro'
