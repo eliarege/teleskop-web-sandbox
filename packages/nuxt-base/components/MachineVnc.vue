@@ -85,6 +85,23 @@ function resolveWebSocketUrl(url: string) {
 }
 
 const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
+
+function preventModifierKeys(keysym: number) {
+  // Prevent modifier keys from being sent
+  const modifierKeysyms = [
+    0xFFE1, // Shift_L
+    0xFFE2, // Shift_R
+    0xFFE3, // Control_L
+    0xFFE4, // Control_R
+    0xFFE7, // Meta_L
+    0xFFE8, // Meta_R
+    0xFFE9, // Alt_L
+    0xFFEA, // Alt_R
+    0xFE03, // Hyper_L
+    0xFE04, // Hyper_R
+  ]
+  return !modifierKeysyms.includes(keysym)
+}
 </script>
 
 <template>
@@ -142,6 +159,7 @@ const websockifyWsUrl = resolveWebSocketUrl(props.websockifyUrl)
             :token="token"
             scale-viewport
             class="w-full h-full z-2 absolute"
+            :key-filter="preventModifierKeys"
           />
         </div>
       </div>
