@@ -27,13 +27,14 @@ export async function hasMachine(machineId: number): Promise<MachineInfo> {
  * @returns {Promise<string>} - Makinenin IP adresi
  * @throws {PError} Makine IP adresi bulunamazsa error döner.
  */
-export async function fetchMachineDetails(machineId: number): Promise<{ host: string, tbbModel: MachineTbbModel }> {
+export async function fetchMachineDetails(machineId: number): Promise<{ host: string, tbbModel: MachineTbbModel, version: string }> {
   const response = await db
     .from('BFMACHINES')
     .where('MACHINEID', machineId)
     .first({
       host: 'IP',
       tbbModel: 'TBBMODEL',
+      version: 'VERSION',
     })
 
   if (!response)

@@ -4,7 +4,11 @@ import { PError } from './error'
 import type { Machine, Program } from '~/shared/types'
 import { ParameterType } from '~/shared/constants'
 
-export function stringifyProgram(program: Program, machine: Pick<Machine, 'commands'>): string {
+export interface StringifyProgramOptions {
+  includeAdditionalProcessCode?: boolean
+}
+
+export function stringifyProgram(program: Program, machine: Pick<Machine, 'commands'>, options = {} as StringifyProgramOptions): string {
   const lines: string[] = []
 
   const dateFormat = 'dd.MM.yy'
@@ -26,7 +30,6 @@ export function stringifyProgram(program: Program, machine: Pick<Machine, 'comma
     `${AUTHOR}=${program.author || ''}`,
     `${COMMENT}=${program.comment || ''}`,
     `${PROCESS_CODE}=${program.typeId}`,
-    `${ADDITIONAL_PROCESS_CODE}=${program.additionalTypeId || ''}`,
     BEGIN_PROGRAM,
     FIRST_COMMAND_NO,
     ...program.steps.flatMap((step) => {
@@ -106,6 +109,7 @@ export function stringifyProgram(program: Program, machine: Pick<Machine, 'comma
     LAST_COMMAND_NO,
     START_TAGS,
     'INTERVENTIONFREEPROGRAM=0', // ?
+    ...(options?.includeAdditionalProcessCode ? [`${ADDITIONAL_PROCESS_CODE}=${program.additionalTypeId || 0}`] : []),
     END_TAGS,
   )
 
