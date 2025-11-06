@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  '@novnc/novnc':
+    hash: 4f2b3dececc29aa226511ed708f86de7571b7ab6f51a1b57ae7c5e637614b612
+    path: patches/@novnc__novnc.patch
   '@nuxtjs/i18n':
     hash: eba71082aa649df3e352c8c13969dea0b77d0ddb47d7a131c4812beaabfb35cb
     path: patches/@nuxtjs__i18n.patch
@@ -1134,7 +1137,7 @@ importers:
         version: 2.1.33
       '@novnc/novnc':
         specifier: 1.5.0
-        version: 1.5.0
+        version: 1.5.0(patch_hash=4f2b3dececc29aa226511ed708f86de7571b7ab6f51a1b57ae7c5e637614b612)
       '@nuxt/kit':
         specifier: 3.14.159
         version: 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.3.3)
@@ -9888,7 +9891,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@novnc/novnc@1.5.0': {}
+  '@novnc/novnc@1.5.0(patch_hash=4f2b3dececc29aa226511ed708f86de7571b7ab6f51a1b57ae7c5e637614b612)': {}
 
   '@nuxt/devalue@2.0.2': {}
 

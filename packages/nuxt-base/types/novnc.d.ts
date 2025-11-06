@@ -33,6 +33,15 @@ declare module '@novnc/novnc/lib/rfb' {
      * Empty by default.
      */
     wsProtocols?: string[]
+
+    /**
+     * A function that is called whenever a key event is about to be sent to the server. The
+     * function is called with three arguments: the NoVncClient keysym (`number`), the physical key
+     * code (`string` or `null`), and a `boolean` indicating if the key is being pressed or released.
+     * The function must return `true` to allow the event to be sent to the server, or `false` to
+     * block it.
+     */
+    keyFilter?: (keysym: number, code: string | null, down: boolean) => boolean
   }
 
   interface NoVncEvents {

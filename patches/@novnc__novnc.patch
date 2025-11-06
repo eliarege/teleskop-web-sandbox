@@ -1,0 +1,22 @@
+diff --git a/lib/rfb.js b/lib/rfb.js
+index 57c1144657a02942a06012b1048689e2d024fa3d..d71bbd8ea80b9934ad3e392d06c86c22319c79de 100644
+--- a/lib/rfb.js
++++ b/lib/rfb.js
+@@ -143,6 +143,7 @@ var RFB = exports["default"] = /*#__PURE__*/function (_EventTargetMixin) {
+     _this._shared = 'shared' in options ? !!options.shared : true;
+     _this._repeaterID = options.repeaterID || '';
+     _this._wsProtocols = options.wsProtocols || [];
++    _this._keyFilter = options.keyFilter || null;
+ 
+     // Internal state
+     _this._rfbConnectionState = '';
+@@ -513,6 +514,9 @@ var RFB = exports["default"] = /*#__PURE__*/function (_EventTargetMixin) {
+       if (this._rfbConnectionState !== 'connected' || this._viewOnly) {
+         return;
+       }
++      if (this._keyFilter && !this._keyFilter(keysym, code, down)) {
++        return;
++      }
+       if (down === undefined) {
+         this.sendKey(keysym, code, true);
+         this.sendKey(keysym, code, false);
