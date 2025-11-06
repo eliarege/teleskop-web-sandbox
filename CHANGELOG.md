@@ -1,8 +1,30 @@
 # Changelog
 
+## 0.55.0 - 2025-11-06
+
+[Compare Changes](5503652c704f9f7cb8425281d410d641555f5cae...5736ccc71b5056b3e698d96e529e7bd94c87f9fd)
+
+### 🚀 Features
+
+- **recipes**: Recipe filter added, program template fixes ([e1e8ae4](e1e8ae46bb754cdc73ea6ca1fb8dbe12bf62f0d9))
+- **novnc**: Add keyFilter option to NoVncOptions and implement in RFB class ([3906c5d](3906c5dac388f6e4f07851d05f8e315a988d2dd2))
+- **nuxt-base**: Add keyFilter prop to NoVnc to filter key events before sending to server ([11bf88e](11bf88e9f09f419761cfaa8687de0147e0c43d92))
+- **MachineVNC**: Add preventModifierKeys function to filter out modifier keys ([5736ccc](5736ccc71b5056b3e698d96e529e7bd94c87f9fd))
+
+### 🐛 Bug Fixes
+
+- **recipes**: Rename config `recipesDbDatabase` to `recipesDbName` for consistency ([0fa164c](0fa164c44872d5bc2bb4266630d02ca9b2268660))
+- **websockify**: Update db name env names for DMS configuration ([ab2a9e4](ab2a9e445af83d5c77d4016c548c81ea08f0e166))
+-  **PE**: Check machine version before adding additional process code to program string ([818d497](818d49780412c77231d9d162841adc1ef902c18a))
+- **TonelloApi**: Assume tonello is going to send program codes as string; apply necessary changes to PE ([07d6a33](07d6a330acf1063f72561da109af2b33b00c0c26))
+
+### ♻️ Refactor
+
+-  **PE**: Remove caching logic from machineStore.get method ([51d350d](51d350dd717685d8aa6102286d1fad4cdd3ca22e))
+
 ## 0.54.0 - 2025-10-31
 
-[Compare Changes](2a1b3de0fe591ee7dc3a5216fa273a82ecdbbf22...863553c66eaf02484d503eb88788856bbc32ab35)
+[Compare Changes](2a1b3de0fe591ee7dc3a5216fa273a82ecdbbf22...5503652c704f9f7cb8425281d410d641555f5cae)
 
 ### 🚀 Features
 

@@ -1,7 +1,7 @@
 {
   "name": "dispensing-manager-ui",
   "type": "module",
-  "version": "0.54.0",
+  "version": "0.55.0",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
