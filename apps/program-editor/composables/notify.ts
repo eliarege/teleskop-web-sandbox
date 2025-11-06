@@ -1,32 +1,30 @@
-import { useQuasar } from 'quasar'
+import { Notify } from 'quasar'
 
 export function useNotify() {
-  const $q = useQuasar()
-
   return {
     notifySuccess(message: string) {
-      $q.notify({
+      Notify.create({
         message,
         type: 'positive',
         position: 'top',
       })
     },
     notifyError(message: string) {
-      $q.notify({
+      Notify.create({
         message,
         type: 'negative',
         position: 'top',
       })
     },
     notifyInfo(message: string) {
-      $q.notify({
+      Notify.create({
         message,
         type: 'info',
         position: 'top',
       })
     },
     notifyWarning(message: string) {
-      $q.notify({
+      Notify.create({
         message,
         type: 'warning',
         position: 'top',
