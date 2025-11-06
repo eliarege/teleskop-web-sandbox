@@ -26,6 +26,7 @@ const route = useRoute()
 const router = useRouter()
 const editor = useEditorStore()
 const filter = useProgramFilterStore()
+const config = useRuntimeConfig()
 const machineStatusStore = useMachineStatusStore()
 const machineId = Number(route.params.machine_id)
 const tableRef = ref()
@@ -748,7 +749,7 @@ onUnmounted(() => {
       <LoadingSpinner />
     </div>
     <div class="custom-page select-none relative">
-      <DevOnly>
+      <DevOnly v-if="config.public.showDevOnly">
         <div class="flex flex-col color-gray-5 text-3">
           <span> {{ `selectedPrograms: ${editor.selectedPrograms.map(p => p.programNo).join(', ')}` }} </span>
           <span> {{ `copiedPrograms: ${contextMenuStore.getCopiedValues().map(p => `${p.machineId}-${p.programNo}-${p.name}`).join(', ')}` }} </span>

@@ -24,6 +24,7 @@ export default defineNuxtConfig({
 
     public: {
       kcClientId: 'program-editor',
+      showDevOnly: false,
     },
   },
   i18n: {

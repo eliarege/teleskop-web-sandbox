@@ -12,6 +12,7 @@ const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
 const { $commandManager } = useNuxtApp()
+const config = useRuntimeConfig()
 const selectRef = ref<QSelect>()
 
 const { mt } = useProjectTranslations()
@@ -116,7 +117,7 @@ function isParallelCommandRestricted(commandNo: number): boolean {
 
 <template>
   <div>
-    <DevOnly>
+    <DevOnly v-if="config.public.showDevOnly">
       <div class="flex flex-col color-gray-5 text-3">
         <span>{{ id }}</span>
       </div>

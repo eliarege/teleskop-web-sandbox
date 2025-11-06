@@ -16,6 +16,7 @@ const { t } = useI18n()
 const editor = useEditorStore()
 const errorStore = useErrorStore()
 const { $commandManager } = useNuxtApp()
+const config = useRuntimeConfig()
 
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
@@ -96,7 +97,7 @@ function removeError(commandId: number) {
       </div>
     </div>
 
-    <DevOnly>
+    <DevOnly v-if="config.public.showDevOnly">
       <div class="flex flex-col color-gray-5 text-3">
         <span>{{ `stepId: ${step.stepId}` }}</span>
         <span>{{ `commandId: ${step.mainCommand.commandId}` }}</span>
@@ -145,7 +146,7 @@ function removeError(commandId: number) {
             class="step-parallel-command"
             @click="removeError(step.parallelCommands[index].commandId)"
           >
-            <DevOnly>
+            <DevOnly v-if="config.public.showDevOnly">
               <div class="flex flex-col color-gray-5 text-3">
                 <span>{{ `commandId: ${step.parallelCommands[index].commandId}` }}</span>
               </div>

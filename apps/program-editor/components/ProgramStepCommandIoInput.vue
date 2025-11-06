@@ -11,6 +11,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
+const config = useRuntimeConfig()
 const programIO: ioListItem = editor.getPathElement(props.path)
 
 const model = computed({
@@ -46,7 +47,7 @@ const selectedOptionsText = computed(() => {
 
 <template>
   <div class="inline-block align-top">
-    <DevOnly>
+    <DevOnly v-if="config.public.showDevOnly">
       <div class="color-gray-5 text-3">
         {{ props.commandNo }} - {{ props.io.index }}
       </div>

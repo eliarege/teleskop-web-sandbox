@@ -10,6 +10,7 @@ const form = ref<QForm>()
 const { t, locale } = useI18n()
 const route = useRoute()
 const $q = useQuasar()
+const config = useRuntimeConfig()
 const { $commandManager } = useNuxtApp()
 
 const machineId = Number(route.params.machine_id)
@@ -292,7 +293,7 @@ onBeforeRouteLeave(() => {
       <LoadingSpinner />
     </div>
     <QForm ref="form">
-      <DevOnly>
+      <DevOnly v-if="config.public.showDevOnly">
         <div class="flex flex-col color-gray-5 text-3">
           <span> {{ `selectedStep: ${editor.selectedSteps.map(x => x?.stepId)}` }} </span>
           <span> {{ `copiedSteps: ${contextMenuStore.getCopiedStepsValues()?.map(x => x?.stepId) || ''}` }} </span>
