@@ -1,8 +1,21 @@
 # Changelog
 
+## 0.55.1 - 2025-11-06
+
+[Compare Changes](50e7de34e4aa10ffb75e4d2981ae75b96c776e9e...2f72156442fc8ce3b52cec61c8e87bc882004465)
+
+### 🐛 Bug Fixes
+
+-  **PE**: Replace useQuasar with Notify for notification handling at notify.ts ([ae3ca33](ae3ca3310acffbca7f4e1fa9d23698f55cc6e3e1))
+
+### 🔧 Miscellaneous Tasks
+
+-  **PE**: Add config for showing DevOnly components conditionally ([00140c4](00140c45c868a241830bfd222bb7aadfc50d4ef2))
+- **editorconfig**: Update settings for pnpm patches to disable trailing whitespace trimming and final newline ([2f72156](2f72156442fc8ce3b52cec61c8e87bc882004465))
+
 ## 0.55.0 - 2025-11-06
 
-[Compare Changes](5503652c704f9f7cb8425281d410d641555f5cae...5736ccc71b5056b3e698d96e529e7bd94c87f9fd)
+[Compare Changes](5503652c704f9f7cb8425281d410d641555f5cae...50e7de34e4aa10ffb75e4d2981ae75b96c776e9e)
 
 ### 🚀 Features
 
