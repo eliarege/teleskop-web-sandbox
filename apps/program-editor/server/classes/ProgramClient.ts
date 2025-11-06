@@ -7,6 +7,8 @@ import { stringifyProgram } from '../stringify'
 import type { ErrorMachineParameterDetail } from '../error'
 import { PError } from '../error'
 import logger from '../logger'
+import { fetchMachineDetails } from '../functions'
+import { isVersionAbove } from '../utils/version'
 import type { MachineCommand, Program, ProgramStepCommand } from '~/shared/types'
 import { ParameterType, ProgramStatus } from '~/shared/constants'
 
@@ -92,9 +94,17 @@ export class T7ProgramClient implements ProgramClient {
 
   async uploadProgram(program: Program, commands: MachineCommand[]): Promise<boolean> {
     const programPath = `/tbb6500/data/programs/program/${program.programNo}`
+    const machineInfo = await fetchMachineDetails(this.id)
+
+    // Determine if we need to include additional process code based on machine version
+    const includeAdditionalProcessCode = isVersionAbove(
+      machineInfo.version,
+      { standardVersion: '3.22.118', smartVersion: '3.22.7-Smart62' },
+    )
+
     const programData = stringifyProgram(program, {
       commands: this.commandArrayToMap(commands),
-    })
+    }, { includeAdditionalProcessCode })
 
     await this.ftp.upload(programPath, programData)
 
