@@ -486,6 +486,7 @@
   "stepCommandGraph": {
     "label": "Adım/Komut Grafiği",
     "slug": "adim-komut-grafigi",
+    "fullScreen": "Tam Ekran",
     "download": "Grafiği İndir"
   },
   "notification": {

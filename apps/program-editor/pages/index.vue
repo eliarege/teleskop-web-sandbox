@@ -146,7 +146,9 @@ const items = [
             const hasMainStepError = checkMainStepForErrors(errors)
 
             if (!hasMainStepError) {
-              $commandManager.executeCommand('tempTimeGraph', { $q })
+              const { machine, program, teleskopSettings } = editor
+              const initialTemperature = teleskopSettings.initialTemperature
+              $commandManager.executeCommand('tempTimeGraph', { $q }, machine, program, initialTemperature)
             } else {
               const stepIndex = Number(errors[errors.length - 1].split('-')[0])
               notifyError(t('invalidCommand'))
@@ -159,7 +161,17 @@ const items = [
           icon: 'timeline',
           shortcut: 'F7',
           onClick: () => {
-            $commandManager.executeCommand('stepCommandGraph', { $q })
+            const editor = useEditorStore()
+            const errors = Array.from(editor.errorIds.values())
+            const hasMainStepError = checkMainStepForErrors(errors)
+
+            if (!hasMainStepError) {
+              $commandManager.executeCommand('stepCommandGraph', { $q }, editor.machine, editor.program)
+            } else {
+              const stepIndex = Number(errors[errors.length - 1].split('-')[0])
+              notifyError(t('invalidCommand'))
+              editor.scrollPage(stepIndex, true)
+            }
           },
         },
       ]],

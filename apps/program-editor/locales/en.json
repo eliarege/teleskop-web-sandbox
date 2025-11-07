@@ -486,6 +486,7 @@
   "stepCommandGraph": {
     "label": "Step/Command Graph",
     "slug": "step-command-graph",
+    "fullScreen": "Full Screen",
     "download": "Download Graph"
   },
   "notification": {

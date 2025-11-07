@@ -34,14 +34,20 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
 
 /**
  * Programın her bir adımın grafikteki noktasının teorik değerini hesaplar.
- * @param program - Program
  * @param machine - Makine
+ * @param program - Program
  * @param initialTemperature - Baslangıc sicakligi
- * @returns {number} Teorik sure
+ * @returns { tempData: number[], timeData: number[], pointStyles: string[], pointBackgroundColors: string[], dataPoints: { x: number, y: number }[], stepInfo: { step: number, commandNo: number, commandName: string }[], gradientData: number[] } Hesaplanan veriler
  */
-export function calculateProgramDurationPoint(program: Program, machine: Machine, initialTemperature: number) {
-  const { mt } = useProjectTranslations()
-
+export function calculateProgramDurationPoint(machine: Machine, program: Program, initialTemperature: number): {
+  tempData: number[]
+  timeData: number[]
+  pointStyles: string[]
+  pointBackgroundColors: string[]
+  dataPoints: { x: number, y: number }[]
+  stepInfo: { step: number, commandNo: number, commandName: string }[]
+  gradientData: number[]
+} {
   const tempData: number[] = [initialTemperature]
   const timeData: number[] = [0]
   const gradientData: number[] = [0]
@@ -67,7 +73,7 @@ export function calculateProgramDurationPoint(program: Program, machine: Machine
 
       const commandNo = program.steps[i].mainCommand.commandNo!
       const machineCommand = machine.commands.get(commandNo)!
-      stepInfo.push({ step: i + 1, commandNo, commandName: mt(machineCommand.name, machine.id) })
+      stepInfo.push({ step: i + 1, commandNo, commandName: machineCommand.name })
 
       dataPoints.push({ x: currentTime, y: point.temperature })
 

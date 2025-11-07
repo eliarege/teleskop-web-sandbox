@@ -7,50 +7,107 @@ import { isDef } from '@teleskop/utils'
 import type { CSSProperties } from 'vue'
 import { calculateProgramDurationPoint } from '~/shared/formula'
 import { screenshot } from '~/shared/utils'
+import type { Machine, Program } from '~/shared/types'
+
+const props = defineProps<{
+  machine: Machine
+  program: Program
+  initialTemperature: number
+}>()
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
 const { t } = useI18n()
 const editor = useEditorStore()
-const { dialogRef } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
 const showIcons = ref(true)
 const showSlopes = ref(true)
 const showDurations = ref(true)
 const isFullScreen = ref(false)
 
-const chartData = ref<ChartData>()
+const labelsPlugin = {
+  id: 'customLabels',
+  afterDatasetsDraw(chart: ChartJS) {
+    const { ctx, data } = chart
+    const meta = chart.getDatasetMeta(0)
+
+    ctx.save()
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+
+    meta.data.forEach((element: any, index: number) => {
+      const point = data.datasets[0].data[index] as Point
+      if (!point || index >= meta.data.length - 1)
+        return
+
+      const { x, y } = element.tooltipPosition()
+      const nextElement = meta.data[index + 1]
+      const nextPos = nextElement.tooltipPosition(false)
+      const distance = Math.sqrt((nextPos.x - x) ** 2 + (nextPos.y - y) ** 2)
+
+      if (distance < 50)
+        return
+
+      const midX = (x + nextPos.x) / 2
+      const midY = (y + nextPos.y) / 2
+
+      const drawLabel = (text: string, yOffset: number) => {
+        ctx.fillStyle = '#fff'
+        ctx.strokeStyle = '#ccc'
+        ctx.lineWidth = 1
+        const metrics = ctx.measureText(text)
+        const boxWidth = metrics.width + 8
+        const boxHeight = 16
+        const yPos = midY + yOffset
+
+        ctx.fillRect(midX - boxWidth / 2, yPos - boxHeight / 2, boxWidth, boxHeight)
+        ctx.strokeRect(midX - boxWidth / 2, yPos - boxHeight / 2, boxWidth, boxHeight)
+        ctx.fillStyle = '#666'
+        ctx.font = '11px Arial'
+        ctx.fillText(text, midX, yPos)
+      }
+
+      if (showSlopes.value && point.slope !== 0)
+        drawLabel(`${Number.parseFloat(point.slope.toFixed(1)).toString()}°C`, 5)
+
+      if (showDurations.value && point.duration >= 600)
+        drawLabel(`${Math.floor(point.duration / 60)}'`, -18)
+    })
+
+    ctx.restore()
+  },
+}
+
+ChartJS.register(labelsPlugin)
+
+const chartData = ref<ChartData<'line', (number | Point | null)[], unknown>>()
 const chartOptions = ref<ChartOptions<'line'>>()
 const chartRef = ref<{ chart: ChartJS }>()
 
 function calculateChartData() {
   const { timeData, dataPoints, stepInfo } = calculateProgramDurationPoint(
-    editor.program,
-    editor.machine,
-    editor.teleskopSettings.initialTemperature,
+    props.machine,
+    props.program,
+    props.initialTemperature,
   )
 
-  const minX = Math.min(...dataPoints.map(p => p.x))
-  const maxX = Math.max(...dataPoints.map(p => p.x))
-  const minY = Math.min(...dataPoints.map(p => p.y))
-  const maxY = Math.max(...dataPoints.map(p => p.y))
+  const [minX, maxX] = [Math.min(...dataPoints.map(p => p.x)), Math.max(...dataPoints.map(p => p.x))]
+  const [minY, maxY] = [Math.min(...dataPoints.map(p => p.y)), Math.max(...dataPoints.map(p => p.y))]
 
   chartData.value = {
-    datasets: [
-      {
-        label: t('apperance.temperature(c)'),
-        data: calcDataPoints(dataPoints, stepInfo, timeData),
-        fill: false,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointBackgroundColor: dataPoints.map((_, index) => {
-          const commandIcon = editor.getCommandIcon(stepInfo[index]?.commandNo)
-          return commandIcon ? commandIcon.color : '#000000'
-        }),
-      },
-    ],
+    datasets: [{
+      label: t('apperance.temperature(c)'),
+      data: calcDataPoints(dataPoints, stepInfo, timeData),
+      fill: false,
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 0,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      pointBackgroundColor: dataPoints.map((_, index) =>
+        editor.getCommandIcon(stepInfo[index]?.commandNo)?.color ?? '#000000',
+      ),
+    }],
   }
 
   chartOptions.value = {
@@ -60,26 +117,20 @@ function calculateChartData() {
       tooltip: {
         displayColors: false,
         callbacks: {
-          title: (context) => {
-            return `${formatDuration(timeData[context[0].dataIndex])}`
-          },
+          title: context => formatDuration(timeData[context[0].dataIndex]),
           label: (context) => {
-            if (!isDef(stepInfo[context.dataIndex]))
+            const step = stepInfo[context.dataIndex]
+            if (!isDef(step))
               return
-
             return [
-              `${stepInfo[context.dataIndex].step}. ${t('apperance.step')}`,
-              `${stepInfo[context.dataIndex].commandNo} ${stepInfo[context.dataIndex].commandName}`,
+              `${step.step}. ${t('apperance.step')}`,
+              `${step.commandNo} ${step.commandName}`,
               `${t('apperance.temperature(c)')}: ${context.parsed.y}`,
             ]
           },
         },
-        titleFont: {
-          size: 16,
-        },
-        bodyFont: {
-          size: 14,
-        },
+        titleFont: { size: 16 },
+        bodyFont: { size: 14 },
         caretPadding: 16,
         xAlign: 'center',
         yAlign: 'top',
@@ -87,44 +138,27 @@ function calculateChartData() {
     },
     scales: {
       y: {
-        min: Math.min(0, minY - (10 + (minY % 10))),
-        max: maxY + (10 - (maxY % 10)),
-        title: {
-          display: true,
-          text: t('apperance.temperature(c)'),
-        },
-        ticks: {
-          font: {
-            size: 14,
-          },
-        },
+        min: minY - 10,
+        max: maxY + 10,
+        title: { display: true, text: t('apperance.temperature(c)') },
+        ticks: { font: { size: 14 } },
       },
       x: {
         type: 'linear',
         min: minX,
         max: maxX,
-        title: {
-          display: true,
-          text: t('apperance.time(h)'),
-        },
+        title: { display: true, text: t('apperance.time(h)') },
         ticks: {
           autoSkip: false,
-          font: {
-            size: 14,
-          },
-          callback: (value) => {
-            return `${formatDuration(Number(value))}`
-          },
+          font: { size: 14 },
+          callback: value => formatDuration(Number(value)),
         },
       },
     },
-    onResize() {
-      nextTick(() => {
-        if (chartData.value && chartData.value.datasets) {
-          chartData.value.datasets[0].data = calcDataPoints(dataPoints, stepInfo, timeData)
-        }
-      })
-    },
+    onResize: () => nextTick(() => {
+      if (chartData.value?.datasets)
+        chartData.value.datasets[0].data = calcDataPoints(dataPoints, stepInfo, timeData)
+    }),
   }
 }
 
@@ -137,134 +171,78 @@ interface Point {
   x: number
   y: number
   icon: string
-  iconStyle: CSSProperties
-  iconIndexStyle: CSSProperties
   color: string
   slope: number
-  slopeStyle: CSSProperties
   duration: number
-  durationStyle: CSSProperties
 }
 
 function calcDataPoints(dataPoints: Coordinate[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
   return dataPoints.map(({ x, y }, index) => {
     const commandIcon = editor.getCommandIcon(stepInfo[index]?.commandNo)
+    const isNotLast = index < dataPoints.length - 1
+
     return {
       x,
       y,
-      icon: commandIcon?.name || '',
-      iconStyle: getIconStyle({ x, y, color: commandIcon?.color || '#FF0000' }),
-      iconIndexStyle: { ...getIconStyle({ x, y, color: commandIcon?.color || '#FF0000' }), margin: '-1px -8px', fontSize: '14px' },
-      color: commandIcon?.color || '#FF0000',
-      slope: calculateSlope(dataPoints[index], dataPoints[index + 1]),
-      slopeStyle: getSlopeStyle(dataPoints[index], dataPoints[index + 1]),
-      duration: timeData[index + 1] - timeData[index],
-      durationStyle: getDurationStyle(dataPoints[index], dataPoints[index + 1]),
+      icon: commandIcon?.name ?? '',
+      color: commandIcon?.color ?? '#FF0000',
+      slope: isNotLast ? calculateSlope(dataPoints[index], dataPoints[index + 1]) : 0,
+      duration: isNotLast && index < timeData.length - 1 ? timeData[index + 1] - timeData[index] : 0,
     }
   })
 }
 
-function getIconStyle(point: { x: number, y: number, color: string }): CSSProperties {
+function getIconStyle(point: Point): CSSProperties {
   const chartInstance = chartRef.value?.chart
   if (!chartInstance || !chartOptions.value?.scales?.x || !chartOptions.value.scales.y)
-    return {}
+    return { display: 'none' }
+
   const chartArea = chartInstance.chartArea
   if (!chartArea)
-    return {}
+    return { display: 'none' }
 
   const xScale = chartOptions.value.scales.x
-  const xRelative = (point.x - xScale.min) / (xScale.max - xScale.min)
-  const x = chartArea.left + (xRelative * (chartArea.right - chartArea.left))
-
   const yScale = chartOptions.value.scales.y
-  const yRelative = (point.y - yScale.min) / (yScale.max - yScale.min)
+  const xMin = typeof xScale.min === 'number' ? xScale.min : 0
+  const xMax = typeof xScale.max === 'number' ? xScale.max : 1
+  const yMin = typeof yScale.min === 'number' ? yScale.min : 0
+  const yMax = typeof yScale.max === 'number' ? yScale.max : 1
+
+  const xRelative = (point.x - xMin) / (xMax - xMin)
+  const x = chartArea.left + (xRelative * (chartArea.right - chartArea.left))
+  const yRelative = (point.y - yMin) / (yMax - yMin)
   const y = chartArea.bottom - (yRelative * (chartArea.bottom - chartArea.top))
 
   return {
     position: 'absolute',
-    left: `${x + 8}px`,
-    top: `${y + 24}px`,
+    left: `${x}px`,
+    top: `${y - 16}px`,
+    transform: 'translate(-50%, -50%)',
     color: point.color,
+    fontSize: '16px',
+    pointerEvents: 'none',
   }
 }
 
 function calculateSlope(point1: Coordinate, point2: Coordinate): number {
-  if (!point1 || !point2)
-    return 0 // adımlardan biri yoksa eğim 0
-  if (point1.x === point2.x)
-    return 0 // X ekseni aynıysa eğim 0
-  return Math.round((point2.y - point1.y) / ((point2.x - point1.x) / 60))
+  if (!point1 || !point2 || point1.x === point2.x)
+    return 0
+  return (point2.y - point1.y) / ((point2.x - point1.x) / 60)
 }
 
-function calculatePoint(point1: Coordinate, point2: Coordinate) {
-  if (!point1 || !point2)
-    return {}
-
-  const chartInstance = chartRef.value?.chart
-  if (!chartInstance || !chartOptions.value?.scales?.x || !chartOptions.value.scales.y)
-    return {}
-
-  const chartArea = chartInstance.chartArea
-  if (!chartArea)
-    return {}
-
-  const xScale = chartOptions.value.scales.x
-  const yScale = chartOptions.value.scales.y
-
-  const xRelative1 = (point1.x - xScale.min) / (xScale.max - xScale.min)
-  const yRelative1 = (point1.y - yScale.min) / (yScale.max - yScale.min)
-  const xRelative2 = (point2.x - xScale.min) / (xScale.max - xScale.min)
-  const yRelative2 = (point2.y - yScale.min) / (yScale.max - yScale.min)
-
-  const xMid = chartArea.left + ((xRelative1 + xRelative2) / 2) * (chartArea.right - chartArea.left)
-  const yMid = chartArea.bottom - ((yRelative1 + yRelative2) / 2) * (chartArea.bottom - chartArea.top)
-
-  return {
-    x: xMid,
-    y: yMid,
-  }
-}
-
-function getSlopeStyle(point1: Coordinate, point2: Coordinate) {
-  const { x: xMid, y: yMid } = calculatePoint(point1, point2)
-
-  return {
-    position: 'absolute',
-    left: `${xMid}px`,
-    top: `${yMid + 42}px`,
-    fontSize: '12px',
-    color: '#333',
-    background: '#fff',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    padding: '1px 3px',
-  }
-}
-
-function getDurationStyle(point1: Coordinate, point2: Coordinate) {
-  const { x: xMid, y: yMid } = calculatePoint(point1, point2)
-
-  return {
-    position: 'absolute',
-    left: `${xMid}px`,
-    top: `${yMid + 20}px`,
-    fontSize: '12px',
-    color: '#333',
-    background: '#fff',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    padding: '1px 3px',
-  }
-}
-
-function takeScreenshot() {
+function takeScreenshot(): void {
   const element = document.getElementById('chart-container')
+  const { id: machineId, name: machineName } = props.machine
+  const { programNo, name: programName } = props.program
+
   if (element)
-    screenshot(element, `${editor.machine.id}-${editor.machine.name}/${editor.program.programNo}-${editor.program.name}-${t('tempTimeGraph.slug')}`)
+    screenshot(element, `${machineId}-${machineName}_${programNo}-${programName}_${t('tempTimeGraph.slug')}`)
 }
 
-onMounted(() => {
-  calculateChartData()
+onMounted(calculateChartData)
+
+watch([showIcons, showSlopes, showDurations], () => {
+  chartRef.value?.chart?.render()
 })
 </script>
 
@@ -274,23 +252,25 @@ onMounted(() => {
     :full-width="isFullScreen"
     :full-height="isFullScreen"
   >
-    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl">
+    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl !dark:(bg-dark-4)">
       <div id="container">
-        <q-card-section class="bg-gray-1 dark:bg-dark-4">
+        <q-card-section class="select-none bg-gray-1 dark:bg-dark-3">
           <div class="text-h6 flex">
             {{ t('tempTimeGraph.label') }}
             <q-space />
             <q-btn
               v-close-popup
+              class="text-gray-4 dark:text-gray-6"
               icon="close"
               flat
               round
               dense
+              @click="onDialogCancel"
             />
           </div>
           <div class="text-h8 flex flex-col color-gray-6 dark:text-gray-4">
-            <span>{{ editor.machine.id }} - {{ editor.machine.name }}</span>
-            <span>{{ editor.program.programNo }} - {{ editor.program.name }}</span>
+            <span>{{ props.machine.id }} - {{ props.machine.name }}</span>
+            <span>{{ props.program.programNo }} - {{ props.program.name }}</span>
           </div>
         </q-card-section>
         <q-card-section>
@@ -302,7 +282,7 @@ onMounted(() => {
               icon="image"
               @click="showIcons = !showIcons"
             />
-            <q-btn
+            <!-- <q-btn
               :label="showSlopes ? t('tempTimeGraph.hideSlopes') : t('tempTimeGraph.showSlopes')"
               class="setting-btn"
               color="secondary"
@@ -315,11 +295,11 @@ onMounted(() => {
               color="orange"
               icon="timelapse"
               @click="showDurations = !showDurations"
-            />
+            /> -->
             <q-btn
               :label="t('tempTimeGraph.fullScreen')"
               class="setting-btn"
-              color="blue"
+              color="primary"
               icon="fullscreen"
               @click="isFullScreen = !isFullScreen"
             />
@@ -333,52 +313,27 @@ onMounted(() => {
           </div>
           <div
             id="chart-container"
-            :style="{ width: isFullScreen ? '100%' : '99%', height: isFullScreen ? '75vh' : '50vh' }"
+            :style="{ width: isFullScreen ? '100%' : '99%', height: isFullScreen ? '75vh' : '50vh', position: 'relative' }"
           >
             <Line
+              v-if="chartData"
               ref="chartRef"
               :options="chartOptions"
               :data="chartData"
             />
-            <div
-              v-for="(point, index) in chartData?.datasets[0].data"
-              :key="index"
-            >
-              <!-- Command Icon -->
-              <div v-if="showIcons">
+            <!-- Icon overlays -->
+            <template v-if="showIcons">
+              <div
+                v-for="(point, index) in (chartData?.datasets[0].data as Point[] ?? [])"
+                :key="`icon-${index}`"
+              >
                 <UnoIcon
-                  :style="point.iconStyle"
+                  v-if="point"
+                  :style="getIconStyle(point)"
                   :class="point.icon"
-                  class="iconify-icon"
                 />
-                <!-- Icon Index -->
-                <!-- <div
-                  v-if="point.icon"
-                  :style="point.iconIndexStyle"
-                  class="icon-index"
-                >
-                   {{ '2' }}
-                </div> -->
               </div>
-
-              <!-- Slope Label -->
-              <span
-                v-if="showSlopes && point.slope !== 0"
-                :style="point.slopeStyle"
-                class="slope-label"
-              >
-                {{ `${point.slope}'C` }}
-              </span>
-
-              <!-- Duration Label -->
-              <span
-                v-if="showDurations && point.duration >= 600"
-                :style="point.durationStyle"
-                class="duration-label"
-              >
-                {{ `${Math.floor(point.duration / 60)}'` }}
-              </span>
-            </div>
+            </template>
           </div>
         </q-card-section>
       </div>
@@ -386,34 +341,9 @@ onMounted(() => {
   </q-dialog>
 </template>
 
-<style scoped>
-.iconify-icon {
-  font-size: 16px;
-  position: absolute;
-}
-.icon-index {
-  position: absolute;
-  font-size: 14px;
-  color: #333;
-  pointer-events: none;
-  font-weight: bold;
-}
-.slope-label {
-  position: absolute;
-  font-size: 14px;
-  color: #333;
-  pointer-events: none;
-  font-weight: bold;
-}
-.duration-label {
-  position: absolute;
-  font-size: 14px;
-  color: #333;
-  pointer-events: none;
-  font-weight: bold;
-}
+<style lang="postcss" scoped>
 .setting-btn {
-  margin-right: 8px;
-  font-size: 12px;
+  @apply text-xs;
+  @apply mr-2;
 }
 </style>

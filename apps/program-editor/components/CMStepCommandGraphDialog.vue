@@ -3,16 +3,23 @@ import { useDialogPluginComponent } from 'quasar'
 import type { ChartData, ChartOptions } from 'chart.js'
 import { BarController, BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js'
 import { Bar } from 'vue-chartjs'
+import type { Machine, Program } from '~/shared/types'
+
+const props = defineProps<{
+  machine: Machine
+  program: Program
+}>()
 
 const { t } = useI18n()
-const editor = useEditorStore()
 const { mt } = useProjectTranslations()
 const { dialogRef } = useDialogPluginComponent()
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, BarController, CategoryScale, LinearScale)
 
-const chartData = ref<ChartData<'bar', { x: [number, number], y: string }[]>>()
-const chartOptions = ref<ChartOptions<'bar'>>()
+interface ChartDataPoint {
+  x: [number, number]
+  y: string
+}
 
 interface CommandLength {
   commandNo: number
@@ -20,12 +27,23 @@ interface CommandLength {
   endStep: number
 }
 
+const isFullScreen = ref(false)
+const chartRef = ref()
+const chartData = ref<ChartData<'bar'>>()
+const chartOptions = ref<ChartOptions<'bar'>>()
+
 const commandsLength = ref<CommandLength[]>([])
+
+watch(isFullScreen, () => {
+  nextTick(() => {
+    chartRef.value?.chart?.resize()
+  })
+})
 
 function updateCommandLength(commandNo: number, stepIndex: number) {
   const existingCommand = getLastAddedByCommandNo(commandNo)
 
-  if (existingCommand && existingCommand.endStep === stepIndex) {
+  if (existingCommand?.endStep === stepIndex) {
     existingCommand.endStep += 1
   } else {
     commandsLength.value.push({ commandNo, startStep: stepIndex, endStep: stepIndex + 1 })
@@ -33,34 +51,31 @@ function updateCommandLength(commandNo: number, stepIndex: number) {
 }
 
 function calcCommandsLength() {
-  editor.program.steps.forEach((step, stepIndex) => {
+  props.program.steps.forEach((step, stepIndex) => {
     updateCommandLength(step.mainCommand.commandNo!, stepIndex + 1)
-
-    step.parallelCommands.forEach((parallelCommand) => {
-      updateCommandLength(parallelCommand.commandNo!, stepIndex + 1)
-    })
+    step.parallelCommands.forEach(cmd => updateCommandLength(cmd.commandNo!, stepIndex + 1))
   })
 }
 
 function getLastAddedByCommandNo(commandNo: number) {
-  return [...commandsLength.value].reverse().find(item => item.commandNo === commandNo) || null
+  return [...commandsLength.value].reverse().find(item => item.commandNo === commandNo)
 }
 
 function calculateChartData() {
   calcCommandsLength()
 
-  const dataPoints = commandsLength.value.map(({ commandNo, startStep, endStep }) => {
-    const machineCommandName = editor.machine.commands.get(commandNo)?.name || ''
-    const commandName = mt(machineCommandName, editor.machine.id) || t('apperance.unknownCommand')
+  const dataPoints: ChartDataPoint[] = commandsLength.value.map(({ commandNo, startStep, endStep }) => {
+    const machineCommandName = props.machine.commands.get(commandNo)?.name || ''
+    const commandName = `${commandNo}/${mt(machineCommandName, props.machine.id) || t('apperance.unknownCommand')}`
 
-    return { x: [startStep, endStep], y: commandName }
+    return { x: [startStep, endStep] as [number, number], y: commandName }
   })
 
   chartData.value = {
     datasets: [
       {
         label: t('apperance.commands'),
-        data: dataPoints,
+        data: dataPoints as any,
         backgroundColor: 'rgba(54, 162, 235, 0.5)',
         borderColor: 'rgba(54, 162, 235, 1)',
         borderWidth: 1,
@@ -71,31 +86,17 @@ function calculateChartData() {
 
 chartOptions.value = {
   indexAxis: 'y',
+  maintainAspectRatio: false,
+  responsive: true,
   scales: {
     x: {
       min: 1,
-      title: {
-        display: true,
-        text: t('apperance.steps'),
-      },
-      ticks: {
-        stepSize: 1,
-        font: {
-          size: 14,
-        },
-      },
+      title: { display: true, text: t('apperance.steps') },
+      ticks: { stepSize: 1, font: { size: 14 } },
     },
-
     y: {
-      title: {
-        display: true,
-        text: t('apperance.commands'),
-      },
-      ticks: {
-        font: {
-          size: 14,
-        },
-      },
+      title: { display: true, text: t('apperance.commands') },
+      ticks: { font: { size: 14 } },
     },
   },
   plugins: {
@@ -110,41 +111,51 @@ chartOptions.value = {
           ]
         },
       },
-      titleFont: {
-        size: 16,
-      },
-      bodyFont: {
-        size: 14,
-      },
+      titleFont: { size: 16 },
+      bodyFont: { size: 14 },
     },
   },
 }
 
-function takeScreenshot() {
+function takeScreenshot(): void {
   const canvas = document.querySelector('#chart-container canvas') as HTMLCanvasElement | null
-  if (canvas) {
-    const link = document.createElement('a')
-    link.download = `${editor.machine.id}-${editor.machine.name}/${editor.program.programNo}-${editor.program.name}-${t('stepCommandGraph.slug')}`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
-  }
+  if (!canvas)
+    return
+
+  const link = document.createElement('a')
+  const { id: machineId, name: machineName } = props.machine
+  const { programNo, name: programName } = props.program
+
+  link.download = `${machineId}-${machineName}_${programNo}-${programName}_${t('stepCommandGraph.slug')}`
+  link.href = canvas.toDataURL('image/png')
+  link.click()
 }
 
-onMounted(() => {
-  calculateChartData()
-})
+onMounted(calculateChartData)
+
+function onDialogHide() {
+  console.log('hide')
+  chartData.value = undefined
+  chartRef.value = undefined
+}
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
-    <q-card class="flex flex-col max-w-6xl max-h-2xl min-w-6xl min-h-2xl !dark:(bg-dark-4)">
+  <q-dialog
+    ref="dialogRef"
+    :full-height="isFullScreen"
+    :full-width="isFullScreen"
+    @hide="onDialogHide"
+  >
+    <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl !dark:(bg-dark-4)">
       <div id="container">
-        <q-card-section class="bg-gray-1 dark:bg-dark-3">
+        <q-card-section class="select-none bg-gray-1 dark:bg-dark-3">
           <div class="text-h6 flex">
             {{ t('stepCommandGraph.label') }}
             <q-space />
             <q-btn
               v-close-popup
+              class="text-gray-4 dark:text-gray-6"
               icon="close"
               flat
               round
@@ -152,12 +163,19 @@ onMounted(() => {
             />
           </div>
           <div class="text-h8 flex flex-col color-gray-6 dark:text-gray-4">
-            <span>{{ editor.machine.id }} - {{ editor.machine.name }}</span>
-            <span>{{ editor.program.programNo }} - {{ editor.program.name }}</span>
+            <span>{{ props.machine.id }} - {{ props.machine.name }}</span>
+            <span>{{ props.program.programNo }} - {{ props.program.name }}</span>
           </div>
         </q-card-section>
         <q-card-section>
           <div class="flex justify-end mb-2">
+            <q-btn
+              :label="t('stepCommandGraph.fullScreen')"
+              class="setting-btn"
+              color="blue"
+              icon="fullscreen"
+              @click="isFullScreen = !isFullScreen"
+            />
             <q-btn
               :label="t('stepCommandGraph.download')"
               class="setting-btn"
@@ -168,8 +186,10 @@ onMounted(() => {
           </div>
           <div
             id="chart-container"
+            :style="{ width: isFullScreen ? '100%' : '99%', height: isFullScreen ? '75vh' : '50vh', position: 'relative' }"
           >
             <Bar
+              v-if="chartData"
               id="step-command-graph"
               :options="chartOptions"
               :data="chartData"
@@ -181,9 +201,9 @@ onMounted(() => {
   </q-dialog>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 .setting-btn {
-  margin-right: 8px;
-  font-size: 12px;
+  @apply text-xs;
+  @apply mr-2;
 }
 </style>
