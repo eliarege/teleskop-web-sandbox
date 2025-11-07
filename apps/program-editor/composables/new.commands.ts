@@ -681,7 +681,8 @@ registerCommand(() => {
       editor.isLoading = true
 
       try {
-        const status = await contextMenuStore.getMachineStatus(machineId)
+        const machineStatusStore = useMachineStatusStore()
+        const status = await machineStatusStore.checkMachineStatus(machineId)
         if (!status) {
           return false
         }
