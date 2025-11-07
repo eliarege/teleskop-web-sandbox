@@ -1,7 +1,6 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { isProgramError } from './utils'
-import { notification } from '~/shared/functions'
 import type { CopyItem, MachineCommand, MachineInfo, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
 
 export interface ContextMenuStore {
@@ -32,7 +31,6 @@ export interface ContextMenuStore {
   programVersions: Ref<ProgramHeaderArchive[]>
   copyStep: () => void
   pasteStep: () => void
-  getMachineStatus: (machineId: number) => Promise<boolean>
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
@@ -401,20 +399,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function getMachineStatus(machineId: number): Promise<boolean> {
-    const { fetch } = useKeycloak()
-    const { notifyError } = useNotify()
-
-    try {
-      const status = await fetch<boolean>(`/api/machine/${machineId}/status`)
-
-      return status
-    } catch (error: any) {
-      notifyError(t(`contextMenu.status.fail`, { machineId }))
-      return false
-    }
-  }
-
   return {
     getCopiedValues,
     getCopiedStepsValues,
@@ -443,6 +427,5 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     programVersions,
     copyStep,
     pasteStep,
-    getMachineStatus,
   }
 }
