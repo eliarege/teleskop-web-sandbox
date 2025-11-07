@@ -117,13 +117,16 @@ chartOptions.value = {
   },
 }
 
-function takeScreenshot() {
+function takeScreenshot(): void {
   const canvas = document.querySelector('#chart-container canvas') as HTMLCanvasElement | null
   if (!canvas)
     return
 
   const link = document.createElement('a')
-  link.download = `${props.machine.id}-${props.machine.name}/${props.program.programNo}-${props.program.name}-${t('stepCommandGraph.slug')}`
+  const { id: machineId, name: machineName } = props.machine
+  const { programNo, name: programName } = props.program
+
+  link.download = `${machineId}-${machineName}_${programNo}-${programName}_${t('stepCommandGraph.slug')}`
   link.href = canvas.toDataURL('image/png')
   link.click()
 }

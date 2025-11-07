@@ -230,10 +230,13 @@ function calculateSlope(point1: Coordinate, point2: Coordinate): number {
   return (point2.y - point1.y) / ((point2.x - point1.x) / 60)
 }
 
-function takeScreenshot() {
+function takeScreenshot(): void {
   const element = document.getElementById('chart-container')
+  const { id: machineId, name: machineName } = props.machine
+  const { programNo, name: programName } = props.program
+
   if (element)
-    screenshot(element, `${props.machine.id}-${props.machine.name}/${props.program.programNo}-${props.program.name}-${t('tempTimeGraph.slug')}`)
+    screenshot(element, `${machineId}-${machineName}_${programNo}-${programName}_${t('tempTimeGraph.slug')}`)
 }
 
 onMounted(calculateChartData)
