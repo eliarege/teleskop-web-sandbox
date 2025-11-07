@@ -1,8 +1,28 @@
 # Changelog
 
+## 0.56.0 - 2025-11-07
+
+[Compare Changes](9130f1c1a637341f01506a516b25e5b975bc1c25...0d8d4939db66168beb1e4ed390ba9549109aab75)
+
+### 🚀 Features
+
+-  **PE**: Add full screen option for step/command graph in English and Turkish translations ([a2a54c2](a2a54c26b5c68a1900cdb89a29a9fd7e4cb4b5ab))
+
+### 🐛 Bug Fixes
+
+-  **PT**: Improve row number calculation for actual events by handling null plan keys ([eb418df](eb418df058993945662d1505892331761d806477))
+-  **PE**: Reorder parameters and update return type for calculateProgramDurationPoint function ([8cee825](8cee825232f768040546b32f5ac2d8c4576db0d6))
+-  **PE**: Update command execution to include machine and program parameters for tempTimeGraph and stepCommandGraph ([f2a9413](f2a941384c03fe8fcf6d5238d9a1684e94385b42))
+-  **PE**: Update screenshot filename format in takeScreenshot function for consistency ([e9107dc](e9107dc912e5c15eb486dcbf67cb1814fbb60c18))
+
+### ♻️ Refactor
+
+-  **PE**: Update props usage and improve chart data handling ([3316810](3316810966cb3b322425e969075b85d4e83d1a88))
+-  **PE**: Remove getMachineStatus method and use machineStatusStore for status checks ([bcaf260](bcaf26054feb5ff6286bac1286efbf233b404ecd))
+
 ## 0.55.1 - 2025-11-06
 
-[Compare Changes](50e7de34e4aa10ffb75e4d2981ae75b96c776e9e...2f72156442fc8ce3b52cec61c8e87bc882004465)
+[Compare Changes](50e7de34e4aa10ffb75e4d2981ae75b96c776e9e...9130f1c1a637341f01506a516b25e5b975bc1c25)
 
 ### 🐛 Bug Fixes
 
