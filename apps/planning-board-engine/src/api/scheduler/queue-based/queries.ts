@@ -214,7 +214,11 @@ export async function getQueueBasedActualEvents(startTime: string, endTime: stri
             d.ISSTOPPED as isStopped,
             b.BATCHKEY as batchKey,
             b.DEVIATION as deviation,
-            ROW_NUMBER() OVER (PARTITION BY b.PLANKEY ORDER BY b.BATCHREFERENCE DESC) AS rowNumber
+            ROW_NUMBER() OVER (
+              PARTITION BY
+                CASE WHEN b.PLANKEY IS NULL THEN CONCAT('b-', b.BATCHKEY) ELSE CAST(b.PLANKEY AS VARCHAR) END
+              ORDER BY b.BATCHREFERENCE DESC
+            ) AS rowNumber
         from BADATA b
         left join DYBFBATCHPLAN d ON d.PLANKEY = b.PLANKEY
       ) as subquery
