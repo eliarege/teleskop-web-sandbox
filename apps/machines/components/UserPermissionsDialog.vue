@@ -12,7 +12,7 @@ interface Permission {
 
 const props = defineProps<{
   show: boolean
-  selected: Partial<User>
+  selected: User
 }>()
 
 const emit = defineEmits(['close'])
@@ -21,6 +21,7 @@ const { t } = useI18n()
 const kc = useKeycloak()
 const { notifyError } = useNotify()
 
+const selectAll = ref(false)
 const controllerPermission = ref(false)
 const menuAccessPermission = ref(false)
 
@@ -200,20 +201,25 @@ async function savePermissions() {
     notifyError(t('user-permission-update-failed'))
   }
 }
+
+function toggleSelectAll() {
+  const groups = [permissionsGroup1, permissionsGroup2]
+  const newValue = !groups.every(g => g.every(p => p.value))
+  groups.flat().forEach(p => !p.disabled && (p.value = newValue))
+}
 </script>
 
 <template>
   <q-dialog
     :model-value="show"
-    class="select-none"
     @hide="emit('close')"
   >
     <q-card>
-      <q-card-section class="w-120">
+      <q-card-section>
         <div class="text-h6 flex">
           {{ t('user-permissions') }}
-          <QSpace />
-          <QBtn
+          <q-space />
+          <q-btn
             class="text-gray-4 dark:text-gray-6"
             icon="close"
             flat
@@ -225,7 +231,7 @@ async function savePermissions() {
       </q-card-section>
 
       <q-card-section>
-        <div class="h-160 overflow-auto">
+        <div class="h-140 overflow-auto">
           <q-list>
             <q-item
               v-for="(permission, key) in [...permissionsGroup1, ...permissionsGroup2]"
@@ -240,6 +246,14 @@ async function savePermissions() {
               />
             </q-item>
           </q-list>
+        </div>
+
+        <div>
+          <q-checkbox
+            v-model="selectAll"
+            :label="selectAll ? t('deselectAll') : t('selectAll')"
+            @update:model-value="toggleSelectAll"
+          />
         </div>
       </q-card-section>
 
