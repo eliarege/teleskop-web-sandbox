@@ -134,6 +134,7 @@ watch(showModal, async (newValue, _oldValue) => {
     class="overflow-y-auto	h-160"
     :rows-per-page-options="[0]"
     @update:selected="emit('select', selected)"
+    @row-click="(_evt, row) => { selected = [row]; emit('select', [row]) }"
   >
     <template #body-cell="props">
       <q-td :props="props">
