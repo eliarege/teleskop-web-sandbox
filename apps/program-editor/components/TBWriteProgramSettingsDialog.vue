@@ -52,10 +52,10 @@ function onDialogOK() {
             v-model="tempSettings.removeParallelCommandFromOtherSteps"
             :label="t('writeProgramSettings.removeParallelCommandFromOtherSteps')"
           />
-          <QToggle
+          <!-- <QToggle
             v-model="tempSettings.changeParallelCommandParameterInOtherSteps"
             :label="t('writeProgramSettings.changeParallelCommandParameterInOtherSteps')"
-          />
+          /> -->
           <QCheckbox
             v-model="tempSettings.preventParallelUsageForDisabledCommands"
             :label="t('writeProgramSettings.preventParallelUsageForDisabledCommands')"
