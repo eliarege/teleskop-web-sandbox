@@ -88,14 +88,14 @@ const items = computed(() => [[
       )
     },
   },
-  {
-    label: t('machineContextMenu.findChange'),
-    disabled: true,
-  },
-  {
-    label: t('machineContextMenu.compareAllPrograms'),
-    disabled: true,
-  },
+  // {
+  //   label: t('machineContextMenu.findChange'),
+  //   disabled: true,
+  // },
+  // {
+  //   label: t('machineContextMenu.compareAllPrograms'),
+  //   disabled: true,
+  // },
 ]] as TopbarMenuItem[][])
 </script>
 

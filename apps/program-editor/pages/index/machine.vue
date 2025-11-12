@@ -579,21 +579,21 @@ const contextMenuOptions = computed(() => [
         )
       },
     },
-    {
-      label: t('contextMenu.copyToMachinesAndSend'),
-      shortcut: '',
-      icon: '',
-      disabled: hasOnlyOnController.value,
-      onClick: () => {
-        // TODO: Context cannot be provided by executor
-        $commandManager.executeCommand(
-          'copyAndSend',
-          { $q },
-          editor.selectedPrograms,
-          machineId,
-        )
-      },
-    },
+    // {
+    //   label: t('contextMenu.copyToMachinesAndSend'),
+    //   shortcut: '',
+    //   icon: '',
+    //   disabled: hasOnlyOnController.value,
+    //   onClick: () => {
+    //     // TODO: Context cannot be provided by executor
+    //     $commandManager.executeCommand(
+    //       'copyAndSend',
+    //       { $q },
+    //       editor.selectedPrograms,
+    //       machineId,
+    //     )
+    //   },
+    // },
     {
       label: t('contextMenu.getProgram'),
       shortcut: '',
