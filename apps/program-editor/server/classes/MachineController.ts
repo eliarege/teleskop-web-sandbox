@@ -999,8 +999,9 @@ export class MachineController {
       })
 
       const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
-      step.mainCommand.ioList.forEach((io, k) => {
-        if (!mainIOList[k])
+      step.mainCommand.ioList.forEach((io) => {
+        const mainIO = mainIOList.find(m => m.index === io.ioIndex)
+        if (!mainIO)
           return
 
         // BAMASTERSTEPINPUTOUTPUTS
@@ -1010,8 +1011,8 @@ export class MachineController {
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: 0,
-          IOINDEX: mainIOList[k].index,
-          IOID: mainIOList[k].physicalId,
+          IOINDEX: mainIO.index,
+          IOID: mainIO.physicalId,
           IOTYPE: 5,
         })
 
@@ -1028,7 +1029,7 @@ export class MachineController {
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: 0,
-            IOINDEX: mainIOList[k].index,
+            IOINDEX: mainIO.index,
             SELECTEDIOID: selection.value[1],
             IOTYPE: selection.value[0] - 1,
           })
@@ -1066,8 +1067,9 @@ export class MachineController {
         })
 
         const paralelIOList = this.getSelectableIO(parallelCommand.commandNo, commands)
-        parallelCommand.ioList.forEach((io, m) => {
-          if (!paralelIOList[m])
+        parallelCommand.ioList.forEach((io) => {
+          const paralelIO = paralelIOList.find(p => p.index === io.ioIndex)
+          if (!paralelIO)
             return
 
           // BAMASTERSTEPINPUTOUTPUTS
@@ -1077,8 +1079,8 @@ export class MachineController {
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: j + 1,
-            IOINDEX: paralelIOList[m].index,
-            IOID: paralelIOList[m].physicalId,
+            IOINDEX: paralelIO.index,
+            IOID: paralelIO.physicalId,
             IOTYPE: 5,
           })
 
@@ -1095,7 +1097,7 @@ export class MachineController {
               PROGNO: program.programNo,
               MAINSTEP: i,
               PARALELSTEP: j + 1,
-              IOINDEX: paralelIOList[m].index,
+              IOINDEX: paralelIO.index,
               SELECTEDIOID: selection.value[1],
               IOTYPE: selection.value[0] - 1,
             })
@@ -1236,8 +1238,9 @@ export class MachineController {
       })
 
       const mainIOList = this.getSelectableIO(step.mainCommand.commandNo, commands)
-      step.mainCommand.ioList.forEach((io, k) => {
-        if (!mainIOList[k])
+      step.mainCommand.ioList.forEach((io) => {
+        const mainIO = mainIOList.find(m => m.index === io.ioIndex)
+        if (!mainIO)
           return
 
         // BFMASTERSTEPINPUTOUTPUTS
@@ -1245,14 +1248,14 @@ export class MachineController {
           PROGNO: program.programNo,
           MAINSTEP: i,
           PARALELSTEP: 0,
-          IOINDEX: mainIOList[k].index,
+          IOINDEX: mainIO.index,
           MACHINEID: this.id,
-          IOID: mainIOList[k].physicalId,
+          IOID: mainIO.physicalId,
           IOTYPE: 5,
           ERRORWARNING: 0,
         })
 
-        const ioDefs = machine.commands
+        const ioDefs = commands
           .find(c => c.commandNo === step.mainCommand.commandNo)?.ioList
           .find(i => i.index === io.ioIndex)?.selections || []
 
@@ -1263,7 +1266,7 @@ export class MachineController {
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: 0,
-            IOINDEX: mainIOList[k].index,
+            IOINDEX: mainIO.index,
             MACHINEID: this.id,
             SELECTEDIOID: selection.value[1],
             IOTYPE: selection.value[0] - 1,
@@ -1301,8 +1304,9 @@ export class MachineController {
         })
 
         const paralelIOList = this.getSelectableIO(parallelCommand.commandNo, commands)
-        parallelCommand.ioList.forEach((io, m) => {
-          if (!paralelIOList[m])
+        parallelCommand.ioList.forEach((io) => {
+          const paralelIO = paralelIOList.find(p => p.index === io.ioIndex)
+          if (!paralelIO)
             return
 
           // BFMASTERSTEPINPUTOUTPUTS
@@ -1310,14 +1314,14 @@ export class MachineController {
             PROGNO: program.programNo,
             MAINSTEP: i,
             PARALELSTEP: j + 1,
-            IOINDEX: paralelIOList[m].index,
+            IOINDEX: paralelIO.index,
             MACHINEID: this.id,
-            IOID: paralelIOList[m].physicalId,
+            IOID: paralelIO.physicalId,
             IOTYPE: 5,
             ERRORWARNING: 0,
           })
 
-          const ioDefs = machine.commands
+          const ioDefs = commands
             .find(c => c.commandNo === parallelCommand.commandNo)?.ioList
             .find(i => i.index === io.ioIndex)?.selections || []
 
@@ -1328,7 +1332,7 @@ export class MachineController {
               PROGNO: program.programNo,
               MAINSTEP: i,
               PARALELSTEP: j + 1,
-              IOINDEX: paralelIOList[m].index,
+              IOINDEX: paralelIO.index,
               MACHINEID: this.id,
               SELECTEDIOID: selection.value[1],
               IOTYPE: selection.value[0] - 1,
