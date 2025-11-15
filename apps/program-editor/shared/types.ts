@@ -521,3 +521,17 @@ export interface ProgramItem {
   programNo: number
   name: string
 }
+
+export interface CopyAndSendResult {
+  success: boolean
+  machineId: number
+  programNo: number
+  programName: string
+  machineName: string
+  copyToMachine: boolean
+  sentToDevice: boolean
+  timestamp: string
+  error?: string
+}
+
+export type PasteOptions = 'overwrite' | 'skip'

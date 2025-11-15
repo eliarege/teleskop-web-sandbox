@@ -374,13 +374,58 @@
       "success": "{programNo} numaralı program {machine} makinesine başarıyla alındı.",
       "fail": "{programNo} numaralı program {machine} makinesine alınırken hata oluştu."
     },
+    "copyAndSendSuccess": "{programNo} numaralı {name} programı {machine} makinesine kopyalandı ve gönderildi.",
+    "copyAndSendFail": "{programNo} numaralı {name} programı {machine} makinesine kopyalanamadı veya gönderilemedi.",
+    "copyAndSendStarted": "Kopyala ve gönder işlemi başlatıldı. İş ID: {jobId} - {programCount} program, {machineCount} makineye işlenecek.",
+    "copyAndSendSummary": "Kopyala ve gönder işlemi tamamlandı: {successCount}/{totalCount} başarılı.",
+    "copyAndSendJobFailed": "Kopyala ve gönder işlemi başarısız oldu.",
+    "copyAndSendStatusError": "İşlem durumu kontrol edilirken hata oluştu.",
+    "copyAndSendStartFailed": "Kopyala ve gönder işlemi başlatılamadı.",
     "copyAndSend": {
       "machineSelection": "Makine Seçimi",
       "selectMachine": "Program(lar)ın yapıştırılacağı makineleri seçiniz.",
-      "operate": "Gönder"
+      "operate": "Gönder",
+      "resultsDialog": {
+        "title": "Kopyala ve Gönder Sonuçları",
+        "totalOperations": "Toplam İşlem",
+        "successful": "Başarılı",
+        "failed": "Başarısız",
+        "status": "Durum",
+        "machine": "Makine",
+        "program": "Program",
+        "error": "Hata",
+        "success": "Başarılı",
+        "failure": "Başarısız",
+        "programNo": "Program No",
+        "close": "Kapat"
+      },
+      "started": "Kopyala ve gönder işlemi başlatıldı. Job ID: {jobId}, {programCount} program, {machineCount} makineye gönderiliyor.",
+      "startFailed": "Kopyala ve gönder işlemi başlatılamadı.",
+      "summary": "{successCount}/{totalCount} işlem başarılı.",
+      "jobFailed": "Kopyala ve gönder işlemi başarısız oldu.",
+      "statusError": "İşlem durumu kontrol edilirken hata oluştu.",
+      "dialog": {
+        "title": "Kopyala ve Gönder Sonuçları",
+        "subtitle": "Programların makinelere kopyalanma ve gönderilme işlemi tamamlandı",
+        "successful": "Başarılı",
+        "failed": "Başarısız",
+        "total": "Toplam",
+        "success": "Başarılı",
+        "failure": "Başarısız",
+        "status": "Durum",
+        "machine": "Makine",
+        "program": "Program",
+        "error": "Hata",
+        "copyToMachine": "Makineye Kopyalandı mı?",
+        "sentToDevice": "Cihaza Gönderildi mi?",
+        "pasteOptions": "Program Yapıştırma Seçenekleri",
+        "pasteOverwrite": "Var olan programın üzerine yaz",
+        "pasteSkip": "Program var ise yapıştırma"
+      }
     },
     "deleteFromMultiMachine": {
-      "selectMachine": "Program(lar)ın silineceği makineleri seçiniz.",
+      "title": "Birden Fazla Makinadan Sil",
+      "selectMachine": "Programların silineceği makineleri seçin.",
       "operate": "Sil"
     },
     "pasteNotification": {

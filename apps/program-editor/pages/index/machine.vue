@@ -7,10 +7,9 @@ import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ContextBarButtons, ProgramHeader, ProgramTableRow } from '~/shared/types'
+import type { ContextBarButtons, ProgramTableRow } from '~/shared/types'
 import { ADDITIONAL_PROCESS_CODE_ILAVE, ProgramStatus } from '~/shared/constants'
 import { formatDuration, useErrorStore } from '~/composables/utils'
-import { contextMenuStore } from '~/utils/context-menu'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
 import { useMachineStatusStore } from '~/composables/machine'
@@ -579,21 +578,19 @@ const contextMenuOptions = computed(() => [
         )
       },
     },
-    // {
-    //   label: t('contextMenu.copyToMachinesAndSend'),
-    //   shortcut: '',
-    //   icon: '',
-    //   disabled: hasOnlyOnController.value,
-    //   onClick: () => {
-    //     // TODO: Context cannot be provided by executor
-    //     $commandManager.executeCommand(
-    //       'copyAndSend',
-    //       { $q },
-    //       editor.selectedPrograms,
-    //       machineId,
-    //     )
-    //   },
-    // },
+    {
+      label: t('contextMenu.copyToMachinesAndSend'),
+      shortcut: '',
+      icon: '',
+      disabled: hasOnlyOnController.value,
+      onClick: () => {
+        $commandManager.executeCommand(
+          'copyAndSend',
+          { $q },
+          editor.selectedPrograms,
+        )
+      },
+    },
     {
       label: t('contextMenu.getProgram'),
       shortcut: '',

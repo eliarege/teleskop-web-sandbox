@@ -5,7 +5,7 @@ import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPast
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { CopyItem, Machine, MachineCommand, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
+import type { CopyItem, Machine, MachineCommand, MachineInfo, ParameterItem, PasteOptions, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -27,6 +27,8 @@ import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import { useMachineStatusStore } from '~/composables/machine'
 import CMVersionDialog from '~/components/CMVersionDialog.vue'
+import CMMachineListCopyAndSendDialog from '~/components/CMMachineListCopyAndSendDialog.vue'
+import CopyAndSendResultsDialog from '~/components/CopyAndSendResultsDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -61,7 +63,8 @@ export interface RegisteredCommands {
   renameProgram: [ctx: any, machineId: number, programNo: number]
   changeProcessType: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
   sendProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
-  copyAndSend: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
+  copyAndSend: [ctx: any, selectedRows: ProgramTableRow[]]
+  showResultsDialog: [ctx: any, sourceMachine: { id: number, name: string }, results: CopyAndSendResult[]]
   fetchProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
   printProgram: [ctx: any]
   printProgramList: [ctx: any]
@@ -258,6 +261,7 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+
   return {
     name: 'deleteProgramFromMultiMachine',
     async execute(ctx: any, selectedRows: ProgramItem[]) {
@@ -268,8 +272,11 @@ registerCommand(() => {
         component: CMMachineListDialog,
         componentProps: {
           type: 'deleteFromMultiMachine',
+          currentMachineId: editor.machine.id,
           allMachines: editor.allMachines,
           machineGroups: editor.machineGroups,
+          selectedMachineIds: [editor.machine.id],
+          disabledMachineIds: [editor.machine.id],
         },
       }).onOk(async (machines: MachineInfo[]) => {
         ctx.$q.dialog({
@@ -443,25 +450,41 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+
   return {
     name: 'copyAndSend',
-    async execute(ctx: any, selectedRows: ProgramItem[], machineId: number) {
+    async execute(ctx: any, selectedRows: ProgramItem[]) {
       await editor.fetchAllMachine()
       await editor.fetchMachineGroups()
 
+      const sourceMachine = { id: editor.machine.id, name: editor.machine.name }
+
       ctx.$q.dialog({
-        component: CMMachineListDialog,
+        component: CMMachineListCopyAndSendDialog,
         componentProps: {
           type: 'copyAndSend',
           allMachines: editor.allMachines,
           machineGroups: editor.machineGroups,
         },
-      }).onOk(async (machines: MachineInfo[]) => {
-        await contextMenuStore.sendProgramToMachines(selectedRows, machines, machineId)
+      }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
+        await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
         await editor.fetchAllPrograms()
-        return true
-      }).onCancel(() => {
-        return false
+      }).onCancel(() => false)
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'showResultsDialog',
+    async execute(ctx: any, machine: { id: number, name: string }, results: CopyAndSendResult[]) {
+      ctx.$q.dialog({
+        component: CopyAndSendResultsDialog,
+        componentProps: {
+          machine,
+          results,
+        },
       })
       return true
     },

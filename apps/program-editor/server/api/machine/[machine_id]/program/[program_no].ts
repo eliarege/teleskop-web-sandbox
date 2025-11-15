@@ -28,10 +28,6 @@ export default defineAuthEventHandler(async (event) => {
     checkPermission(event, 'program-view')
     try {
       const { program, programError } = await machine.fetchProgram(programNo)
-
-      if (!program)
-        throw new PError('PROGRAM_NOT_FOUND', { machineId, programNo })
-
       program.author = event.context.kauth?.name || ''
 
       return { program, programError }

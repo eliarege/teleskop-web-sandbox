@@ -21,9 +21,6 @@ export default defineAuthEventHandler({
       }
 
       const { program, programError } = await machine.fetchProgram(programNo)
-      if (!program) {
-        throw new PError('PROGRAM_NOT_FOUND', { machineId, programNo })
-      }
 
       if (programError.steps.length > 0) {
         throw new PError('PROGRAM_HAS_ERRORS', { machineId, programNo })

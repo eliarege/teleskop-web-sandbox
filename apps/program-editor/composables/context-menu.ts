@@ -1,7 +1,9 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { isProgramError } from './utils'
-import type { CopyItem, MachineCommand, MachineInfo, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
+import { useCopyAndSendStore } from './copyAndSend'
+import type { CopyAndSendResult, CopyItem, MachineCommand, MachineInfo, PasteOptions, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
+import { notification } from '~/shared/functions'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -18,6 +20,8 @@ export interface ContextMenuStore {
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
+  copyAndSendProgramsToMachines: (programs: { programNo: number, name: string }[], sourceMachine: { id: number, name: string }, targetMachines: MachineInfo[], pasteOption: PasteOptions) => Promise<void>
+  trackCopyAndSendJob: (sourceMachine: { id: number, name: string }, jobId: string) => Promise<void>
   deleteProgramFromMachine: (programs: ProgramItem[], machines: MachineInfo[], source: string) => Promise<void>
   deleteVersions: (machineId: number, programNo: number, versions: number[]) => Promise<number[]>
   fetchVersions: (machineId: number, programNo: number) => Promise<void>
@@ -213,7 +217,6 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         notifyError(t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
       }
     }
-    editor.isLoading = false
   }
 
   async function sendProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
@@ -248,12 +251,13 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         } else {
           notifyError(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
         }
+      } finally {
+        editor.isLoading = false
       }
-    }
-    editor.isLoading = false
 
-    if (isMultiplePrograms) {
-      notificationState.showNotificationPopup = true
+      if (isMultiplePrograms) {
+        notificationState.showNotificationPopup = true
+      }
     }
   }
 
@@ -268,15 +272,26 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
         notifySuccess(t(`contextMenu.get.success`, { programNo: program.programNo }))
       } catch (error: any) {
-        let messageKey = 'fail'
+        const messageKey = 'fail'
 
-        if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
-          messageKey = 'programNotFound'
+        for (const program of programs) {
+          try {
+            await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
+            notification(true, t(`contextMenu.get.success`, { programNo: program.programNo }))
+          } catch (error: any) {
+            let messageKey = 'fail'
+
+            if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
+              messageKey = 'programNotFound'
+            }
+            notification(false, t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
+          }
+          notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
         }
-        notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
+      } finally {
+        editor.isLoading = false
       }
     }
-    editor.isLoading = false
   }
 
   async function sendProgramToMachines(programs: ProgramItem[], machines: MachineInfo[], machineId: number): Promise<void> {
@@ -300,7 +315,67 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         }
       }
     }
-    editor.isLoading = false
+  }
+
+  async function copyAndSendProgramsToMachines(programs: { programNo: number, name: string }[], sourceMachine: { id: number, name: string }, targetMachines: MachineInfo[], pasteOption: PasteOptions): Promise<void> {
+    const { fetch } = useKeycloak()
+
+    try {
+      const response = await fetch<{ jobId: string }>('/api/copyAndSend', {
+        method: 'POST',
+        body: {
+          programs: programs.map(program => ({
+            programNo: program.programNo,
+            name: program.name,
+          })),
+          sourceMachineId: sourceMachine.id,
+          targetMachines,
+          pasteOption,
+        },
+      })
+
+      if (response && response.jobId) {
+        trackCopyAndSendJob(sourceMachine, response.jobId)
+      } else {
+        notification(false, t('contextMenu.copyAndSendStartFailed'))
+      }
+    } catch (error) {
+      notification(false, t('contextMenu.copyAndSendStartFailed'))
+      console.error('Copy and Send error:', error)
+    }
+  }
+
+  async function trackCopyAndSendJob(sourceMachine: { id: number, name: string }, jobId: string) {
+    const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+    const copyAndSendResults = useCopyAndSendStore()
+
+    const checkStatus = async () => {
+      try {
+        const status = await fetch<{
+          status: 'pending' | 'running' | 'completed' | 'failed'
+          results: CopyAndSendResult[]
+        }>(`/api/job/${jobId}/status`)
+
+        if (status.status === 'completed') {
+          // İşlem tamamlandı - state'e kaydet
+          copyAndSendResults.showResults(sourceMachine, status.results)
+
+          await editor.fetchAllPrograms()
+        } else if (status.status === 'failed') {
+          notification(false, t('contextMenu.copyAndSendJobFailed'))
+        } else {
+          // Henüz tamamlanmadı - 2 saniye sonra tekrar kontrol et
+          setTimeout(checkStatus, 2000)
+        }
+      } catch (error) {
+        notification(false, t('contextMenu.copyAndSendStatusError'))
+        console.error('Status check error:', error)
+      }
+    }
+
+    // İlk kontrol 2 saniye sonra başla
+    setTimeout(checkStatus, 2000)
   }
 
   async function deleteProgramFromMachine(programs: ProgramItem[], machines: MachineInfo[], source: string): Promise<void> {
@@ -409,6 +484,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     fetchVersions,
     setActiveVersion,
     sendProgramToMachines,
+    copyAndSendProgramsToMachines,
+    trackCopyAndSendJob,
     deleteVersions,
     concatenatePrograms,
     deleteProgramFromMachine,
