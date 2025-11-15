@@ -672,10 +672,6 @@ export class MachineController {
       }
 
       const program = await this.client.downloadProgram(programNo, commands)
-      if (!program) {
-        throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
-      }
-
       await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
 
       return program
@@ -1540,10 +1536,6 @@ export class MachineController {
         try {
           // Programın tam detaylarını al
           const { program } = await this.fetchProgram(programHeader.programNo)
-
-          if (!program) {
-            throw new Error(`Program ${programHeader.programNo} details not found`)
-          }
 
           // Makineye yükle
           await this.client.uploadProgram(program, commands)

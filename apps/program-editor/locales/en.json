@@ -374,12 +374,43 @@
       "success": "Program {programNo} is successfully taken in machine {machine}.",
       "fail": "An error occured while taking program {programNo} in machine {machine}."
     },
+    "copyAndSendSuccess": "Program {programNo} ({name}) is copied and sent to machine {machine}.",
+    "copyAndSendFail": "Program {programNo} ({name}) could not be copied or sent to machine {machine}.",
+    "copyAndSendStarted": "Copy and send operation started. Job ID: {jobId} - {programCount} programs will be processed to {machineCount} machines.",
+    "copyAndSendSummary": "Copy and send operation completed: {successCount}/{totalCount} successful.",
+    "copyAndSendJobFailed": "Copy and send operation failed.",
+    "copyAndSendStatusError": "An error occurred while checking operation status.",
+    "copyAndSendStartFailed": "Could not start copy and send operation.",
     "copyAndSend": {
       "machineSelection": "Machine Selection",
       "selectMachine": "Select machines that you want to paste the programs.",
-      "operate": "Send"
+      "operate": "Send",
+      "started": "Copy and send operation started. Job ID: {jobId}, sending {programCount} programs to {machineCount} machines.",
+      "startFailed": "Failed to start copy and send operation.",
+      "summary": "{successCount}/{totalCount} operations successful.",
+      "jobFailed": "Copy and send operation failed.",
+      "statusError": "Error occurred while checking operation status.",
+      "dialog": {
+        "title": "Copy and Send Results",
+        "subtitle": "Program copy and send operation completed",
+        "successful": "Successful",
+        "failed": "Failed",
+        "total": "Total",
+        "success": "Success",
+        "failure": "Failed",
+        "status": "Status",
+        "machine": "Machine",
+        "program": "Program",
+        "error": "Error",
+        "copyToMachine": "Copy to Machine?",
+        "sentToDevice": "Sent to Device?",
+        "pasteOptions": "Program Paste Options",
+        "pasteOverwrite": "Overwrite existing program",
+        "pasteSkip": "Skip if program exists"
+      }
     },
     "deleteFromMultiMachine": {
+      "title": "Delete From Multiple Machines",
       "selectMachine": "Select machines that you want to delete the programs.",
       "operate": "Delete"
     },

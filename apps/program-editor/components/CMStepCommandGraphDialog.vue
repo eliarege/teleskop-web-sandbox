@@ -134,7 +134,6 @@ function takeScreenshot(): void {
 onMounted(calculateChartData)
 
 function onDialogHide() {
-  console.log('hide')
   chartData.value = undefined
   chartRef.value = undefined
 }
