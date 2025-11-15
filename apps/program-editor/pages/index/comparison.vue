@@ -6,9 +6,9 @@ import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
 
 const dmp = new DMP()
+const kc = useKeycloak()
 const route = useRoute()
 const editor = useEditorStore()
-const kc = useKeycloak()
 
 const buttons = computed<ContextBarButtons[]>(() => [])
 useContextBar(buttons)
@@ -56,8 +56,8 @@ editor.fetchMachine(Number(m)).then(() => {
   navigateTo('/')
 })
 
-const programOneData = await kc.fetch<Program>(paths[0])
-const programTwoData = await kc.fetch<Program>(paths[1])
+const { program: programOneData } = await kc.fetch<{ program: Program }>(paths[0])
+const { program: programTwoData } = await kc.fetch<{ program: Program }>(paths[1])
 
 const programOneCommands = programOneData.steps.map(step => step.mainCommand.commandNo)
 const programTwoCommands = programTwoData.steps.map(step => step.mainCommand.commandNo)
