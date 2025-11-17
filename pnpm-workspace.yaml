@@ -4,6 +4,7 @@ packages:
   - vendor/*
   - keycloak/*
   - devops/*
+  - mcp/*
   - playground
 onlyBuiltDependencies:
   - '@parcel/watcher'
