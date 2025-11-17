@@ -582,6 +582,9 @@ importers:
 
   apps/planning-board-engine:
     dependencies:
+      '@teleskop/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@teleskop/keycloak-adapter':
         specifier: workspace:*
         version: link:../../packages/keycloak-adapter

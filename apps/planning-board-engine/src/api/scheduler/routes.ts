@@ -1,5 +1,6 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import { ofetch } from 'ofetch'
+import { TonelloApi } from '@teleskop/core'
 import {
   addBatchNote,
   addErpParameters,
@@ -14,7 +15,6 @@ import {
   getBatchNotes,
   getBatchProperties,
   getColumnData,
-  getDetailedProgram,
   getDistinctErpParameters,
   getErpParameters,
   getEventTooltipParams,
@@ -42,9 +42,13 @@ import {
   updatePlanParameter,
   updateUnplannedColumns,
   uploadToMachine,
+  uploadToTonelloMachine,
 } from './queries'
 import { remoteShowMessageBody } from '~/composables/soap'
 import { StartingParameters } from '~/composables/enums'
+import { fetchProgram } from '~/lib/program'
+import { knex } from '~/knexConfig'
+import { fetchMachineInfo } from '~/lib/machine'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -87,7 +91,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
   fastify.get(
     '/planning_board/stops',
-    async (request: FastifyRequest<{ Querystring: { startDate: string, endDate: string } }>, reply) => {
+    async (request: FastifyRequest<{ Querystring: { startDate: string, endDate: string } }>, _reply) => {
       try {
         const { startDate, endDate } = request.query
         return await planningBoardStops(startDate, endDate)
@@ -343,7 +347,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request: FastifyRequest<{ Querystring: { programNo: number, machineId: number } }>, reply) => {
       try {
         const { programNo, machineId } = request.query
-        return await getDetailedProgram(programNo, machineId)
+        return await fetchProgram(knex, programNo, machineId)
       } catch (err) {
         fastify.log.error(`An error occured while fetching detailed program: ${err}`)
         return reply.code(500).send({ error: `An error occured while fetching detailed program: ${err}` })
@@ -528,12 +532,12 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         return reply.code(400).send('Invalid request body')
       }
 
-      const machine = await getMachineInfo(body.machineId)
+      const machine = await fetchMachineInfo(knex, body.machineId)
       if (!machine) {
         return reply.code(404).send('Machine not found')
       }
 
-      await ofetch(`http://${machine.ip}:8080`, {
+      await ofetch(`http://${machine.host}:8080`, {
         method: 'POST',
         body: remoteShowMessageBody(body.title, body.message),
       })
@@ -549,7 +553,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       Querystring: { program: string, machineId: number, planKey: number, machineIp: string, jobOrder: string }
     }>, reply) => {
       try {
-        const { program, machineId, planKey, machineIp, jobOrder } = request.query
+        // TODO: program is apparently a comma-separated list of programs? better rename the variable
+        const { program, machineId, planKey, jobOrder } = request.query
         // check if machine wants all params
         const allParamsRequired = await checkMachineParameterRequest(machineId)
         if (allParamsRequired) {
@@ -561,19 +566,26 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         } else {
           const formula = await getFormula(program, machineId)
           if (formula.length > 0) {
-            const startingParameterValues: {
-              machineId: number
-              paramString: string
-              value: string | number
-              paramLowLimit: number
-              paramHighLimit: number
-              paramStatus: number
-            }[] = await getStartingParametersWithValues(formula, planKey)
+            const startingParameterValues = await getStartingParametersWithValues(formula, planKey)
             const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
 
             if (requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct) || requestedStartingParameters.length === 0) {
-            // write to machine
-              await uploadToMachine(machineIp, startingParameterValues, program, jobOrder)
+              // write to machine
+              const machineInfo = await fetchMachineInfo(knex, machineId)
+              if (!machineInfo) {
+                return reply.code(404).send('Machine not found')
+              }
+              const programNoList = program.split(',').map(prgNo => Number.parseInt(prgNo))
+              if (programNoList.some(Number.isNaN)) {
+                return reply.code(400).send('Invalid program number format')
+              }
+
+              if (machineInfo.tbbModel !== 'Tonello') {
+                await uploadToMachine(machineInfo.host, startingParameterValues, programNoList, jobOrder)
+              } else {
+                const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
+                await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder)
+              }
               return reply.code(200).send('DONE')
             }
             return reply.code(200).send(startingParameterValues)
@@ -581,6 +593,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         }
       } catch (err) {
         console.error(err)
+        return reply.code(500).send({ error: `An error occured while uploading to machine: ${err}` })
       }
     },
   )

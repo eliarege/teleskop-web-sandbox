@@ -1,12 +1,16 @@
 import moo from 'moo'
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { PlanParameters, QueueBasedActualEvent, QueueBasedBaseEvent, QueueBasedEventStop } from 'types/planning-board'
-import type { Program } from 'typescript'
 import { chunk } from 'lodash-es'
+import type { TonelloApi, TonelloBatch } from '@teleskop/core'
+import { isDef } from '@teleskop/utils'
 import { config } from '~/config'
 import { knex } from '~/knexConfig'
 import { logger } from '~/composables/logger'
 import { StartingParameters } from '~/composables/enums'
+import { fetchPrograms } from '~/lib/program'
+import { fetchCommands } from '~/lib/command'
+import { createTonelloBatch } from '~/lib/batch'
 
 export async function refreshCustomTables() {
   // refresh PTCOLUMNS table
@@ -431,14 +435,6 @@ export async function getMachineIds(): Promise<number[]> {
   return (await knex('BFMACHINES').select('MACHINEID as id').where('INUSE', true).andWhere('USEINTELESKOP', true)).map(m => m.id)
 }
 
-export async function getMachineInfo(id: number): Promise<{ ip: string } | undefined> {
-  return await knex
-    .where('INUSE', true)
-    .andWhere('USEINTELESKOP', true)
-    .andWhere('MACHINEID', id)
-    .from('BFMACHINES')
-    .first({ ip: 'IP' })
-}
 export async function getErpParameters(paramName: string) {
   const erpParams = await knex({ p: 'dbo.PTMACHINEERP' })
     .select('*')
@@ -773,7 +769,8 @@ export async function scheduleEvents(body: { planKey: number, queueNumber: numbe
     await trx('PTBATCHPLANQUEUE').whereIn('MACHINEID', [...machineIdList]).del('PLANKEY')
     await trx('PTBATCHPLANQUEUE').whereIn('PLANKEY', [...planKeyList]).del('PLANKEY')
     for (const ev of body) {
-      const theoreticalDuration = (await getTheoreticalDuration(ev.planKey)).find(a => a.machineId === ev.machineId)?.theoreticalDuration || 0
+      const theoreticalDuration = (await getTheoreticalDuration(ev.planKey))
+        .find(a => a.machineId === ev.machineId)?.theoreticalDuration || 0
 
       await trx('PTBATCHPLANQUEUE').where('PLANKEY', '=', ev.planKey).insert({
         PLANKEY: ev.planKey,
@@ -806,92 +803,6 @@ export async function hasProgram(programNo: number, machineId: number): Promise<
     .where('p.PROGNO', programNo)
     .andWhere('p.MACHINEID', machineId)
   return !!result
-}
-export async function getDetailedProgram(programNo: number, machineId: number): Promise<Program> {
-  if (!await hasProgram(programNo, machineId)) {
-    throw new Error('Program Does Not Exist!')
-  }
-  const [program] = await knex.transaction(async (trx) => {
-    return await trx
-      .select({
-        name: 'P.NAME',
-        icon: trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
-        programNo: 'P.PROGNO',
-        author: 'P.LOCKEDBY',
-        comment: 'P.USERCOMMENT',
-        typeId: 'T.PROCESSCODE',
-        typeName: 'T.PROCESSNAME',
-        machineId: 'M.MACHINEID',
-        programState: 'P.PRGSTATE',
-        machineName: 'M.MACHINECODE',
-        steps: trx.raw(`ISNULL((
-      SELECT commands = ISNULL((
-        SELECT s2.COMMANDNO AS commandNo,
-        parameters = ISNULL((
-          SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index]
-          FROM BFMASTERSTEPPARAMS sp
-          WHERE s2.MACHINEID = sp.MACHINEID
-            AND s2.PROGNO = sp.PROGNO
-            AND s2.MAINSTEP = sp.MAINSTEP
-            AND s2.PARALELSTEP = sp.PARALELSTEP
-          ORDER BY sp.PARAMETERINDEX
-          FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]'),
-        ioList = ISNULL((
-          SELECT sio.IOID AS ioId, sio.IOINDEX AS ioIndex,
-          value = ISNULL((
-            SELECT '[' + STRING_AGG('[' + CAST(sel.IOTYPE + 1 AS VARCHAR) + ',' + CAST(sel.SELECTEDIOID AS VARCHAR) + ']', ',') + ']'
-              FROM BFMASTERSTEPSELECTIONLIST sel
-              WHERE sel.MACHINEID = sio.MACHINEID
-                AND sel.PROGNO = sio.PROGNO
-                AND sel.MAINSTEP = sio.MAINSTEP
-                AND sel.PARALELSTEP = sio.PARALELSTEP
-                AND sel.IOINDEX = sio.IOINDEX
-          ), '[]')
-          FROM BFMASTERSTEPINPUTOUTPUTS sio
-          WHERE s2.MACHINEID = sio.MACHINEID
-            AND s2.PROGNO = sio.PROGNO
-            AND s2.MAINSTEP = sio.MAINSTEP
-            AND s2.PARALELSTEP = sio.PARALELSTEP
-          ORDER BY sio.IOINDEX
-          FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')
-        FROM BFMASTERSTEPS s2
-        WHERE s.MACHINEID = s2.MACHINEID
-          AND s.PROGNO = s2.PROGNO
-          AND s.MAINSTEP = s2.MAINSTEP
-        ORDER BY s2.PARALELSTEP
-        FOR JSON AUTO, INCLUDE_NULL_VALUES
-      ), '[]')
-      FROM BFMASTERSTEPS s
-      WHERE P.MACHINEID = s.MACHINEID
-        AND P.PROGNO = s.PROGNO
-        AND s.PARALELSTEP = 0
-      ORDER BY s.MAINSTEP
-      FOR JSON AUTO, INCLUDE_NULL_VALUES
-      ), '[]')`),
-      })
-      .from('BFMASTERPRGHEADER AS P')
-      .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
-      .join('BFPROCESSTYPES AS T', 'T.PROCESSCODE', 'P.PROCESSCODE')
-      .where('P.PROGNO', programNo)
-      .andWhere('M.MACHINEID', machineId)
-  })
-  program.steps = JSON.parse(program.steps)
-
-  for (const step of program.steps)
-    for (const command of step.commands)
-      for (const io of command.ioList)
-        io.value = JSON.parse(io.value)
-
-  for (let i = 0; i < program.steps.length; i++) {
-    const step = program.steps[i]
-    const [mainCommand, ...parallelCommands] = step.commands as ProgramStepCommand[]
-    const newStep: ProgramStep = { stepId: step.stepId, mainCommand, parallelCommands }
-    program.steps[i] = newStep
-  }
-
-  return program
 }
 
 /* ------------------------------------------------------------------------------------------------------------------------------------------------ */
@@ -1204,45 +1115,55 @@ function txtFormat(data: {
   programCount: number
   parameters: {
     paramString: string
-    value: string | number
+    value: string | number | null
   }[]
-  programs: string[]
+  programsNoList: number[]
 }) {
   const lines = []
 
-  lines.push(`BATCH_START=${data.batchStart.toLocaleString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/ /g, ' ')}`)
+  lines.push(`BATCH_START=${data.batchStart.toLocaleString('tr-TR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).replace(/ /g, ' ')}`)
   lines.push(`BATCH_TYPE=${data.batchType}`)
   lines.push(`PROGRAM_COUNT=${data.programCount}`)
 
   data.parameters.forEach((param) => {
-    lines.push(`${param.paramString}=${param.value}`)
+    if (isDef(param.value)) {
+      lines.push(`${param.paramString}=${param.value}`)
+    }
   })
 
-  data.programs.forEach((program, index) => {
+  data.programsNoList.forEach((program, index) => {
     lines.push(`Program${index + 1}=${program}`)
   })
 
   return `${lines.join('\n')}\n`
 }
-export async function uploadToMachine(machineIp: string, startingParams: { paramString: string, value: string | number }[], programNoList: string, jobOrder: string) {
-  const programs = programNoList.split(',')
-  const txt = {
+export async function uploadToMachine(
+  machineIp: string,
+  startingParams: { paramString: string, value: string | number | null }[],
+  programNoList: number[],
+  jobOrder: string,
+) {
+  const file = txtFormat({
     batchStart: new Date(),
-    // TODO: check batch types
     batchType: 0,
-    programCount: programs.length,
+    programCount: programNoList.length,
     parameters: startingParams,
-    programs,
-  }
-
-  const file = txtFormat(txt)
+    programsNoList: programNoList,
+  })
   const ftp = new TbbFtpClient(machineIp)
   try {
     await ftp.connect()
     await ftp.upload(`/tbb6500/client/remoteBatch/plan/${jobOrder}.txt`, file)
     return 'DONE!'
-  } catch (err) {
-    return console.error(err)
+  } finally {
+    ftp.close()
   }
 }
 export async function getAutoAdd(): Promise<boolean> {
@@ -1251,4 +1172,21 @@ export async function getAutoAdd(): Promise<boolean> {
 }
 export async function updateAutoAdd(value: boolean) {
   await knex('DYCTCTSCONFIG').update('AUTOADDTOPLANQUEUE', value)
+}
+
+export async function uploadToTonelloMachine(
+  machineId: number,
+  tonelloApi: TonelloApi,
+  programIdsToUpload: number[],
+  jobOrder: string,
+) {
+  let body: TonelloBatch | undefined
+  await knex.transaction(async (trx) => {
+    const commands = await fetchCommands(trx, machineId)
+    const programs = await fetchPrograms(trx, machineId, programIdsToUpload)
+    body = createTonelloBatch(programs, commands, jobOrder)
+  })
+  if (body) {
+    await tonelloApi.submitBatch(body)
+  }
 }
