@@ -25,6 +25,11 @@ export class TonelloApi {
     })
   }
 
+  static createFromHostname(hostname: string): TonelloApi {
+    const baseURL = `http://${hostname}:1234`
+    return new TonelloApi(baseURL)
+  }
+
   async fetchDatetime(): Promise<TonelloResponse<{ dateTime: string }>> {
     return await this.fetch('/api/v1/getDateTime')
   }
