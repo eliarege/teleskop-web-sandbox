@@ -1,4 +1,3 @@
-import process from 'node:process'
 import { Mutex } from 'async-mutex'
 import Fastify from 'fastify'
 import fastifyIO from 'fastify-socket.io'
@@ -14,7 +13,6 @@ import { config } from './config'
 import { autoPlan } from './composables/autoPlan'
 
 const app = Fastify({ logger })
-const port = Number.parseInt(process.env.SERVER_PORT || '3500')
 const KC_ACCESS_ROLE = 'access'
 
 app.register(fastifyIO, {
@@ -45,7 +43,6 @@ app.get('/', (req, reply) => {})
 const mutex = new Mutex()
 
 const clientTasks: Record<string, string[]> = {}
-const DB_NAME = process.env.TELESKOP_DATABASE
 
 app.ready().then(async () => {
   async function scheduleAutoPlan() {
@@ -79,4 +76,7 @@ app.ready().then(async () => {
   })
 })
 
-app.listen({ port, host: '0.0.0.0' })
+app.listen({
+  port: config.serverPort,
+  host: config.serverHost,
+})
