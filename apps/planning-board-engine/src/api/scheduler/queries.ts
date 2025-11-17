@@ -1177,14 +1177,15 @@ export async function updateAutoAdd(value: boolean) {
 export async function uploadToTonelloMachine(
   machineId: number,
   tonelloApi: TonelloApi,
-  programIdsToUpload: number[],
+  programNos: number[],
   jobOrder: string,
 ) {
   let body: TonelloBatch | undefined
   await knex.transaction(async (trx) => {
     const commands = await fetchCommands(trx, machineId)
-    const programs = await fetchPrograms(trx, machineId, programIdsToUpload)
-    body = createTonelloBatch(programs, commands, jobOrder)
+    const programs = await fetchPrograms(trx, machineId, programNos)
+    const sortedPrograms = programNos.map(no => programs.find(p => p.programNo === no)!)
+    body = createTonelloBatch(sortedPrograms, commands, jobOrder)
   })
   if (body) {
     await tonelloApi.submitBatch(body)
