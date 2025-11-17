@@ -37,6 +37,8 @@ export async function fetchPrograms(db: Knex, machineId: number, programNos: num
     })
   }
 
+  programNos = Array.from(new Set(programNos))
+
   const rawPrograms = await db
     .from('BFMASTERPRGHEADER')
     .select({
