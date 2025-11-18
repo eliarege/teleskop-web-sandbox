@@ -15,7 +15,7 @@ const { notifySuccess, notifyError } = useNotify()
 
 const items = computed(() => [[
   {
-    label: t('machineContextMenu.uploadAllPrograms'),
+    label: t('machineContextMenu.sendAllPrograms'),
     disabled: false,
     onClick: async () => {
       try {
@@ -26,13 +26,13 @@ const items = computed(() => [[
         })
 
         if (response.success) {
-          notifySuccess(t('machineContextMenu.uploadSuccess', { count: response.count }))
+          notifySuccess(t('machineContextMenu.sendSuccess', { count: response.count }))
         } else {
           // Backend'den gelen error mesajını direkt kullan
           throw new Error(response.message || 'Upload failed')
         }
       } catch (error) {
-        notifyError(t('machineContextMenu.uploadError', {
+        notifyError(t('machineContextMenu.sendError', {
           error: error instanceof Error ? error.message : 'Unknown error',
         }))
       } finally {
@@ -41,7 +41,7 @@ const items = computed(() => [[
     },
   },
   {
-    label: t('machineContextMenu.downloadAllPrograms'),
+    label: t('machineContextMenu.getAllPrograms'),
     disabled: false,
     onClick: async () => {
       try {
@@ -52,7 +52,7 @@ const items = computed(() => [[
         })
 
         if (response.success) {
-          notifySuccess(t('machineContextMenu.downloadSuccess', { count: response.count }))
+          notifySuccess(t('machineContextMenu.getSuccess', { count: response.count }))
 
           // Sayfa yenilenerek güncel program listesi gösterilsin
           await editor.fetchAllPrograms()
@@ -61,7 +61,7 @@ const items = computed(() => [[
           throw new Error(response.message || 'Download failed')
         }
       } catch (error) {
-        notifyError(t('machineContextMenu.downloadError', {
+        notifyError(t('machineContextMenu.getError', {
           error: error instanceof Error ? error.message : 'Unknown error',
         }))
       } finally {

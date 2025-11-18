@@ -376,7 +376,7 @@
     },
     "copyAndSendSuccess": "Program {programNo} ({name}) is copied and sent to machine {machine}.",
     "copyAndSendFail": "Program {programNo} ({name}) could not be copied or sent to machine {machine}.",
-    "copyAndSendStarted": "Copy and send operation started. Job ID: {jobId} - {programCount} programs will be processed to {machineCount} machines.",
+    "copyAndSendStarted": "Copy and send operation started.",
     "copyAndSendSummary": "Copy and send operation completed: {successCount}/{totalCount} successful.",
     "copyAndSendJobFailed": "Copy and send operation failed.",
     "copyAndSendStatusError": "An error occurred while checking operation status.",
@@ -484,16 +484,16 @@
     "stepEnd": "End Step"
   },
   "machineContextMenu": {
-    "uploadAllPrograms": "Upload All Programs To Machine",
-    "downloadAllPrograms": "Download All Programs From Machine",
+    "sendAllPrograms": "Send All Programs To Machine",
+    "getAllPrograms": "Get All Programs From Machine",
     "copy": "Copy Programs",
     "paste": "Paste Programs",
     "findChange": "Find - Change",
     "compareAllPrograms": "Compare All Programs",
-    "downloadSuccess": "{count} programs downloaded successfully",
-    "downloadError": "Program download error: {error}",
-    "uploadSuccess": "{count} programs uploaded successfully",
-    "uploadError": "Program upload error: {error}"
+    "getSuccess": "{count} programs gotten successfully",
+    "getError": "Program get error: {error}",
+    "sendSuccess": "{count} programs sent successfully",
+    "sendError": "Program send error: {error}"
   },
   "comparisonTable": {
     "programName": "Program Name",
