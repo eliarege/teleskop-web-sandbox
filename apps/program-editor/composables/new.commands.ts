@@ -78,7 +78,7 @@ export interface RegisteredCommands {
   saveAsProgram: [ctx: any]
   discardChanges: [ctx: any]
   unsavedChanges: [ctx: any, machineId?: number]
-  programVersionInfo: [ctx: any]
+  programVersionInfo: [ctx: any, program: { programNo: number, name: string }]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, commandNo: number]
   moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand?: ProgramStepCommand, parameter?: ParameterItem, stepIndex?: number]
@@ -595,29 +595,26 @@ registerCommand(() => {
 
   return {
     name: 'programVersionInfo',
-    async execute(ctx: any) {
+    async execute(ctx: any, program: { programNo: number, name: string }) {
       try {
-        const { id: machineId, name: machineName } = editor.machine
-        const { programNo, name: programName } = editor.program
+        const machine = editor.machine
 
         editor.isLoading = true
-        await contextMenuStore.fetchVersions(machineId, programNo)
+        await contextMenuStore.fetchVersions(machine.id, program.programNo)
         editor.isLoading = false
 
         ctx.$q.dialog({
           component: CMVersionDialog,
           componentProps: {
-            machineId,
-            machineName,
-            programNo,
-            programName,
+            machine,
+            program,
             rows: contextMenuStore.programVersions.value,
           },
         }).onOk(async () => {
           // Dialog closed after successful operation, refresh program
           editor.isLoading = true
           try {
-            await editor.fetchProgram(machineId, programNo)
+            await editor.fetchProgram(machine.id, program.programNo)
           } catch (error) {
             console.error('Error refreshing program:', error)
           } finally {

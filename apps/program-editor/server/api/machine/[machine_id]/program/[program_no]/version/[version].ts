@@ -38,7 +38,7 @@ export default defineAuthEventHandler({
       if (event.method === 'PUT') {
         checkPermission(event, 'program-edit')
         const { isOperatorEditable } = await readBody<{ isOperatorEditable: boolean }>(event)
-        const newVersion = await machine.fetchArchivedProgram(programNo, versionNo)
+        const { program: newVersion } = await machine.fetchArchivedProgram(programNo, versionNo)
 
         if (!newVersion) {
           throw new PError('PROGRAM_VERSION_NOT_FOUND', { machineId, programNo, versionNo })
