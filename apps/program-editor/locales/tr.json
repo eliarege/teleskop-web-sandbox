@@ -308,8 +308,8 @@
     "concatPrograms": "Programları Birleştir",
     "renameProgram": "Yeniden Adlandır",
     "changeProcessType": "Program Tipini Değiştir",
-    "sendProgram": "Programı Yolla",
-    "copyToMachinesAndSend": "Makinelere Kopyala ve Yolla",
+    "sendProgram": "Programı Gönder",
+    "copyToMachinesAndSend": "Makinelere Kopyala ve Gönder",
     "getProgram": "Programı Al",
     "programVersion": "Program Versiyonları",
     "addToComparison": "Karşılaştırma Listesine Ekle",
@@ -376,7 +376,7 @@
     },
     "copyAndSendSuccess": "{programNo} numaralı {name} programı {machine} makinesine kopyalandı ve gönderildi.",
     "copyAndSendFail": "{programNo} numaralı {name} programı {machine} makinesine kopyalanamadı veya gönderilemedi.",
-    "copyAndSendStarted": "Kopyala ve gönder işlemi başlatıldı. İş ID: {jobId} - {programCount} program, {machineCount} makineye işlenecek.",
+    "copyAndSendStarted": "Kopyala ve gönder işlemi başlatıldı.",
     "copyAndSendSummary": "Kopyala ve gönder işlemi tamamlandı: {successCount}/{totalCount} başarılı.",
     "copyAndSendJobFailed": "Kopyala ve gönder işlemi başarısız oldu.",
     "copyAndSendStatusError": "İşlem durumu kontrol edilirken hata oluştu.",
@@ -498,16 +498,16 @@
     "stepEnd": "Bitiş Adım"
   },
   "machineContextMenu": {
-    "uploadAllPrograms": "Tüm Programları Makineye Yolla",
-    "downloadAllPrograms": "Tüm Programları Makineden Al",
+    "sendAllPrograms": "Tüm Programları Makineye Gönder",
+    "getAllPrograms": "Tüm Programları Makineden Al",
     "copy": "Programları Kopyala",
     "paste": "Programları Yapıştır",
     "findChange": "Bul - Değiştir",
     "compareAllPrograms": "Tüm Programları Karşılaştır",
-    "downloadSuccess": "{count} program başarıyla alındı",
-    "downloadError": "Program indirme hatası: {error}",
-    "uploadSuccess": "{count} program başarıyla gönderildi",
-    "uploadError": "Program gönderme hatası: {error}"
+    "getSuccess": "{count} program başarıyla alındı",
+    "getError": "Program alma hatası: {error}",
+    "sendSuccess": "{count} program başarıyla gönderildi",
+    "sendError": "Program gönderme hatası: {error}"
   },
   "comparisonTable": {
     "programName": "Program İsmi",

@@ -319,6 +319,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
   async function copyAndSendProgramsToMachines(programs: { programNo: number, name: string }[], sourceMachine: { id: number, name: string }, targetMachines: MachineInfo[], pasteOption: PasteOptions): Promise<void> {
     const { fetch } = useKeycloak()
+    const { notifySuccess, notifyError } = useNotify()
 
     try {
       const response = await fetch<{ jobId: string }>('/api/copyAndSend', {
@@ -335,12 +336,13 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       })
 
       if (response && response.jobId) {
+        notifySuccess(t('contextMenu.copyAndSendStarted'))
         trackCopyAndSendJob(sourceMachine, response.jobId)
       } else {
-        notification(false, t('contextMenu.copyAndSendStartFailed'))
+        notifyError(t('contextMenu.copyAndSendStartFailed'))
       }
     } catch (error) {
-      notification(false, t('contextMenu.copyAndSendStartFailed'))
+      notifyError(t('contextMenu.copyAndSendStartFailed'))
       console.error('Copy and Send error:', error)
     }
   }

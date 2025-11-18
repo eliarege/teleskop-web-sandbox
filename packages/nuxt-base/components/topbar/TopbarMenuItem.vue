@@ -33,7 +33,7 @@ const leftIcon = computed(() => {
     <QItemSection class="px-0 mr-2.5 opacity-60" avatar>
       <QIcon size="1rem" :name="leftIcon" />
     </QItemSection>
-    <QItemSection class="flex-1 text-capitalize">
+    <QItemSection class="flex-1">
       <QItemLabel>{{ toValue(item.label) }}</QItemLabel>
     </QItemSection>
     <QItemSection
