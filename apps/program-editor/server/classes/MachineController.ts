@@ -515,10 +515,10 @@ export class MachineController {
    * Program numarası ve versiyon numarasına göre arşivlenmiş programı getirir
    * @param {number} programNo - Program numarası
    * @param {number} versionNo - Program versiyon numarası
-   * @returns {Promise<Program>} - Program
+   * @returns {Promise<{ program: Program }>} - Program
    */
   @withTransaction
-  async fetchArchivedProgram(programNo: number, versionNo: number): Promise<Program> {
+  async fetchArchivedProgram(programNo: number, versionNo: number): Promise<{ program: Program }> {
     const exists = await this.hasProgram(programNo)
     if (!exists) {
       throw new PError('PROGRAM_FAILED_TO_LOAD', { machineId: this.id, programNo })
@@ -612,7 +612,7 @@ export class MachineController {
       archivedProgram.steps[i] = newStep
     }
 
-    return archivedProgram
+    return { program: archivedProgram }
   }
 
   /**
@@ -1610,7 +1610,7 @@ export class MachineController {
    */
   @withTransaction
   async loadArchivedProgram(programNo: number, versionNo: number): Promise<void> {
-    const program = await this.fetchArchivedProgram(programNo, versionNo)
+    const { program } = await this.fetchArchivedProgram(programNo, versionNo)
     await this.deleteProgramFromDatabase(programNo)
     await this.insertProgram(program)
   }

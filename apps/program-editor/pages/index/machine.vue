@@ -643,7 +643,11 @@ const contextMenuOptions = computed(() => [
       icon: 'info',
       disabled: isMoreThanOneRowSelected.value,
       onClick: async () => {
-        $commandManager.executeCommand('programVersionInfo', { $q })
+        const { programNo, name } = editor.selectedPrograms[0]
+        $commandManager.executeCommand('programVersionInfo', { $q }, {
+          programNo,
+          name,
+        })
       },
     },
   ],

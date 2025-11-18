@@ -4,10 +4,14 @@ import type { ProgramHeaderArchive } from '~/shared/types'
 import { contextMenuStore } from '~/utils/context-menu'
 
 const props = defineProps<{
-  machineId: number
-  machineName: string
-  programNo: number
-  programName: string
+  machine: {
+    id: number
+    name: string
+  }
+  program: {
+    programNo: number
+    name: string
+  }
   rows: ProgramHeaderArchive[]
 }>()
 
@@ -47,8 +51,8 @@ async function handleDelete() {
   const versionNos = selectedRows.value.map(v => v.version)
 
   try {
-    const deletedVersions = await contextMenuStore.deleteVersions(props.machineId, props.programNo, versionNos)
-    await contextMenuStore.fetchVersions(props.machineId, props.programNo)
+    const deletedVersions = await contextMenuStore.deleteVersions(props.machine.id, props.program.programNo, versionNos)
+    await contextMenuStore.fetchVersions(props.machine.id, props.program.programNo)
     notifySuccess(t('contextMenu.version.deleteSuccess', { versions: deletedVersions.sort() }))
   } catch (error) {
     console.error('Error deleting versions:', error)
@@ -65,9 +69,9 @@ async function setActiveVersion() {
   const version = selectedRows.value[0]?.version
 
   try {
-    await contextMenuStore.setActiveVersion(props.machineId, props.programNo, version, isOperatorEditable.value)
-    await contextMenuStore.fetchVersions(props.machineId, props.programNo)
-    await editor.fetchProgram(props.machineId, props.programNo)
+    await contextMenuStore.setActiveVersion(props.machine.id, props.program.programNo, version, isOperatorEditable.value)
+    await contextMenuStore.fetchVersions(props.machine.id, props.program.programNo)
+    await editor.fetchProgram(props.machine.id, props.program.programNo)
     notifySuccess(t('contextMenu.version.setActiveSuccess', { version }))
   } catch (error) {
     console.error('Error setting active version:', error)
@@ -101,10 +105,10 @@ function onRowClick(event: Event, row: ProgramHeaderArchive) {
           />
         </div>
         <div class="text-h8 text-gray-6 dark:text-gray-4">
-          {{ props.machineId }} - {{ props.machineName }}
+          {{ props.machine.id }} - {{ props.machine.name }}
         </div>
         <div class="text-h8 text-gray-6 dark:text-gray-4">
-          {{ props.programNo }} - {{ props.programName }}
+          {{ props.program.programNo }} - {{ props.program.name }}
         </div>
       </q-card-section>
 
@@ -115,7 +119,10 @@ function onRowClick(event: Event, row: ProgramHeaderArchive) {
             class="bg-gray-2 text-dark-4 dark:bg-dark-3 dark:text-gray-4"
             flat
             :disable="selectedRows.length !== 2"
-            @click="navigateTo(`/comparison?m=${machineId}&p1=${programNo}&p2=${programNo}&v1=${selectedRows[0].version}&v2=${selectedRows[1].version}`)"
+            @click="navigateTo({
+              path: '/comparison',
+              query: { m: props.machine.id, p1: props.program.programNo, p2: props.program.programNo, v1: selectedRows[0]?.version, v2: selectedRows[1]?.version },
+            })"
           >
             <q-tooltip v-if="selectedRows.length !== 2">
               {{ t('versionDialog.selectTwoVersionsToCompare') }}

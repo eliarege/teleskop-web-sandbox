@@ -125,7 +125,11 @@ const items = [
           label: tt('menu.versionInfo'),
           icon: 'info',
           onClick: () => {
-            $commandManager.executeCommand('programVersionInfo', { $q })
+            const { programNo, name } = editor.program
+            $commandManager.executeCommand('programVersionInfo', { $q }, {
+              programNo,
+              name,
+            })
           },
         },
         {
