@@ -825,13 +825,18 @@ function resolveParamStatus(param: PlanParameters): StartingParameters {
 }
 
 export async function checkMachineParameterRequest(machineId: number): Promise<boolean> {
-  const value = await knex.column('ParamValue')
-    .select()
+  const res = await knex
+    .select('ParamToken')
+    .from('BFMACHINESYSTEMPARAMS')
     .where('ParamToken', 'IS_EMRI_BASLATILIRKEN_TUM_PARAMETRELERI_SOR')
     .andWhere('MachineId', machineId)
-    .from('BFMACHINESYSTEMPARAMS')
 
-  return value[0].ParamValue === '1'
+  // Tonello makinelerde bu sistem parametresi yok.
+  if (res.length === 0) {
+    return false
+  } else {
+    return res[0].ParamValue === '1'
+  }
 }
 export async function getPlanParameters(planKey: number, machineId: number) {
   let parameters: PlanParameters[]
