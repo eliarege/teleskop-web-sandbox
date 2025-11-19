@@ -1,8 +1,26 @@
 # Changelog
 
+## 0.57.0 - 2025-11-19
+
+[Compare Changes](b78cbc536bf0cb25e84cb5c6bdadbbc8ee912c89...52685c3c903404a2f8843b45852093e4cf3b2ee0)
+
+### 🚀 Features
+
+-  **PE**: Copy programs and send to multiple machines ([cdaa394](cdaa394626be08b324982877e73f047b993bcf7f))
+-  **PE**: Allow user to accept/deny all overwrite prompts when copying multiple programs to another machine ([897799a](897799a98f0f5b3e97f6e267d49c908cc6dc1106))
+-  **PE**: When parallel step parameter is edited, ask user if they want to modify following parallel steps with same command no ([bb969d9](bb969d9a649c3af65e495884664b5ea8a83c716b))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Comment out unused context menu options and toggle in settings dialog ([0110229](0110229bb75a7ad2de30d95cb24a60dfb4d2ed69))
+-  **PE**: Update IO index and ID retrieval in command processing ([7422c30](7422c3087d4f3011697be05a6aa534652416e5cb))
+-  **PE**: Destructure program data fetching ([b1151bc](b1151bcf3d172a431a4e6c2a5aaef9bbe40c22c0))
+-  **PE**: Localization fixes ([0db8cb2](0db8cb2fa56ccb5a7e217c6d241a1e77fa133405))
+-  **PE**: Program comparison not working when triggered from program context menu ([39cfa8c](39cfa8cc813e3821eea5f3c8f3cc12007b2a59b4))
+
 ## 0.56.0 - 2025-11-07
 
-[Compare Changes](9130f1c1a637341f01506a516b25e5b975bc1c25...0d8d4939db66168beb1e4ed390ba9549109aab75)
+[Compare Changes](9130f1c1a637341f01506a516b25e5b975bc1c25...b78cbc536bf0cb25e84cb5c6bdadbbc8ee912c89)
 
 ### 🚀 Features
 
