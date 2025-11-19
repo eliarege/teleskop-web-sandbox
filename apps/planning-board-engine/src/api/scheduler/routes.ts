@@ -57,8 +57,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const pt = await getPtStatus()
         return reply.code(200).send(pt)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching pt status: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching pt status: ${err}` })
+        fastify.log.error(`An error occurred while fetching pt status: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching pt status: ${err}` })
       }
     },
   )
@@ -68,8 +68,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         return await getAutoAdd()
       } catch (err: any) {
-        fastify.log.error(`An error occured while fetching auto add status: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching auto add status: ${err}` })
+        fastify.log.error(`An error occurred while fetching auto add status: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching auto add status: ${err}` })
       }
     },
   )
@@ -83,8 +83,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await updateAutoAdd(value)
         return reply.code(200).send('Successful')
       } catch (err: any) {
-        fastify.log.error(`An error occured while updating auto add status: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating auto add status: ${err}` })
+        fastify.log.error(`An error occurred while updating auto add status: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating auto add status: ${err}` })
       }
     },
   )
@@ -95,7 +95,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { startDate, endDate } = request.query
         return await planningBoardStops(startDate, endDate)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching stops:`, err)
+        fastify.log.error(`An error occurred while fetching stops:`, err)
       }
     },
   )
@@ -106,8 +106,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const unplannedEvents = await getUnplannedEvents()
         return unplannedEvents
       } catch (err) {
-        fastify.log.error(`An error occured while fetching unplanned events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching unplanned events: ${err}` })
+        fastify.log.error(`An error occurred while fetching unplanned events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching unplanned events: ${err}` })
       }
     },
   )
@@ -119,8 +119,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const recipe = await getRecipe(machineId, jobOrder)
         return reply.code(200).send(recipe)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching recipe: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching recipe: ${err}` })
+        fastify.log.error(`An error occurred while fetching recipe: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching recipe: ${err}` })
       }
     },
   )
@@ -131,8 +131,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { jobOrder } = request.query
         return await getBatchNotes(jobOrder)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching batch notes: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching batch notes: ${err}` })
+        fastify.log.error(`An error occurred while fetching batch notes: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching batch notes: ${err}` })
       }
     },
   )
@@ -145,8 +145,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { planKey, machineId } = request.query
         return await getPlanParameters(planKey, machineId)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching plan parameters: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching plan parameters: ${err}` })
+        fastify.log.error(`An error occurred while fetching plan parameters: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching plan parameters: ${err}` })
       }
     },
   )
@@ -156,8 +156,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         return await refreshCustomTables()
       } catch (err) {
-        fastify.log.error(`An error occured while updating tables: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating tables: ${err}` })
+        fastify.log.error(`An error occurred while updating tables: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating tables: ${err}` })
       }
     },
   )
@@ -170,8 +170,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { planKey, value, paramString } = request.query
         return await updatePlanParameter(planKey, value, paramString)
       } catch (err) {
-        fastify.log.error(`An error occured while updating plan parameter: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating plan parameter: ${err}` })
+        fastify.log.error(`An error occurred while updating plan parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating plan parameter: ${err}` })
       }
     },
   )
@@ -191,8 +191,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { parameter, value, machineId } = request.body
         return await createPlanParameter(parameter, value, machineId)
       } catch (err) {
-        fastify.log.error(`An error occured while creating plan parameter: ${err}`)
-        return reply.code(500).send({ error: `An error occured while creating plan parameter: ${err}` })
+        fastify.log.error(`An error occurred while creating plan parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while creating plan parameter: ${err}` })
       }
     },
   )
@@ -232,8 +232,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         return await getMachines()
       } catch (err) {
-        fastify.log.error(`An error occured while fetching machines: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching machines: ${err}` })
+        fastify.log.error(`An error occurred while fetching machines: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching machines: ${err}` })
       }
     },
   )
@@ -248,8 +248,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           return await getErpParameters(paramString)
         } else return fastify.log.error('MISSING QUERIES')
       } catch (err) {
-        fastify.log.error(`An error occured while fetching erp parameters: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching erp parameters: ${err}` })
+        fastify.log.error(`An error occurred while fetching erp parameters: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching erp parameters: ${err}` })
       }
     },
   )
@@ -260,8 +260,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { paramString } = request.query
         return await getMachinesByErpParameter(paramString)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching machines ids ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching machine ids: ${err}` })
+        fastify.log.error(`An error occurred while fetching machines ids ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching machine ids: ${err}` })
       }
     },
   )
@@ -271,8 +271,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         return await getUnplannedColumns()
       } catch (err) {
-        fastify.log.error(`An error occured while fetching columns: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching columns: ${err}` })
+        fastify.log.error(`An error occurred while fetching columns: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching columns: ${err}` })
       }
     },
   )
@@ -282,8 +282,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         return await getColumnData(request.query.planKey)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching column data: ${err}`)
-        return reply.code(500).send({ error: `An error occured while column data: ${err}` })
+        fastify.log.error(`An error occurred while fetching column data: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while column data: ${err}` })
       }
     },
   )
@@ -295,8 +295,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const isValid = await taskValid(planKey, fabricWeight)
         return reply.code(200).send(isValid)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching valid status: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching valid status: ${err}` })
+        fastify.log.error(`An error occurred while fetching valid status: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching valid status: ${err}` })
       }
     },
   )
@@ -308,8 +308,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const tooltipParams = await getEventTooltipParams(planKey, machineId)
         return reply.code(200).send(tooltipParams)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching tooltip parameters: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching tooltip parameters: ${err}` })
+        fastify.log.error(`An error occurred while fetching tooltip parameters: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching tooltip parameters: ${err}` })
       }
     },
   )
@@ -323,8 +323,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const batchProperties = await getBatchProperties(machineId, planKey, isActual, batchKey)
         return reply.code(200).send(batchProperties)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching batch properties: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching batch properties: ${err}` })
+        fastify.log.error(`An error occurred while fetching batch properties: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching batch properties: ${err}` })
       }
     },
   )
@@ -335,8 +335,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { planKey } = request.query
         return await getTheoreticalDuration(planKey)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching theoretical duration: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching theoretical duration: ${err}` })
+        fastify.log.error(`An error occurred while fetching theoretical duration: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching theoretical duration: ${err}` })
       }
     },
   )
@@ -348,8 +348,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { programNo, machineId } = request.query
         return await fetchProgram(knex, programNo, machineId)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching detailed program: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching detailed program: ${err}` })
+        fastify.log.error(`An error occurred while fetching detailed program: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching detailed program: ${err}` })
       }
     },
   )
@@ -363,8 +363,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await updateBatchNote(noteKey, showOnScreen)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(`An error occured while updating batch note: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating batch note: ${err}` })
+        fastify.log.error(`An error occurred while updating batch note: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating batch note: ${err}` })
       }
     },
   )
@@ -376,8 +376,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await removeFromPlan(planKey)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(`An error occured while removing event from plan: ${err}`)
-        return reply.code(500).send({ error: `An error occured while removing event from plan: ${err}` })
+        fastify.log.error(`An error occurred while removing event from plan: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while removing event from plan: ${err}` })
       }
     },
   )
@@ -389,8 +389,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await deleteEvent(planKey)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(`An error occured while deleting event: ${err}`)
-        return reply.code(500).send({ error: `An error occured while deleting event: ${err}` })
+        fastify.log.error(`An error occurred while deleting event: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while deleting event: ${err}` })
       }
     },
   )
@@ -401,8 +401,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { planKey } = request.query
         await pinEvent(planKey)
       } catch (err) {
-        fastify.log.error(`An error occured while pinning event: ${err}`)
-        return reply.code(500).send({ error: `An error occured while pinning event: ${err}` })
+        fastify.log.error(`An error occurred while pinning event: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while pinning event: ${err}` })
       }
     },
   )
@@ -413,8 +413,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { planKey } = request.query
         await unpinEvent(planKey)
       } catch (err) {
-        fastify.log.error(`An error occured while unpinning event: ${err}`)
-        return reply.code(500).send({ error: `An error occured while unpinning event: ${err}` })
+        fastify.log.error(`An error occurred while unpinning event: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while unpinning event: ${err}` })
       }
     },
   )
@@ -425,8 +425,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { id, visible } = request.body
         await updateUnplannedColumns(id, visible)
       } catch (err) {
-        fastify.log.error(`An error occured while updating columns: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating columns: ${err}` })
+        fastify.log.error(`An error occurred while updating columns: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating columns: ${err}` })
       }
     },
   )
@@ -435,8 +435,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     try {
       await dataCleanup()
     } catch (err) {
-      fastify.log.error(`An error occured while data clenaup: ${err}`)
-      return reply.code(500).send({ error: `An error occured while data clenaup: ${err}` })
+      fastify.log.error(`An error occurred while data clenaup: ${err}`)
+      return reply.code(500).send({ error: `An error occurred while data clenaup: ${err}` })
     }
   })
 
@@ -450,8 +450,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await addBatchNote(jobOrder, note, userId, showOnScreen)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(`An error occured while adding batch note: ${err}`)
-        return reply.code(500).send({ error: `An error occured while adding batch note: ${err}` })
+        fastify.log.error(`An error occurred while adding batch note: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while adding batch note: ${err}` })
       }
     },
   )
@@ -465,8 +465,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await addErpParameters(id, machineId)
         return reply.code(200).send('Succesful')
       } catch (err) {
-        fastify.log.error(`An error occured while adding erp parameter: ${err}`)
-        return reply.code(500).send({ error: `An error occured while adding erp parameter: ${err}` })
+        fastify.log.error(`An error occurred while adding erp parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while adding erp parameter: ${err}` })
       }
     },
   )
@@ -481,8 +481,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await bulkAddErpParameter(paramString, machines)
         return reply.code(200).send('Succesful')
       } catch (err) {
-        fastify.log.error(`An error occured while adding erp parameter: ${err}`)
-        return reply.code(500).send({ error: `An error occured while adding erp parameter: ${err}` })
+        fastify.log.error(`An error occurred while adding erp parameter: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while adding erp parameter: ${err}` })
       }
     },
   )
@@ -497,8 +497,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await deleteNote(id)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        console.error(`An error occured while deleting batch note: `, err)
-        return reply.code(500).send({ error: `An error occured while deleting batch note: ${err}` })
+        console.error(`An error occurred while deleting batch note: `, err)
+        return reply.code(500).send({ error: `An error occurred while deleting batch note: ${err}` })
       }
     },
   )
@@ -512,8 +512,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await removeErpParameter(id, machineId)
         return reply.code(200).send('Succesful')
       } catch (err) {
-        console.error(`An error occured while deleting erp parameter: `, err)
-        return reply.code(500).send({ error: `An error occured while deleting erp parameter: ${err}` })
+        console.error(`An error occurred while deleting erp parameter: `, err)
+        return reply.code(500).send({ error: `An error occurred while deleting erp parameter: ${err}` })
       }
     },
   )
@@ -546,8 +546,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       })
       return reply.code(200).send('Successful')
     } catch (err) {
-      console.error('An error occured while sending message to machine', err)
-      return reply.code(500).send({ error: `An error occured while sending message to machine: ${err}` })
+      console.error('An error occurred while sending message to machine', err)
+      return reply.code(500).send({ error: `An error occurred while sending message to machine: ${err}` })
     }
   })
 
@@ -605,7 +605,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         return reply.code(200).send(startingParameterValues)
       } catch (err) {
         console.error(err)
-        return reply.code(500).send({ error: `An error occured while uploading to machine: ${err}` })
+        return reply.code(500).send({ error: `An error occurred while uploading to machine: ${err}` })
       }
     },
   )

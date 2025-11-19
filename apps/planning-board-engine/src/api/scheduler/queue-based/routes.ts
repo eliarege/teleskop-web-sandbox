@@ -27,8 +27,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const plannedEvents = (await getQueueBasedEvents(startDate, endDate, stopsIncluded))
         return reply.code(200).send(plannedEvents)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching planned events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching planned events: ${err}` })
+        fastify.log.error(`An error occurred while fetching planned events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching planned events: ${err}` })
       }
     },
   )
@@ -42,8 +42,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const plannedEvents = await getQueueBasedPlannedEvents(startDate, endDate)
         return reply.code(200).send(plannedEvents)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching events: ${err}` })
+        fastify.log.error(`An error occurred while fetching events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching events: ${err}` })
       }
     },
   )
@@ -52,8 +52,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       const events = await getFullQueueBasedEvents()
       return reply.code(200).send(events)
     } catch (err) {
-      fastify.log.error(`An error occured while fetching events: ${err}`)
-      return reply.code(500).send({ error: `An error occured while fetching events: ${err}` })
+      fastify.log.error(`An error occurred while fetching events: ${err}`)
+      return reply.code(500).send({ error: `An error occurred while fetching events: ${err}` })
     }
   })
 
@@ -65,8 +65,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await updateEventQueue(previousEventData, newEventData)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(`An error occured while updating events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating events: ${err}` })
+        fastify.log.error(`An error occurred while updating events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating events: ${err}` })
       }
     },
   )
@@ -76,8 +76,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         return await preplanJoborders(fastify)
       } catch (err) {
-        fastify.log.error(`An error occured while auto planning events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while auto planning events: ${err}` })
+        fastify.log.error(`An error occurred while auto planning events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while auto planning events: ${err}` })
       }
     },
   )
@@ -88,8 +88,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { newEvent } = request.body
         await scheduleFutureEvents(newEvent)
       } catch (err) {
-        fastify.log.error(`An error occured while updating events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating events: ${err}` })
+        fastify.log.error(`An error occurred while updating events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating events: ${err}` })
       }
     },
   )
@@ -132,8 +132,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           return reply.code(200).send(startingParameterValues)
         }
       } catch (err) {
-        fastify.log.error(`An error occured while scheduling events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while scheduling events: ${err}` })
+        fastify.log.error(`An error occurred while scheduling events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while scheduling events: ${err}` })
       }
     },
   )
