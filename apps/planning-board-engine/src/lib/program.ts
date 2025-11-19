@@ -44,8 +44,8 @@ export async function fetchPrograms(db: Knex, machineId: number, programNos: num
     .select({
       machineId: 'MACHINEID',
       programNo: 'PROGNO',
-      name: 'PRGNAME',
-      comment: 'COMMENT',
+      name: 'NAME',
+      comment: 'USERCOMMENT',
     })
     .whereIn('PROGNO', programNos)
     .andWhere('MACHINEID', machineId)
