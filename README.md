@@ -132,6 +132,51 @@ https://code.visualstudio.com/assets/docs/editor/profiles/create-profile-via-man
 
 More details about profiles: https://code.visualstudio.com/docs/editor/profiles
 
-## TODO
+## MCP Server
 
-- Turbo Generator for new projects
+### SQL Server MCP Server
+
+Create/edit `.vscode/mcp.json` file with following content:
+
+> Edit the environment variables to match your local setup
+
+```json
+{
+  "servers": {
+    // ... other servers
+
+    "mssql-mcp-server": {
+      "command": "pnpm",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "exec",
+        "teleskop-mcp-sqlserver"
+      ],
+      "env": {
+        "DB_USER": "YOUR_USERNAME",
+        "DB_PASSWORD": "YOUR_PASSWORD",
+        "DB_SERVER": "localhost",
+        "DB_DATABASE": "Teleskop",
+        "DB_TRUST_SERVER_CERT": "true"
+      }
+    },
+  }
+}
+```
+
+### Nuxt MCP Server
+
+Create/edit `.vscode/mcp.json` file with following content:
+
+> See here for details: https://nuxt.com/docs/4.x/guide/ai/mcp#resources
+
+```json
+{
+  "servers": {
+    // ... other servers
+    "nuxt": {
+      "type": "http",
+      "url": "https://nuxt.com/mcp"
+    }
+  }
+}
