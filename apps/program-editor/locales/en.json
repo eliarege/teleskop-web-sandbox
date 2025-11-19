@@ -582,7 +582,8 @@
       "operate": "Change",
       "parameter": {
         "name": "Parameter Name",
-        "value": "Value"
+        "newValue": "New Value",
+        "oldValue": "Old Value"
       }
     },
     "cancel": "Cancel",

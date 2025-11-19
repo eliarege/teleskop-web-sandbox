@@ -1,138 +1,208 @@
 <script setup lang="ts">
+import type { ParameterItem } from '~/shared/types'
+
 const props = defineProps<{
   type: 'add' | 'remove' | 'changeParameter'
   commandNo: number
   commandName: string
   stepIndex: number
   stepsLength: number
-  parameter?: { name: string, value: number | string }
+  parameter?: ParameterItem
+  oldValue?: number | string
 }>()
 
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK } = useDialogPluginComponent()
 
-const commandNo = ref(props.commandNo)
-const commandName = mt(props.commandName, editor.machine.id)
+const commandName = computed(() => mt(props.commandName, editor.machine.id))
 const startIndex = ref(props.stepIndex)
 const endIndex = ref(props.stepsLength)
 
-const commandIcon = computed(() => editor.getCommandIcon(commandNo.value!))
+const commandIcon = computed(() => editor.getCommandIcon(props.commandNo))
+const commandParameter = computed(() => editor.machine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index))
+const parameterFormat = computed(() => commandParameter.value?.format || '')
+
+const parameterName = computed(() => {
+  if (!props.parameter)
+    return ''
+  const parameter = editor.machine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index)
+  return parameter ? mt(parameter.name, editor.machine.id) : ''
+})
+
+const stepOptions = computed(() => Array.from({ length: props.stepsLength }, (_, i) => i + 1))
+
+const isChangeParameter = computed(() => props.type === 'changeParameter' && props.parameter)
+
+function onOk() {
+  onDialogOK({
+    type: props.type,
+    commandNo: props.commandNo,
+    startIndex: startIndex.value - 1,
+    endIndex: endIndex.value - 1,
+  })
+}
 </script>
 
 <template>
-  <QDialog ref="dialogRef" class="select-none">
-    <QCard>
-      <!-- Başlık -->
-      <QCardSection>
-        <div class="text-h6 flex items-center">
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @keydown.enter.prevent="onOk"
+  >
+    <q-card>
+      <q-card-section>
+        <div class="text-h6 flex">
           {{ t(`moveParallelStep.${props.type}.title`) }}
-          <QSpace />
-          <QBtn
-            icon="close"
+          <q-space />
+          <q-btn
+            v-close-popup
             class="text-gray-4 dark:text-gray-6"
+            icon="close"
             flat
             round
             dense
-            @click="onDialogCancel"
           />
         </div>
-      </QCardSection>
+      </q-card-section>
 
-      <!-- İçerik -->
-      <QCardSection class="text-gray-8 dark:text-gray-3">
-        <div class="flex gap-5 no-wrap">
-          <!-- Komut No -->
-          <div class="flex flex-col w-40">
-            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('command.commandNo') }}</label>
-            <span class="text-sm text-gray-8 dark:text-gray-3">{{ commandNo }}</span>
+      <q-card-section>
+        <div class="row q-col-gutter-md">
+          <!-- Command Info -->
+          <div class="col-12">
+            <div class="row q-col-gutter-sm items-center">
+              <div class="col-auto">
+                <span
+                  v-if="commandIcon"
+                  :class="commandIcon.name"
+                  :style="{ color: commandIcon.color }"
+                  class="text-lg"
+                />
+              </div>
+              <div class="col">
+                <div class="text-caption text-grey">
+                  {{ t('command.commandNo') }}
+                </div>
+                <div class="text-body2">
+                  {{ props.commandNo }}
+                </div>
+              </div>
+              <div class="col">
+                <div class="text-caption text-grey">
+                  {{ t('command.name') }}
+                </div>
+                <div class="text-body2">
+                  <TruncatedText
+                    :text="commandName"
+                    :max-length="30"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Komut Adı -->
-          <div class="flex flex-col w-60">
-            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('command.name') }}</label>
-            <TruncatedText :text="commandName">
-              <UnoIcon
-                v-if="commandIcon"
-                class="inline-block mr-1"
-                :class="commandIcon?.name"
-                :style="{ color: commandIcon?.color }"
-              />
-              {{ commandName }}
-            </TruncatedText>
-          </div>
+          <!-- Parameter Info (only for changeParameter) -->
+          <template v-if="isChangeParameter">
+            <div class="col-12">
+              <q-separator />
+            </div>
+            <div class="col-4">
+              <div class="text-caption text-grey">
+                {{ t('moveParallelStep.changeParameter.parameter.name') }}
+              </div>
+              <div class="text-body2">
+                <TruncatedText
+                  :text="parameterName"
+                  :max-length="30"
+                />
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="text-caption text-grey">
+                {{ t('moveParallelStep.changeParameter.parameter.oldValue') }}
+              </div>
+              <div class="text-body2">
+                <div v-if="parameterFormat === 'DURATION'">
+                  <span v-if="typeof props.oldValue === 'number'">
+                    {{ formatDuration(props.oldValue, true) }}
+                  </span>
+                </div>
+                <div v-else>
+                  {{ props.oldValue }}
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="text-caption text-grey">
+                {{ t('moveParallelStep.changeParameter.parameter.newValue') }}
+              </div>
+              <div class="text-body2 text-primary">
+                <div v-if="parameterFormat === 'DURATION'">
+                  <span v-if="typeof props.parameter!.value === 'number'">
+                    {{ formatDuration(props.parameter!.value, true) }}
+                  </span>
+                </div>
+                <div v-else>
+                  {{ props.parameter!.value }}
+                </div>
+              </div>
+            </div>
+          </template>
 
-          <!-- Parametre Adı -->
-          <div v-if="props.type === 'changeParameter'" class="flex flex-col w-40">
-            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('moveParallelStep.changeParameter.parameter.name') }}</label>
-            <span class="text-sm text-gray-8 dark:text-gray-3">{{ mt(props.parameter?.name || '', editor.machine.id) }}</span>
+          <!-- Step Range -->
+          <div class="col-12">
+            <q-separator />
           </div>
-
-          <!-- Parametre Degeri -->
-          <div v-if="props.type === 'changeParameter'" class="flex flex-col w-60">
-            <label class="text-xs text-gray-7 dark:text-gray-4">{{ t('moveParallelStep.changeParameter.parameter.value') }}</label>
-            <span class="text-sm text-gray-8 dark:text-gray-3">
-              {{ props.parameter?.value }}
-            </span>
-          </div>
-
-          <!-- Başlangıç Index -->
-          <div class="flex flex-col w-50">
-            <QSelect
+          <div class="col-6">
+            <q-select
               v-model="startIndex"
-              :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
+              :options="stepOptions"
               :label="t('moveParallelStep.startIndex')"
-              class="col"
+              outlined
               dense
               options-dense
-              popup-content-class="h-80"
               :rules="[
-                (val: string) => !!val || t('input.required', { field: t('moveParallelStep.startIndex') }),
+                (val: number) => !!val || t('input.required', { field: t('moveParallelStep.startIndex') }),
                 (val: number) => val <= endIndex || t('moveParallelStep.startIndexMore'),
               ]"
             />
           </div>
-
-          <!-- Bitiş Index -->
-          <div class="flex flex-col w-50">
-            <QSelect
+          <div class="col-6">
+            <q-select
               v-model="endIndex"
-              :options="Array.from({ length: stepsLength }, (_, i) => i + 1)"
+              :options="stepOptions"
               :label="t('moveParallelStep.endIndex')"
-              class="col"
+              outlined
               dense
               options-dense
-              popup-content-class="h-80"
               :rules="[
-                (val: string) => !!val || t('input.required', { field: t('moveParallelStep.endIndex') }),
+                (val: number) => !!val || t('input.required', { field: t('moveParallelStep.endIndex') }),
                 (val: number) => val >= startIndex || t('moveParallelStep.endIndexLess'),
               ]"
             />
           </div>
         </div>
-      </QCardSection>
+      </q-card-section>
 
-      <!-- Aksiyonlar -->
-      <QCardActions
-        class="q-pa-md bg-gray-1 dark:bg-dark-4"
+      <q-card-actions
         align="right"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
-        <QBtn
+        <q-btn
+          v-close-popup
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           :label="t('cancel')"
-          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
           flat
-          @click="onDialogCancel"
         />
-        <QBtn
-          class="q-mr-sm text-white"
+        <q-btn
           :label="t(`moveParallelStep.${props.type}.operate`)"
-          :class="type === 'remove' ? 'bg-red-6' : 'bg-primary'"
-          flat
+          :color="props.type === 'remove' ? 'negative' : 'primary'"
           :disable="startIndex > endIndex"
-          @click="onDialogOK({ type, commandNo, startIndex: startIndex - 1, endIndex: endIndex - 1 })"
+          unelevated
+          @click="onOk"
         />
-      </QCardActions>
-    </QCard>
-  </QDialog>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>

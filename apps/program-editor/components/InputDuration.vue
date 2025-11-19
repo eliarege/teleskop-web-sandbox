@@ -10,6 +10,11 @@ defineProps<{
   filled?: boolean
   clearable?: boolean
 }>()
+
+const emit = defineEmits<{
+  inputBlur: []
+}>()
+
 const model: ModelRef<number | undefined, string> = defineModel()
 const id = useId()
 const editor = useEditorStore()
@@ -26,6 +31,10 @@ watch(() => input.value?.hasError, (value) => {
 onUnmounted(() => {
   editor.errorIds.delete(id)
 })
+
+function handleBlur() {
+  emit('inputBlur')
+}
 </script>
 
 <template>
@@ -40,7 +49,11 @@ onUnmounted(() => {
     :rules
   >
     <template #control>
-      <InputDurationRaw :id="id" v-model="model" />
+      <InputDurationRaw
+        :id="id"
+        v-model="model"
+        @blur="handleBlur"
+      />
     </template>
     <template #append>
       <slot name="optimized" />

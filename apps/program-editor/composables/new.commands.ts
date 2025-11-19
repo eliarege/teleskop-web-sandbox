@@ -81,7 +81,10 @@ export interface RegisteredCommands {
   programVersionInfo: [ctx: any, program: { programNo: number, name: string }]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, commandNo: number]
-  moveParallelStep: [ctx: any, type: 'add' | 'remove' | 'changeParameter', commandNo: number, programCommand?: ProgramStepCommand, parameter?: ParameterItem, stepIndex?: number]
+  moveParallelStep:
+    | [ctx: any, type: 'add', commandNo: number]
+    | [ctx: any, type: 'remove', commandNo: number]
+    | [ctx: any, type: 'changeParameter', commandNo: number, parameter: ParameterItem, stepIndex: number, oldValue: any]
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
   checkErrors: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
@@ -787,58 +790,77 @@ registerCommand(() => {
   }
 })
 
-registerCommand(() => {
+function moveParallelStepExecute(ctx: any, type: 'add', commandNo: number): boolean
+function moveParallelStepExecute(ctx: any, type: 'remove', commandNo: number): boolean
+function moveParallelStepExecute(ctx: any, type: 'changeParameter', commandNo: number, parameter: ParameterItem, stepIndex: number, oldValue: any): boolean
+function moveParallelStepExecute(
+  ctx: any,
+  type: 'add' | 'remove' | 'changeParameter',
+  commandNo: number,
+  parameter?: ParameterItem,
+  stepIndex?: number,
+  oldValue?: any,
+): boolean {
   const editor = useEditorStore()
-  return {
-    name: 'moveParallelStep',
-    execute(ctx: any, type: string, commandNo: number, programCommand?: ProgramStepCommand, parameter?: ParameterItem, stepIndex?: number) {
-      const commandName = editor.machine.commands.get(commandNo)?.name
-      const currentStepIndex = stepIndex || editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
-      ctx.$q.dialog({
-        component: CMMoveParallelStepDialog,
-        componentProps: {
-          type,
-          commandNo,
-          commandName,
-          stepIndex: currentStepIndex,
-          stepsLength: editor.program.steps.length,
-          parameter,
-        },
-      }).onOk(async (command: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
-        if (command.type === 'add') {
-          for (let index = command.startIndex; index <= command.endIndex; index++) {
-            // Eklenen adıma tekrar ekleme, sadece yoksa ekle
-            if (currentStepIndex !== index + 1) {
-              const parallelCommands = editor.program.steps[index].parallelCommands
-              const alreadyExists = parallelCommands.some(cmd => cmd.commandNo === command.commandNo)
-              if (!alreadyExists) {
-                editor.newParallelStepCommand(command.commandNo, index)
-              }
-            }
-          }
-        } else if (command.type === 'remove') {
-          for (let index = command.startIndex; index <= command.endIndex; index++) {
-            editor.program.steps[index].parallelCommands.forEach((command, parallelIndex) => {
-              if (command.commandNo === commandNo)
-                editor.program.steps[index].parallelCommands.splice(parallelIndex, 1)
-            })
-          }
-        } else if (command.type === 'changeParameter' && programCommand) {
-          for (let index = command.startIndex; index <= command.endIndex; index++) {
-            editor.program.steps[index].parallelCommands.forEach((command, parallelIndex) => {
-              if (command.commandNo === commandNo) {
-                const param = editor.program.steps[index].parallelCommands[parallelIndex].parameters.find(parameter =>
-                  parameter.index === programCommand.parameters[0].index)
-                if (param) {
-                  param.value = programCommand.parameters[0].value
-                }
-              }
-            })
+  const commandName = editor.machine.commands.get(commandNo)?.name
+  const currentStepIndex = stepIndex || editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
+
+  ctx.$q.dialog({
+    component: CMMoveParallelStepDialog,
+    componentProps: {
+      type,
+      commandNo,
+      commandName,
+      stepIndex: currentStepIndex,
+      stepsLength: editor.program.steps.length,
+      parameter,
+      oldValue,
+    },
+  }).onOk(async (command: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
+    if (command.type === 'add') {
+      for (let index = command.startIndex; index <= command.endIndex; index++) {
+        const step = editor.program.steps[index]
+
+        // Eklenen adıma tekrar ekleme, sadece yoksa ekle
+        if (currentStepIndex !== index + 1) {
+          const parallelCommands = step.parallelCommands
+          const alreadyExists = parallelCommands.some(cmd => cmd.commandNo === command.commandNo)
+          if (!alreadyExists) {
+            editor.newParallelStepCommand(command.commandNo, index)
           }
         }
-      })
-      return true
-    },
+      }
+    } else if (command.type === 'remove') {
+      for (let index = command.startIndex; index <= command.endIndex; index++) {
+        const step = editor.program.steps[index]
+
+        step.parallelCommands.forEach((command, parallelIndex) => {
+          if (command.commandNo === commandNo)
+            step.parallelCommands.splice(parallelIndex, 1)
+        })
+      }
+    } else if (command.type === 'changeParameter') {
+      for (let index = command.startIndex; index <= command.endIndex; index++) {
+        const step = editor.program.steps[index]
+
+        step.parallelCommands.forEach((parallelCommand) => {
+          if (parallelCommand.commandNo === commandNo && parameter) {
+            const param = parallelCommand.parameters.find(param => param.index === parameter.index)
+            if (param) {
+              param.value = parameter.value
+            }
+          }
+        })
+      }
+    }
+  })
+  return true
+}
+
+registerCommand(() => {
+  return {
+    name: 'moveParallelStep',
+    execute: moveParallelStepExecute,
   }
 })
 

@@ -432,7 +432,7 @@ export function formatDuration(duration: number, hideZero?: boolean): string {
 
   if (hideZero) {
     if (hour === 0 && minute === 0) {
-      return String(second).padStart(2, '0')
+      return `00:${String(second).padStart(2, '0')}`
     } else if (hour === 0) {
       return `${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`
     }

@@ -10,15 +10,23 @@ const props = defineProps<{
   parameterError?: { type: string, parameterIndex?: number, parameterName?: string }
 }>()
 
-const $q = useQuasar()
+const emit = defineEmits<{
+  (e: 'parameterBlur', parameterIndex: number, oldValue: number | string, newValue: number | string): void
+}>()
+
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const { $commandManager } = useNuxtApp()
-const programParameter: ParameterItem = editor.getPathElement(props.path)
-const model = ref(Number(programParameter.value))
-const isLastStep = Number(props.path.split('.')[1]) === editor.program.steps.length - 1
 
+const programParameter: ParameterItem = editor.getPathElement(props.path)
+const model = computed({
+  get: () => Number(programParameter.value),
+  set: (newValue) => {
+    programParameter.value = newValue
+  },
+})
+
+const previousValue = ref(Number(programParameter.value))
 const rules = [
   (value: number | string) => value !== '' || t('input.required', { field: t('program.parameter') }),
   (value: number | string) => (Number(value) >= props.parameter.minValue && Number(value) <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
@@ -46,22 +54,25 @@ const isOptimizable = computed(() => {
   })
 })
 
-watch(() => model.value, (newValue: number) => {
-  programParameter.value = newValue
-})
-
 const labelLength = computed(() => {
   return props.parameter.name ? mt(props.parameter.name, editor.machine.id).length : 0
 })
 
-// TODO: update other steps parameter
-function handleInputBlur() {
-  const settings = useProgramWriteSettings()
+const isValueInRange = computed(() => {
+  const value = Number(model.value)
+  return value >= props.parameter.minValue && value <= props.parameter.maxValue
+})
 
-  if (!isLastStep && settings.value.changeParallelCommandParameterInOtherSteps) {
-    const stepIndex = Number(props.path.split('.')[1])
-    const programCommand = editor.program.steps[stepIndex].mainCommand
-    $commandManager.executeCommand('moveParallelStep', { $q }, 'changeParameter', props.commandNo, programCommand, programParameter)
+function handleBlur() {
+  // Değer geçerli aralıkta değilse dialog çıkmasın
+  if (!isValueInRange.value) {
+    return
+  }
+
+  // Sadece değer değiştiyse event emit et
+  if (model.value !== previousValue.value) {
+    emit('parameterBlur', props.parameter.index, previousValue.value, model.value)
+    previousValue.value = model.value
   }
 }
 </script>
@@ -79,6 +90,7 @@ function handleInputBlur() {
         style="width: 150px;"
         class="text-3"
         hide-bottom-space
+        @input-blur="handleBlur"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -104,6 +116,7 @@ function handleInputBlur() {
         dense
         :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
         class="text-3 dynamic-min-width"
+        @input-blur="handleBlur"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -175,7 +188,7 @@ function handleInputBlur() {
       <InputCheckbox
         v-model="model"
         :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
-        @blur="handleInputBlur"
+        @input-blur="handleBlur"
       />
     </template>
   </div>
@@ -187,7 +200,7 @@ function handleInputBlur() {
 }
 
 .dynamic-min-width {
-  min-width: calc(var(--q-label-length) * 0.6em + 2.5rem);
+  min-width: calc(var(--q-label-length) * 0.6em + 3rem);
 }
 </style>
 

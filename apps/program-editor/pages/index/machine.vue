@@ -766,6 +766,7 @@ onUnmounted(() => {
           <span> {{ `programErrors: ${useErrorStore().errors.map(p => `${p.programNo}-${p.steps.length}`).join(', ')}` }} </span>
         </div>
       </DevOnly>
+
       <QTable
         ref="tableRef"
         v-model:selected="editor.selectedPrograms"

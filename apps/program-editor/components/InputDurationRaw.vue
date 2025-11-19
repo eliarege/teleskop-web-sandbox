@@ -6,7 +6,7 @@ const props = defineProps({
   id: { required: true },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'blur'])
 
 /**
  * @type {Ref<HTMLInputElement>}
@@ -401,6 +401,8 @@ function handleInputBlur(event) {
       durationToSeconds(mustUpdateValue),
     )
     event.target.value = secondsToDuration(constrainedValue)
+    emit('update:modelValue', constrainedValue / 60)
+    emit('blur')
     return
   }
   const constrainedValue = applyMinMaxConstraints(
@@ -411,6 +413,7 @@ function handleInputBlur(event) {
     event.target.value = secondsToDuration(constrainedValue, hideSeconds)
   }
   emit('update:modelValue', constrainedValue / 60)
+  emit('blur')
 }
 
 /**

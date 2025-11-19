@@ -23,6 +23,8 @@ const props = withDefaults(defineProps<{
   maybeEmpty: false,
 })
 
+const emit = defineEmits(['inputBlur'])
+
 const model = defineModel<number>()
 const editor = useEditorStore()
 const id = props.id || useId()
@@ -143,7 +145,7 @@ function onDrop(event: DragEvent) {
   event.preventDefault()
 }
 
-function onBlur(event: FocusEvent) {
+function onBlurInternal(event: FocusEvent) {
   if (!event.target || !(event.target instanceof HTMLInputElement)) {
     return
   }
@@ -152,6 +154,7 @@ function onBlur(event: FocusEvent) {
 
   if (props.maybeEmpty && value === '') {
     model.value = undefined
+    emit('inputBlur', event)
     return
   }
 
@@ -175,6 +178,7 @@ function onBlur(event: FocusEvent) {
   event.target.value = value
 
   input.value?.validate()
+  emit('inputBlur', event)
 }
 
 const IGNORE_RE = /^(\.|-|-\.)?$/
@@ -225,7 +229,7 @@ onMounted(() => {
         @paste="onPastePreventNonNumerical"
         @drop="onDrop"
         @input="onInput"
-        @blur="onBlur"
+        @blur="onBlurInternal"
       >
     </template>
     <template #append>

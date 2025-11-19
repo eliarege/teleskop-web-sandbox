@@ -47,12 +47,6 @@ const selectedOptionsText = computed(() => {
 
 <template>
   <div class="inline-block align-top">
-    <DevOnly v-if="config.public.showDevOnly">
-      <div class="color-gray-5 text-3">
-        {{ props.commandNo }} - {{ props.io.index }}
-      </div>
-    </DevOnly>
-
     <div
       class="q-input-border border-[rgba(0,0,0,0.24)] border-1 mr-1 mb-1"
       :class="{ 'border-red border-2': props.ioError }"
