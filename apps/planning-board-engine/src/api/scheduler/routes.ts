@@ -11,6 +11,7 @@ import {
   dataCleanup,
   deleteEvent,
   deleteNote,
+  fetchRequiredStartingParametersForPrograms,
   getAutoAdd,
   getBatchNotes,
   getBatchProperties,
@@ -18,8 +19,6 @@ import {
   getDistinctErpParameters,
   getErpParameters,
   getEventTooltipParams,
-  getFormula,
-  getMachineInfo,
   getMachines,
   getMachinesByErpParameter,
   getPlanParameters,
@@ -46,9 +45,9 @@ import {
 } from './queries'
 import { remoteShowMessageBody } from '~/composables/soap'
 import { StartingParameters } from '~/composables/enums'
-import { fetchProgram } from '~/lib/program'
+import { fetchProgram, parseProgramNumbers } from '~/lib/program'
 import { knex } from '~/knexConfig'
-import { fetchMachineInfo } from '~/lib/machine'
+import { fetchMachineInfo, isTonello } from '~/lib/machine'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -532,9 +531,13 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         return reply.code(400).send('Invalid request body')
       }
 
-      const machine = await fetchMachineInfo(knex, body.machineId)
+      const machine = await fetchMachineInfo(body.machineId)
       if (!machine) {
         return reply.code(404).send('Machine not found')
+      }
+
+      if (isTonello(machine)) {
+        return reply.code(400).send('Sending messages to Tonello machines is not supported')
       }
 
       await ofetch(`http://${machine.host}:8080`, {
@@ -547,6 +550,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       return reply.code(500).send({ error: `An error occured while sending message to machine: ${err}` })
     }
   })
+
   fastify.put(
     '/planning_board/upload_joborder',
     async (request: FastifyRequest<{
@@ -562,35 +566,43 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
             await uploadToMachine(machineIp, allParams, program, jobOrder)
             return reply.code(200).send('DONE')
-          } else return allParams
-        } else {
-          const formula = await getFormula(program, machineId)
-          if (formula.length > 0) {
-            const startingParameterValues = await getStartingParametersWithValues(formula, planKey)
-            const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
-
-            if (requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct) || requestedStartingParameters.length === 0) {
-              // write to machine
-              const machineInfo = await fetchMachineInfo(knex, machineId)
-              if (!machineInfo) {
-                return reply.code(404).send('Machine not found')
-              }
-              const programNoList = program.split(',').map(prgNo => Number.parseInt(prgNo))
-              if (programNoList.some(Number.isNaN)) {
-                return reply.code(400).send('Invalid program number format')
-              }
-
-              if (machineInfo.tbbModel !== 'Tonello') {
-                await uploadToMachine(machineInfo.host, startingParameterValues, programNoList, jobOrder)
-              } else {
-                const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
-                await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder)
-              }
-              return reply.code(200).send('DONE')
-            }
-            return reply.code(200).send(startingParameterValues)
-          } else return reply.code(200).send('NO PARAMETER')
+          } else {
+            return allParams
+          }
         }
+
+        const machineInfo = await fetchMachineInfo(machineId)
+        if (!machineInfo) {
+          return reply.code(404).send('Machine not found')
+        }
+
+        const programNoList = parseProgramNumbers(program)
+        if (!programNoList) {
+          return reply.code(400).send('Invalid program number format')
+        }
+
+        const parameters = await fetchRequiredStartingParametersForPrograms(programNoList, machineId)
+
+        if (!isTonello(machineInfo) && parameters.length === 0) {
+          return reply.code(200).send('NO PARAMETER')
+        }
+
+        const startingParameterValues = await getStartingParametersWithValues(parameters, planKey)
+        const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
+
+        if (
+          requestedStartingParameters.length === 0
+          || requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct)
+        ) {
+          if (isTonello(machineInfo)) {
+            const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
+            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder)
+          } else {
+            await uploadToMachine(machineInfo.host, startingParameterValues, programNoList, jobOrder)
+          }
+          return reply.code(200).send('DONE')
+        }
+        return reply.code(200).send(startingParameterValues)
       } catch (err) {
         console.error(err)
         return reply.code(500).send({ error: `An error occured while uploading to machine: ${err}` })

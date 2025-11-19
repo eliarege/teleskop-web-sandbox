@@ -1,5 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { checkMachineParameterRequest, getFormula, getPlanParameters, getStartingParametersWithValues } from '../queries'
+import { checkMachineParameterRequest, fetchRequiredStartingParametersForPrograms, getPlanParameters, getStartingParametersWithValues } from '../queries'
 import type {
   EventReschedule,
 } from './queries'
@@ -13,6 +13,7 @@ import {
   updateEventQueue,
 } from './queries'
 import { StartingParameters } from '~/composables/enums'
+import { fetchMachineInfo, isTonello } from '~/lib/machine'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -104,18 +105,31 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           const allParams = await getPlanParameters(planKey, machineId)
           if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
             return reply.code(200).send('DONE')
-          } else return allParams
+          } else {
+            return allParams
+          }
         } else {
-          const formula = await getFormula(newEvent.program, newEvent.machineId)
-          if (formula.length > 0) {
-            const startingParameterValues = await getStartingParametersWithValues(formula, planKey)
-            const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
-            if (requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct) || requestedStartingParameters.length === 0) {
-              await queueUnplannedEvent(newEvent)
-              return reply.code(200).send('DONE')
-            }
-            return reply.code(200).send(startingParameterValues)
-          } else return reply.code(200).send('NO PARAMETER')
+          const machineInfo = await fetchMachineInfo(machineId)
+          if (!machineInfo) {
+            return reply.code(400).send({ error: 'Machine not found' })
+          }
+          const programNoList = newEvent.program.split(',').map((pn: string) => Number.parseInt(pn, 10))
+          if (programNoList.some(Number.isNaN)) {
+            return reply.code(400).send({ error: 'Invalid program number format' })
+          }
+
+          const parameters = await fetchRequiredStartingParametersForPrograms(programNoList, newEvent.machineId)
+          if (!isTonello(machineInfo) && parameters.length === 0) {
+            return reply.code(200).send('NO PARAMETER')
+          }
+
+          const startingParameterValues = await getStartingParametersWithValues(parameters, planKey)
+          const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
+          if (requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct) || requestedStartingParameters.length === 0) {
+            await queueUnplannedEvent(newEvent)
+            return reply.code(200).send('DONE')
+          }
+          return reply.code(200).send(startingParameterValues)
         }
       } catch (err) {
         fastify.log.error(`An error occured while scheduling events: ${err}`)

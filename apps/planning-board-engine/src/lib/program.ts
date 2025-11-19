@@ -307,3 +307,15 @@ export function transformProgramToTonello(program: Program, commands: MachineCom
 
   return tonelloProgram
 }
+
+/**
+ * Parses a comma-separated program number string into an array of numbers
+ * Returns null if any of the program numbers are invalid
+ *
+ * @param programString
+ * @returns Array of program numbers or null if invalid
+ */
+export function parseProgramNumbers(programString: string): number[] | null {
+  const programNoList = programString.split(',').map(pn => Number.parseInt(pn, 10))
+  return programNoList.some(Number.isNaN) ? null : programNoList
+}

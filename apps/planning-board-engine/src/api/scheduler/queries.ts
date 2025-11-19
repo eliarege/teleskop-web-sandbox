@@ -975,8 +975,16 @@ export async function bulkCreatePlanParameter(
   return await getPlanParameters(planKey, machineId)
 }
 
-export async function getFormula(program: string, machineId: number) {
-  const progNoList = program.split(',').map(Number)
+/**
+ * Belirtilen program numaralarından makine için gerekli olan başlangıç parametrelerini döner.
+ * Bunu programların içerisinde kullanılan formülleri parse eder ve içinde kullanılan başlangıç
+ * parametrelerini bulur.
+ *
+ * @param programNoList
+ * @param machineId
+ * @returns Programlar için gerekli Başlangıç parametreleri
+ */
+export async function fetchRequiredStartingParametersForPrograms(programNoList: number[], machineId: number) {
   const commandFormulas = await knex('BFCOMMANDPARAMETERS')
     .distinct('VALUE as value')
     .where('MACHINEID', machineId)
@@ -985,7 +993,7 @@ export async function getFormula(program: string, machineId: number) {
         .distinct()
         .from('BFMASTERSTEPS')
         .where('MACHINEID', machineId)
-        .whereIn('PROGNO', progNoList)
+        .whereIn('PROGNO', programNoList)
     })
     .andWhere('TBBFORMUL', 1)
 
@@ -1091,6 +1099,9 @@ export async function getStartingParametersWithValues(params: {
   paramHighLimit: number
   paramStatus: StartingParameters
 }>> {
+  if (params.length === 0) {
+    return []
+  }
   const formattedValues = params.map(param => `('${param.paramString}')`).join(', ')
   const parameters = await knex.raw(/* sql */`
     select

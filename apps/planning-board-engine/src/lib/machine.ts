@@ -1,4 +1,5 @@
 import type { Knex } from 'knex'
+import { knex } from '~/knexConfig'
 
 export interface MachineInfo {
   machineId: number
@@ -7,8 +8,8 @@ export interface MachineInfo {
   tbbModel: string
 }
 
-export async function fetchMachineInfo(db: Knex, machineId: number): Promise<MachineInfo | null> {
-  const machineInfo = await db
+export async function fetchMachineInfo(machineId: number, options?: { trx: Knex }): Promise<MachineInfo | null> {
+  const machineInfo = await (options?.trx || knex)
     .from('BFMACHINES')
     .select({
       machineId: 'MACHINEID',
@@ -19,5 +20,14 @@ export async function fetchMachineInfo(db: Knex, machineId: number): Promise<Mac
     .where('MACHINEID', machineId)
     .first()
 
-  return machineInfo
+  return machineInfo || null
+}
+
+/**
+ * Checks if a machine is a Tonello machine
+ * @param machineInfo Machine information object
+ * @returns true if the machine is a Tonello model
+ */
+export function isTonello(machineInfo: MachineInfo): boolean {
+  return machineInfo.tbbModel === 'Tonello'
 }
