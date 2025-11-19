@@ -100,8 +100,14 @@ const items = [
           },
         ],
         [
-          { label: tt('menu.getAllPrograms'), icon: 'download', disabled: true },
-          { label: tt('menu.sendAllPrograms'), icon: 'upload', disabled: true },
+          { label: tt('menu.sendAllPrograms'), icon: 'send', onClick() {
+            const { id, name } = editor.machine
+            $commandManager.executeCommand('sendAllPrograms', { $q }, { id, name })
+          } },
+          { label: tt('menu.getAllPrograms'), icon: 'download', onClick() {
+            const { id, name } = editor.machine
+            $commandManager.executeCommand('getAllPrograms', { $q }, { id, name })
+          } },
         ],
         [
           {

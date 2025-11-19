@@ -65,7 +65,7 @@ export interface RegisteredCommands {
   sendProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
   copyAndSend: [ctx: any, selectedRows: ProgramTableRow[]]
   showResultsDialog: [ctx: any, sourceMachine: { id: number, name: string }, results: CopyAndSendResult[]]
-  fetchProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
+  getProgram: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
   printProgram: [ctx: any]
   printProgramList: [ctx: any]
   editProgramTypes: [ctx: any]
@@ -85,6 +85,8 @@ export interface RegisteredCommands {
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
   checkErrors: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
+  getAllPrograms: [ctx: any, machine: { id: number, name: string }]
+  sendAllPrograms: [ctx: any, machine: { id: number, name: string }]
 }
 
 registerCommand(() => {
@@ -495,31 +497,46 @@ registerCommand(() => {
   const editor = useEditorStore()
 
   return {
-    name: 'fetchProgram',
-    async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
-      for (const row of selectedRows) {
-        const program = await contextMenuStore.getProgramHeader(machineId, row.programNo)
+    name: 'getProgram',
+    async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
+      let userChoice: 'ask' | 'yesToAll' | 'noToAll' = 'ask'
 
-        const shouldFetch = (
-          program.prgState !== ProgramStatus.EXISTS_ONLY_ON_DATABASE
-          && program.prgState !== ProgramStatus.EXISTS_ON_BOTH
-        )
+      for (const row of selectedRows) {
+        const shouldFetch = row.prgState !== ProgramStatus.EXISTS_ONLY_ON_DATABASE
+          && row.prgState !== ProgramStatus.EXISTS_ON_BOTH
 
         if (shouldFetch) {
           await contextMenuStore.getRemoteProgram([row], machineId)
           continue
         }
 
-        const userConfirmed = await new Promise((resolve) => {
+        if (userChoice === 'yesToAll') {
+          await contextMenuStore.getRemoteProgram([row], machineId)
+          continue
+        }
+
+        if (userChoice === 'noToAll') {
+          continue
+        }
+
+        const response = await new Promise<string | false>(resolve =>
           ctx.$q.dialog({
             component: CMProgramExistsDialog,
-            componentProps: { program },
-          }).onOk(() => resolve(true))
-            .onCancel(() => resolve(false))
-        })
+            componentProps: {
+              program: row,
+              showBulkActions: selectedRows.length > 1,
+            },
+          }).onOk((value: string) => resolve(value))
+            .onCancel(() => resolve(false)),
+        )
 
-        if (userConfirmed) {
+        if (response === 'yes') {
           await contextMenuStore.getRemoteProgram([row], machineId)
+        } else if (response === 'yesToAll') {
+          userChoice = 'yesToAll'
+          await contextMenuStore.getRemoteProgram([row], machineId)
+        } else if (response === 'noToAll') {
+          userChoice = 'noToAll'
         }
       }
 
@@ -867,6 +884,44 @@ registerCommand(() => {
         await editor.fetchProgram(machineId, programNo)
       }
       editor.isLoading = false
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+
+  return {
+    name: 'sendAllPrograms',
+    async execute(ctx: any, machine: { id: number, name: string }) {
+      const machineStatusStore = useMachineStatusStore()
+
+      const status = await machineStatusStore.checkMachineStatus(machine.id)
+      if (!status) {
+        return
+      }
+
+      await contextMenuStore.sendAllPrograms(machine)
+      await editor.fetchAllPrograms()
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+
+  return {
+    name: 'getAllPrograms',
+    async execute(ctx: any, machine: { id: number, name: string }) {
+      const machineStatusStore = useMachineStatusStore()
+
+      const status = await machineStatusStore.checkMachineStatus(machine.id)
+      if (!status) {
+        return
+      }
+
+      await contextMenuStore.getAllPrograms(machine)
+      await editor.fetchAllPrograms()
     },
   }
 })

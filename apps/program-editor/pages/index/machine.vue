@@ -31,8 +31,12 @@ const machineId = Number(route.params.machine_id)
 const tableRef = ref()
 contextMenuStore.setCtx({ t, router })
 
+const sortedSelectedPrograms = computed(() =>
+  editor.selectedPrograms.slice().sort((a, b) => a.programNo - b.programNo),
+)
+
 onBeforeMount(async () => {
-  await machineStatusStore.checkMachineStatus(machineId)
+  await machineStatusStore.checkMachineStatus(machineId, { notifyOnError: false })
 })
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
@@ -41,9 +45,9 @@ onKeyStroke('F2', (event: KeyboardEvent) => {
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
-  if (editor.selectedPrograms.length === 1) {
+  if (sortedSelectedPrograms.value.length === 1) {
     event.preventDefault()
-    navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+    navigateTo(`/machine/${machineId}/program/${sortedSelectedPrograms.value[0].programNo}`)
   }
 })
 
@@ -83,9 +87,9 @@ onKeyStroke(['a', 'A'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['c', 'C'], (event: KeyboardEvent) => {
-  if (event.ctrlKey && editor.selectedPrograms.length && !isActiveElementEditable()) {
+  if (event.ctrlKey && sortedSelectedPrograms.value.length && !isActiveElementEditable()) {
     event.preventDefault()
-    contextMenuStore.copy(machineId, editor.selectedPrograms)
+    contextMenuStore.copy(machineId, sortedSelectedPrograms.value)
   }
 })
 
@@ -106,15 +110,15 @@ onKeyStroke(['f', 'F'], (event: KeyboardEvent) => {
 onKeyStroke(['Enter'], (event: KeyboardEvent) => {
   if (!isActiveElementEditable()) {
     event.preventDefault()
-    if (editor.selectedPrograms.length >= 1)
-      navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+    if (sortedSelectedPrograms.value.length >= 1)
+      navigateTo(`/machine/${machineId}/program/${sortedSelectedPrograms.value[0].programNo}`)
   }
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
   if (!isActiveElementEditable()) {
     event.preventDefault()
-    $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
+    $commandManager.executeCommand('deleteProgram', { $q }, sortedSelectedPrograms.value, editor.machine.id)
   }
 })
 
@@ -128,7 +132,7 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
     return
 
   event.preventDefault()
-  const currentIndex = editor.allPrograms.indexOf(editor.selectedPrograms[0])
+  const currentIndex = editor.allPrograms.indexOf(sortedSelectedPrograms.value[0])
 
   if (currentIndex > 0) {
     const newSelection = editor.allPrograms[currentIndex - 1]
@@ -141,7 +145,7 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
     return
 
   event.preventDefault()
-  const currentIndex = editor.allPrograms.indexOf(editor.selectedPrograms[0])
+  const currentIndex = editor.allPrograms.indexOf(sortedSelectedPrograms.value[0])
 
   if (currentIndex < editor.allPrograms.length - 1) {
     const newSelection = editor.allPrograms[currentIndex + 1]
@@ -161,8 +165,8 @@ await editor.fetchAllPrograms().then(() => {
   editor.isLoading = false
 })
 
-const isMoreThanOneRowSelected = computed(() => editor.selectedPrograms.length > 1)
-const hasOnlyOnController = computed(() => editor.selectedPrograms.some(
+const isMoreThanOneRowSelected = computed(() => sortedSelectedPrograms.value.length > 1)
+const hasOnlyOnController = computed(() => sortedSelectedPrograms.value.some(
   row => row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
 ))
 
@@ -194,9 +198,9 @@ const buttons = computed<ContextBarButtons[]>(() => [
     tooltip: t('menu.editProgram'),
     shortcut: 'F3',
     icon: 'edit',
-    disable: isMoreThanOneRowSelected.value || !editor.selectedPrograms.length,
+    disable: isMoreThanOneRowSelected.value || !sortedSelectedPrograms.value.length,
     onClick() {
-      navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+      navigateTo(`/machine/${machineId}/program/${sortedSelectedPrograms.value[0].programNo}`)
     },
   },
   {
@@ -205,13 +209,13 @@ const buttons = computed<ContextBarButtons[]>(() => [
     tooltip: t('menu.deleteProgram'),
     shortcut: 'Delete',
     icon: 'delete',
-    disable: !editor.selectedPrograms.length,
+    disable: !sortedSelectedPrograms.value.length,
     onClick() {
       // TODO: Context cannot be provided by executor
       $commandManager.executeCommand(
         'deleteProgram',
         { $q },
-        editor.selectedPrograms,
+        sortedSelectedPrograms.value,
         machineId,
       )
     },
@@ -222,9 +226,9 @@ const buttons = computed<ContextBarButtons[]>(() => [
     tooltip: t('menu.copy'),
     shortcut: 'Ctrl+C',
     icon: 'content_copy',
-    disable: !editor.selectedPrograms.length,
+    disable: !sortedSelectedPrograms.value.length,
     onClick() {
-      contextMenuStore.copy(machineId, editor.selectedPrograms)
+      contextMenuStore.copy(machineId, sortedSelectedPrograms.value)
     },
   },
   {
@@ -254,10 +258,10 @@ const buttons = computed<ContextBarButtons[]>(() => [
     label: t('menu.checkErrors'),
     originalLabel: t('menu.checkErrors'),
     tooltip: t('menu.checkErrors'),
-    disable: !editor.selectedPrograms.length,
+    disable: !sortedSelectedPrograms.value.length,
     icon: 'check_circle',
     onClick() {
-      $commandManager.executeCommand('checkErrors', { $q }, machineId, editor.selectedPrograms)
+      $commandManager.executeCommand('checkErrors', { $q }, machineId, sortedSelectedPrograms.value)
     },
   },
 ])
@@ -444,7 +448,7 @@ const contextMenuOptions = computed(() => [
       icon: 'content_copy',
       disabled: false,
       onClick: () => {
-        contextMenuStore.copy(machineId, editor.selectedPrograms)
+        contextMenuStore.copy(machineId, sortedSelectedPrograms.value)
       },
     },
     {
@@ -473,12 +477,12 @@ const contextMenuOptions = computed(() => [
       shortcut: 'F3',
       icon: 'edit',
       disabled: isMoreThanOneRowSelected.value
-      || editor.selectedPrograms.some(
+      || sortedSelectedPrograms.value.some(
         (row: ProgramTableRow) =>
           row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
       onClick: async () => {
-        await navigateTo(`/machine/${machineId}/program/${editor.selectedPrograms[0].programNo}`)
+        await navigateTo(`/machine/${machineId}/program/${sortedSelectedPrograms.value[0].programNo}`)
       },
     },
     {
@@ -491,7 +495,7 @@ const contextMenuOptions = computed(() => [
         $commandManager.executeCommand(
           'deleteProgram',
           { $q },
-          editor.selectedPrograms,
+          sortedSelectedPrograms.value,
           machineId,
         )
       },
@@ -505,7 +509,7 @@ const contextMenuOptions = computed(() => [
         $commandManager.executeCommand(
           'deleteProgramFromMultiMachine',
           { $q },
-          editor.selectedPrograms,
+          sortedSelectedPrograms.value,
         )
       },
     },
@@ -519,7 +523,7 @@ const contextMenuOptions = computed(() => [
         $commandManager.executeCommand(
           'concatenatePrograms',
           { $q },
-          editor.selectedPrograms,
+          sortedSelectedPrograms.value,
           machineId,
         )
       },
@@ -529,7 +533,7 @@ const contextMenuOptions = computed(() => [
       shortcut: '',
       icon: 'edit_note',
       disabled: isMoreThanOneRowSelected.value
-      || !!editor.selectedPrograms.find(
+      || !!sortedSelectedPrograms.value.find(
         (row: ProgramTableRow) =>
           row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
@@ -538,7 +542,7 @@ const contextMenuOptions = computed(() => [
           'renameProgram',
           { $q },
           machineId,
-          editor.selectedPrograms[0].programNo,
+          sortedSelectedPrograms.value[0].programNo,
         )
       },
     },
@@ -546,7 +550,7 @@ const contextMenuOptions = computed(() => [
       label: t('contextMenu.changeProcessType'),
       shortcut: '',
       icon: '',
-      disabled: editor.selectedPrograms.some(
+      disabled: sortedSelectedPrograms.value.some(
         (row: ProgramTableRow) =>
           row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
@@ -557,7 +561,7 @@ const contextMenuOptions = computed(() => [
           'changeProcessType',
           { $q },
           machineId,
-          editor.selectedPrograms,
+          sortedSelectedPrograms.value,
         )
       },
     },
@@ -573,7 +577,7 @@ const contextMenuOptions = computed(() => [
         $commandManager.executeCommand(
           'sendProgram',
           { $q },
-          editor.selectedPrograms,
+          sortedSelectedPrograms.value,
           machineId,
         )
       },
@@ -587,7 +591,7 @@ const contextMenuOptions = computed(() => [
         $commandManager.executeCommand(
           'copyAndSend',
           { $q },
-          editor.selectedPrograms,
+          sortedSelectedPrograms.value,
         )
       },
     },
@@ -598,10 +602,10 @@ const contextMenuOptions = computed(() => [
       disabled: false,
       onClick: async () => {
         $commandManager.executeCommand(
-          'fetchProgram',
+          'getProgram',
           { $q },
-          editor.selectedPrograms,
           machineId,
+          sortedSelectedPrograms.value,
         )
       },
     },
@@ -613,7 +617,7 @@ const contextMenuOptions = computed(() => [
       icon: 'playlist_add',
       disabled: hasOnlyOnController.value,
       onClick: () => {
-        contextMenuStore.addToComparisonBasket(machineId, editor.selectedPrograms)
+        contextMenuStore.addToComparisonBasket(machineId, sortedSelectedPrograms.value)
       },
     },
     {
@@ -622,7 +626,7 @@ const contextMenuOptions = computed(() => [
       icon: 'compare_arrows',
       disabled: !contextMenuStore.comparisonBasketLength() || hasOnlyOnController.value,
       onClick: () => {
-        contextMenuStore.addToComparisonBasket(machineId, editor.selectedPrograms)
+        contextMenuStore.addToComparisonBasket(machineId, sortedSelectedPrograms.value)
         contextMenuStore.comparison()
       },
     },
@@ -643,7 +647,7 @@ const contextMenuOptions = computed(() => [
       icon: 'info',
       disabled: isMoreThanOneRowSelected.value,
       onClick: async () => {
-        const { programNo, name } = editor.selectedPrograms[0]
+        const { programNo, name } = sortedSelectedPrograms.value[0]
         $commandManager.executeCommand('programVersionInfo', { $q }, {
           programNo,
           name,
@@ -662,10 +666,10 @@ function formatTooltip<T extends Record<string, any>>(row: T, column: QTableColu
 }
 
 function isRowSelected(row: ProgramTableRow) {
-  return editor.selectedPrograms.includes(row)
+  return editor.selectedPrograms.some(prg => prg.programNo === row.programNo)
 }
 function removeSelection(row: ProgramTableRow) {
-  editor.selectedPrograms = editor.selectedPrograms.filter(r => r !== row)
+  editor.selectedPrograms = editor.selectedPrograms.filter(prg => prg.programNo !== row.programNo)
 }
 
 function getSelectedString() {
@@ -676,13 +680,18 @@ function onRowClick(event: Event, row: ProgramTableRow) {
   const pointer = event as PointerEvent
 
   if (pointer.button === 2) { // Right click
-    if (!isRowSelected(row))
+    if (!isRowSelected(row)) {
       editor.selectedPrograms = [row]
+    }
     return
   }
 
   if (ctrl.value) {
-    isRowSelected(row) ? removeSelection(row) : editor.selectedPrograms.push(row)
+    if (isRowSelected(row)) {
+      removeSelection(row)
+    } else {
+      editor.selectedPrograms.push(row)
+    }
     return
   }
 

@@ -120,9 +120,9 @@
   },
   "clickToRetry": "Click to retry",
   "machine": {
-    "connecting": "Connecting...",
-    "connectionSuccessful": "Machine connection successful",
-    "connectionFailed": "Machine {machineId} connection failed"
+    "isOnline": "Machine is online",
+    "isOffline": "Machine is offline",
+    "connecting": "Connecting..."
   },
   "command": {
     "icon": "Icon",
@@ -208,6 +208,8 @@
   "collapseAll": "Collapse all",
   "yes": "Yes",
   "no": "No",
+  "yesToAll": "Yes to All",
+  "noToAll": "No to All",
   "cancel": "Cancel",
   "create": "Create ",
   "edit": "Edit",
@@ -381,6 +383,10 @@
     "copyAndSendJobFailed": "Copy and send operation failed.",
     "copyAndSendStatusError": "An error occurred while checking operation status.",
     "copyAndSendStartFailed": "Could not start copy and send operation.",
+    "sendAllProgramsSuccess": "All programs are sent successfully to machine {machineName}.",
+    "sendAllProgramsFailed": "An error occurred while sending all programs to machine {machineName}.",
+    "getAllProgramsSuccess": "All programs are retrieved successfully from machine {machineName}.",
+    "getAllProgramsFailed": "An error occurred while retrieving all programs from machine {machineName}.",
     "copyAndSend": {
       "machineSelection": "Machine Selection",
       "selectMachine": "Select machines that you want to paste the programs.",
@@ -484,16 +490,12 @@
     "stepEnd": "End Step"
   },
   "machineContextMenu": {
-    "sendAllPrograms": "Send All Programs To Machine",
-    "getAllPrograms": "Get All Programs From Machine",
+    "sendAllPrograms": "Send All Programs",
+    "getAllPrograms": "Get All Programs",
     "copy": "Copy Programs",
     "paste": "Paste Programs",
     "findChange": "Find - Change",
-    "compareAllPrograms": "Compare All Programs",
-    "getSuccess": "{count} programs gotten successfully",
-    "getError": "Program get error: {error}",
-    "sendSuccess": "{count} programs sent successfully",
-    "sendError": "Program send error: {error}"
+    "compareAllPrograms": "Compare All Programs"
   },
   "comparisonTable": {
     "programName": "Program Name",

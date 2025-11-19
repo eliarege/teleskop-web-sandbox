@@ -10,7 +10,6 @@ const editor = useEditorStore()
 const { fetch } = useKeycloak()
 const { $commandManager } = useNuxtApp()
 const machineStatusStore = useMachineStatusStore()
-const { notifyError, notifySuccess } = useNotify()
 
 const machineGroups = await fetch<MachineGroup[]>('/api/machine-group')
 
@@ -54,13 +53,8 @@ async function retryMachineConnection(machineId: number, event: Event) {
 
   event.stopPropagation()
   retryingMachine.value = machineId
-  const success = await machineStatusStore.checkMachineStatus(machineId)
+  await machineStatusStore.checkMachineStatus(machineId, { notifyOnSuccess: true })
   retryingMachine.value = null
-  if (success) {
-    notifySuccess(t('machine.connectionSuccessful'))
-  } else {
-    notifyError(t('machine.connectionFailed', { machineId }))
-  }
 }
 </script>
 
@@ -127,7 +121,7 @@ async function retryMachineConnection(machineId: number, event: Event) {
                 touch-position
                 context-menu
               >
-                <MachineListContextMenu :machine-id="currentMachine?.id" />
+                <MachineListContextMenu :machine-id="currentMachine?.id" :machine-name="currentMachine?.name" />
               </QMenu>
             </QItem>
           </QExpansionItem>

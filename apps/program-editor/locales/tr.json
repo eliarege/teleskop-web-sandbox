@@ -120,6 +120,8 @@
   },
   "clickToRetry": "Tekrar denemek için tıklayın",
   "machine": {
+    "isOnline": "Makine çevrimiçi",
+    "isOffline": "Makine çevrimdışı",
     "connecting": "Bağlanılıyor...",
     "connectionSuccessful": "Makine bağlantısı başarılı",
     "connectionFailed": "Makine {machineId} bağlantısı başarısız"
@@ -208,6 +210,8 @@
   "collapseAll": "Tümünü daralt",
   "yes": "Evet",
   "no": "Hayır",
+  "yesToAll": "Tümüne Evet",
+  "noToAll": "Tümüne Hayır",
   "cancel": "İptal",
   "create": "Oluştur",
   "edit": "Düzenle",
@@ -381,6 +385,10 @@
     "copyAndSendJobFailed": "Kopyala ve gönder işlemi başarısız oldu.",
     "copyAndSendStatusError": "İşlem durumu kontrol edilirken hata oluştu.",
     "copyAndSendStartFailed": "Kopyala ve gönder işlemi başlatılamadı.",
+    "sendAllProgramsSuccess": "Tüm programlar {machineName} makinesine başarıyla gönderildi.",
+    "sendAllProgramsFailed": "Tüm programlar {machineName} makinesine gönderilirken hata oluştu.",
+    "getAllProgramsSuccess": "Tüm programlar {machineName} makinesinden başarıyla alındı.",
+    "getAllProgramsFailed": "Tüm programlar {machineName} makinesinden alınırken hata oluştu.",
     "copyAndSend": {
       "machineSelection": "Makine Seçimi",
       "selectMachine": "Program(lar)ın yapıştırılacağı makineleri seçiniz.",
@@ -498,16 +506,12 @@
     "stepEnd": "Bitiş Adım"
   },
   "machineContextMenu": {
-    "sendAllPrograms": "Tüm Programları Makineye Gönder",
-    "getAllPrograms": "Tüm Programları Makineden Al",
+    "sendAllPrograms": "Tüm Programları Gönder",
+    "getAllPrograms": "Tüm Programları Al",
     "copy": "Programları Kopyala",
     "paste": "Programları Yapıştır",
     "findChange": "Bul - Değiştir",
-    "compareAllPrograms": "Tüm Programları Karşılaştır",
-    "getSuccess": "{count} program başarıyla alındı",
-    "getError": "Program alma hatası: {error}",
-    "sendSuccess": "{count} program başarıyla gönderildi",
-    "sendError": "Program gönderme hatası: {error}"
+    "compareAllPrograms": "Tüm Programları Karşılaştır"
   },
   "comparisonTable": {
     "programName": "Program İsmi",

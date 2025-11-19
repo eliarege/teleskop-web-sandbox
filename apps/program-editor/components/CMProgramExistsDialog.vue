@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { ProgramHeader } from '~/shared/types'
+import type { ProgramTableRow } from '~/shared/types'
 
 const props = defineProps<{
-  program: ProgramHeader
+  program: ProgramTableRow
+  showBulkActions?: boolean
 }>()
 
 const { t } = useI18n()
@@ -15,7 +16,7 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
       <!-- Başlık -->
       <QCardSection>
         <div class="text-h6 flex items-center">
-          {{ t(`programExist.title`) }}
+          {{ t('programExist.title') }}
           <QSpace />
           <QBtn
             icon="close"
@@ -23,14 +24,14 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
             flat
             round
             dense
-            @click="onDialogCancel"
+            @click="() => onDialogOK('noToAll')"
           />
         </div>
       </QCardSection>
 
       <!-- İçerik -->
       <QCardSection class="text-gray-8 dark:text-gray-3">
-        <span class="max-w-100"> {{ t(`programExist.message`, { programNo: props.program.programNo }) }}</span>
+        <span class="max-w-100">{{ t('programExist.message', { programNo: props.program.programNo }) }}</span>
       </QCardSection>
 
       <!-- Aksiyonlar -->
@@ -45,10 +46,24 @@ const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
           @click="onDialogCancel"
         />
         <QBtn
+          v-if="showBulkActions"
+          :label="t('noToAll')"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          flat
+          @click="() => onDialogOK('noToAll')"
+        />
+        <QBtn
           class="q-mr-sm text-white bg-primary"
           :label="t('yes')"
           flat
-          @click="onDialogOK"
+          @click="() => onDialogOK('yes')"
+        />
+        <QBtn
+          v-if="showBulkActions"
+          class="q-mr-sm text-white bg-primary"
+          :label="t('yesToAll')"
+          flat
+          @click="() => onDialogOK('yesToAll')"
         />
       </QCardActions>
     </QCard>
