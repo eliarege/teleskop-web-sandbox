@@ -12,7 +12,10 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
+const $q = useQuasar()
 const editor = useEditorStore()
+const { $commandManager } = useNuxtApp()
+
 const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
 const machineCommand = computed(() => {
   if (!isDef(programCommand.commandNo))
@@ -40,6 +43,42 @@ const groupedParameters = computed(() => {
     return groups
   }, {} as Record<string, { param: CommandParameter, originalIndex: number }[]>)
 })
+
+const isParallelCommand = computed(() => props.path.includes('.parallelCommands.'))
+const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const isLastStep = computed(() => stepIndex.value === editor.program.steps.length - 1)
+
+function handleParameterBlur(parameterIndex: number, oldValue: number | string, _newValue: number | string) {
+  const settings = useProgramWriteSettings()
+
+  // Son adım değilse ve sonraki adımlarda bu komut varsa
+  const hasNextStep = !isLastStep.value && editor.program.steps
+    .slice(stepIndex.value + 1)
+    .some(step => step.parallelCommands.some(pc => pc.commandNo === programCommand.commandNo))
+
+  if (!hasNextStep)
+    return
+
+  // Ayar aktifse ve komut paralel ise parametreyi sonraki adıma taşı
+  if (settings.value.changeParallelCommandParameterInOtherSteps && isParallelCommand.value) {
+    const parameter = programCommand.parameters.find(p => p.index === parameterIndex)
+
+    if (!parameter) {
+      console.warn(`Parametre bulunamadı: index=${parameterIndex}, commandNo=${programCommand.commandNo}`)
+      return
+    }
+
+    $commandManager.executeCommand(
+      'moveParallelStep',
+      { $q },
+      'changeParameter',
+      programCommand.commandNo,
+      parameter,
+      stepIndex.value + 1,
+      oldValue,
+    )
+  }
+}
 </script>
 
 <template>
@@ -101,6 +140,7 @@ const groupedParameters = computed(() => {
                 :command-no="programCommand.commandNo!"
                 class="parameter-input"
                 :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === item.param.index)"
+                @parameter-blur="handleParameterBlur"
               />
             </div>
             <ProgramStepCommandIoInput

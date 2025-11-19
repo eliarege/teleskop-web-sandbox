@@ -303,6 +303,7 @@ onBeforeRouteLeave(() => {
           <span> {{ `errorIds: ${Array.from(editor.errorIds)}` }} </span>
         </div>
       </DevOnly>
+
       <ProgramEditor />
     </QForm>
   </div>

@@ -599,7 +599,8 @@
       "operate": "Değiştir",
       "parameter": {
         "name": "Parametre Adı",
-        "value": "Değer"
+        "newValue": "Yeni Değer",
+        "oldValue": "Eski Değer"
       }
     },
     "cancel": "İptal",

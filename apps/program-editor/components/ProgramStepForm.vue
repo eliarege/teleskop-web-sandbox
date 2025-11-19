@@ -4,7 +4,6 @@ import type { SortableOptions } from 'sortablejs'
 import { isDef } from '@teleskop/utils'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
 import type { ProgramStep } from '~/shared/types'
-import { calculateProgramStepDuration } from '~/shared/formula'
 import { useErrorStore } from '~/composables/utils'
 
 const props = defineProps<{
@@ -16,7 +15,6 @@ const { t } = useI18n()
 const editor = useEditorStore()
 const errorStore = useErrorStore()
 const { $commandManager } = useNuxtApp()
-const config = useRuntimeConfig()
 
 const step: ProgramStep = editor.getPathElement(props.path)
 const stepIndex = computed(() => Number(props.path.split('.').pop()))
@@ -49,13 +47,6 @@ const sortableOptions: SortableOptions = {
     put: true,
   },
 }
-
-// Step Duration
-const duration = computed(() => {
-  const stepDurations = calculateProgramStepDuration(editor.program, editor.machine, editor.teleskopSettings.initialTemperature, stepIndex.value)
-  const totalStepDuration = stepDurations.reduce((total, step) => total + step.duration, 0)
-  return formatDuration(totalStepDuration)
-})
 
 function deleteParallelStep(stepIndex: number, index: number): void {
   editor.selectedSteps = [editor.program.steps[stepIndex]]
@@ -96,14 +87,6 @@ function removeError(commandId: number) {
         </div>
       </div>
     </div>
-
-    <DevOnly v-if="config.public.showDevOnly">
-      <div class="flex flex-col color-gray-5 text-3">
-        <span>{{ `stepId: ${step.stepId}` }}</span>
-        <span>{{ `commandId: ${step.mainCommand.commandId}` }}</span>
-        <span>{{ duration }}</span>
-      </div>
-    </DevOnly>
 
     <QBtn
       v-if="!editor.isTonello"
@@ -146,12 +129,6 @@ function removeError(commandId: number) {
             class="step-parallel-command"
             @click="removeError(step.parallelCommands[index].commandId)"
           >
-            <DevOnly v-if="config.public.showDevOnly">
-              <div class="flex flex-col color-gray-5 text-3">
-                <span>{{ `commandId: ${step.parallelCommands[index].commandId}` }}</span>
-              </div>
-            </DevOnly>
-
             <div>
               <ProgramStepCommandForm
                 :path="`${props.path}.parallelCommands.${index}`"

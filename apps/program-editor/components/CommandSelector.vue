@@ -117,11 +117,6 @@ function isParallelCommandRestricted(commandNo: number): boolean {
 
 <template>
   <div>
-    <DevOnly v-if="config.public.showDevOnly">
-      <div class="flex flex-col color-gray-5 text-3">
-        <span>{{ id }}</span>
-      </div>
-    </DevOnly>
     <QSelect
       ref="selectRef"
       :model-value="programCommand.commandNo"
