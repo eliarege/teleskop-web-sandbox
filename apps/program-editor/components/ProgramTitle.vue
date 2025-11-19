@@ -1,17 +1,25 @@
 <script lang="ts" setup>
 const editor = useEditorStore()
+const route = useRoute()
+
+const isMachinePage = computed(() => route.name === 'index-machine')
+const isProgramPage = computed(() => route.name === 'index-program-editor')
 </script>
 
 <template>
-  <div v-if="editor.machine.id" class="space-x-3 text-sm">
-    <span>{{ editor.machine.id }}</span>
-    <span>-</span>
-    <span>{{ editor.machine.name }}</span>
-    <span v-if="editor.program.programNo" class="space-x-3 text-sm">
-      <span>|</span>
-      <span>{{ editor.program.programNo }}</span>
-      <span>-</span>
-      <span>{{ editor.program.name }}</span>
-    </span>
+  <div v-if="isMachinePage && editor.machine.id">
+    {{ editor.machine.id }} -
+    <TruncatedText
+      :text="editor.machine.name"
+      :max-length="30"
+    />
+  </div>
+
+  <div v-if="isProgramPage && editor.program.programNo">
+    {{ editor.program.programNo }} -
+    <TruncatedText
+      :text="editor.program.name"
+      :max-length="30"
+    />
   </div>
 </template>

@@ -35,6 +35,8 @@ export interface ContextMenuStore {
   programVersions: Ref<ProgramHeaderArchive[]>
   copyStep: () => void
   pasteStep: () => void
+  sendAllPrograms: (machine: { id: number, name: string }) => Promise<void>
+  getAllPrograms: (machine: { id: number, name: string }) => Promise<void>
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
@@ -284,7 +286,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
             if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
               messageKey = 'programNotFound'
             }
-            notification(false, t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
+            notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
           }
           notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
         }
@@ -476,6 +478,53 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
+  async function sendAllPrograms(machine: { id: number, name: string }): Promise<void> {
+    const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+    const { notifySuccess, notifyError } = useNotify()
+    editor.isLoading = true
+
+    try {
+      const response = await fetch<{ success: boolean, count: number, message: string }>(`/api/machine/${machine.id}/upload-all-programs`, {
+        method: 'POST',
+      })
+
+      if (response.success) {
+        notifySuccess(t('contextMenu.sendAllProgramsSuccess', { machineName: machine.name }))
+      } else {
+        notifyError(t('contextMenu.sendAllProgramsFailed', { message: response.message }))
+      }
+    } catch (error: any) {
+      notifyError(t('contextMenu.sendAllProgramsFailed', { message: error.message }))
+      console.error('Send All Programs error:', error)
+    } finally {
+      editor.isLoading = false
+    }
+  }
+
+  async function getAllPrograms(machine: { id: number, name: string }): Promise<void> {
+    const { fetch } = useKeycloak()
+    const editor = useEditorStore()
+    const { notifySuccess, notifyError } = useNotify()
+    editor.isLoading = true
+
+    try {
+      const response = await fetch<{ success: boolean, message: string }>(`/api/machine/${machine.id}/download-all-programs`, {
+        method: 'POST',
+      })
+      if (response.success) {
+        notifySuccess(t('contextMenu.getAllProgramsSuccess', { machineName: machine.name }))
+      } else {
+        notifyError(t('contextMenu.getAllProgramsFailed', { message: response.message }))
+      }
+    } catch (error: any) {
+      notifyError(t('contextMenu.getAllProgramsFailed', { message: error.message }))
+      console.error('Get All Programs error:', error)
+    } finally {
+      editor.isLoading = false
+    }
+  }
+
   return {
     getCopiedValues,
     getCopiedStepsValues,
@@ -506,5 +555,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     programVersions,
     copyStep,
     pasteStep,
+    sendAllPrograms,
+    getAllPrograms,
   }
 }

@@ -4,73 +4,34 @@ import type { ProgramTableRow } from '~/shared/types'
 
 const props = defineProps<{
   machineId: number
+  machineName: string
 }>()
 
-const { $commandManager } = useNuxtApp()
-const { fetch } = useNuxtApp().$keycloak
 const $q = useQuasar()
 const { t } = useI18n()
-const editor = useEditorStore()
-const { notifySuccess, notifyError } = useNotify()
+const { fetch } = useKeycloak()
+const { $commandManager } = useNuxtApp()
 
 const items = computed(() => [[
   {
     label: t('machineContextMenu.sendAllPrograms'),
+    icon: 'send',
     disabled: false,
-    onClick: async () => {
-      try {
-        editor.isLoading = true
-
-        const response = await fetch(`/api/machine/${props.machineId}/upload-all-programs`, {
-          method: 'POST',
-        })
-
-        if (response.success) {
-          notifySuccess(t('machineContextMenu.sendSuccess', { count: response.count }))
-        } else {
-          // Backend'den gelen error mesajını direkt kullan
-          throw new Error(response.message || 'Upload failed')
-        }
-      } catch (error) {
-        notifyError(t('machineContextMenu.sendError', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        }))
-      } finally {
-        editor.isLoading = false
-      }
+    onClick: () => {
+      $commandManager.executeCommand('sendAllPrograms', { $q }, { id: props.machineId, name: props.machineName })
     },
   },
   {
     label: t('machineContextMenu.getAllPrograms'),
+    icon: 'download',
     disabled: false,
-    onClick: async () => {
-      try {
-        editor.isLoading = true
-
-        const response = await fetch(`/api/machine/${props.machineId}/download-all-programs`, {
-          method: 'POST',
-        })
-
-        if (response.success) {
-          notifySuccess(t('machineContextMenu.getSuccess', { count: response.count }))
-
-          // Sayfa yenilenerek güncel program listesi gösterilsin
-          await editor.fetchAllPrograms()
-        } else {
-          // Backend'den gelen error mesajını direkt kullan
-          throw new Error(response.message || 'Download failed')
-        }
-      } catch (error) {
-        notifyError(t('machineContextMenu.getError', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        }))
-      } finally {
-        editor.isLoading = false
-      }
+    onClick: () => {
+      $commandManager.executeCommand('getAllPrograms', { $q }, { id: props.machineId, name: props.machineName })
     },
   },
   {
     label: t('machineContextMenu.copy'),
+    icon: 'content_copy',
     disabled: false,
     onClick: async () => {
       const programs = await fetch<ProgramTableRow[]>(`/api/machine/${props.machineId}/program`)
@@ -79,6 +40,7 @@ const items = computed(() => [[
   },
   {
     label: t('machineContextMenu.paste'),
+    icon: 'content_paste',
     disabled: !contextMenuStore.isThereCopiedValue.value,
     onClick: () => {
       $commandManager.executeCommand(
