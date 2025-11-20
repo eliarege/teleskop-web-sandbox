@@ -1,0 +1,61 @@
+#!/bin/bash
+
+parent_dir=$(realpath "$(dirname "$0")/..")
+cd "$parent_dir" || exit 1
+
+# if [[ -n "$(git status --porcelain)" ]]; then
+#   echo "Working directory is not clean. Please commit or stash your changes."
+#   exit 1
+# fi
+
+if ! command -v jq &> /dev/null; then
+  echo "jq is not installed. Please install jq to proceed."
+  exit 1
+fi
+
+app_name=$1
+if [ -z "$app_name" ]; then
+  echo "Available applications:"
+  ls -1 apps | sed 's/^/ - /'
+  read -rp "Enter the application name: " app_name
+fi
+
+if [ ! -d "apps/$app_name" ]; then
+  echo "Error: Application '$app_name' does not exist in the 'apps' directory."
+  exit 1
+fi
+
+echo "Fetching tags from remote..."
+git pull --tags &> /dev/null
+
+current_version=$(jq -r '.version' "apps/$app_name/package.json")
+
+# Check if there is a hotfix for current version
+# Our format is app-name@x.y.z-hotfixN
+current_hotfix_tag=$(git tag --list "${app_name}@${current_version}-hotfix*" --sort=-v:refname | head -n 1)
+next_hotfix_tag=""
+
+if [ -n "$current_hotfix_tag" ]; then
+  # Increment the hotfix number
+  hotfix_number=$(echo "$current_hotfix_tag" | sed -E "s/.*-hotfix([0-9]+)$/\1/")
+  next_hotfix_number=$((hotfix_number + 1))
+  next_hotfix_tag="${app_name}@${current_version}-hotfix${next_hotfix_number}"
+else
+  next_hotfix_tag="${app_name}@${current_version}-hotfix1"
+fi
+
+# Check if next_hotfix_tag exists
+if git rev-parse "$next_hotfix_tag" >/dev/null 2>&1; then
+  echo "Tag $next_hotfix_tag already exists. Aborting."
+  exit 1
+fi
+
+git tag "$next_hotfix_tag"
+git push origin "$next_hotfix_tag"
+echo "Hotfix tag $next_hotfix_tag created and pushed successfully."
+
+
+
+
+
+

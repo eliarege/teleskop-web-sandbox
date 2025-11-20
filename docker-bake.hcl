@@ -4,8 +4,17 @@ variable "CI_REGISTRY_IMAGE" {
 variable "CI_COMMIT_TAG" {
   default = ""
   validation {
-    condition = CI_COMMIT_TAG == "" || length(regexall("^v[0-9]+\\.[0-9]+\\.[0-9]+(-rc\\.[0-9]+)?$", CI_COMMIT_TAG)) > 0
-    error_message = "CI_COMMIT_TAG should match pattern ^v[0-9]+\\.[0-9]+\\.[0-9]+(-rc\\.[0-9]+)?$"
+    condition = (
+    CI_COMMIT_TAG == ""
+      # Stable and RC releases
+      || length(regexall("^v[0-9]+\\.[0-9]+\\.[0-9]+(-rc\\.[0-9]+)?$", CI_COMMIT_TAG)) > 0
+      # Hotfix releases
+      || length(regexall("^[a-z._-]+@[0-9]+\\.[0-9]+\\.[0-9]+-hotfix[0-9]+$", CI_COMMIT_TAG)) > 0
+    )
+    error_message = <<EOF
+      CI_COMMIT_TAG should match pattern ^v[0-9]+\\.[0-9]+\\.[0-9]+(-rc\\.[0-9]+)?$"
+      or ^[a-z._-]+@[0-9]+\\.[0-9]+\\.[0-9]+-hotfix[0-9]+$
+    EOF
   }
 }
 variable "CI_COMMIT_SHA" {
@@ -56,9 +65,18 @@ target "_common" {
     "type=env,id=TURBO_TOKEN"
   ]
   tags = concat(
-    CI_COMMIT_TAG != "" ? ["${CI_REGISTRY_IMAGE}/${APP_NAME}:${CI_COMMIT_TAG}"] : [],
+    CI_COMMIT_TAG != ""
+      ? length(regexall("@", CI_COMMIT_TAG)) > 0
+        ? ["${CI_REGISTRY_IMAGE}/${APP_NAME}:${regex_replace(CI_COMMIT_TAG, "^.*@", "")}"]
+        : ["${CI_REGISTRY_IMAGE}/${APP_NAME}:${CI_COMMIT_TAG}"]
+      : [],
     CI_COMMIT_SHA != "" ? ["${CI_REGISTRY_IMAGE}/${APP_NAME}:${CI_COMMIT_SHA}"] : [],
-    length(regexall("^v[0-9]+.[0-9]+.[0-9]+$", CI_COMMIT_TAG)) > 0
+    # Stable releases get latest tag
+    length(regexall("^v[0-9]+\\.[0-9]+\\.[0-9]+$", CI_COMMIT_TAG)) > 0
+      ? ["${CI_REGISTRY_IMAGE}/${APP_NAME}:latest"]
+      : [],
+    # Hotfix releases also get latest tag
+    length(regexall("^${APP_NAME}@[0-9]+\\.[0-9]+\\.[0-9]+-hotfix[0-9]+$", CI_COMMIT_TAG)) > 0
       ? ["${CI_REGISTRY_IMAGE}/${APP_NAME}:latest"]
       : []
   )

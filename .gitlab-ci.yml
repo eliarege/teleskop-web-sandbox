@@ -27,6 +27,10 @@ stages:
     - if: $CI_COMMIT_TAG == "staging"
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\.\d+)?$/
 
+.hotfix-rules:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^[a-z._-]+@\d+\.\d+\.\d+-hotfix\d+$/
+
 .devops-rules:
   rules:
     - if: $CI_COMMIT_TAG =~ /^devops@/
@@ -70,6 +74,20 @@ prepare-apps:
     expire_in: 1h
     paths:
       - out-*/
+
+prepare-hotfix:
+  image: node:22
+  stage: prepare
+  extends:
+    - .hotfix-rules
+  script:
+    - npm install -g turbo@^2
+    - export APP_NAME=$(echo $CI_COMMIT_TAG | sed -E 's/^([a-z._-]+)@.*/\1/')
+    - turbo prune --scope=$APP_NAME --out-dir out --docker
+  artifacts:
+    expire_in: 1h
+    paths:
+      - out/
 
 .merge-request-summarize:
   image: node:22
@@ -188,6 +206,34 @@ release-apps:
   # This is a temporary solution to avoid rebuilding all of the apps if a few of them fail.
   # In the future, each app should be built based on the changed files since its last valid version tag.
   allow_failure: true
+  artifacts:
+    name: $CI_COMMIT_TAG-$CI_PIPELINE_ID
+    when: always
+    paths:
+      - release-logs/
+
+release-hotfix:
+  stage: release
+  tags: [docker]
+  extends:
+    - .hotfix-rules
+  before_script:
+    - apk add --no-cache jq
+    - *docker-login
+  script:
+    - mkdir release-logs
+    - export ERRORS=""
+    - export APP_NAME=$(echo $CI_COMMIT_TAG | sed -E 's/^([a-z._-]+)@.*/\1/')
+    # Variables for docker bake
+    - export APP_ROLES="$(jq -Mc '.roles // []' "apps/$APP_NAME/manifest.json" 2> /dev/null || echo '[]')"
+    # Output build logs to both the console and a log file
+    - |
+      {
+        docker buildx bake "$APP_NAME" --push 2>&1 || {
+          mv "release-logs/$APP_NAME.log" "release-logs/$APP_NAME.error.log"
+          exit 1
+        }
+      } | tee "release-logs/$APP_NAME.log"
   artifacts:
     name: $CI_COMMIT_TAG-$CI_PIPELINE_ID
     when: always
