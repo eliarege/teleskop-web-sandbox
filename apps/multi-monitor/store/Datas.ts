@@ -13,7 +13,6 @@ export const useDataStore = defineStore('datas', () => {
   const water = useStorage('water', true)
   const production = useStorage('production', false)
   const group = useStorage('group', false)
-  const locale = useStorage('language', useI18n().locale)
   const filteredMachines = useStorage('filtered-machines', new Set<number>())
   const filteredGroups = useStorage('filtered-groups', new Set<string>())
 
@@ -78,7 +77,6 @@ export const useDataStore = defineStore('datas', () => {
 
   return {
     scrollAnimationActive,
-    locale,
     hex,
     filteredMachines,
     filteredGroups,
