@@ -18,7 +18,11 @@ export class KnexBatchRepository implements BatchRepository {
       })
       .where('BATCHKEY', batchKey)
 
-    return batch || null
+    if (!batch)
+      return null
+
+    batch.startTime = (batch.startTime as Date).toISOString()
+    return batch
   }
 }
 
