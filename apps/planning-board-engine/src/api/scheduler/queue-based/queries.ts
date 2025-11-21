@@ -439,7 +439,7 @@ export async function updateEventQueue(previousEventData: EventReschedule, newEv
       })
   })
 }
-export async function queueUnplannedEvent(newData: EventReschedule) {
+export async function queueUnplannedEvent(newData: Omit<EventReschedule, 'program'>) {
   await knex.transaction(async (trx) => {
     await trx('PTBATCHPLANQUEUE')
       .where('MACHINEID', newData.machineId)

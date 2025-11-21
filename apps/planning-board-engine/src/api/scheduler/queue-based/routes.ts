@@ -1,5 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { checkMachineParameterRequest, fetchRequiredStartingParametersForPrograms, getPlanParameters, getStartingParametersWithValues } from '../queries'
+import { getPlanParameters, getRequiredStartingParametersForPrograms, getStartingParametersWithValues, isEveryStartParameterRequired } from '../queries'
 import type {
   EventReschedule,
 } from './queries'
@@ -13,7 +13,7 @@ import {
   updateEventQueue,
 } from './queries'
 import { StartingParameters } from '~/composables/enums'
-import { fetchMachineInfo, isTonello } from '~/lib/machine'
+import { getMachineInfo, isTonello } from '~/lib/machine'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -87,6 +87,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         const { newEvent } = request.body
         await scheduleFutureEvents(newEvent)
+        return reply.code(200).send('DONE')
       } catch (err) {
         fastify.log.error(`An error occurred while updating events: ${err}`)
         return reply.code(500).send({ error: `An error occurred while updating events: ${err}` })
@@ -100,16 +101,16 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { newEvent } = request.body
         const planKey = newEvent.planKey
         const machineId = newEvent.machineId
-        const allParamsRequired = await checkMachineParameterRequest(newEvent.machineId)
+        const allParamsRequired = await isEveryStartParameterRequired(newEvent.machineId)
         if (allParamsRequired) {
           const allParams = await getPlanParameters(planKey, machineId)
           if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
             return reply.code(200).send('DONE')
           } else {
-            return allParams
+            return reply.code(200).send(allParams)
           }
         } else {
-          const machineInfo = await fetchMachineInfo(machineId)
+          const machineInfo = await getMachineInfo(machineId)
           if (!machineInfo) {
             return reply.code(400).send({ error: 'Machine not found' })
           }
@@ -118,14 +119,17 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
             return reply.code(400).send({ error: 'Invalid program number format' })
           }
 
-          const parameters = await fetchRequiredStartingParametersForPrograms(programNoList, newEvent.machineId)
+          const parameters = await getRequiredStartingParametersForPrograms(programNoList, newEvent.machineId)
           if (!isTonello(machineInfo) && parameters.length === 0) {
             return reply.code(200).send('NO PARAMETER')
           }
 
           const startingParameterValues = await getStartingParametersWithValues(parameters, planKey)
           const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
-          if (requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct) || requestedStartingParameters.length === 0) {
+          if (
+            requestedStartingParameters.length === 0
+            || requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct)
+          ) {
             await queueUnplannedEvent(newEvent)
             return reply.code(200).send('DONE')
           }

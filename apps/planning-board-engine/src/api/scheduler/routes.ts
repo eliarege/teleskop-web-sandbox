@@ -6,12 +6,10 @@ import {
   addErpParameters,
   bulkAddErpParameter,
   bulkCreatePlanParameter,
-  checkMachineParameterRequest,
   createPlanParameter,
   dataCleanup,
   deleteEvent,
   deleteNote,
-  fetchRequiredStartingParametersForPrograms,
   getAutoAdd,
   getBatchNotes,
   getBatchProperties,
@@ -24,10 +22,12 @@ import {
   getPlanParameters,
   getPtStatus,
   getRecipe,
+  getRequiredStartingParametersForPrograms,
   getStartingParametersWithValues,
   getTheoreticalDuration,
   getUnplannedColumns,
   getUnplannedEvents,
+  isEveryStartParameterRequired,
   pinEvent,
   planningBoardStops,
   refreshCustomTables,
@@ -45,9 +45,9 @@ import {
 } from './queries'
 import { remoteShowMessageBody } from '~/composables/soap'
 import { StartingParameters } from '~/composables/enums'
-import { fetchProgram, parseProgramNumbers } from '~/lib/program'
+import { getMachineProgram, parseProgramListString } from '~/lib/program'
 import { knex } from '~/knexConfig'
-import { fetchMachineInfo, isTonello } from '~/lib/machine'
+import { getMachineInfo, isTonello } from '~/lib/machine'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -346,7 +346,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request: FastifyRequest<{ Querystring: { programNo: number, machineId: number } }>, reply) => {
       try {
         const { programNo, machineId } = request.query
-        return await fetchProgram(knex, programNo, machineId)
+        return await getMachineProgram(knex, programNo, machineId)
       } catch (err) {
         fastify.log.error(`An error occurred while fetching detailed program: ${err}`)
         return reply.code(500).send({ error: `An error occurred while fetching detailed program: ${err}` })
@@ -531,7 +531,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         return reply.code(400).send('Invalid request body')
       }
 
-      const machine = await fetchMachineInfo(body.machineId)
+      const machine = await getMachineInfo(body.machineId)
       if (!machine) {
         return reply.code(404).send('Machine not found')
       }
@@ -560,28 +560,28 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         // TODO: program is apparently a comma-separated list of programs? better rename the variable
         const { program, machineId, planKey, jobOrder } = request.query
         // check if machine wants all params
-        const allParamsRequired = await checkMachineParameterRequest(machineId)
+        const allParamsRequired = await isEveryStartParameterRequired(machineId)
         if (allParamsRequired) {
           const allParams = await getPlanParameters(planKey, machineId)
           if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
             await uploadToMachine(machineIp, allParams, program, jobOrder)
             return reply.code(200).send('DONE')
           } else {
-            return allParams
+            return reply.code(200).send(allParams)
           }
         }
 
-        const machineInfo = await fetchMachineInfo(machineId)
+        const machineInfo = await getMachineInfo(machineId)
         if (!machineInfo) {
           return reply.code(404).send('Machine not found')
         }
 
-        const programNoList = parseProgramNumbers(program)
+        const programNoList = parseProgramListString(program)
         if (!programNoList) {
           return reply.code(400).send('Invalid program number format')
         }
 
-        const parameters = await fetchRequiredStartingParametersForPrograms(programNoList, machineId)
+        const parameters = await getRequiredStartingParametersForPrograms(programNoList, machineId)
 
         if (!isTonello(machineInfo) && parameters.length === 0) {
           return reply.code(200).send('NO PARAMETER')
@@ -596,7 +596,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         ) {
           if (isTonello(machineInfo)) {
             const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
-            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder)
+            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder, requestedStartingParameters)
           } else {
             await uploadToMachine(machineInfo.host, startingParameterValues, programNoList, jobOrder)
           }

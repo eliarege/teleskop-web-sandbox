@@ -30,10 +30,10 @@ export interface ProgramStepCommand {
   }[]
 }
 
-export async function fetchPrograms(db: Knex, machineId: number, programNos: number[]): Promise<Program[]> {
+export async function getManyMachineProgram(db: Knex, machineId: number, programNos: number[]): Promise<Program[]> {
   if (!db.isTransaction) {
     await db.transaction(async (trx) => {
-      return fetchPrograms(trx, machineId, programNos)
+      return getManyMachineProgram(trx, machineId, programNos)
     })
   }
 
@@ -237,8 +237,8 @@ export async function fetchPrograms(db: Knex, machineId: number, programNos: num
   return programs
 }
 
-export async function fetchProgram(db: Knex, machineId: number, programNo: number): Promise<Program | null> {
-  const programs = await fetchPrograms(db, machineId, [programNo])
+export async function getMachineProgram(db: Knex, machineId: number, programNo: number): Promise<Program | null> {
+  const programs = await getManyMachineProgram(db, machineId, [programNo])
   return programs.length ? programs[0] : null
 }
 
@@ -310,12 +310,17 @@ export function transformProgramToTonello(program: Program, commands: MachineCom
 
 /**
  * Parses a comma-separated program number string into an array of numbers
- * Returns null if any of the program numbers are invalid
+ * Returns null if any of the program numbers are invalid.
+ *
+ * Handles trailing commas by ignoring them.
  *
  * @param programString
  * @returns Array of program numbers or null if invalid
  */
-export function parseProgramNumbers(programString: string): number[] | null {
+export function parseProgramListString(programString: string): number[] | null {
+  if (programString.endsWith(',')) {
+    programString = programString.slice(0, -1)
+  }
   const programNoList = programString.split(',').map(pn => Number.parseInt(pn, 10))
   return programNoList.some(Number.isNaN) ? null : programNoList
 }

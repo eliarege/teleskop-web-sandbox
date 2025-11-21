@@ -73,6 +73,7 @@ export interface TonelloBatch {
   code: string
   name: string
   description: string
+  kg: number
   params: { name: string, value: unknown }[]
   programsCount: number
   programs: {

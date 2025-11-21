@@ -42,10 +42,10 @@ export interface ParameterSelections {
 }
 
 // TODO: this function currently does not fetch ioList for commands, this is enough for tonello batch creation though
-export async function fetchCommands(db: Knex, machineId: number): Promise<MachineCommand[]> {
+export async function getMachineCommands(db: Knex, machineId: number): Promise<MachineCommand[]> {
   if (!db.isTransaction) {
     await db.transaction(async (trx) => {
-      return fetchCommands(trx, machineId)
+      return getMachineCommands(trx, machineId)
     })
   }
 

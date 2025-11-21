@@ -8,7 +8,7 @@ export interface MachineInfo {
   tbbModel: string
 }
 
-export async function fetchMachineInfo(machineId: number, options?: { trx: Knex }): Promise<MachineInfo | null> {
+export async function getMachineInfo(machineId: number, options?: { trx: Knex }): Promise<MachineInfo | null> {
   const machineInfo = await (options?.trx || knex)
     .from('BFMACHINES')
     .select({

@@ -1,3 +1,6 @@
+import type { ValueOf } from '@teleskop/utils'
+import type { BatchParameterType, StartingParameters } from '~/composables/enums'
+
 export interface QueueBasedBaseEventRaw {
   eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
   machineId: number
@@ -120,10 +123,19 @@ export interface TimeBasedEventStates {
     hasNote: boolean
   }[]
 }
-export interface PlanParameters {
+
+export interface StartingParameter {
   machineId: number
   paramString: string
-  value: number | string
-  paramHighLimit: number
   paramLowLimit: number
+  paramHighLimit: number
+  paramType: ValueOf<typeof BatchParameterType>
+}
+
+export interface PlanParameter extends StartingParameter {
+  value: number | string
+}
+
+export interface ValidatedPlanParameter extends PlanParameter {
+  paramStatus: ValueOf<typeof StartingParameters>
 }
