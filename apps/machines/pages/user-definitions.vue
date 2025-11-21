@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import UserEditDialog from '~/components/UserEditDialog.vue'
+import UserPermissionsDialog from '~/components/UserPermissionsDialog.vue'
 
 interface User {
   userId: number
@@ -21,6 +22,7 @@ const { notifyError, notifySuccess } = useNotify()
 
 const editDialog = ref(false)
 const editUser = ref<User | undefined>(undefined)
+const permissionsDialog = ref(false)
 
 const rows = ref<User[]>([])
 const loading = ref(false)
@@ -102,11 +104,12 @@ async function onDeleteUser() {
   }
 }
 
-function onPermissions() {
+function openPermissions() {
   if (selected.value.length !== 1)
     return
-  console.log('Permissions clicked', selected.value[0])
-  // TODO: Permission dialog
+
+  editUser.value = selected.value[0]
+  permissionsDialog.value = true
 }
 
 function handleRowClick(_e: any, row: User) {
@@ -150,7 +153,7 @@ onMounted(loadUsers)
             label="Permissions"
             icon="security"
             :disable="selected.length !== 1"
-            @click="onPermissions"
+            @click="openPermissions"
           />
         </div>
       </div>
@@ -203,6 +206,13 @@ onMounted(loadUsers)
         :user="editUser"
         :existing-user-ids="rows.map(r => r.userId)"
         @saved="onUserSaved"
+        @edit-permissions="openPermissions"
+      />
+
+      <!-- User Permissions Dialog -->
+      <UserPermissionsDialog
+        v-model="permissionsDialog"
+        :user="editUser"
       />
     </q-card>
   </q-page>

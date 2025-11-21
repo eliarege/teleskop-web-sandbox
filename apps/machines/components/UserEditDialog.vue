@@ -23,6 +23,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
   (e: 'saved', user: User): void
+  (e: 'editPermissions', userId: number | undefined): void
 }>()
 
 const { t } = useI18n()
@@ -212,7 +213,7 @@ async function saveUser() {
             outline
             no-caps
             class="col-span-1"
-            @click="emit('edit-permissions', form.userId)"
+            @click="emit('editPermissions', form.userId)"
           />
         </q-form>
       </q-card-section>
