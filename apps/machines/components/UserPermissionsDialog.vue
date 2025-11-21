@@ -1,29 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import type { User } from '~/types'
 
 interface Permission {
   label: string
   index: number
-  value: MaybeRef<boolean>
-  disabled?: MaybeRef<boolean>
+  value: boolean | Ref<boolean>
   _value?: boolean
+  disabled?: boolean | ComputedRef<boolean>
 }
 
 const props = defineProps<{
-  show: boolean
-  selected: User
+  modelValue: boolean
+  user?: User
 }>()
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void
+}>()
 
 const { t } = useI18n()
 const kc = useKeycloak()
-const { notifyError } = useNotify()
+const { notifyError, notifySuccess } = useNotify()
 
+const localModelValue = ref(props.modelValue)
 const selectAll = ref(false)
 const controllerPermission = ref(false)
 const menuAccessPermission = ref(false)
+
+watch(() => props.modelValue, val => localModelValue.value = val)
+watch(localModelValue, val => emit('update:modelValue', val))
 
 const permissionsGroup1 = reactive<Permission[]>([
   { label: t('createProgram'), index: 0, value: false },
@@ -33,7 +38,7 @@ const permissionsGroup1 = reactive<Permission[]>([
   { label: t('manualCommandStarting'), index: 4, value: false },
   { label: t('accessingToSystemMenu'), index: 5, value: menuAccessPermission },
   { label: t('modifyingProgramAtRunTime'), index: 6, value: false },
-  { label: t('testAuth'), index: 7, value: false },
+  { label: t('test'), index: 7, value: false },
   {
     label: t('accessingToDyeHouseParameters'),
     index: 8,
@@ -142,10 +147,10 @@ const permissionsGroup2 = reactive<Permission[]>(([
   { label: t('authorityForOperatorInterventionFreePrograms'), index: 3, value: false },
 ]))
 
-const user = computed(() => props.selected)
+const user = computed(() => props.user)
 watch(user, (_newValue, _oldValue) => {
-  if (props.selected.userMode && props.selected.userMode2)
-    updatePermissionsFromHex(props.selected.userMode, props.selected.userMode2)
+  if (props.user?.userMode && props.user?.userMode2)
+    updatePermissionsFromHex(props.user?.userMode, props.user?.userMode2)
 })
 
 function updatePermissionsFromHex(hexStringGroup1: string, hexStringGroup2: string) {
@@ -187,34 +192,47 @@ async function savePermissions() {
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
   try {
-    await kc.fetch('/api/user-definitions/user-definition', {
+    await kc.fetch(`/api/user-definitions/${props.user?.userId}`, {
       method: 'PUT',
       body: {
-        userId: user.value.userId,
+        ...props.user,
         userMode: hexadecimalValueGroup1,
         userMode2: hexadecimalValueGroup2,
       },
     })
-    emit('close')
+    notifySuccess(t('userUpdatedSuccessfully'))
+    localModelValue.value = false
   } catch (err) {
     console.error(`Failed to update user permissions`, err)
     notifyError(t('user-permission-update-failed'))
   }
 }
 
-function toggleSelectAll() {
-  const groups = [permissionsGroup1, permissionsGroup2]
-  const newValue = !groups.every(g => g.every(p => p.value))
-  groups.flat().forEach(p => !p.disabled && (p.value = newValue))
+function toggleSelectAll(newValue: boolean) {
+  permissionsGroup1.forEach((p) => {
+    if (!isDisabled(p))
+      p.value = newValue
+  })
+  permissionsGroup2.forEach((p) => {
+    if (!isDisabled(p))
+      p.value = newValue
+  })
+}
+
+function isDisabled(permission: Permission): boolean {
+  if ([8, 9, 13, 14, 15].includes(permission.index)) {
+    return !menuAccessPermission.value
+  }
+  if ([12, 17].includes(permission.index)) {
+    return !controllerPermission.value
+  }
+  return false
 }
 </script>
 
 <template>
-  <q-dialog
-    :model-value="show"
-    @hide="emit('close')"
-  >
-    <q-card>
+  <q-dialog v-model="localModelValue" persistent>
+    <q-card style="min-width: 400px">
       <q-card-section>
         <div class="text-h6 flex">
           {{ t('user-permissions') }}
@@ -225,8 +243,11 @@ function toggleSelectAll() {
             flat
             round
             dense
-            @click="emit('close')"
+            @click="localModelValue = false"
           />
+        </div>
+        <div v-if="user" class="text-h8 text-gray-6 dark:text-gray-4">
+          {{ user.userId }} - {{ user.userName }} {{ user.userSurname }}
         </div>
       </q-card-section>
 
@@ -234,14 +255,14 @@ function toggleSelectAll() {
         <div class="h-140 overflow-auto">
           <q-list>
             <q-item
-              v-for="(permission, key) in [...permissionsGroup1, ...permissionsGroup2]"
-              :key="key"
+              v-for="permission in [...permissionsGroup1, ...permissionsGroup2]"
+              :key="permission.index"
               dense
             >
               <q-checkbox
                 v-model="permission.value"
                 :label="permission.label"
-                :disable="permission.disabled"
+                :disable="isDisabled(permission)"
                 dense
               />
             </q-item>
@@ -259,14 +280,15 @@ function toggleSelectAll() {
 
       <q-card-actions align="right" class="q-pa-md bg-gray-1 dark:bg-dark-4">
         <q-btn
-          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           :label="t('cancel')"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
-          @click="emit('close')"
+          @click="localModelValue = false"
         />
         <q-btn
           :label="t('save')"
-          class="bg-primary text-white"
+          class="q-mr-sm bg-primary text-white"
+          color="primary"
           flat
           @click="savePermissions"
         />
