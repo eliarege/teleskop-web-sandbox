@@ -1,0 +1,20 @@
+{
+  "servers": {
+    "mssql-mcp-server": {
+      "command": "pnpm",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-w",
+        "exec",
+        "teleskop-mcp-sqlserver"
+      ],
+      "env": {
+        "DB_USER": "",
+        "DB_PASSWORD": "",
+        "DB_SERVER": "",
+        "DB_DATABASE": "",
+        "DB_TRUST_SERVER_CERT": "true"
+      }
+    },
+  }
+}
