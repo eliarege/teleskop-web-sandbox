@@ -147,7 +147,7 @@
   "paramHighLimit": "Param High Limit",
   "defaultValue": "Default Value",
   "currentValue": "Current Value",
-  "userId": "Id",
+  "userId": "User Id",
   "userName": "Name",
   "userSurname": "Surname",
   "userPassword": "Password",
@@ -685,5 +685,12 @@
   "calculateRequestCountSuccess": "Program request counts calculated successfully",
   "calculateRequestCountError": "Error while calculating program request counts",
 
-  "user-permissions": "User Permissions"
+  "user-permissions": "User Permissions",
+
+  "required": "This field is required.",
+  "minLength": "Minimum length is {length} characters.",
+  "maxLength": "Maximum length is {length} characters.",
+  "cannotStartWith0": "Value cannot start with 0.",
+  "valueMustBePositive": "Value must be a positive number.",
+  "userIdAlreadyExists": "This user ID already exists."
 }

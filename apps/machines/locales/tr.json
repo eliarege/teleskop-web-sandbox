@@ -145,7 +145,7 @@
   "defaultValue": "Varsayılan Değer",
   "currentValue": "Mevcut Değer",
   "machineCapacity": "Makine Kapasitesi",
-  "userId": "Id",
+  "userId": "Kullanıcı Id",
   "userName": "Ad",
   "userSurname": "Soyad",
   "userPassword": "Şifre",
@@ -687,5 +687,13 @@
   "calculateRequestCountSuccess": "Program istek sayıları başarıyla hesaplandı",
   "calculateRequestCountError": "Program istek sayıları hesaplanırken hata oluştu",
 
-  "user-permissions": "Kullanıcı İzinleri"
+  "user-permissions": "Kullanıcı İzinleri",
+
+  "required": "Bu alan gereklidir",
+  "minLength": "Minimum {length} karakter gerekli",
+  "maxLength": "Maksimum {length} karakter gerekli",
+  "cannotStartWith0": "0 ile başlayamaz",
+  "valueMustBePositive": "Değer pozitif olmalıdır",
+  "userIdAlreadyExists": "Bu kullanıcı ID'si zaten mevcut"
+
 }
