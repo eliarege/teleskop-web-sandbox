@@ -1018,36 +1018,59 @@ export async function getFormula(program: string, machineId: number) {
     })
     .andWhere('TBBFORMUL', 1)
 
-  const selectedFormulas = await knex({ prm: 'BFMASTERSTEPPARAMS' })
-    .distinct('frm.formula as value')
-    .innerJoin('BFMASTERSTEPS as stps', (builder) => {
-      builder.on('prm.MACHINEID', 'stps.MACHINEID')
-        .andOn('prm.PROGNO', 'stps.PROGNO')
-        .andOn('prm.MAINSTEP', 'stps.MAINSTEP')
-        .andOn('prm.PARALELSTEP', 'stps.PARALELSTEP')
+  // Find formulas that are actually used in the program steps (in-memory operation)
+  // Step 1: Get step parameters with their command numbers (join steps and params in one query)
+  const stepParamsWithCommands = await knex('BFMASTERSTEPS as stps')
+    .innerJoin('BFMASTERSTEPPARAMS as prm', (builder) => {
+      builder.on('stps.MACHINEID', 'prm.MACHINEID')
+        .andOn('stps.PROGNO', 'prm.PROGNO')
+        .andOn('stps.MAINSTEP', 'prm.MAINSTEP')
+        .andOn('stps.PARALELSTEP', 'prm.PARALELSTEP')
     })
-    .innerJoin('BFCOMMANDPARAMETERS as cmd', (builder) => {
-      builder.on('prm.MACHINEID', '=', 'cmd.MACHINEID')
-        .andOn('stps.COMMANDNO', '=', 'cmd.COMMANDNO')
-        .andOn('prm.PARAMETERINDEX', '=', 'cmd.PARAMETERINDEX')
+    .select({
+      commandNo: 'stps.COMMANDNO',
+      parameterIndex: 'prm.PARAMETERINDEX',
+      value: 'prm.VALUE',
     })
-    .innerJoin('BFCOMMANDFORMULAS as frm', (builder) => {
-      builder.on('prm.MACHINEID', '=', 'frm.machineId')
-        .andOn('prm.VALUE', '=', 'frm.formulaId')
+    .where('stps.MACHINEID', machineId)
+    .whereIn('stps.PROGNO', progNoList)
+
+  // Step 2: Get command parameter definitions where USEFORMULA=1
+  const commandParams = await knex('BFCOMMANDPARAMETERS')
+    .select({
+      commandNo: 'COMMANDNO',
+      parameterIndex: 'PARAMETERINDEX',
     })
-    .where('cmd.USEFORMULA', 1)
-    .andWhere('prm.MACHINEID', machineId)
-    .andWhere('stps.PROGNO', 'in', progNoList)
-    .andWhere('stps.COMMANDNO', 'in', knex.select('COMMANDNO')
-      .from('BFCOMMANDPARAMETERS')
-      .where('MACHINEID', machineId)
-      .andWhere('COMMANDNO', 'in', knex.select(knex.raw('DISTINCT(COMMANDNO) as cmdNo'))
-        .from('BFMASTERSTEPS')
-        .where('MACHINEID', machineId)
-        .andWhere('PROGNO', 'in', progNoList))
-      .andWhere('USEFORMULA', 1))
+    .where('MACHINEID', machineId)
+    .where('USEFORMULA', 1)
+
+  // Step 3: Get all available formulas
+  const allFormulas = await knex('BFCOMMANDFORMULAS')
+    .select('formulaId', 'formula')
+    .where('machineId', machineId)
+
+  // In-memory filtering to find formula IDs that are actually used
+  const formulaIds = new Set<number>()
+
+  for (const stepParam of stepParamsWithCommands) {
+    // Check if this parameter uses a formula
+    const usesFormula = commandParams.some(
+      cp => cp.commandNo === stepParam.commandNo
+      && cp.parameterIndex === stepParam.parameterIndex,
+    )
+
+    if (usesFormula && stepParam.value) {
+      formulaIds.add(Number(stepParam.value))
+    }
+  }
+
+  // Get the actual formula strings
+  const selectedFormulas = allFormulas
+    .filter(f => formulaIds.has(f.formulaId))
+    .map(f => ({ value: f.formula }))
 
   const formula = [...selectedFormulas, ...commandFormulas]
+
   return (await formulaStartingParams(parseFormulas(formula.map(e => e.value)), machineId))
 }
 
