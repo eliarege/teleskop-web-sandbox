@@ -69,10 +69,10 @@ async function onSave() {
       .filter(initialDispenser =>
         !selectedDispensers.value.includes(initialDispenser))
     if (material.value)
-      await $fetch(`/api/materials/${editedMaterial.value.materialCode}`, { method: 'PUT', body: editedMaterial.value })
+      await $fetch(`/api/materials/${encodeURIComponent(material.value.materialCode)}`, { method: 'PUT', body: editedMaterial.value })
     else
       await $fetch(`/api/materials`, { method: 'POST', body: editedMaterial.value })
-    await $fetch(`/api/connections/materials?materialCode=${editedMaterial.value.materialCode}`, { method: 'POST', body: {
+    await $fetch(`/api/connections/materials?materialCode=${encodeURIComponent(editedMaterial.value.materialCode)}`, { method: 'POST', body: {
       added,
       deleted,
     } })
@@ -145,7 +145,7 @@ async function onDelete() {
     },
   }).onOk(async () => {
     try {
-      await $fetch(`/api/materials/${material.value!.materialCode}`, { method: 'DELETE' })
+      await $fetch(`/api/materials/${encodeURIComponent(material.value!.materialCode)}`, { method: 'DELETE' })
       onDialogOK(true)
     } catch (e) {
       onDialogOK(false)
@@ -192,7 +192,6 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                   (val) => val && val.length > 0 || 'Field is required',
                   (val) => /^[a-zA-Z0-9]+$/.test(val) || 'Only alphanumeric characters allowed',
                 ]"
-                :disable="material !== undefined"
                 :placeholder="editedMaterial.materialCode"
               />
             </div>

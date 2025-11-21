@@ -3,9 +3,11 @@ import { MaterialSchema } from '~/shared/schemas'
 import type { Material } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
+  const { code } = getRouterParams(event)
+  const originalCode = decodeURIComponent(code)
   const material: Material = await readValidatedBody(event, MaterialSchema.parse)
   const res = await dmsDB('MATERIAL')
-    .where('material_code', material.materialCode)
+    .where('material_code', originalCode)
     .update({
       material_name: material.materialName,
       material_code: material.materialCode,
@@ -17,7 +19,7 @@ export default defineEventHandler(async (event) => {
       unit_cost: material.unitCost,
       re_requestable: material.reRequestable,
       direct_transfer: material.directTransfer,
-      is_manual: material.isManual
+      is_manual: material.isManual,
     })
   return res
 })

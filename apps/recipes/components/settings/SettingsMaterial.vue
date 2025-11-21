@@ -63,7 +63,7 @@ const columns = ref([
 ])
 
 async function onRowClick(row: any) {
-  const selectedMaterial = await $fetch(`/api/materials/${row.materialCode}`)
+  const selectedMaterial = await $fetch(`/api/materials/${encodeURIComponent(row.materialCode)}`)
   q.dialog({
     component: MaterialInfoDialog,
     componentProps: {

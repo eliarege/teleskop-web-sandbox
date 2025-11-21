@@ -3,8 +3,9 @@ import type { Material } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
   const { code } = getRouterParams(event)
+  const decodedCode = decodeURIComponent(code)
   const material: Material = await dmsDB('MATERIAL as m')
-    .where('material_code', code)
+    .where('material_code', decodedCode)
     .select({
       materialName: 'm.material_name',
       materialCode: 'm.material_code',
