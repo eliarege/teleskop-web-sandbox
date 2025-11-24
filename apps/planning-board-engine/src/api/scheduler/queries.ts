@@ -1020,7 +1020,7 @@ export async function bulkCreatePlanParameter(
 ) {
   await knex.transaction(async (trx) => {
     const [jobOrderResult, batchParams] = await Promise.all([
-      trx('DYBFBATCHPLANPARAMETERS')
+      trx('DYBFBATCHPLAN')
         .select('JOBORDER')
         .where('PLANKEY', planKey)
         .andWhere('lastForJoborder', 1)
