@@ -267,12 +267,12 @@ async function onSave() {
     } else {
       try {
         if (props.isNew) {
-          await $fetch(`/api/recipes/master/${props.recipeId}`, {
+          await $fetch(`/api/recipes/master/${editedRecipe.value.recipeId}`, {
             method: 'PUT',
             body: { recipeHeader: editedRecipe.value },
           })
         }
-        await $fetch(`/api/recipes/master/${props.recipeId}`, {
+        await $fetch(`/api/recipes/master/${editedRecipe.value.recipeId}`, {
           method: 'POST',
           body: { recipeHeader: editedRecipe.value, steps: editedPrograms.value },
         })

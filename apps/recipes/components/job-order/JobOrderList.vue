@@ -207,6 +207,19 @@ function onButtonClicked(link: string) {
     })
   }
 }
+async function showJobOrderOverview() {
+  if (!selectedRow.value) return
+
+  sessionStorage.setItem('jobOrderBatchNo', JSON.stringify(selectedRow.value.batchNo))
+  const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
+  await navigateTo({
+    path: correctPath,
+  }, {
+    open: {
+      target: '_blank',
+    },
+  })
+}
 const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
 watch(() => route.query.dispenserId, (val) => {
   const dispenser = dataStore.getDispenser(Number(val))
@@ -377,6 +390,14 @@ async function setStatus(status: string, order: JobOrder) {
               context-menu
             >
               <QList>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="showJobOrderOverview"
+                >
+                  <QItemSection>{{ t('ViewJobOrder') }}</QItemSection>
+                </QItem>
+
                 <QItem
                   v-close-popup
                   clickable

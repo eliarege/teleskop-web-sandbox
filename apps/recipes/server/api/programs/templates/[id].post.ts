@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
         materialData.push({
           program_no: id,
           machine_id: machineId,
-          step_no: material.orderNo,
+          step_no: step.orderNo,
           type: RecipeType.CHEM,
           material_code: material.materialCode,
           unit: material.unit,
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
         materialData.push({
           program_no: id,
           machine_id: machineId,
-          step_no: material.orderNo,
+          step_no: step.orderNo,
           type: RecipeType.DYE,
           material_code: material.materialCode,
           unit: material.unit,
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
         materialData.push({
           program_no: id,
           machine_id: machineId,
-          step_no: material.orderNo,
+          step_no: step.orderNo,
           type: RecipeType.SALT,
           material_code: material.materialCode,
           unit: material.unit,
