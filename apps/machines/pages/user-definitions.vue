@@ -211,6 +211,7 @@ onMounted(loadUsers)
         v-model="editDialog"
         :user="editUser"
         :existing-user-ids="rows.map(r => r.userId)"
+        :user-type-options="userTypeOptions"
         @saved="onUserSaved"
         @edit-permissions="openPermissions"
       />

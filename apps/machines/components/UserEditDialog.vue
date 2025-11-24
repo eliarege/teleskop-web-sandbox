@@ -18,6 +18,7 @@ const props = defineProps<{
   modelValue: boolean
   user?: User
   existingUserIds: number[]
+  userTypeOptions: { label: string, value: number }[]
 }>()
 
 const emit = defineEmits<{
@@ -84,10 +85,6 @@ watch(
 )
 
 const formRef = ref()
-const userTypeOptions = [
-  { label: 'Operator', value: 1 },
-  { label: 'Other', value: 2 },
-]
 
 async function saveUser() {
   if (formRef.value && !(await formRef.value.validate?.()))
