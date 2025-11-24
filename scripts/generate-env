@@ -2,7 +2,7 @@
 
 // Generates .env files for all apps based on the selected config (default: dev)
 import { readdir, writeFile } from 'fs/promises'
-import { resolve } from 'path'
+import { join, resolve } from 'path'
 import { encode } from 'querystring'
 
 const configName = process.argv[2]
@@ -69,6 +69,28 @@ const appDirs = await readdir(appsDir, { withFileTypes: true })
 for (const appDir of appDirs) {
   const appEnvPath = resolve(appsDir, appDir, '.env')
   await writeFile(appEnvPath, envFile)
+}
+
+const readJSON = async (path) => {
+  return await import(path, { with: { type: 'json' } }).then(m => m.default).catch(() => null)
+}
+const writeJSON = async (path, data) => {
+  const content = JSON.stringify(data, null, 2) + '\n'
+  await writeFile(path, content)
+}
+
+const mcpPath = join(workspaceDir, '.vscode/mcp.json')
+const mcpConfig = await readJSON(mcpPath)
+
+if (mcpConfig?.servers?.['mssql-mcp-server']) {
+  const env = {}
+  mcpConfig.servers['mssql-mcp-server'].env ??= env
+  env['DB_USER'] = teleskopUser
+  env['DB_PASSWORD'] = teleskopPassword
+  env['DB_SERVER'] = teleskopHost
+  env['DB_DATABASE'] = teleskopDatabase
+  env['DB_TRUST_SERVER_CERT'] = 'true'
+  await writeJSON(mcpPath, mcpConfig)
 }
 
 console.log(`Generated .env files for config "${configName}"`)
