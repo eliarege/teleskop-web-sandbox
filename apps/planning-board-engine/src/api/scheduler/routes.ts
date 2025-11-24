@@ -592,11 +592,11 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
 
         if (
           requestedStartingParameters.length === 0
-          || requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct)
+          || startingParameterValues.every(e => e.paramStatus === StartingParameters.Correct)
         ) {
           if (isTonello(machineInfo)) {
             const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
-            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder, requestedStartingParameters)
+            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder, startingParameterValues)
           } else {
             await uploadToMachine(machineInfo.host, startingParameterValues, programNoList, jobOrder)
           }
