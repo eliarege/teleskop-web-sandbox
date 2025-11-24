@@ -524,6 +524,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         if (allParamsRequired) {
           const allParams = await getPlanParameters(planKey, machineId)
           if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
+            await uploadToMachine(machineIp, allParams, program, jobOrder)
             return reply.code(200).send('DONE')
           } else return allParams
         } else {
