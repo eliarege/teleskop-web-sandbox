@@ -694,6 +694,24 @@
   "maxLength": "Maksimum {length} karakter gerekli",
   "cannotStartWith0": "0 ile başlayamaz",
   "valueMustBePositive": "Değer pozitif olmalıdır",
-  "userIdAlreadyExists": "Bu kullanıcı ID'si zaten mevcut"
+  "userIdAlreadyExists": "Bu kullanıcı ID'si zaten mevcut",
+
+  "userDefinitions": "Kullanıcı Tanımları",
+  "addUser": "Kullanıcı Ekle",
+  "editUser": "Kullanıcı Düzenle",
+  "confirmDelete": "Silme Onayı",
+  "confirmDeleteUser": "{name} kullanıcısını silmek istediğinize emin misiniz?",
+  "confirmDeleteUsers": "Seçilen {count} kullanıcıyı silmek istediğinize emin misiniz?",
+  "usersDeletedSuccessfully": "Kullanıcılar başarıyla silindi",
+  "errorDeletingUsers": "Kullanıcılar silinirken hata oluştu",
+  "errorSavingUser": "Kullanıcı kaydedilirken hata oluştu",
+  "userIdRequired": "Kullanıcı ID'si gerekli",
+  "userIdMustBePositive": "Kullanıcı ID'si pozitif olmalı",
+  "userNameRequired": "Ad gerekli",
+  "userSurnameRequired": "Soyad gerekli",
+  "userPasswordRequired": "Şifre gerekli",
+  "normal": "Normal",
+  "deleted": "Silindi",
+  "confirm": "Onay"
 
 }

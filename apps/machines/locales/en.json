@@ -692,5 +692,24 @@
   "maxLength": "Maximum length is {length} characters.",
   "cannotStartWith0": "Value cannot start with 0.",
   "valueMustBePositive": "Value must be a positive number.",
-  "userIdAlreadyExists": "This user ID already exists."
+  "userIdAlreadyExists": "This user ID already exists.",
+
+  "userDefinitions": "User Definitions",
+  "addUser": "Add User",
+  "editUser": "Edit User",
+  "confirmDelete": "Confirm Delete",
+  "confirmDeleteUser": "Are you sure you want to delete user {name}?",
+  "confirmDeleteUsers": "Are you sure you want to delete {count} selected users?",
+  "usersDeletedSuccessfully": "Users deleted successfully",
+  "errorDeletingUsers": "Error occurred while deleting users",
+  "errorSavingUser": "Error occurred while saving user",
+  "userIdRequired": "User ID is required",
+  "userIdMustBePositive": "User ID must be positive",
+  "userNameRequired": "Name is required",
+  "userSurnameRequired": "Surname is required",
+  "userPasswordRequired": "Password is required",
+  "normal": "Normal",
+  "deleted": "Deleted",
+  "confirm": "Confirm"
+
 }

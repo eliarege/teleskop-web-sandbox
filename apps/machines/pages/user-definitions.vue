@@ -35,22 +35,22 @@ const userTypeOptions = [
   { label: t('other'), value: 2 },
 ]
 
-const columns = [
-  { name: 'userId', label: 'ID', field: 'userId', align: 'left' as const, sortable: true },
-  { name: 'userName', label: 'Ad', field: 'userName', align: 'left' as const, sortable: true },
-  { name: 'userSurname', label: 'Soyad', field: 'userSurname', align: 'left' as const, sortable: true },
-  { name: 'userPass', label: 'Pass', field: 'userPass', align: 'left' as const },
+const columns = computed(() => [
+  { name: 'userId', label: t('userId'), field: 'userId', align: 'left' as const, sortable: true },
+  { name: 'userName', label: t('userName'), field: 'userName', align: 'left' as const, sortable: true },
+  { name: 'userSurname', label: t('userSurname'), field: 'userSurname', align: 'left' as const, sortable: true },
+  { name: 'userPass', label: t('userPassword'), field: 'userPass', align: 'left' as const },
   {
     name: 'userType',
-    label: 'Tip',
+    label: t('userType'),
     field: (row: User) => {
       const option = userTypeOptions.find(opt => opt.value === row.userType)
       return option ? option.label : row.userType
     },
     align: 'left' as const,
   },
-  { name: 'userActive', label: 'Aktif', field: 'userActive', align: 'left' as const },
-]
+  { name: 'userActive', label: t('active'), field: 'userActive', align: 'left' as const },
+])
 
 async function loadUsers() {
   loading.value = true
@@ -99,14 +99,13 @@ async function handleDeleteConfirmed() {
       })
     }
 
-    // Tabloyu tekrar yükle
     await loadUsers()
     selected.value = []
 
-    notifySuccess('Kullanıcılar başarıyla silindi.')
+    notifySuccess(t('usersDeletedSuccessfully'))
   } catch (err) {
     console.error('Kullanıcı silme işlemi başarısız oldu', err)
-    notifyError('Kullanıcı silme işlemi başarısız oldu.')
+    notifyError(t('errorDeletingUsers'))
   }
 }
 
@@ -130,33 +129,33 @@ onMounted(loadUsers)
     <q-card class="q-pa-md">
       <div class="q-mb-md flex justify-between items-center">
         <div class="text-h6">
-          Kullanıcı Tanımları
+          {{ t('userDefinitions') }}
         </div>
 
         <div class="q-gutter-sm">
           <q-btn
             color="primary"
-            label="Add"
+            :label="t('add')"
             icon="add"
             @click="openAddDialog"
           />
           <q-btn
             color="primary"
-            label="Edit"
+            :label="t('edit')"
             icon="edit"
             :disable="selected.length !== 1"
             @click="openEditDialog"
           />
           <q-btn
-            color="primary"
-            label="Delete"
+            color="negative"
+            :label="t('delete')"
             icon="delete"
             :disable="selected.length === 0"
             @click="onDeleteUser"
           />
           <q-btn
             color="primary"
-            label="Permissions"
+            :label="t('permissions')"
             icon="security"
             :disable="selected.length !== 1"
             @click="openPermissions"
@@ -191,7 +190,7 @@ onMounted(loadUsers)
         <template #body-cell-userActive="props">
           <q-td :props="props">
             <q-badge :color="props.row.userActive ? 'green' : 'red'" class="text-white">
-              {{ props.row.userActive ? 'Aktif' : 'Pasif' }}
+              {{ props.row.userActive ? t('active') : t('passive') }}
             </q-badge>
           </q-td>
         </template>

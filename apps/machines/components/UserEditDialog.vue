@@ -113,9 +113,10 @@ async function saveUser() {
   } catch (err: any) {
     if (err?.statusCode === 400) {
       console.error('Bu ID zaten mevcut:', err.statusMessage)
-      notifyError('Bu ID zaten mevcut')
+      notifyError(t('userIdAlreadyExists'))
     } else {
       console.error('Kullanıcı kaydedilirken hata:', err)
+      notifyError(t('errorSavingUser'))
     }
   }
 }
@@ -146,13 +147,13 @@ async function saveUser() {
         >
           <q-input
             v-model="form.userId"
-            label="Kullanıcı ID"
+            :label="t('userId')"
             type="number"
-            :rules="[val => !!val || 'ID gerekli',
-                     val => val > 0 || 'ID pozitif olmalı',
+            :rules="[val => !!val || t('userIdRequired'),
+                     val => val > 0 || t('userIdMustBePositive'),
                      val => (!isEdit && !props.existingUserIds.includes(Number(val)))
                        || (isEdit && (Number(val) === props.user?.userId || !props.existingUserIds.includes(Number(val))))
-                       || 'Bu ID zaten mevcut',
+                       || t('userIdAlreadyExists'),
             ]"
             dense
             autofocus
@@ -160,29 +161,30 @@ async function saveUser() {
           />
           <q-input
             v-model="form.userName"
-            label="Ad"
-            :rules="[val => !!val || 'Ad gerekli']"
+            :label="t('userName')"
+            :rules="[val => !!val || t('userNameRequired')]"
             dense
             outlined
             autofocus
           />
           <q-input
             v-model="form.userSurname"
-            label="Soyad"
-            :rules="[val => !!val || 'Soyad gerekli']"
+            :label="t('userSurname')"
+            :rules="[val => !!val || t('userSurnameRequired')]"
             dense
             outlined
           />
           <q-input
             v-model="form.userPass"
-            label="Parola"
-            :rules="[val => isEdit || !!val || 'Parola gerekli']"
+            :label="t('userPassword')"
+            :rules="[val => isEdit || !!val || t('userPasswordRequired')]"
             dense
             outlined
           />
           <q-select
             v-model="form.userType"
             :options="userTypeOptions"
+            :label="t('userType')"
             map-options
             label="Tip"
             options-dense
@@ -191,12 +193,12 @@ async function saveUser() {
           />
           <q-toggle
             v-model="form.userActive"
-            label="Aktif"
+            :label="t('active')"
             dense
           />
           <q-input
             v-model="form.userInfo"
-            label="Info"
+            :label="t('userInfo')"
             type="textarea"
             outlined
             class="col-span-3"
