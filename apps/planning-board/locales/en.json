@@ -90,6 +90,8 @@
     "resend": "Resend",
     "confirm": "Confirm",
     "empty-text": "No Parameter",
+    "save-success": "Parameters saved successfully!",
+    "save-error": "Failed to save parameters. Please try again.",
     "legend": {
       "default": "Added parameter with default value",
       "non-start": "Not an initialization parameter",

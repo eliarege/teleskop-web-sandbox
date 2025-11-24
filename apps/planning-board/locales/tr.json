@@ -90,6 +90,8 @@
     "resend": "Tekrar Gönder",
     "confirm": "Onayla",
     "empty-text": "Parametre Yok",
+    "save-success": "Parametreler başarıyla kaydedildi!",
+    "save-error": "Parametreler kaydedilirken hata oluştu. Lütfen tekrar deneyin.",
     "legend": {
       "default": "Varsayılan değer ile sonradan eklenmiş parametre",
       "non-start": "Başlatma parametresi değil",
