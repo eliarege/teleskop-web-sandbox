@@ -81,7 +81,7 @@ async function getRecipe() {
   colorString.value = colorCodeToRGB(editedRecipe.value!.colorCode)
 }
 async function getPrograms() {
-  programs.value = await $fetch(`/api/recipes/master/steps/${props.recipeId}`, { query: { machineId: props.machineId }})
+  programs.value = await $fetch(`/api/recipes/master/steps/${props.recipeId}`, { query: { machineId: props.machineId } })
 
   for (const program of programs.value) {
     const chemSteps = program.steps.filter(step => step.type === RecipeType.CHEM)
@@ -552,173 +552,173 @@ async function onDelete() {
                   </QCard>
 
                   <div class="recipe-materials">
-                      <h4 class="flex justify-center text-xl my-2">
-                        {{ t('programFields.ChemRequests') }}
-                      </h4>
-                      <div
-                        v-for="(step, idx) in program.chemSteps"
-                        :key="idx"
-                        class="table-wrapper"
-                        my-2
-                      >
-                        <div class="flex items-start">
-                          <h3 class="step-header mr-4 mt-2 text-xl font-bold">
-                            {{ step.orderNo }}
-                          </h3>
+                    <h4 class="flex justify-center text-xl my-2">
+                      {{ t('programFields.ChemRequests') }}
+                    </h4>
+                    <div
+                      v-for="(step, idx) in program.chemSteps"
+                      :key="idx"
+                      class="table-wrapper"
+                      my-2
+                    >
+                      <div class="flex items-start">
+                        <h3 class="step-header mr-4 mt-2 text-xl font-bold">
+                          {{ step.orderNo }}
+                        </h3>
 
-                          <div class="flex gap-4 flex-nowrap">
-                            <div class="table-content">
-                              <QMarkupTable
-                                class="fixed-table"
-                                overflow-hidden
-                                dense
-                                border-gray
-                                border-rd-2
-                                border-2
+                        <div class="flex gap-4 flex-nowrap">
+                          <div class="table-content">
+                            <QMarkupTable
+                              class="fixed-table"
+                              overflow-hidden
+                              dense
+                              border-gray
+                              border-rd-2
+                              border-2
+                            >
+                              <thead>
+                                <tr :class="{ 'invisible-header': idx !== 0 }">
+                                  <th class="text-left" w-10 />
+                                  <th class="text-left" w-10>
+                                    {{ t('materialFields.IsManual') }}
+                                  </th>
+                                  <th class="text-left" w-10>
+                                    {{ t('materialFields.Code') }}
+                                  </th>
+                                  <th class="text-left" w-20>
+                                    {{ t('materialFields.Name') }}
+                                  </th>
+                                  <th class="text-left" w-25>
+                                    {{ t('recipeFields.Amount') }}
+                                  </th>
+                                  <th class="text-left" w-10>
+                                    {{ t('recipeFields.Unit') }}
+                                  </th>
+                                </tr>
+                              </thead>
+                              <draggable
+                                v-model="step.materials"
+                                class="draggable-area"
+                                item-key="materialCode"
+                                :group="{ name: 'materials', pull: false }"
+                                :sort="false"
+                                ghost-class="material-ghost"
+                                tag="tbody"
+                                @change="(event) => changeItem(program.chemSteps, event)"
                               >
-                                <thead>
-                                  <tr :class="{ 'invisible-header': idx !== 0 }">
-                                    <th class="text-left" w-10 />
-                                    <th class="text-left" w-10>
-                                      {{ t('materialFields.IsManual') }}
-                                    </th>
-                                    <th class="text-left" w-10>
-                                      {{ t('materialFields.Code') }}
-                                    </th>
-                                    <th class="text-left" w-20>
-                                      {{ t('materialFields.Name') }}
-                                    </th>
-                                    <th class="text-left" w-25>
-                                      {{ t('recipeFields.Amount') }}
-                                    </th>
-                                    <th class="text-left" w-10>
-                                      {{ t('recipeFields.Unit') }}
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <draggable
-                                  v-model="step.materials"
-                                  class="draggable-area"
-                                  item-key="materialCode"
-                                  :group="{ name: 'materials', pull: false }"
-                                  :sort="false"
-                                  ghost-class="material-ghost"
-                                  tag="tbody"
-                                  @change="(event) => changeItem(program.chemSteps, event)"
-                                >
-                                  <template #item="{ element, index }">
-                                    <tr>
-                                      <td important-p-0>
-                                        <QBtn
-                                          icon="close"
-                                          flat
-                                          pl-2
-                                          pr-0
-                                          op-70
-                                          size="sm"
-                                          @click="onRemoveItem(step.materials, index)"
-                                        />
-                                      </td>
-                                      <td w-10>
-                                        {{ element.isManual ? t('Yes') : t('No') }}
-                                      </td>
-                                      <td w-10>
-                                        <span>{{ element.materialCode }}</span>
-                                      </td>
-                                      <td
-                                        w-20
-                                        font-size-4
-                                        font-900
-                                      >
-                                        <span>{{ element.materialName }}</span>
-                                      </td>
-                                      <td w-10>
-                                        <QInput
-                                          v-model.number="element.amount"
-                                          dense
-                                          type="number"
-                                          :rules="[(val: number) => val >= 0]"
-                                          min="0"
-                                          hide-bottom-space
-                                        />
-                                      </td>
-                                      <td w-10>
-                                        <QSelect
-                                          v-model="element.unit"
-                                          borderless
-                                          dense
-                                          filled
-                                          emit-value
-                                          map-options
-                                          options-dense
-                                          option-value="id"
-                                          option-label="name"
-                                          :options="units"
-                                        />
-                                      </td>
-                                    </tr>
-                                  </template>
-                                </draggable>
-                                <tfoot
-                                  v-show="materialSelection?.program === program.stepNo
-                                    && materialSelection?.type === RecipeType.CHEM
-                                    && materialSelection?.step === step.orderNo"
-                                >
+                                <template #item="{ element, index }">
                                   <tr>
-                                    <td colspan="7">
-                                      <div class="p-4" justify-center>
-                                        {{ t('AddNewMaterial') }}:
-                                        <QSelect
-                                          v-model="selectedMaterial"
-                                          borderless
-                                          clearable
-                                          dense
-                                          filled
-                                          use-input
-                                          input-debounce="0"
-                                          :option-label="getMaterialName"
-                                          :options="materialOptions"
-                                          @filter="(val, doneFn) => filterMaterials(val, RecipeType.CHEM, doneFn)"
-                                          @update:model-value="onMaterialSelected"
-                                        />
-                                        <QBtn
-                                          mt-2
-                                          :label="t('Cancel')"
-                                          icon="cancel"
-                                          @click.stop="materialSelection = null; selectedMaterial = undefined;"
-                                        />
-                                      </div>
+                                    <td important-p-0>
+                                      <QBtn
+                                        icon="close"
+                                        flat
+                                        pl-2
+                                        pr-0
+                                        op-70
+                                        size="sm"
+                                        @click="onRemoveItem(step.materials, index)"
+                                      />
+                                    </td>
+                                    <td w-10>
+                                      {{ element.isManual ? t('Yes') : t('No') }}
+                                    </td>
+                                    <td w-10>
+                                      <span>{{ element.materialCode }}</span>
+                                    </td>
+                                    <td
+                                      w-20
+                                      font-size-4
+                                      font-900
+                                    >
+                                      <span>{{ element.materialName }}</span>
+                                    </td>
+                                    <td w-10>
+                                      <QInput
+                                        v-model.number="element.amount"
+                                        dense
+                                        type="number"
+                                        :rules="[(val: number) => val >= 0]"
+                                        min="0"
+                                        hide-bottom-space
+                                      />
+                                    </td>
+                                    <td w-10>
+                                      <QSelect
+                                        v-model="element.unit"
+                                        borderless
+                                        dense
+                                        filled
+                                        emit-value
+                                        map-options
+                                        options-dense
+                                        option-value="id"
+                                        option-label="name"
+                                        :options="units"
+                                      />
                                     </td>
                                   </tr>
-                                </tfoot>
-                              </QMarkupTable>
-                            </div>
-                            <div v-show="!materialSelection" class="flex flex-col justify-center">
-                              <div
-                                class="border-2 border-gray-300 rounded-full hover:border-primary hover:bg-primary-light transition-all duration-200 cursor-pointer group"
+                                </template>
+                              </draggable>
+                              <tfoot
+                                v-show="materialSelection?.program === program.stepNo
+                                  && materialSelection?.type === RecipeType.CHEM
+                                  && materialSelection?.step === step.orderNo"
                               >
-                                <QBtn
-                                  round
-                                  flat
-                                  icon="add"
-                                  class="transition-colors duration-200"
-                                  @click="selectMaterial(program.stepNo, RecipeType.CHEM, step.orderNo)"
+                                <tr>
+                                  <td colspan="7">
+                                    <div class="p-4" justify-center>
+                                      {{ t('AddNewMaterial') }}:
+                                      <QSelect
+                                        v-model="selectedMaterial"
+                                        borderless
+                                        clearable
+                                        dense
+                                        filled
+                                        use-input
+                                        input-debounce="0"
+                                        :option-label="getMaterialName"
+                                        :options="materialOptions"
+                                        @filter="(val, doneFn) => filterMaterials(val, RecipeType.CHEM, doneFn)"
+                                        @update:model-value="onMaterialSelected"
+                                      />
+                                      <QBtn
+                                        mt-2
+                                        :label="t('Cancel')"
+                                        icon="cancel"
+                                        @click.stop="materialSelection = null; selectedMaterial = undefined;"
+                                      />
+                                    </div>
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </QMarkupTable>
+                          </div>
+                          <div v-show="!materialSelection" class="flex flex-col justify-center">
+                            <div
+                              class="border-2 border-gray-300 rounded-full hover:border-primary hover:bg-primary-light transition-all duration-200 cursor-pointer group"
+                            >
+                              <QBtn
+                                round
+                                flat
+                                icon="add"
+                                class="transition-colors duration-200"
+                                @click="selectMaterial(program.stepNo, RecipeType.CHEM, step.orderNo)"
+                              >
+                                <QTooltip
+                                  transition-show="scale"
+                                  transition-hide="scale"
+                                  :offset="[8, 0]"
+                                  anchor="center right"
+                                  self="center left"
                                 >
-                                  <QTooltip
-                                    transition-show="scale"
-                                    transition-hide="scale"
-                                    :offset="[8, 0]"
-                                    anchor="center right"
-                                    self="center left"
-                                  >
-                                    {{ t('AddNewMaterial') }}
-                                  </QTooltip>
-                                </QBtn>
-                              </div>
+                                  {{ t('AddNewMaterial') }}
+                                </QTooltip>
+                              </QBtn>
                             </div>
                           </div>
                         </div>
                       </div>
+                    </div>
                     <!-- Dye Requests Section -->
                     <div>
                       <h4 class="flex justify-center text-xl my-2">
@@ -1242,42 +1242,42 @@ async function onDelete() {
   flex-shrink: 0;
 }
 
-.fixed-table :deep(.q-markup-table__overflow table) {
+:deep(.fixed-table .q-markup-table__overflow table) {
   width: 100% !important;
   table-layout: fixed !important;
   /* turn on fixed column sizing */
 }
 
 /* Column 1: narrow action/buttons column */
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(1),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(1) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(1)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(1)) {
   width: 40px !important;
 }
 
 /* Column 2: “IsManual” */
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(2),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(2) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(2)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(2)) {
   width: 60px !important;
 }
 
 /* Column 3: Code */
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(3),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(3) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(3)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(3)) {
   width: 80px !important;
 }
 
 /* Column 4: Name  */
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(4),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(4) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(4)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(4)) {
   width: 1fr !important;
   max-width: 200px !important;
 }
 
 /* Column 5 & 6: Amount and Unit */
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(5),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(5),
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(6),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(6) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(5)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(5)),
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(6)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(6)) {
   width: 60px !important;
 }
 
@@ -1287,8 +1287,8 @@ async function onDelete() {
   gap: 1rem;
 }
 
-::v-deep .fixed-table .q-markup-table__overflow table th,
-::v-deep .fixed-table .q-markup-table__overflow table td {
+:deep(.fixed-table .q-markup-table__overflow table th),
+:deep(.fixed-table .q-markup-table__overflow table td) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
