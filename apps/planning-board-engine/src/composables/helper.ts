@@ -25,7 +25,7 @@ export async function hasNote(jobOrder: string): Promise<boolean> {
 }
 
 export async function queueBasedEventStatus(events: QueueBasedEvent[], includeStops: boolean): Promise<QueueBasedEvent[]> {
-  updatePlannedEventsForActiveManualEvents(events)
+  ongoingEvents(events)
   const eventsWithPercentDone = calculateEventProgress(events)
   if (includeStops) {
     const stops = events.filter(e => e.eventType === 'stop')
@@ -35,9 +35,9 @@ export async function queueBasedEventStatus(events: QueueBasedEvent[], includeSt
   return eventsWithPercentDone
 }
 
-function updatePlannedEventsForActiveManualEvents(events: QueueBasedEvent[]): void {
+function ongoingEvents(events: QueueBasedEvent[]): void {
   const activeManualEvents = events.filter(
-    event => event.eventType === 'manual' && new Date(event.endTime) >= new Date(),
+    event => event.eventType === 'manual' && new Date(event.endTime) >= new Date() || event.eventType === 'ongoing',
   )
 
   activeManualEvents.forEach((manualEvent) => {
