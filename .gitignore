@@ -5,6 +5,8 @@ coverage
 .output
 .turbo
 .nuxt
+apps.tar.gz
+
 
 # Node dependencies
 node_modules

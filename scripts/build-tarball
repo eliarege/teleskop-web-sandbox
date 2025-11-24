@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -euo pipefail
+
+wsdir=$(realpath "$(dirname "$0")/..")
+tmpdir=$(mktemp -d)
+cd "$wsdir" || exit 1
+
+# List of apps to include in the tarball
+apps=(
+  # "recipes"
+  # "machines"
+  # "program-editor"
+  "planning-board-engine"
+  # "planning-board"
+)
+
+filters=()
+for app in "${apps[@]}"; do
+  filters+=(--filter "$app")
+done
+
+pnpm run -r "${filters[@]}" build
+
+for app in "${apps[@]}"; do
+  app_dir="./apps/$app"
+  out_dir=""
+  if [ -d "$app_dir/dist" ]; then
+    out_dir="dist"
+  else
+    out_dir=".output"
+  fi
+  echo "Packing $app from $app_dir/$out_dir"
+  cp -r "$app_dir/$out_dir" "$tmpdir/$app/"
+done
+
+tar --dereference -czf apps.tar.gz -C "$tmpdir" "${apps[@]}"
+rm -rf "$tmpdir"
