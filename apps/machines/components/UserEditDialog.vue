@@ -91,20 +91,19 @@ async function saveUser() {
     return
 
   try {
-    let res: any
     if (isEdit.value) {
-      res = await fetch(`/api/user-definitions/${props.user!.userId}`, {
+      await fetch(`/api/user-definitions/${props.user!.userId}`, {
         method: 'PUT',
-        body: {
+        body: JSON.stringify({
           ...form.value,
-        },
+        }),
       })
     } else {
-      res = await fetch(`/api/user-definitions/route`, {
+      await fetch(`/api/user-definitions/route`, {
         method: 'POST',
-        body: {
+        body: JSON.stringify({
           ...form.value,
-        },
+        }),
       })
     }
 
@@ -186,7 +185,7 @@ async function saveUser() {
             :options="userTypeOptions"
             :label="t('userType')"
             map-options
-            label="Tip"
+            emit-value
             options-dense
             dense
             outlined

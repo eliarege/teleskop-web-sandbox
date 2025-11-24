@@ -194,15 +194,6 @@ onMounted(loadUsers)
             </q-badge>
           </q-td>
         </template>
-
-        <!-- Silinmiş Badge -->
-        <template #body-cell-userDeleted="props">
-          <q-td :props="props">
-            <q-badge :color="props.row.userDeleted ? 'red' : 'grey'" class="text-white">
-              {{ props.row.userDeleted ? 'Silinmiş' : 'Normal' }}
-            </q-badge>
-          </q-td>
-        </template>
       </q-table>
 
       <!-- User Edit / Add Dialog -->
