@@ -129,7 +129,7 @@ onMounted(loadUsers)
     <q-card class="q-pa-md">
       <div class="q-mb-md flex justify-between items-center">
         <div class="text-h6">
-          {{ t('userDefinitions') }}
+          {{ t('controllerOperators') }}
         </div>
 
         <div class="q-gutter-sm">
