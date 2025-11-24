@@ -1019,31 +1019,36 @@ export async function bulkCreatePlanParameter(
   }>,
 ) {
   await knex.transaction(async (trx) => {
-    const planReference = await trx({ d: 'DYBFBATCHPLANPARAMETERS' })
-      .select('*')
-      .orderBy('BATCHPARAMETERID', 'desc')
-      .first()
+    const [jobOrderResult, batchParams] = await Promise.all([
+      trx('DYBFBATCHPLANPARAMETERS')
+        .select('JOBORDER')
+        .where('PLANKEY', planKey)
+        .andWhere('lastForJoborder', 1)
+        .first(),
+      trx('BFMACHBATCHPARAMETERS')
+        .select('*')
+        .where('MACHINEID', machineId)
+        .whereIn('PARAMSTRING', parameters.map(p => p.parameter.paramString)),
+    ])
 
-    const paramStrings = parameters.map(p => p.parameter.paramString)
-    const batchReferences = await trx({ b: 'BFMACHBATCHPARAMETERS' })
-      .select('*')
-      .whereIn('b.PARAMSTRING', paramStrings)
-      .andWhere('b.MACHINEID', '=', machineId)
-
-    const batchRefMap = new Map(
-      batchReferences.map(ref => [ref.PARAMSTRING, ref]),
+    const batchParamMap = new Map(
+      batchParams.map(bp => [bp.PARAMSTRING, bp]),
     )
 
-    const insertData = parameters.map((param, index) => {
-      const batchRef = batchRefMap.get(param.parameter.paramString)
+    const insertData = parameters.map((el) => {
+      const batchParam = batchParamMap.get(el.parameter.paramString)
+      if (!batchParam) {
+        throw new Error(`Batch parameter not found for: ${el.parameter.paramString}`)
+      }
+
       return {
-        JOBORDER: planReference.JOBORDER,
+        JOBORDER: jobOrderResult.JOBORDER,
         PLANKEY: planKey,
-        BATCHPARAMETERID: planReference.BATCHPARAMETERID + 1 + index,
-        PARAMSTRING: param.parameter.paramString,
-        VALUE: param.value,
-        PARAMETERTYPE: batchRef?.PARAMETERTYPE,
-        UNITCODE: batchRef?.UNITCODE,
+        BATCHPARAMETERID: batchParam.BATCHPARAMETERID,
+        PARAMSTRING: el.parameter.paramString,
+        VALUE: el.value,
+        PARAMETERTYPE: batchParam.PARAMETERTYPE,
+        UNITCODE: batchParam.UNITCODE,
         ADDEDWITHDEFAULT: 0,
       }
     })
