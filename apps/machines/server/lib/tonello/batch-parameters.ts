@@ -16,7 +16,7 @@ export async function updateTonelloBatchParameters(
     BATCHPLANNING: false,
     BATCHSTART: true,
     RECIPE: false,
-    DEFAULTVALUE: 0,
+    DEFAULTVALUE: -9999,
     PARAMETERTYPE: 1,
     SELECTIONLIST: 'YOK',
     SELECTIONVALUES: 'YOK',
