@@ -929,7 +929,7 @@ export async function getPlanParameters(planKey: number, machineId: number) {
     parameters = await knex({ b: 'BFMACHBATCHPARAMETERS' })
       .leftJoin('DYBFBATCHPLANPARAMETERS as d', function () {
         this.on('b.PARAMSTRING', '=', 'd.PARAMSTRING')
-          .andOn('d.PLANKEY', knex.raw('?', [98085]))
+          .andOn('d.PLANKEY', knex.raw('?', [planKey]))
       })
       .select({
         machineId: 'b.MACHINEID',
@@ -1002,6 +1002,61 @@ export async function createPlanParameter(parameter: {
       ADDEDWITHDEFAULT: 0,
     })
   })
+}
+export async function bulkCreatePlanParameter(
+  planKey: number,
+  machineId: number,
+  parameters: Array<{
+    parameter: {
+      paramString: string
+      value?: number | string
+      planKey: string
+      paramLowLimit: number
+      paramHighLimit: number
+      paramStatus: number
+    }
+    value: number | string
+  }>,
+) {
+  await knex.transaction(async (trx) => {
+    const [jobOrderResult, batchParams] = await Promise.all([
+      trx('DYBFBATCHPLAN')
+        .select('JOBORDER')
+        .where('PLANKEY', planKey)
+        .andWhere('lastForJoborder', 1)
+        .first(),
+      trx('BFMACHBATCHPARAMETERS')
+        .select('*')
+        .where('MACHINEID', machineId)
+        .whereIn('PARAMSTRING', parameters.map(p => p.parameter.paramString)),
+    ])
+
+    const batchParamMap = new Map(
+      batchParams.map(bp => [bp.PARAMSTRING, bp]),
+    )
+
+    const insertData = parameters.map((el) => {
+      const batchParam = batchParamMap.get(el.parameter.paramString)
+      if (!batchParam) {
+        throw new Error(`Batch parameter not found for: ${el.parameter.paramString}`)
+      }
+
+      return {
+        JOBORDER: jobOrderResult.JOBORDER,
+        PLANKEY: planKey,
+        BATCHPARAMETERID: batchParam.BATCHPARAMETERID,
+        PARAMSTRING: el.parameter.paramString,
+        VALUE: el.value,
+        PARAMETERTYPE: batchParam.PARAMETERTYPE,
+        UNITCODE: batchParam.UNITCODE,
+        ADDEDWITHDEFAULT: 0,
+      }
+    })
+
+    await trx('DYBFBATCHPLANPARAMETERS').insert(insertData)
+  })
+
+  return await getPlanParameters(planKey, machineId)
 }
 
 export async function getFormula(program: string, machineId: number) {

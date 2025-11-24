@@ -17,6 +17,7 @@ const modifiedParameters = computed(() => [...planParameters.value, ...props.mis
 <template>
   <div class="w-full h-full">
     <PlanParametersTable
+      :plan-key="props.planKey"
       :parameter-data="modifiedParameters"
       :machine-id
       :editable="!isBatchStarted"

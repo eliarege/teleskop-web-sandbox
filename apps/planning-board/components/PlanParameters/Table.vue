@@ -4,6 +4,7 @@ import { StartingParameters, getUnitById, setParameterColor } from '~/shared/enu
 import type { PlanParameters } from '~/shared/types'
 
 interface PlanParameterProps {
+  planKey: number
   parameterData: any[]
   editable: boolean
   machineId: number
@@ -16,7 +17,7 @@ interface PlanParameterProps {
     machineIp: string
   }
 }
-defineProps<PlanParameterProps>()
+const props = defineProps<PlanParameterProps>()
 const emit = defineEmits(['uploadMachine'])
 const kc = useKeycloak()
 const { t } = useI18n()
@@ -29,6 +30,8 @@ const columns = computed(() => {
   ] as QTableColumn[]
 })
 
+const modifiedParameters = ref<Map<string, { value: number, parameter: PlanParameters }>>(new Map())
+
 const validateError = ref(false)
 const validateErrorMessage = ref('')
 function editValidation(parameterData: PlanParameters, value: number): boolean {
@@ -40,20 +43,54 @@ function editValidation(parameterData: PlanParameters, value: number): boolean {
   validateError.value = true
   return false
 }
-async function saveParameter(value: number, parameter: PlanParameters, machineId: number) {
-  if (parameter.paramStatus === 2) {
-    await kc.fetch('/api/planParameters', {
-      method: 'POST',
-      body: { parameter, value, machineId },
-    })
-  }
-  await kc.fetch('/api/planParameters', {
-    method: 'PUT',
-    query: { planKey: parameter.planKey, value, paramString: parameter.paramString },
-  })
 
+function saveParameterLocally(value: number, parameter: PlanParameters) {
+  modifiedParameters.value.set(parameter.paramString, { value, parameter })
   validateError.value = false
   validateErrorMessage.value = ''
+}
+
+const isLoading = ref(false)
+const $q = useQuasar()
+
+async function saveAllParameters() {
+  const parametersToUpdate = Array.from(modifiedParameters.value.values())
+
+  if (parametersToUpdate.length === 0) {
+    return
+  }
+
+  isLoading.value = true
+
+  try {
+    await kc.fetch('/api/planParameters/bulk', {
+      method: 'POST',
+      body: {
+        planKey: props.planKey,
+        machineId: props.machineId,
+        parameters: parametersToUpdate,
+      },
+    })
+
+    modifiedParameters.value.clear()
+
+    $q.notify({
+      type: 'positive',
+      message: t('plan-parameters.save-success'),
+      position: 'top',
+    })
+
+    emit('uploadMachine', props.parameterData[0].planKey)
+  } catch (error) {
+    console.error('Error saving parameters:', error)
+    $q.notify({
+      type: 'negative',
+      message: t('plan-parameters.save-error'),
+      position: 'top',
+    })
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -115,7 +152,7 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
                 :validate="(val) => editValidation(prop.row, val)"
                 persistent
                 buttons
-                @save="(value) => saveParameter(value, prop.row, machineId)"
+                @save="(value) => saveParameterLocally(value, prop.row)"
                 @hide="() => { validateErrorMessage = ''; validateError = false }"
                 @before-show="() => { validateErrorMessage = ''; validateError = false }"
               >
@@ -136,11 +173,16 @@ async function saveParameter(value: number, parameter: PlanParameters, machineId
           <q-btn
             color="primary"
             :label="isSendMachine ? t('plan-parameters.resend') : t('plan-parameters.confirm')"
-            :disable="!parameterData
+            :loading="isLoading"
+            :disable="!isSendMachine && (!parameterData
               .filter(e => e.paramStatus !== StartingParameters.NonStartingParameter)
-              .every(e => e.value > e.paramLowLimit && e.value < e.paramHighLimit)"
-            @click="emit('uploadMachine', parameterData[0].planKey)"
-          />
+              .every(e => e.value > e.paramLowLimit && e.value < e.paramHighLimit) || modifiedParameters.size === 0)"
+            @click="saveAllParameters()"
+          >
+            <template #loading>
+              <q-spinner-dots />
+            </template>
+          </q-btn>
         </template>
       </QTable>
     </div>

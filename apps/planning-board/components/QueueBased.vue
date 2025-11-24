@@ -604,7 +604,7 @@ onMounted(async () => {
         } else if (eventRecord.originalData.eventType === 'ongoing') {
           icons.push('b-fa b-fa-solid b-fa-play')
         } else if (eventRecord.originalData.eventType === 'manual') {
-          if (eventRecord.originalData.endDate < new Date()) {
+          if (new Date(eventRecord.originalData.endDate) <= new Date()) {
             icons.push('b-fa b-fa-solid b-fa-flag-checkered')
           } else {
             icons.push('b-fa b-fa-solid b-fa-play')

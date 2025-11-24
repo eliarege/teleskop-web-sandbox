@@ -4,6 +4,7 @@ import {
   addBatchNote,
   addErpParameters,
   bulkAddErpParameter,
+  bulkCreatePlanParameter,
   checkMachineParameterRequest,
   createPlanParameter,
   dataCleanup,
@@ -192,6 +193,36 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
+
+  fastify.post(
+    '/planning_board/plan_parameters/bulk',
+    async (request: FastifyRequest<{
+      Body: {
+        planKey: number
+        machineId: number
+        parameters: Array<{
+          parameter: {
+            paramString: string
+            value?: number | string
+            planKey: string
+            paramLowLimit: number
+            paramHighLimit: number
+            paramStatus: number
+          }
+          value: number
+        }>
+      }
+    }>, reply) => {
+      try {
+        const { planKey, machineId, parameters } = request.body
+        return await bulkCreatePlanParameter(planKey, machineId, parameters)
+      } catch (err) {
+        fastify.log.error(`An error occured while bulk creating plan parameters: ${err}`)
+        return reply.code(500).send({ error: `An error occured while bulk creating plan parameters: ${err}` })
+      }
+    },
+  )
+
   fastify.get(
     '/planning_board/machines',
     async (request, reply) => {
@@ -524,6 +555,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         if (allParamsRequired) {
           const allParams = await getPlanParameters(planKey, machineId)
           if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
+            await uploadToMachine(machineIp, allParams, program, jobOrder)
             return reply.code(200).send('DONE')
           } else return allParams
         } else {
