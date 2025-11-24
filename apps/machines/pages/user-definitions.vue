@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import UserEditDialog from '~/components/UserEditDialog.vue'
 import UserPermissionsDialog from '~/components/UserPermissionsDialog.vue'
+import ConfirmDialog from '~/components/ConfirmDialog.vue'
 
 interface User {
   userId: number
@@ -20,9 +21,10 @@ const { t } = useI18n()
 const { fetch } = useKeycloak()
 const { notifyError, notifySuccess } = useNotify()
 
-const editDialog = ref(false)
 const editUser = ref<User | undefined>(undefined)
+const editDialog = ref(false)
 const permissionsDialog = ref(false)
+const confirmDialog = ref(false)
 
 const rows = ref<User[]>([])
 const loading = ref(false)
@@ -84,6 +86,10 @@ async function onDeleteUser() {
   if (selected.value.length === 0)
     return
 
+  confirmDialog.value = true
+}
+
+async function handleDeleteConfirmed() {
   const userIds = selected.value.map(u => u.userId)
 
   try {
@@ -213,6 +219,18 @@ onMounted(loadUsers)
       <UserPermissionsDialog
         v-model="permissionsDialog"
         :user="editUser"
+      />
+
+      <ConfirmDialog
+        v-model="confirmDialog"
+        :title="t('confirmDelete')"
+        :message="selected.length === 1
+          ? t('confirmDeleteUser', { name: `${selected[0].userName} ${selected[0].userSurname}` })
+          : t('confirmDeleteUsers', { count: selected.length })"
+        :confirm-label="t('delete')"
+        :cancel-label="t('cancel')"
+        confirm-color="negative"
+        @confirm="handleDeleteConfirmed"
       />
     </q-card>
   </q-page>
