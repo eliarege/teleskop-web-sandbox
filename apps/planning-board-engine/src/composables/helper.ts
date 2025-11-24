@@ -25,22 +25,39 @@ export async function hasNote(jobOrder: string): Promise<boolean> {
 }
 
 export async function queueBasedEventStatus(events: QueueBasedEvent[], includeStops: boolean): Promise<QueueBasedEvent[]> {
-  const ongoingEvents = events.filter(ev => ev.eventType === 'ongoing' || ev.eventType === 'manual')
-  ongoingEvents.forEach((event) => {
-    const plannedEventsOnSameMachine = events.filter(ev => ev.eventType === 'planned' && ev.machineId === event.machineId)
-    plannedEventsOnSameMachine.forEach((ev) => {
-      updatePlannedEvent(ev, event, events)
-    })
-  })
-  const eventsWithPercentDone = events.map(ev => ({
-    ...ev,
-    percentDone: ev.deviation > 0 ? 100 - ((ev.deviation / ev.theoreticalDuration) * 100) : 100,
-  }))
+  updatePlannedEventsForActiveManualEvents(events)
+  const eventsWithPercentDone = calculateEventProgress(events)
   if (includeStops) {
     const stops = events.filter(e => e.eventType === 'stop')
     return setStopTimes(eventsWithPercentDone, stops)
   }
+
   return eventsWithPercentDone
+}
+
+function updatePlannedEventsForActiveManualEvents(events: QueueBasedEvent[]): void {
+  const activeManualEvents = events.filter(
+    event => event.eventType === 'manual' && new Date(event.endTime) >= new Date(),
+  )
+
+  activeManualEvents.forEach((manualEvent) => {
+    const plannedEventsOnSameMachine = events.filter(
+      ev => ev.eventType === 'planned' && ev.machineId === manualEvent.machineId,
+    )
+
+    plannedEventsOnSameMachine.forEach((plannedEvent) => {
+      updatePlannedEvent(plannedEvent, manualEvent, events)
+    })
+  })
+}
+
+function calculateEventProgress(events: QueueBasedEvent[]): QueueBasedEvent[] {
+  return events.map(event => ({
+    ...event,
+    percentDone: event.deviation > 0
+      ? 100 - ((event.deviation / event.theoreticalDuration) * 100)
+      : 100,
+  }))
 }
 
 function updatePlannedEvent(ev: QueueBasedNonActualEvent, event: QueueBasedEvent, events: QueueBasedEvent[]) {
