@@ -36,6 +36,7 @@ export default defineAuthEventHandler(async (event) => {
 
     await knex('BFUSERS')
       .update({
+        userId: body.userId,
         userName: body.userName,
         userSurname: body.userSurname,
         userPass: body.userPass,
@@ -50,7 +51,6 @@ export default defineAuthEventHandler(async (event) => {
     return { success: true }
   }
 
-  // DELETE → Soft Delete
   if (event.method === 'DELETE') {
     await knex('BFUSERS')
       .where('userID', user_id)
@@ -59,6 +59,5 @@ export default defineAuthEventHandler(async (event) => {
     return { success: true }
   }
 
-  // Diğer tüm methodlar yasak
   throw createError({ statusCode: 405, statusMessage: 'Method Not Allowed' })
 })
