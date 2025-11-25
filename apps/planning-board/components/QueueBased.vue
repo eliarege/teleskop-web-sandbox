@@ -99,7 +99,7 @@ async function uploadJobOrder(planKey: number) {
   }, timeout)
 
   try {
-    const missingParams: PlanParameters[] | string = await kc.fetch('/api/machineUpload', {
+    const uploadResult: PlanParameters[] | string = await kc.fetch('/api/machineUpload', {
       method: 'PUT',
       query: { program, machineId, planKey, machineIp, jobOrder },
       signal: controller.signal,
@@ -107,9 +107,11 @@ async function uploadJobOrder(planKey: number) {
 
     clearTimeout(timeoutId)
 
-    if (missingParams === UploadJoborder.MissingParameter) {
+    if (uploadResult === UploadJoborder.MissingParameter) {
       Toast.show(t('upload-joborder.no-program'))
-    } else if (typeof missingParams !== 'string' && missingParams.some(f => f.value === null)) {
+    } else if (uploadResult === UploadJoborder.OK) {
+      Toast.show(t('upload-joborder.upload-success'))
+    } else if (Array.isArray(uploadResult)) {
       const uploadData = {
         program,
         machineId,
@@ -138,8 +140,12 @@ async function uploadJobOrder(planKey: number) {
           jobOrderUploadLoading.value = false
         }
       }
-      setPlanParameters(true, planKey, machineId, program, batchStart, missingParams, true, uploadData, onComplete)
-    } else Toast.show(t('upload-joborder.upload-succes'))
+      setPlanParameters(true, planKey, machineId, program, batchStart, uploadResult, true, uploadData, onComplete)
+    } else {
+      // Diğer hata durumları
+      console.error('Upload failed with unexpected response:', uploadResult)
+      Toast.show(t('upload-joborder.fail'))
+    }
   } catch (err) {
     Toast.show(t('upload-joborder.fail'))
   }

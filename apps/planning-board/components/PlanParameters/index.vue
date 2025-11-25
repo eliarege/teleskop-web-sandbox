@@ -11,7 +11,9 @@ const { data: planParameters, refresh: planParameterRefresh } = useAuthFetch('/a
 if (!props.isSendMachine) {
   planParameterRefresh()
 }
-const modifiedParameters = computed(() => [...planParameters.value, ...props.missingParams].sort((a, b) => a.paramStatus > b.paramStatus ? 1 : -1))
+const modifiedParameters = computed(() =>
+  planParameters.value.toSorted((a, b) => a.paramStatus > b.paramStatus ? 1 : -1),
+)
 </script>
 
 <template>

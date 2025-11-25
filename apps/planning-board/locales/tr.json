@@ -22,7 +22,7 @@
   },
   "upload-joborder": {
     "_": "Makineye gönder",
-    "upload-succes": "İş emri yükleme başarıyla tamamlandı",
+    "upload-success": "İş emri yükleme başarıyla tamamlandı",
     "no-program": "Bu cihazda gerekli programlar yok",
     "fail": "Makineye erişim sağlanamadı!"
   },

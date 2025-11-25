@@ -22,7 +22,7 @@
   },
   "upload-joborder": {
     "_": "Send to machine",
-    "upload-succes": "Joborder upload successfully completed",
+    "upload-success": "Joborder upload successfully completed",
     "no-program": "This machine does not have required programs",
     "fail": "Could not access the machine!"
   },
