@@ -261,7 +261,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       method: 'POST',
       body: { newEvent },
     })
-    Toast.show($i18n.t('upload-joborder.upload-succes'))
+    Toast.show($i18n.t('upload-joborder.upload-success'))
     refreshScheduler()
     schedule.renderRows()
   } else {
@@ -293,7 +293,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
         if (finalRes === UploadJoborder.MissingParameter || (typeof finalRes !== 'string' && finalRes.some((f: PlanParameters) => f.value === null))) {
           Toast.show('Cannot schedule due to missing parameters')
         } else {
-          Toast.show($i18n.t('upload-joborder.upload-succes'))
+          Toast.show($i18n.t('upload-joborder.upload-success'))
         }
         refreshScheduler()
         schedule.renderRows()
@@ -310,7 +310,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       }
       setPlanParameters(true, newEvent.planKey, newEvent.machineId, newEvent.program, false, res, false, uploadData, onComplete, onCancel)
     } else {
-      Toast.show($i18n.t('upload-joborder.upload-succes'))
+      Toast.show($i18n.t('upload-joborder.upload-success'))
       refreshScheduler()
       schedule.renderRows()
     }

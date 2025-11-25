@@ -132,7 +132,7 @@ async function uploadJobOrder(planKey: number) {
           } else if (typeof finalRes !== 'string' && finalRes.some(f => f.value === null)) {
             Toast.show(t('upload-joborder.missing-params'))
           } else {
-            Toast.show(t('upload-joborder.upload-succes'))
+            Toast.show(t('upload-joborder.upload-success'))
           }
         } catch (err) {
           Toast.show(t('upload-joborder.fail'))
