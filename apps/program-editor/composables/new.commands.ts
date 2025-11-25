@@ -550,15 +550,15 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const { fetch } = useKeycloak()
+  const editor = useEditorStore()
+
   return {
     name: 'printProgram',
     async execute(ctx: any) {
-      const machines = await fetch('/api/machine')
       ctx.$q.dialog({
         component: TBPrintProgramDialog,
         componentProps: {
-          machines,
+          machineName: editor.machine.name,
         },
       })
       return true
@@ -567,15 +567,15 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const { fetch } = useKeycloak()
+  const editor = useEditorStore()
+
   return {
     name: 'printProgramList',
     async execute(ctx: any) {
-      const machines = await fetch('/api/machine')
       ctx.$q.dialog({
         component: TBPrintProgramListDialog,
         componentProps: {
-          machines,
+          machineName: editor.machine.name,
         },
       })
       return true
