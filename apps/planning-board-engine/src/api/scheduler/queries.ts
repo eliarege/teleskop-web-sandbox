@@ -993,10 +993,7 @@ export async function bulkUpsertPlanParameters(
 ) {
   await knex.transaction(async (trx) => {
     const [jobOrder, batchParams] = await Promise.all([
-      trx('DYBFBATCHPLAN')
-        .first({ code: 'JOBORDER' })
-        .where('PLANKEY', planKey)
-        .andWhere('lastForJoborder', 1),
+      getJobOrderWithPlanKey(planKey, trx),
 
       trx('BFMACHBATCHPARAMETERS as p')
         .leftJoin('DYBFBATCHPLANPARAMETERS as d', function () {
@@ -1307,4 +1304,11 @@ export async function uploadToTonelloMachine(
   if (body) {
     await tonelloApi.submitBatch(body)
   }
+}
+
+export async function getJobOrderWithPlanKey(planKey: number, trx = knex): Promise<{ code: string } | null> {
+  return trx('DYBFBATCHPLAN')
+    .first({ code: 'JOBORDER' })
+    .where('PLANKEY', planKey)
+    .andWhere('lastForJoborder', 1)
 }

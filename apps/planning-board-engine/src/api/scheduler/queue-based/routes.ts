@@ -1,6 +1,7 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import type { ValidatedPlanParameter } from 'types/planning-board'
-import { getEveryPlanParameter, getPlanParameters, getRequiredStartingParametersForPrograms, getStartingParametersWithValues, isEveryStartParameterRequired } from '../queries'
+import { TonelloApi } from '@teleskop/core'
+import { getEveryPlanParameter, getJobOrderWithPlanKey, getPlanParameters, getRequiredStartingParametersForPrograms, getStartingParametersWithValues, isEveryStartParameterRequired, uploadToMachine, uploadToTonelloMachine } from '../queries'
 import type {
   EventReschedule,
 } from './queries'
@@ -15,6 +16,7 @@ import {
 } from './queries'
 import { StartingParameters } from '~/composables/enums'
 import { getMachineInfo, isTonello } from '~/lib/machine'
+import { parseProgramListString } from '~/lib/program'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -106,9 +108,14 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         if (!machineInfo) {
           return reply.code(400).send({ error: 'Machine not found' })
         }
-        const programNoList = newEvent.program.split(',').map((pn: string) => Number.parseInt(pn, 10))
-        if (programNoList.some(Number.isNaN)) {
+        const programNoList = parseProgramListString(newEvent.program)
+        if (!programNoList) {
           return reply.code(400).send({ error: 'Invalid program number format' })
+        }
+
+        const jobOrder = await getJobOrderWithPlanKey(planKey)
+        if (!jobOrder) {
+          return reply.code(400).send({ error: 'Job order not found for the given plan key' })
         }
 
         const everyParamRequired = isTonello(machineInfo) || await isEveryStartParameterRequired(machineId)
@@ -125,8 +132,12 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         }
 
         if (planParameters.every(e => e.paramStatus === StartingParameters.Correct)) {
-          await queueUnplannedEvent(newEvent)
-          return reply.code(200).send('DONE')
+          if (isTonello(machineInfo)) {
+            const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
+            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder.code, planParameters)
+          } else {
+            await uploadToMachine(machineInfo.host, planParameters, programNoList, jobOrder.code)
+          }
         }
         return reply.code(200).send(planParameters)
       } catch (err) {
