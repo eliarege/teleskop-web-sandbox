@@ -139,7 +139,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
             await uploadToMachine(machineInfo.host, planParameters, programNoList, jobOrder.code)
           }
         }
-        return reply.code(200).send(planParameters)
+        return reply.code(200).send(planParameters.filter(p => p.paramStatus !== StartingParameters.Correct))
       } catch (err) {
         fastify.log.error(`An error occurred while scheduling events: ${err}`)
         return reply.code(500).send({ error: `An error occurred while scheduling events: ${err}` })

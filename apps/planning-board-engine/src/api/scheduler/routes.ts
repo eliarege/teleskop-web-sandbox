@@ -586,7 +586,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           }
           return reply.code(200).send('DONE')
         }
-        return reply.code(200).send(planParameters)
+        return reply.code(200).send(planParameters.filter(p => p.paramStatus !== StartingParameters.Correct))
       } catch (err) {
         console.error(err)
         return reply.code(500).send({ error: `An error occurred while uploading to machine: ${err}` })
