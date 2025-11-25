@@ -879,7 +879,7 @@ function onMaterialAdded(material: any) {
   width: 700px;
   flex-shrink: 0;
 }
-::v-deep .fixed-table .q-markup-table__overflow table {
+:deep(.fixed-table .q-markup-table__overflow table) {
   width: 100% !important;
   table-layout: fixed !important;
 }
@@ -891,26 +891,26 @@ function onMaterialAdded(material: any) {
   border: none !important;
 }
 /* fixed column widths */
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(1),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(1) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(1)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(1)) {
   width: 40px !important;
 }
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(2),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(2) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(2)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(2)) {
   width: 80px !important;
 }
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(3),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(3) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(3)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(3)) {
   width: 120px !important;
 }
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(4),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(4) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(4)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(4)) {
   width: 200px !important;
 }
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(5),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(5),
-::v-deep .fixed-table .q-markup-table__overflow table th:nth-child(6),
-::v-deep .fixed-table .q-markup-table__overflow table td:nth-child(6) {
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(5)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(5)),
+:deep(.fixed-table .q-markup-table__overflow table th:nth-child(6)),
+:deep(.fixed-table .q-markup-table__overflow table td:nth-child(6)) {
   width: 80px !important;
 }
 .recipe-content {

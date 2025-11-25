@@ -17,6 +17,8 @@ const logoFile = ref<File | null>(null)
 
 const selectedMachine = ref(stateStore.defaultMachine)
 const originalMachine = ref(stateStore.defaultMachine)
+const jobOrderPrefs = ref({ ...stateStore.jobOrderPrefs })
+const originalJobOrderPrefs = ref({ ...stateStore.jobOrderPrefs })
 const { data: machines } = await useFetch<Machine[]>('/api/machines')
 
 fetchCompanyData()
@@ -57,6 +59,8 @@ async function onSave() {
     if (result) {
       stateStore.defaultMachine = selectedMachine.value
       originalMachine.value = selectedMachine.value
+      stateStore.jobOrderPrefs = { ...jobOrderPrefs.value }
+      originalJobOrderPrefs.value = { ...jobOrderPrefs.value }
 
       $q.notify({ type: 'positive', message: t('Success') })
       fetchCompanyData()
@@ -70,6 +74,7 @@ function onReset() {
   companyData.value = { ...originalData.value }
   logoFile.value = null
   selectedMachine.value = originalMachine.value
+  jobOrderPrefs.value = { ...originalJobOrderPrefs.value }
 }
 </script>
 
@@ -124,6 +129,16 @@ function onReset() {
         option-label="machineName"
         option-value="machineId"
         :options="machines"
+      />
+    </QCardSection>
+
+    <QCardSection>
+      <h6 class="text-capitalize">
+        {{ t('JobOrderPreferences') }}
+      </h6>
+      <QCheckbox
+        v-model="jobOrderPrefs.allowOverrideStartedJobOrders"
+        :label="t('AllowOverrideStartedJobOrders')"
       />
     </QCardSection>
 

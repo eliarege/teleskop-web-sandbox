@@ -124,7 +124,8 @@
     "JobOrderCancel": "Bir iş emri başlatmadan çıkmak istediğinize emin misiniz?",
     "JobOrderExists": "Bu numaralı bir iş emri mevcut. Devam etmek istediğinize emin misiniz?",
     "CapacityExceeded": "Uyarı: Toplam ağırlık aşağıdaki makineler için makine kapasitesinin % {percentage}'unu aşıyor:",
-    "ContinueAnyway": "Yine de devam etmek istiyor musunuz?"
+    "ContinueAnyway": "Yine de devam etmek istiyor musunuz?",
+    "OverrideStartedJobOrder": "Bu iş emri zaten başlatılmış veya devam ediyor. Üzerine yazmak istediğinize emin misiniz?"
   },
   "warnings": {
     "MustBeBetween": "Değerler şu aralıkta olmalıdır: "
@@ -137,6 +138,8 @@
   "SelectType": "Tür Seçiniz",
   "AlreadyExists": "Zaten Mevcut",
   "JobOrderStarted": "İş Emri Başlatılmış!",
+  "JobOrderPreferences": "İş Emri Tercihleri",
+  "AllowOverrideStartedJobOrders": "Başlatılmış veya devam eden İş Emirlerinin üzerine yazılmasına izin ver",
   "jobOrderActions": {
     "Retry": "Seçili İsteği Tekrarla",
     "Cancel": "Seçili İsteği İptal Et",
@@ -166,7 +169,7 @@
     "NoOfJobs": "İş Emri Sayısı",
     "Calculated": "Hesaplanmış",
     "DosageOrder": "Dozaj Sıra no",
-    "ProgramDyeWeightsEnabled": "Boya Hesabında Program Bazlı Ağırlık Kullan",
+    "ProgramFlotteEnabled": "Program Bazlı Flotte Kullan",
     "PrintWhenDone": "Tamamlanınca Yazdır",
     "PreparationDate": "Hazırlanış Zamanı",
     "PreparedBy": "Hazırlayan",
