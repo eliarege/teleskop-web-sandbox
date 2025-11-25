@@ -6,14 +6,16 @@ wsdir=$(realpath "$(dirname "$0")/..")
 tmpdir=$(mktemp -d)
 cd "$wsdir" || exit 1
 
-# List of apps to include in the tarball
-apps=(
-  # "recipes"
-  # "machines"
-  # "program-editor"
-  "planning-board-engine"
-  # "planning-board"
-)
+# List of apps from cmd line arguments
+apps_args="$@"
+
+apps=()
+if [ -n "$apps_args" ]; then
+  IFS=' ' read -r -a apps <<< "$apps_args"
+else
+  # Default apps
+  apps=("root")
+fi
 
 filters=()
 for app in "${apps[@]}"; do
