@@ -43,7 +43,6 @@ const items = [
                 onClick() {
                   $commandManager.executeCommand('printProgramList', { $q })
                 },
-                disabled: true,
               },
               {
                 label: tt('menu.program'),
@@ -51,7 +50,6 @@ const items = [
                 onClick() {
                   $commandManager.executeCommand('printProgram', { $q })
                 },
-                disabled: true,
               },
             ]],
           },

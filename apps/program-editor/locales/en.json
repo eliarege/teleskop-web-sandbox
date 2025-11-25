@@ -228,18 +228,6 @@
     "title": "Command Icon Settings",
     "selectIcons": "Select icons to be displayed in the editor."
   },
-  "printProgramListDialog": {
-    "printOptions": "Printing Options",
-    "machineList": "Machine List",
-    "machine": "Machine",
-    "selectedMachine": "Selected Machine",
-    "all": "All",
-    "printer": "Printer",
-    "print": "Print",
-    "preview": "Preview",
-    "cancel": "Cancel",
-    "send": "Send"
-  },
   "printProgramDialog": {
     "programPrintOptions": "Program Printing Options",
     "selectMachine": "Select a machine that wanted to print machine's programs",
@@ -616,5 +604,23 @@
   "programExist": {
     "title": "Program Already Exists",
     "message": "Program with number {programNo} already exists. Do you want to overwrite it?"
+  },
+  "printProgramListDialog": {
+    "title": "Print Program List",
+    "message": "Select the machine whose programs you want to print",
+    "machineOption": "Machine Options",
+    "thisMachine": "This Machine ({machineName})",
+    "selectedMachines": "Selected Machines",
+    "selectMachine": "Select Machine",
+    "machinesSelected": "{count} machines selected",
+    "selectedMachinesList": "Selected Machines List",
+    "noMachinesSelected": "No Machines Selected",
+
+    "programNo": "No",
+    "programName": "Name",
+    "duration": "Duration",
+    "stepCount": "Step Count",
+    "type": "Type",
+    "updatedAt": "Updated At"
   }
 }

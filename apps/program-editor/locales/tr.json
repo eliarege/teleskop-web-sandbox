@@ -231,17 +231,6 @@
     "title": "Komut İkonu Ayarları",
     "selectIcons": "Editörde görüntülenecek ikonları seçin."
   },
-  "printProgramListDialog": {
-    "printOptions": "Yazdırma Seçenekleri",
-    "machineList": "Makine Listesi",
-    "machine": "Makine",
-    "selectedMachine": "Seçili Makine",
-    "all": "Hepsi",
-    "printer": "Yazıcı",
-    "print": "Yazdır",
-    "preview": "Önizleme",
-    "cancel": "İptal"
-  },
   "printProgramDialog": {
     "programPrintOptions": "Program Yazdırma Seçenekleri",
     "selectMachine": "Programlarını yazdırmak istediğiniz makineyi seçiniz",
@@ -633,5 +622,23 @@
   "programExist": {
     "title": "Program Zaten Var",
     "message": "{programNo} numaralı program zaten var. Üzerine yazmak ister misiniz?"
+  },
+  "printProgramListDialog": {
+    "title": "Program Listesini Yazdır",
+    "message": "Programlarını yazdırmak istediğiniz makineyi seçiniz",
+    "machineOption": "Makine Seçenekleri",
+    "thisMachine": "Bu Makine ({machineName})",
+    "selectedMachines": "Seçili Makineler",
+    "selectMachine": "Makine Seçiniz",
+    "machinesSelected": "{count} makine seçildi",
+    "selectedMachinesList": "Seçili Makine Listesi",
+    "noMachinesSelected": "Makine Seçilmedi",
+
+    "programNo": "No",
+    "programName": "Ad",
+    "duration": "Süre",
+    "stepCount": "Adim Say.",
+    "type": "Tipi",
+    "updatedAt": "Günc. Tarihi"
   }
 }
