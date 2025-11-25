@@ -14,6 +14,7 @@ import { updateTonelloFunctions } from '~/server/lib/tonello/functions'
 import { updateTonelloMachineParameters } from '~/server/lib/tonello/machine-constants'
 import { updateTonelloInputOutputs } from '~/server/lib/tonello/input-output'
 import { updateTonelloProjectTranslations } from '~/server/lib/tonello/locale'
+import { updateTonelloBatchParameters } from '~/server/lib/tonello/batch-parameters'
 
 const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
 
@@ -56,15 +57,18 @@ export default defineAuthEventHandler(async (event) => {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error'
     const userMessage = mapErrorToUserMessage(err)
 
-    sseId && sse.send(sseId, 'error-log', {
-      message: errorMessage,
-      progress: 100,
-    })
-    sseId && sse.send(sseId, 'error', {
-      progress: 100,
-      message: userMessage.code,
-      details: userMessage.details,
-    })
+    if (sseId) {
+      sse.send(sseId, 'error-log', {
+        message: errorMessage,
+        progress: 100,
+      })
+      sse.send(sseId, 'error', {
+        progress: 100,
+        message: userMessage.code,
+        details: userMessage.details,
+      })
+    }
+
     console.error(err)
     return createError({
       message: 'UPDATE_FAILED',
@@ -81,18 +85,22 @@ export default defineAuthEventHandler(async (event) => {
 
     await knex.transaction(async (trx) => {
       for (const { fn, message } of steps) {
-        sseId && sse.send(sseId, 'start', {
-          message,
-          progress: getCurrentProgress(),
-        })
+        if (sseId) {
+          sse.send(sseId, 'start', {
+            message,
+            progress: getCurrentProgress(),
+          })
+        }
 
         try {
           await fn(trx)
           currentStep++
-          sseId && sse.send(sseId, 'log', {
-            message,
-            progress: getCurrentProgress(),
-          })
+          if (sseId) {
+            sse.send(sseId, 'log', {
+              message,
+              progress: getCurrentProgress(),
+            })
+          }
         } catch (err: unknown) {
           throw handleAndCreateError(err)
         }
@@ -189,6 +197,12 @@ export default defineAuthEventHandler(async (event) => {
           throwOnError(ctx)
         },
         message: 'machine-parameters-updated',
+      },
+      {
+        fn: async (trx) => {
+          await updateTonelloBatchParameters(trx, machineId)
+        },
+        message: 'batch-parameters-updated',
       },
       {
         fn: async (trx) => {

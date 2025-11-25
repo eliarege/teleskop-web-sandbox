@@ -2,7 +2,7 @@ import { insertBatch } from '@teleskop/utils'
 import type { QueueBasedActualEvent, QueueBasedNonActualEvent } from '../../../../types/planning-board'
 import { queueBasedEventStatus } from '../../../composables/helper'
 import { knex } from '../../../knexConfig'
-import { getFormula, getStartingParametersWithValues, getUnplannedEvents, planningBoardStops, taskValid } from '../queries'
+import { getStartingParametersWithValues, getUnplannedEvents, planningBoardStops, taskValid } from '../queries'
 import { config } from '~/config'
 
 export interface EventReschedule {
@@ -439,7 +439,7 @@ export async function updateEventQueue(previousEventData: EventReschedule, newEv
       })
   })
 }
-export async function queueUnplannedEvent(newData: EventReschedule) {
+export async function queueUnplannedEvent(newData: Omit<EventReschedule, 'program'>) {
   await knex.transaction(async (trx) => {
     await trx('PTBATCHPLANQUEUE')
       .where('MACHINEID', newData.machineId)

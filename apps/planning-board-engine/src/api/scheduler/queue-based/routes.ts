@@ -1,5 +1,7 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { checkMachineParameterRequest, getFormula, getPlanParameters, getStartingParametersWithValues } from '../queries'
+import type { ValidatedPlanParameter } from 'types/planning-board'
+import { TonelloApi } from '@teleskop/core'
+import { getEveryPlanParameter, getJobOrderWithPlanKey, getPlanParameters, getRequiredStartingParametersForPrograms, getStartingParametersWithValues, isEveryStartParameterRequired, uploadToMachine, uploadToTonelloMachine } from '../queries'
 import type {
   EventReschedule,
 } from './queries'
@@ -13,6 +15,8 @@ import {
   updateEventQueue,
 } from './queries'
 import { StartingParameters } from '~/composables/enums'
+import { getMachineInfo, isTonello } from '~/lib/machine'
+import { parseProgramListString } from '~/lib/program'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -26,8 +30,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const plannedEvents = (await getQueueBasedEvents(startDate, endDate, stopsIncluded))
         return reply.code(200).send(plannedEvents)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching planned events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching planned events: ${err}` })
+        fastify.log.error(`An error occurred while fetching planned events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching planned events: ${err}` })
       }
     },
   )
@@ -41,8 +45,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const plannedEvents = await getQueueBasedPlannedEvents(startDate, endDate)
         return reply.code(200).send(plannedEvents)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching events: ${err}` })
+        fastify.log.error(`An error occurred while fetching events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching events: ${err}` })
       }
     },
   )
@@ -51,8 +55,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       const events = await getFullQueueBasedEvents()
       return reply.code(200).send(events)
     } catch (err) {
-      fastify.log.error(`An error occured while fetching events: ${err}`)
-      return reply.code(500).send({ error: `An error occured while fetching events: ${err}` })
+      fastify.log.error(`An error occurred while fetching events: ${err}`)
+      return reply.code(500).send({ error: `An error occurred while fetching events: ${err}` })
     }
   })
 
@@ -64,8 +68,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         await updateEventQueue(previousEventData, newEventData)
         return reply.code(200).send('Succesful!')
       } catch (err) {
-        fastify.log.error(`An error occured while updating events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating events: ${err}` })
+        fastify.log.error(`An error occurred while updating events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating events: ${err}` })
       }
     },
   )
@@ -75,8 +79,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         return await preplanJoborders(fastify)
       } catch (err) {
-        fastify.log.error(`An error occured while auto planning events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while auto planning events: ${err}` })
+        fastify.log.error(`An error occurred while auto planning events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while auto planning events: ${err}` })
       }
     },
   )
@@ -86,9 +90,10 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         const { newEvent } = request.body
         await scheduleFutureEvents(newEvent)
+        return reply.code(200).send('DONE')
       } catch (err) {
-        fastify.log.error(`An error occured while updating events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while updating events: ${err}` })
+        fastify.log.error(`An error occurred while updating events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while updating events: ${err}` })
       }
     },
   )
@@ -99,27 +104,45 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { newEvent } = request.body
         const planKey = newEvent.planKey
         const machineId = newEvent.machineId
-        const allParamsRequired = await checkMachineParameterRequest(newEvent.machineId)
-        if (allParamsRequired) {
-          const allParams = await getPlanParameters(planKey, machineId)
-          if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
-            return reply.code(200).send('DONE')
-          } else return allParams
-        } else {
-          const formula = await getFormula(newEvent.program, newEvent.machineId)
-          if (formula.length > 0) {
-            const startingParameterValues = await getStartingParametersWithValues(formula, planKey)
-            const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
-            if (requestedStartingParameters.every(e => e.paramStatus === StartingParameters.Correct) || requestedStartingParameters.length === 0) {
-              await queueUnplannedEvent(newEvent)
-              return reply.code(200).send('DONE')
-            }
-            return reply.code(200).send(startingParameterValues)
-          } else return reply.code(200).send('NO PARAMETER')
+        const machineInfo = await getMachineInfo(machineId)
+        if (!machineInfo) {
+          return reply.code(400).send({ error: 'Machine not found' })
         }
+        const programNoList = parseProgramListString(newEvent.program)
+        if (!programNoList) {
+          return reply.code(400).send({ error: 'Invalid program number format' })
+        }
+
+        const jobOrder = await getJobOrderWithPlanKey(planKey)
+        if (!jobOrder) {
+          return reply.code(400).send({ error: 'Job order not found for the given plan key' })
+        }
+
+        const everyParamRequired = isTonello(machineInfo) || await isEveryStartParameterRequired(machineId)
+
+        let planParameters: ValidatedPlanParameter[] = []
+        if (everyParamRequired) {
+          planParameters = await getEveryPlanParameter(planKey, machineId)
+        } else {
+          const parameters = await getRequiredStartingParametersForPrograms(programNoList, machineId)
+          if (parameters.length === 0) {
+            return reply.code(200).send('NO PARAMETER')
+          }
+          planParameters = await getStartingParametersWithValues(parameters, planKey)
+        }
+
+        if (planParameters.every(e => e.paramStatus === StartingParameters.Correct)) {
+          if (isTonello(machineInfo)) {
+            const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
+            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder.code, planParameters)
+          } else {
+            await uploadToMachine(machineInfo.host, planParameters, programNoList, jobOrder.code)
+          }
+        }
+        return reply.code(200).send(planParameters)
       } catch (err) {
-        fastify.log.error(`An error occured while scheduling events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while scheduling events: ${err}` })
+        fastify.log.error(`An error occurred while scheduling events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while scheduling events: ${err}` })
       }
     },
   )

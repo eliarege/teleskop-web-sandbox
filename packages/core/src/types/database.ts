@@ -302,3 +302,30 @@ export type BFMACHPARAMETERS = {
   consUnit?: number | null
   currentValue?: number | null
 }
+
+export type BFMACHBATCHPARAMETERS = {
+  BATCHPARAMETERID: number
+  MACHINEID: number
+  PARAMSTRING?: string | null
+  PARAMLOWLIMIT: number
+  PARAMHIGHLIMIT: number
+  BATCHPLANNING: boolean
+  BATCHSTART: boolean
+  RECIPE: boolean
+  DEFAULTVALUE?: number | null
+  PARAMETERTYPE?: number | null
+  SELECTIONLIST: string
+  UNITCODE?: number | null
+  SELECTIONVALUES: string
+  ISDELETED: boolean
+  TBBCHANGETIME?: Date | null
+  CHANGETIME?: Date | null
+  FORMAT?: number | null
+  PARAMETERID?: number | null
+  UNITTEXT?: string | null
+  PARAMSTRINGEn: string
+  SELECTIONLISTDEFAULT?: string | null
+  MACHINECONSTANTFORLOWLIMIT?: number | null
+  MACHINECONSTANTFORHIGHLIMIT?: number | null
+  VISIBILITY?: boolean | null
+}

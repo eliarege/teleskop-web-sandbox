@@ -17,8 +17,8 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const events: TimeBasedEvents = { plannedEvents, archiveEvents }
         return updateTimeBasedEventStates(events)
       } catch (err) {
-        fastify.log.error(`An error occured while fetching planned events: ${err}`)
-        return reply.code(500).send({ error: `An error occured while fetching planned events: ${err}` })
+        fastify.log.error(`An error occurred while fetching planned events: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching planned events: ${err}` })
       }
     },
   )

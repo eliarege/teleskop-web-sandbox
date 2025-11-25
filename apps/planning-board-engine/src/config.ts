@@ -1,6 +1,16 @@
 import { defineConfiguration } from '@teleskop/utils'
 
 export const config = defineConfiguration({
+  serverPort: {
+    env: ['SERVER_PORT'],
+    type: 'number',
+    default: 3500,
+  },
+  serverHost: {
+    env: ['SERVER_HOST'],
+    type: 'string',
+    default: '0.0.0.0',
+  },
   keycloakUrl: {
     default: 'http://localhost:8080',
     type: 'string',
