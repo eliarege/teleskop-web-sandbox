@@ -223,6 +223,7 @@
   "ok": "Tamam",
   "close": "Kapat",
   "save": "Kaydet",
+  "print": "Yazdır",
   "message": {
     "delete_program": "Program Teleskop'tan silindi",
     "program_not_deleted": "Program Teleskop'tan silinemedi"

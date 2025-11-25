@@ -9,11 +9,11 @@ const props = defineProps<{
 }>()
 
 const $q = useQuasar()
-const { t, locale } = useI18n()
-
 const editor = useEditorStore()
+const { t, locale } = useI18n()
 const { $commandManager } = useNuxtApp()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+
 const machineOption = ref<string>('1')
 
 const selectMachineDialog = () => $commandManager.executeCommand('selectMachine', { $q })
@@ -33,6 +33,7 @@ async function printProgramList() {
       ? [editor.machine]
       : editor.selectedMachines
 
+    // eslint-disable-next-line new-cap
     const doc = new jsPDF()
     let startY = 10
 

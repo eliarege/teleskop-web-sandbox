@@ -220,6 +220,7 @@
   "ok": "OK",
   "close": "Close",
   "save": "Save",
+  "print": "Print",
   "message": {
     "delete_program": "Delete program from Teleskop",
     "program_not_deleted": "Program could not be deleted from Teleskop"
