@@ -104,7 +104,8 @@ function selectRecipe(recipe: RecipeProgramMaster) {
 }
 
 function onRecipeInputChange(val: string | number | null) {
-  if (typeof val !== 'string') return
+  if (typeof val !== 'string')
+    return
   showRecipeOptions.value = true
   if (val !== selectedRecipeLabel.value) {
     selectedRecipeLabel.value = ''
@@ -428,9 +429,39 @@ async function onSave() {
 
   try {
     // TODO: Check for multiple jobs if enabled
-    const status: number = await $fetch(`/api/dyelots/status/${jobOrderParams.value.jobNo}`)
+    //const status: number = await $fetch(`/api/dyelots/status/${jobOrderParams.value.jobNo}`)
+    const status = 30
     if (status === 30 || status === 40) {
-      notifyFail(t('JobOrderStarted'))
+      if (!stateStore.jobOrderPrefs.allowOverrideStartedJobOrders) {
+        notifyFail(t('JobOrderStarted'))
+        return
+      }
+
+      const proceedWithOverride = await new Promise<boolean>((resolve) => {
+        q.dialog({
+          component: ConfirmationDialog,
+          componentProps: {
+            bodyText: t('confirmationDialogBody.OverrideStartedJobOrder'),
+            confirmBtn: {
+              label: t('Confirm'),
+              color: 'positive',
+              icon: 'done',
+            },
+            cancelBtn: {
+              label: t('Cancel'),
+              icon: 'close',
+            },
+          },
+        }).onOk(() => {
+          resolve(true)
+        }).onCancel(() => {
+          resolve(false)
+        })
+      })
+
+      if (!proceedWithOverride) {
+        return
+      }
     } else if (status > 0) {
       q.dialog({
         component: ConfirmationDialog,
@@ -469,27 +500,28 @@ async function onSave() {
           recipeParams: printWhenDone.value ? recipeHeader.value : undefined,
         })
       })
-    } else {
-      stateStore.isLoading = true
-      await $fetch(`/api/job-orders/create/batch`, {
-        method: 'POST',
-        body: {
-          recipe: selectedRecipe.value,
-          recipeHeader: recipeHeader.value,
-          machines: selectedMachines.value.slice(0, jobOrderParams.value.numberOfJobs).map(machine => machine.machineId),
-          params: { ...jobOrderParams.value, flotte: flotte.value },
-          optimizationParams,
-        },
-      })
-      dataStore.newJobOrders = true
-      onDialogOK({
-        print: printWhenDone.value,
-        materials: printWhenDone.value ? selectedRecipe.value : undefined,
-        machines: selectedMachines.value.slice(0, jobOrderParams.value.numberOfJobs),
-        params: printWhenDone.value ? { ...jobOrderParams.value, flotte: flotte.value } : undefined,
-        recipeParams: printWhenDone.value ? recipeHeader.value : undefined,
-      })
+      return
     }
+
+    stateStore.isLoading = true
+    await $fetch(`/api/job-orders/create/batch`, {
+      method: 'POST',
+      body: {
+        recipe: selectedRecipe.value,
+        recipeHeader: recipeHeader.value,
+        machines: selectedMachines.value.slice(0, jobOrderParams.value.numberOfJobs).map(machine => machine.machineId),
+        params: { ...jobOrderParams.value, flotte: flotte.value },
+        optimizationParams,
+      },
+    })
+    dataStore.newJobOrders = true
+    onDialogOK({
+      print: printWhenDone.value,
+      materials: printWhenDone.value ? selectedRecipe.value : undefined,
+      machines: selectedMachines.value.slice(0, jobOrderParams.value.numberOfJobs),
+      params: printWhenDone.value ? { ...jobOrderParams.value, flotte: flotte.value } : undefined,
+      recipeParams: printWhenDone.value ? recipeHeader.value : undefined,
+    })
   } catch (error: any) {
     let errorMessage
 

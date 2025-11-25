@@ -124,7 +124,8 @@
     "JobOrderCancel": "Are you sure you want to quit before starting a job order?",
     "JobOrderExists": "A job with this job number exists. Do you wish to continue?",
     "CapacityExceeded": "Warning: Total weight exceeds {percentage}% of machine capacity for the following machines:",
-    "ContinueAnyway": "Do you want to continue anyway?"
+    "ContinueAnyway": "Do you want to continue anyway?",
+    "OverrideStartedJobOrder": "This job order has already been started or is ongoing. Are you sure you want to override it?"
   },
   "warnings": {
     "MustBeBetween": "Value must be between: "
@@ -137,6 +138,8 @@
   "SelectType": "Select Type",
   "AlreadyExists": "Already Exists",
   "JobOrderStarted": "Job Order Already Started!",
+  "JobOrderPreferences": "Job Order Preferences",
+  "AllowOverrideStartedJobOrders": "Allow overriding started or ongoing Job Orders",
   "jobOrderActions": {
     "Retry": "Repeat Selected Request",
     "Cancel": "Cancel Selected Request",
