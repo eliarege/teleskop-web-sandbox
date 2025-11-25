@@ -154,7 +154,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       body: JSON.stringify({ copyProgram: toPaste }),
     })
 
-    await editor.fetchAllPrograms()
+    await editor.refreshAllPrograms()
     return conflicts
   }
 
@@ -365,7 +365,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
           // İşlem tamamlandı - state'e kaydet
           copyAndSendResults.showResults(sourceMachine, status.results)
 
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
         } else if (status.status === 'failed') {
           notification(false, t('contextMenu.copyAndSendJobFailed'))
         } else {

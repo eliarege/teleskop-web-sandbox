@@ -658,7 +658,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Filtre parametreleri, program numarası (programNo), program adı (programName) ve işlem tipi (processType) gibi alanları içerebilir.
    * Filtre verilmediği takdirde tüm programlar getirilir ve `allPrograms` değişkenine atanır.
    */
-  async function fetchAllPrograms(): Promise<void> {
+  async function fetchAllPrograms(machineId: number): Promise<ProgramTableRow[]> {
     const filter = useProgramFilterStore()
     const query = filter.hasFilter()
       ? {
@@ -668,10 +668,21 @@ export const useEditorStore = defineStore('editor', () => {
         }
       : undefined
 
-    allPrograms.value = await kc.fetch<ProgramTableRow[]>(
-      `/api/machine/${machine.value.id}/program`,
+    return await kc.fetch<ProgramTableRow[]>(
+      `/api/machine/${machineId}/program`,
       { query },
     )
+  }
+
+  /**
+   * Tüm programları yeniler.
+   *
+   * @returns {Promise<void>} Programlar başarıyla yenilendikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, mevcut makinenin ID'sine göre tüm programları yeniden getirir ve `allPrograms` değişkenine atar.
+   */
+  async function refreshAllPrograms(): Promise<void> {
+    allPrograms.value = await fetchAllPrograms(machine.value.id)
   }
 
   /**
@@ -1039,6 +1050,7 @@ export const useEditorStore = defineStore('editor', () => {
     fetchAllMachine,
     fetchMachineGroups,
     fetchAllPrograms,
+    refreshAllPrograms,
     createMachine,
     createEmptyProgram,
     updateProgram,

@@ -204,7 +204,7 @@ registerCommand(() => {
         editor.isLoading = true
         try {
           await contextMenuStore.deleteProgram(selectedRows, option, machineId)
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
         } catch (error) {
           console.error('Error during program deletion:', error)
         }
@@ -255,7 +255,7 @@ registerCommand(() => {
           }
         }
 
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
         return true
       } finally {
         editor.isLoading = false
@@ -291,7 +291,7 @@ registerCommand(() => {
           },
         }).onOk(async (option: string) => {
           await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
           return true
         }).onCancel(() => {
           return false
@@ -319,7 +319,7 @@ registerCommand(() => {
 
         // Programları birleştir
         await contextMenuStore.concatenatePrograms(programsOrder, programDetails, machineId)
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
 
         return true
       } catch (error) {
@@ -392,7 +392,7 @@ registerCommand(() => {
         }).onOk(async (program: ProgramHeader) => {
           editor.isLoading = true
           await contextMenuStore.updateProgramHeader(machineId, programNo, program)
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
           editor.isLoading = false
           return true
         }).onCancel(() => {
@@ -420,7 +420,7 @@ registerCommand(() => {
         },
       }).onOk(async (result: { type: number, additionalType: number | null }) => {
         await contextMenuStore.changeProcessType(machineId, selectedRows, result)
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -441,7 +441,7 @@ registerCommand(() => {
         const status = await machineStatusStore.checkMachineStatus(machineId)
         if (status) {
           await contextMenuStore.sendProgram(selectedRows, machineId)
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
 
           return true
         }
@@ -473,7 +473,7 @@ registerCommand(() => {
         },
       }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
         await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
       }).onCancel(() => false)
       return true
     },
@@ -543,7 +543,7 @@ registerCommand(() => {
         }
       }
 
-      await editor.fetchAllPrograms()
+      await editor.refreshAllPrograms()
       return false
     },
   }
@@ -731,7 +731,7 @@ registerCommand(() => {
           method: 'POST',
         })
 
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
         return true
       } finally {
         editor.isLoading = false
@@ -924,7 +924,7 @@ registerCommand(() => {
       }
 
       await contextMenuStore.sendAllPrograms(machine)
-      await editor.fetchAllPrograms()
+      await editor.refreshAllPrograms()
     },
   }
 })
@@ -943,7 +943,7 @@ registerCommand(() => {
       }
 
       await contextMenuStore.getAllPrograms(machine)
-      await editor.fetchAllPrograms()
+      await editor.refreshAllPrograms()
     },
   }
 })

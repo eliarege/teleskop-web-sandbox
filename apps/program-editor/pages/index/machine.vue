@@ -53,7 +53,7 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
 onKeyStroke('F5', async (event: KeyboardEvent) => {
   event.preventDefault()
   editor.isLoading = true
-  await editor.fetchAllPrograms()
+  await editor.refreshAllPrograms()
   editor.isLoading = false
 })
 
@@ -160,7 +160,7 @@ if (editor.machine.id !== machineId) {
   await editor.fetchMachine(machineId)
   await editor.fetchCommandTypes(machineId)
 }
-await editor.fetchAllPrograms().then(() => {
+await editor.refreshAllPrograms().then(() => {
   editor.isLoading = false
 })
 

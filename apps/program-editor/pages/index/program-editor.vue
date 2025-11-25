@@ -273,7 +273,7 @@ editor.isLoading = true
 if (editor.machine.id !== machineId) {
   await editor.fetchMachine(machineId)
   await editor.fetchCommandTypes(machineId)
-  await editor.fetchAllPrograms()
+  await editor.refreshAllPrograms()
 }
 await editor.fetchProgram(machineId, programNo)
 editor.isLoading = false
