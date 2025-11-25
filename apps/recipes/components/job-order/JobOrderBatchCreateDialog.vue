@@ -429,8 +429,7 @@ async function onSave() {
 
   try {
     // TODO: Check for multiple jobs if enabled
-    //const status: number = await $fetch(`/api/dyelots/status/${jobOrderParams.value.jobNo}`)
-    const status = 30
+    const status: number = await $fetch(`/api/dyelots/status/${jobOrderParams.value.jobNo}`)
     if (status === 30 || status === 40) {
       if (!stateStore.jobOrderPrefs.allowOverrideStartedJobOrders) {
         notifyFail(t('JobOrderStarted'))
