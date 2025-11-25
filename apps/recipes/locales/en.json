@@ -166,7 +166,7 @@
     "NoOfJobs": "Number of Job Orders",
     "Calculated": "Calculated",
     "DosageOrder": "Dosage Order No",
-    "ProgramDyeWeightsEnabled": "Program Specific Dye Weights Enabled",
+    "ProgramFlotteEnabled": "Program Specific Flotte Enabled",
     "PrintWhenDone": "Print When Done",
     "PreparationDate": "Preparation Date",
     "PreparedBy": "Prepared By",

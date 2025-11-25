@@ -166,7 +166,7 @@
     "NoOfJobs": "İş Emri Sayısı",
     "Calculated": "Hesaplanmış",
     "DosageOrder": "Dozaj Sıra no",
-    "ProgramDyeWeightsEnabled": "Boya Hesabında Program Bazlı Ağırlık Kullan",
+    "ProgramFlotteEnabled": "Program Bazlı Flotte Kullan",
     "PrintWhenDone": "Tamamlanınca Yazdır",
     "PreparationDate": "Hazırlanış Zamanı",
     "PreparedBy": "Hazırlayan",
