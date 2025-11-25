@@ -132,12 +132,14 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         }
 
         if (planParameters.every(e => e.paramStatus === StartingParameters.Correct)) {
+          await queueUnplannedEvent(newEvent)
           if (isTonello(machineInfo)) {
             const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
             await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder.code, planParameters)
           } else {
             await uploadToMachine(machineInfo.host, planParameters, programNoList, jobOrder.code)
           }
+          return reply.code(200).send('DONE')
         }
         return reply.code(200).send(planParameters.filter(p => p.paramStatus !== StartingParameters.Correct))
       } catch (err) {
