@@ -133,7 +133,7 @@ export interface StartingParameter {
 }
 
 export interface PlanParameter extends StartingParameter {
-  value: number | string
+  value: number | string | null
 }
 
 export interface ValidatedPlanParameter extends PlanParameter {

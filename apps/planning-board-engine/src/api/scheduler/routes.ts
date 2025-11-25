@@ -1,12 +1,12 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import { ofetch } from 'ofetch'
 import { TonelloApi } from '@teleskop/core'
-import type { ValidatedPlanParameter } from 'types/planning-board'
+import type { PlanParameter, ValidatedPlanParameter } from 'types/planning-board'
 import {
   addBatchNote,
   addErpParameters,
   bulkAddErpParameter,
-  bulkCreatePlanParameter,
+  bulkUpsertPlanParameters,
   createPlanParameter,
   dataCleanup,
   deleteEvent,
@@ -206,21 +206,14 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         planKey: number
         machineId: number
         parameters: Array<{
-          parameter: {
-            paramString: string
-            value?: number | string
-            planKey: string
-            paramLowLimit: number
-            paramHighLimit: number
-            paramStatus: number
-          }
+          parameter: PlanParameter
           value: number
         }>
       }
     }>, reply) => {
       try {
         const { planKey, machineId, parameters } = request.body
-        return await bulkCreatePlanParameter(planKey, machineId, parameters)
+        return await bulkUpsertPlanParameters(planKey, machineId, parameters)
       } catch (err) {
         fastify.log.error(`An error occured while bulk creating plan parameters: ${err}`)
         return reply.code(500).send({ error: `An error occured while bulk creating plan parameters: ${err}` })

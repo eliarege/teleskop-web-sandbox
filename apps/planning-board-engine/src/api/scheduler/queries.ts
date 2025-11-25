@@ -11,6 +11,8 @@ import { BatchParameterType, StartingParameters } from '~/composables/enums'
 import { getManyMachineProgram, parseProgramListString } from '~/lib/program'
 import { getMachineCommands } from '~/lib/command'
 import { createTonelloBatch } from '~/lib/batch'
+import { tryParseNumber } from '~/lib/utils'
+import { getMachineInfo, isTonello } from '~/lib/machine'
 
 export async function refreshCustomTables() {
   // refresh PTCOLUMNS table
@@ -851,7 +853,7 @@ function verifyParameter(param: PlanParameter): StartingParameters {
 
 export async function isEveryStartParameterRequired(machineId: number): Promise<boolean> {
   const res = await knex
-    .select('ParamToken')
+    .select('ParamValue')
     .from('BFMACHINESYSTEMPARAMS')
     .where('ParamToken', 'IS_EMRI_BASLATILIRKEN_TUM_PARAMETRELERI_SOR')
     .andWhere('MachineId', machineId)
@@ -865,7 +867,7 @@ export async function isEveryStartParameterRequired(machineId: number): Promise<
 }
 
 export async function getEveryPlanParameter(planKey: number, machineId: number): Promise<ValidatedPlanParameter[]> {
-  const parameters: PlanParameter[] = await knex
+  const rawParameters = await knex
     .from('BFMACHBATCHPARAMETERS as b')
     .leftJoin('BFMACHBATCHPARAMETERTYPES as pt', function () {
       this.on('b.MACHINEID', 'pt.MACHINEID')
@@ -886,16 +888,32 @@ export async function getEveryPlanParameter(planKey: number, machineId: number):
       paramType: 'pt.PARAMTYPEID',
       value: 'd.VALUE',
     })
-    .where('b.MACHINEID', machineId)
+    .where('b.MACHINEID', machineId) as {
+    machineId: number
+    paramString: string
+    paramHighLimit: number
+    paramLowLimit: number
+    paramType: number | null
+    value: string | null
+  }[]
+
+  const parameters = rawParameters.map(rp => ({
+    ...rp,
+    value: rp.value ? tryParseNumber(rp.value) : null,
+  } as PlanParameter))
 
   return parameters.map(param => ({
     ...param,
     paramStatus: verifyParameter(param),
-  }))
+  })).filter(p => p.paramStatus !== StartingParameters.NonStartingParameter)
 }
 
 export async function getPlanParameters(planKey: number, machineId: number): Promise<ValidatedPlanParameter[]> {
-  const machineRequest = await isEveryStartParameterRequired(machineId)
+  const machineInfo = await getMachineInfo(machineId)
+  if (!machineInfo) {
+    throw new Error(`Machine with id ${machineId} not found`)
+  }
+  const machineRequest = isTonello(machineInfo) || await isEveryStartParameterRequired(machineId)
   if (machineRequest) {
     return await getEveryPlanParameter(planKey, machineId)
   } else {
@@ -965,57 +983,87 @@ export async function createPlanParameter(parameter: {
     })
   })
 }
-export async function bulkCreatePlanParameter(
+export async function bulkUpsertPlanParameters(
   planKey: number,
   machineId: number,
   parameters: Array<{
-    parameter: {
-      paramString: string
-      value?: number | string
-      planKey: string
-      paramLowLimit: number
-      paramHighLimit: number
-      paramStatus: number
-    }
+    parameter: PlanParameter
     value: number | string
   }>,
 ) {
   await knex.transaction(async (trx) => {
-    const [jobOrderResult, batchParams] = await Promise.all([
+    const [jobOrder, batchParams] = await Promise.all([
       trx('DYBFBATCHPLAN')
-        .select('JOBORDER')
+        .first({ code: 'JOBORDER' })
         .where('PLANKEY', planKey)
-        .andWhere('lastForJoborder', 1)
-        .first(),
-      trx('BFMACHBATCHPARAMETERS')
-        .select('*')
-        .where('MACHINEID', machineId)
-        .whereIn('PARAMSTRING', parameters.map(p => p.parameter.paramString)),
+        .andWhere('lastForJoborder', 1),
+
+      trx('BFMACHBATCHPARAMETERS as p')
+        .leftJoin('DYBFBATCHPLANPARAMETERS as d', function () {
+          this.on('p.PARAMSTRING', 'd.PARAMSTRING')
+            .andOn('d.PLANKEY', '=', knex.raw(planKey))
+        })
+        .select({
+          id: 'p.BATCHPARAMETERID',
+          paramString: 'p.PARAMSTRING',
+          paramType: 'p.PARAMETERTYPE',
+          unitCode: 'p.UNITCODE',
+          hasValue: knex.raw('CASE WHEN d.VALUE IS NOT NULL THEN 1 ELSE 0 END'),
+        })
+        .where('p.MACHINEID', machineId)
+        .whereIn('p.PARAMSTRING', parameters.map(p => p.parameter.paramString)),
     ])
 
-    const batchParamMap = new Map(
-      batchParams.map(bp => [bp.PARAMSTRING, bp]),
-    )
+    if (!jobOrder) {
+      throw new Error(`Job order not found for planKey: ${planKey}`)
+    }
 
-    const insertData = parameters.map((el) => {
-      const batchParam = batchParamMap.get(el.parameter.paramString)
-      if (!batchParam) {
-        throw new Error(`Batch parameter not found for: ${el.parameter.paramString}`)
-      }
+    const insertData = batchParams
+      .filter(bp => !bp.hasValue)
+      .map((bp) => {
+        const value = parameters.find(p => p.parameter.paramString === bp.paramString)?.value
+        if (!value) {
+          throw new Error(`${bp.paramString} parameter value required`)
+        }
 
-      return {
-        JOBORDER: jobOrderResult.JOBORDER,
-        PLANKEY: planKey,
-        BATCHPARAMETERID: batchParam.BATCHPARAMETERID,
-        PARAMSTRING: el.parameter.paramString,
-        VALUE: el.value,
-        PARAMETERTYPE: batchParam.PARAMETERTYPE,
-        UNITCODE: batchParam.UNITCODE,
-        ADDEDWITHDEFAULT: 0,
-      }
-    })
+        return {
+          JOBORDER: jobOrder.code,
+          PLANKEY: planKey,
+          BATCHPARAMETERID: bp.id,
+          PARAMSTRING: bp.paramString,
+          VALUE: value,
+          PARAMETERTYPE: bp.paramType,
+          UNITCODE: bp.unitCode,
+          ADDEDWITHDEFAULT: 0,
+        }
+      })
 
-    await trx('DYBFBATCHPLANPARAMETERS').insert(insertData)
+    if (insertData.length > 0) {
+      await trx('DYBFBATCHPLANPARAMETERS').insert(insertData)
+    }
+
+    // Update existing parameters
+    const updateData = batchParams
+      .filter(bp => bp.hasValue)
+      .map((bp) => {
+        const newValue = parameters.find(p => p.parameter.paramString === bp.paramString)?.value
+        if (!newValue) {
+          throw new Error(`${bp.paramString} parameter value required`)
+        }
+
+        return {
+          VALUE: newValue,
+          PLANKEY: planKey,
+          PARAMSTRING: bp.paramString,
+        }
+      })
+
+    for (const ud of updateData) {
+      await trx('DYBFBATCHPLANPARAMETERS')
+        .update({ VALUE: ud.VALUE })
+        .where('PLANKEY', ud.PLANKEY)
+        .andWhere('PARAMSTRING', ud.PARAMSTRING)
+    }
   })
 
   return await getPlanParameters(planKey, machineId)
@@ -1160,7 +1208,7 @@ export async function getStartingParametersWithValues(params: StartingParameter[
     const matchedValue = parameterValues.find(pv => pv.paramString === param.paramString)
     return {
       ...param,
-      value: matchedValue ? matchedValue.value : null,
+      value: matchedValue ? tryParseNumber(matchedValue.value) : null,
     }
   }) as PlanParameter[]
 
@@ -1169,7 +1217,7 @@ export async function getStartingParametersWithValues(params: StartingParameter[
     paramStatus: verifyParameter(param),
   }))
 
-  return validatedParameters
+  return validatedParameters.filter(p => p.paramStatus !== StartingParameters.NonStartingParameter)
 }
 function txtFormat(data: {
   batchStart: Date

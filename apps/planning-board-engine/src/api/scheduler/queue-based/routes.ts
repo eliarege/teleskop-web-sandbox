@@ -124,11 +124,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           planParameters = await getStartingParametersWithValues(parameters, planKey)
         }
 
-        const pendingPlannedParameters = planParameters.filter(ev => ev.value === null)
-        if (
-          pendingPlannedParameters.length === 0
-          || planParameters.every(e => e.paramStatus === StartingParameters.Correct)
-        ) {
+        if (planParameters.every(e => e.paramStatus === StartingParameters.Correct)) {
           await queueUnplannedEvent(newEvent)
           return reply.code(200).send('DONE')
         }
