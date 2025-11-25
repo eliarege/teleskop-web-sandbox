@@ -1,6 +1,7 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import { ofetch } from 'ofetch'
 import { TonelloApi } from '@teleskop/core'
+import type { ValidatedPlanParameter } from 'types/planning-board'
 import {
   addBatchNote,
   addErpParameters,
@@ -17,6 +18,7 @@ import {
   getDistinctErpParameters,
   getErpParameters,
   getEventTooltipParams,
+  getEveryPlanParameter,
   getMachines,
   getMachinesByErpParameter,
   getPlanParameters,
@@ -559,18 +561,6 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       try {
         // TODO: program is apparently a comma-separated list of programs? better rename the variable
         const { program, machineId, planKey, jobOrder } = request.query
-        // check if machine wants all params
-        const allParamsRequired = await isEveryStartParameterRequired(machineId)
-        if (allParamsRequired) {
-          const allParams = await getPlanParameters(planKey, machineId)
-          if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
-            await uploadToMachine(machineIp, allParams, program, jobOrder)
-            return reply.code(200).send('DONE')
-          } else {
-            return reply.code(200).send(allParams)
-          }
-        }
-
         const machineInfo = await getMachineInfo(machineId)
         if (!machineInfo) {
           return reply.code(404).send('Machine not found')
@@ -581,28 +571,29 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           return reply.code(400).send('Invalid program number format')
         }
 
-        const parameters = await getRequiredStartingParametersForPrograms(programNoList, machineId)
-
-        if (!isTonello(machineInfo) && parameters.length === 0) {
-          return reply.code(200).send('NO PARAMETER')
+        // check if machine wants all params
+        const everyParamRequired = isTonello(machineInfo) || await isEveryStartParameterRequired(machineId)
+        let planParameters: ValidatedPlanParameter[]
+        if (everyParamRequired) {
+          planParameters = await getEveryPlanParameter(planKey, machineId)
+        } else {
+          const parameters = await getRequiredStartingParametersForPrograms(programNoList, machineId)
+          if (parameters.length === 0) {
+            return reply.code(200).send('NO PARAMETER')
+          }
+          planParameters = await getStartingParametersWithValues(parameters, planKey)
         }
 
-        const startingParameterValues = await getStartingParametersWithValues(parameters, planKey)
-        const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
-
-        if (
-          requestedStartingParameters.length === 0
-          || startingParameterValues.every(e => e.paramStatus === StartingParameters.Correct)
-        ) {
+        if (planParameters.every(e => e.paramStatus === StartingParameters.Correct)) {
           if (isTonello(machineInfo)) {
             const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
-            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder, startingParameterValues)
+            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder, planParameters)
           } else {
-            await uploadToMachine(machineInfo.host, startingParameterValues, programNoList, jobOrder)
+            await uploadToMachine(machineInfo.host, planParameters, programNoList, jobOrder)
           }
           return reply.code(200).send('DONE')
         }
-        return reply.code(200).send(startingParameterValues)
+        return reply.code(200).send(planParameters)
       } catch (err) {
         console.error(err)
         return reply.code(500).send({ error: `An error occurred while uploading to machine: ${err}` })

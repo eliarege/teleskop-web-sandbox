@@ -1,5 +1,6 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import { getPlanParameters, getRequiredStartingParametersForPrograms, getStartingParametersWithValues, isEveryStartParameterRequired } from '../queries'
+import type { ValidatedPlanParameter } from 'types/planning-board'
+import { getEveryPlanParameter, getPlanParameters, getRequiredStartingParametersForPrograms, getStartingParametersWithValues, isEveryStartParameterRequired } from '../queries'
 import type {
   EventReschedule,
 } from './queries'
@@ -101,40 +102,37 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
         const { newEvent } = request.body
         const planKey = newEvent.planKey
         const machineId = newEvent.machineId
-        const allParamsRequired = await isEveryStartParameterRequired(newEvent.machineId)
-        if (allParamsRequired) {
-          const allParams = await getPlanParameters(planKey, machineId)
-          if (allParams.every(p => p.paramStatus === StartingParameters.Correct)) {
-            return reply.code(200).send('DONE')
-          } else {
-            return reply.code(200).send(allParams)
-          }
-        } else {
-          const machineInfo = await getMachineInfo(machineId)
-          if (!machineInfo) {
-            return reply.code(400).send({ error: 'Machine not found' })
-          }
-          const programNoList = newEvent.program.split(',').map((pn: string) => Number.parseInt(pn, 10))
-          if (programNoList.some(Number.isNaN)) {
-            return reply.code(400).send({ error: 'Invalid program number format' })
-          }
+        const machineInfo = await getMachineInfo(machineId)
+        if (!machineInfo) {
+          return reply.code(400).send({ error: 'Machine not found' })
+        }
+        const programNoList = newEvent.program.split(',').map((pn: string) => Number.parseInt(pn, 10))
+        if (programNoList.some(Number.isNaN)) {
+          return reply.code(400).send({ error: 'Invalid program number format' })
+        }
 
-          const parameters = await getRequiredStartingParametersForPrograms(programNoList, newEvent.machineId)
-          if (!isTonello(machineInfo) && parameters.length === 0) {
+        const everyParamRequired = isTonello(machineInfo) || await isEveryStartParameterRequired(machineId)
+
+        let planParameters: ValidatedPlanParameter[] = []
+        if (everyParamRequired) {
+          planParameters = await getEveryPlanParameter(planKey, machineId)
+        } else {
+          const parameters = await getRequiredStartingParametersForPrograms(programNoList, machineId)
+          if (parameters.length === 0) {
             return reply.code(200).send('NO PARAMETER')
           }
-
-          const startingParameterValues = await getStartingParametersWithValues(parameters, planKey)
-          const requestedStartingParameters = startingParameterValues.filter(ev => ev.value === null)
-          if (
-            requestedStartingParameters.length === 0
-            || startingParameterValues.every(e => e.paramStatus === StartingParameters.Correct)
-          ) {
-            await queueUnplannedEvent(newEvent)
-            return reply.code(200).send('DONE')
-          }
-          return reply.code(200).send(startingParameterValues)
+          planParameters = await getStartingParametersWithValues(parameters, planKey)
         }
+
+        const pendingPlannedParameters = planParameters.filter(ev => ev.value === null)
+        if (
+          pendingPlannedParameters.length === 0
+          || planParameters.every(e => e.paramStatus === StartingParameters.Correct)
+        ) {
+          await queueUnplannedEvent(newEvent)
+          return reply.code(200).send('DONE')
+        }
+        return reply.code(200).send(planParameters)
       } catch (err) {
         fastify.log.error(`An error occurred while scheduling events: ${err}`)
         return reply.code(500).send({ error: `An error occurred while scheduling events: ${err}` })

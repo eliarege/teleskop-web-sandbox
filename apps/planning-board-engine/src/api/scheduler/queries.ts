@@ -711,7 +711,10 @@ export async function addBatchNote(jobOrder: string, note: string, userId: numbe
   })
 }
 export async function addErpParameters(id: number, machineId: number) {
-  await knex('PTMACHINEERP').update({ visible: true }).where('machineId', machineId).andWhere('id', id)
+  await knex('PTMACHINEERP')
+    .update({ visible: true })
+    .where('machineId', machineId)
+    .andWhere('id', id)
 }
 export async function bulkAddErpParameter(paramString: string, machines: number[]) {
   const trx = await knex.transaction()
@@ -861,36 +864,40 @@ export async function isEveryStartParameterRequired(machineId: number): Promise<
   }
 }
 
-export async function getPlanParameters(planKey: number, machineId: number) {
+export async function getEveryPlanParameter(planKey: number, machineId: number): Promise<ValidatedPlanParameter[]> {
+  const parameters: PlanParameter[] = await knex
+    .from('BFMACHBATCHPARAMETERS as b')
+    .leftJoin('BFMACHBATCHPARAMETERTYPES as pt', function () {
+      this.on('b.MACHINEID', 'pt.MACHINEID')
+        .andOn('b.BATCHPARAMETERID', 'pt.PARAMID')
+    })
+    .leftJoin(
+      knex('DYBFBATCHPLANPARAMETERS')
+        .where('PLANKEY', planKey)
+        .as('d'),
+      'b.PARAMSTRING',
+      'd.PARAMSTRING',
+    )
+    .select({
+      machineId: 'b.MACHINEID',
+      paramString: 'b.PARAMSTRING',
+      paramHighLimit: 'b.PARAMHIGHLIMIT',
+      paramLowLimit: 'b.PARAMLOWLIMIT',
+      paramType: 'pt.PARAMTYPEID',
+      value: 'd.VALUE',
+    })
+    .where('b.MACHINEID', machineId)
+
+  return parameters.map(param => ({
+    ...param,
+    paramStatus: verifyParameter(param),
+  }))
+}
+
+export async function getPlanParameters(planKey: number, machineId: number): Promise<ValidatedPlanParameter[]> {
   const machineRequest = await isEveryStartParameterRequired(machineId)
   if (machineRequest) {
-    const parameters: PlanParameter[] = await knex
-      .from('BFMACHBATCHPARAMETERS as b')
-      .leftJoin('BFMACHBATCHPARAMETERTYPES as pt', function () {
-        this.on('b.MACHINEID', 'pt.MACHINEID')
-          .andOn('b.BATCHPARAMETERID', 'pt.PARAMID')
-      })
-      .leftJoin(
-        knex('DYBFBATCHPLANPARAMETERS')
-          .where('PLANKEY', planKey)
-          .as('d'),
-        'b.PARAMSTRING',
-        'd.PARAMSTRING',
-      )
-      .select({
-        machineId: 'b.MACHINEID',
-        paramString: 'b.PARAMSTRING',
-        paramHighLimit: 'b.PARAMHIGHLIMIT',
-        paramLowLimit: 'b.PARAMLOWLIMIT',
-        paramType: 'pt.PARAMTYPEID',
-        value: 'd.VALUE',
-      })
-      .where('b.MACHINEID', machineId)
-
-    return parameters.map(param => ({
-      ...param,
-      paramStatus: verifyParameter(param),
-    }))
+    return await getEveryPlanParameter(planKey, machineId)
   } else {
     const programList = await getPlannedProgramList(planKey)
     const startingParameters = await getRequiredStartingParametersForPrograms(programList, machineId)
@@ -1234,14 +1241,14 @@ export async function uploadToTonelloMachine(
   tonelloApi: TonelloApi,
   programNos: number[],
   jobOrder: string,
-  requestedStartingParameters: ValidatedPlanParameter[],
+  planParameters: ValidatedPlanParameter[],
 ) {
   let body: TonelloBatch | undefined
   await knex.transaction(async (trx) => {
     const commands = await getMachineCommands(trx, machineId)
     const programs = await getManyMachineProgram(trx, machineId, programNos)
     const sortedPrograms = programNos.map(no => programs.find(p => p.programNo === no)!)
-    const weightParam = requestedStartingParameters.find(p => p.paramType === BatchParameterType.FabricWeight)
+    const weightParam = planParameters.find(p => p.paramType === BatchParameterType.FabricWeight)
     if (!weightParam || typeof weightParam.value !== 'number') {
       throw new Error(`Issue while uploading job order ${jobOrder} to Tonello machine ${machineId}: `
         + 'Fabric weight parameter is required for Tonello machines and must be a number')
