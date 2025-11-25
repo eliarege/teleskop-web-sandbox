@@ -129,7 +129,7 @@ export interface StartingParameter {
   paramString: string
   paramLowLimit: number
   paramHighLimit: number
-  paramType: ValueOf<typeof BatchParameterType>
+  paramType: ValueOf<typeof BatchParameterType> | null
 }
 
 export interface PlanParameter extends StartingParameter {

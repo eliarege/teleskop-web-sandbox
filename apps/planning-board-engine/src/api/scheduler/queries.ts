@@ -1170,7 +1170,7 @@ export function extractVariablesFromFormulas(formulas: string[]) {
 export async function getStartingParametersByName(params: string[], machineId: number) {
   return await knex
     .from({ b: 'BFMACHBATCHPARAMETERS' })
-    .join({ pt: 'BFMACHBATCHPARAMETERTYPES' }, function () {
+    .leftJoin({ pt: 'BFMACHBATCHPARAMETERTYPES' }, function () {
       this.on('b.MACHINEID', 'pt.MACHINEID')
         .andOn('b.BATCHPARAMETERID', 'pt.PARAMID')
     })
