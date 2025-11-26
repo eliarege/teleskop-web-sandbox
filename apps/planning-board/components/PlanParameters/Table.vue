@@ -176,7 +176,7 @@ async function saveAllParameters() {
             :loading="isLoading"
             :disable="!isSendMachine && (!parameterData
               .filter(e => e.paramStatus !== StartingParameters.NonStartingParameter)
-              .every(e => e.value > e.paramLowLimit && e.value < e.paramHighLimit) || modifiedParameters.size === 0)"
+              .every(e => e.value >= e.paramLowLimit && e.value <= e.paramHighLimit) || modifiedParameters.size === 0)"
             @click="saveAllParameters()"
           >
             <template #loading>
