@@ -193,6 +193,12 @@ export default defineEventHandler(async (event) => {
       const machineId = machines[i]
       const batchNo = Number(params.jobNo) + i
 
+      // Delete all existing Dyelot records for this batch before creating new ones
+      await dmExchangeDB('Dyelots').where('Dyelot', batchNo).del()
+      await dmExchangeDB('Dyelot_Recipe').where('Dyelot', batchNo).del()
+      await dmExchangeDB('Dyelot_Procedure').where('Dyelot', batchNo).del()
+      await dmExchangeDB('Dyelot_Parameter').where('Dyelot', batchNo).del()
+
       const counterState = {
         counter: 0,
         callOff: 0,
