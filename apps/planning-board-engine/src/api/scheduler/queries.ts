@@ -986,28 +986,23 @@ export async function createPlanParameter(parameter: {
 export async function bulkUpsertPlanParameters(
   planKey: number,
   machineId: number,
-  parameters: Array<{
-    parameter: PlanParameter
-    value: number | string
-  }>,
+  parameters: Array<PlanParameter>,
 ) {
   await knex.transaction(async (trx) => {
-    const [jobOrder, batchParams] = await Promise.all([
-      getJobOrderWithPlanKey(planKey, trx),
-      trx('BFMACHBATCHPARAMETERS')
-        .select({
-          id: 'BATCHPARAMETERID',
-          paramString: 'PARAMSTRING',
-          paramType: 'PARAMETERTYPE',
-          unitCode: 'UNITCODE',
-        })
-        .where('MACHINEID', machineId)
-        .whereIn('PARAMSTRING', parameters.map(p => p.parameter.paramString)),
-    ])
-
+    const jobOrder = await getJobOrderWithPlanKey(planKey, trx)
     if (!jobOrder) {
       throw new Error(`Job order not found for planKey: ${planKey}`)
     }
+
+    const batchParams = await trx('BFMACHBATCHPARAMETERS')
+      .select({
+        id: 'BATCHPARAMETERID',
+        paramString: 'PARAMSTRING',
+        paramType: 'PARAMETERTYPE',
+        unitCode: 'UNITCODE',
+      })
+      .where('MACHINEID', machineId)
+      .whereIn('PARAMSTRING', parameters.map(p => p.paramString))
 
     // Delete old parameters
     await trx('DYBFBATCHPLANPARAMETERS')
@@ -1016,7 +1011,7 @@ export async function bulkUpsertPlanParameters(
 
     // Insert new parameters
     await insertBatch(trx, 'DYBFBATCHPLANPARAMETERS', batchParams.map((bp) => {
-      const value = parameters.find(p => p.parameter.paramString === bp.paramString)?.value
+      const value = parameters.find(p => p.paramString === bp.paramString)?.value
       if (!value) {
         throw new Error(`${bp.paramString} parameter value required`)
       }

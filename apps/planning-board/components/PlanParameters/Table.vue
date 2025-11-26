@@ -30,8 +30,6 @@ const columns = computed(() => {
   ] as QTableColumn[]
 })
 
-const modifiedParameters = ref<Map<string, { value: number, parameter: PlanParameters }>>(new Map())
-
 const validateError = ref(false)
 const validateErrorMessage = ref('')
 function editValidation(parameterData: PlanParameters, value: number): boolean {
@@ -39,13 +37,15 @@ function editValidation(parameterData: PlanParameters, value: number): boolean {
     validateError.value = false
     return true
   }
-  validateErrorMessage.value = t('plan-parameters.validation-error', { paramLowLimit: parameterData.paramLowLimit, paramHighLimit: parameterData.paramHighLimit })
+  validateErrorMessage.value = t('plan-parameters.validation-error', {
+    paramLowLimit: parameterData.paramLowLimit,
+    paramHighLimit: parameterData.paramHighLimit,
+  })
   validateError.value = true
   return false
 }
 
-function saveParameterLocally(value: number, parameter: PlanParameters) {
-  modifiedParameters.value.set(parameter.paramString, { value, parameter })
+function saveParameterLocally() {
   validateError.value = false
   validateErrorMessage.value = ''
 }
@@ -54,12 +54,6 @@ const isLoading = ref(false)
 const $q = useQuasar()
 
 async function saveAllParameters() {
-  const parametersToUpdate = Array.from(modifiedParameters.value.values())
-
-  if (parametersToUpdate.length === 0) {
-    return
-  }
-
   isLoading.value = true
 
   try {
@@ -68,11 +62,9 @@ async function saveAllParameters() {
       body: {
         planKey: props.planKey,
         machineId: props.machineId,
-        parameters: parametersToUpdate,
+        parameters: props.parameterData,
       },
     })
-
-    modifiedParameters.value.clear()
 
     $q.notify({
       type: 'positive',
@@ -152,7 +144,7 @@ async function saveAllParameters() {
                 :validate="(val) => editValidation(prop.row, val)"
                 persistent
                 buttons
-                @save="(value) => saveParameterLocally(value, prop.row)"
+                @save="saveParameterLocally"
                 @hide="() => { validateErrorMessage = ''; validateError = false }"
                 @before-show="() => { validateErrorMessage = ''; validateError = false }"
               >
@@ -176,7 +168,7 @@ async function saveAllParameters() {
             :loading="isLoading"
             :disable="!isSendMachine && (!parameterData
               .filter(e => e.paramStatus !== StartingParameters.NonStartingParameter)
-              .every(e => e.value >= e.paramLowLimit && e.value <= e.paramHighLimit) || modifiedParameters.size === 0)"
+              .every(e => e.value >= e.paramLowLimit && e.value <= e.paramHighLimit))"
             @click="saveAllParameters()"
           >
             <template #loading>
