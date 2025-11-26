@@ -174,14 +174,24 @@ const parseCache = new Map<string, any>()
 export function calculateFormula(step: ProgramStep, commandNo: number, formula: string, machine: Machine): number {
   if (!formula)
     return 0
-  let tree = parseCache.get(formula)
-  if (!tree) {
-    const parser = new Parser(Grammar.fromCompiled(grammar))
-    parser.feed(formula)
-    tree = parser.results[0]
-    parseCache.set(formula, tree)
+
+  try {
+    let tree = parseCache.get(formula)
+    if (!tree) {
+      const parser = new Parser(Grammar.fromCompiled(grammar))
+      parser.feed(formula)
+      tree = parser.results[0]
+      parseCache.set(formula, tree)
+    }
+    return calculateTreeNode(step, commandNo, tree, machine)
+  } catch (error) {
+    console.warn(`Failed to process formula: "${formula}"`, {
+      error: error instanceof Error ? error.message : String(error),
+      commandNo,
+      step,
+    })
+    return 0
   }
-  return calculateTreeNode(step, commandNo, tree, machine)
 }
 
 type TreeNode = OperatorNode | NumberNode | VariableNode
