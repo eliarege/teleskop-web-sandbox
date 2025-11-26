@@ -191,88 +191,88 @@ export default defineEventHandler(async (event) => {
   for (let i = 0; i < params.numberOfJobs; i++) {
     try {
       const machineId = machines[i]
-      // For multiple batches, append suffix _1, _2, etc.
       const batchNo = params.numberOfJobs > 1 ? `${params.jobNo}_${i + 1}` : params.jobNo
 
-      // Delete all existing Dyelot records for this batch before creating new ones
-      await dmExchangeDB('Dyelots').where('Dyelot', batchNo).del()
-      await dmExchangeDB('Dyelot_Recipe').where('Dyelot', batchNo).del()
-      await dmExchangeDB('Dyelot_Procedure').where('Dyelot', batchNo).del()
-      await dmExchangeDB('Dyelot_Parameter').where('Dyelot', batchNo).del()
+      await dmExchangeDB.transaction(async (trx) => {
+        await trx('Dyelots').where('Dyelot', batchNo).del()
+        await trx('Dyelot_Recipe').where('Dyelot', batchNo).del()
+        await trx('Dyelot_Procedure').where('Dyelot', batchNo).del()
+        await trx('Dyelot_Parameter').where('Dyelot', batchNo).del()
 
-      const counterState = {
-        counter: 0,
-        callOff: 0,
-      }
-      const correctionNoQuery = await dmsDB('BATCH_PLAN')
-        .where('batch', batchNo)
-        .max('batch_correction_no as maxCorrectionNo')
-        .first()
-      const correctionNo = correctionNoQuery?.maxCorrectionNo ? correctionNoQuery.maxCorrectionNo + 1 : 1
-
-      const planKeyQuery = await dmsDB('BATCH_PLAN')
-        .max('plan_key as maxPlanKey')
-        .first()
-      const planKey = planKeyQuery?.maxPlanKey ? planKeyQuery?.maxPlanKey + 1 : 1
-
-      await dmsDB('BATCH_PLAN').insert({
-        plan_key: planKey,
-        batch: batchNo,
-        batch_correction_no: correctionNo,
-        planned_machine: machineId,
-        planned_start_date: new Date(),
-        color_code: recipeHeader.colorCode,
-        color_name: recipeHeader.colorName,
-        order_no: params.orderNo,
-        flotte: params.flotte,
-        total_weight: params.totalWeight,
-        notes: params.notes,
-        customer_name: params.customerName,
-        fabric_type: params.fabricType,
-        as_no: params.ASNo,
-        yarn: params.yarn,
-      })
-
-      for (let index = 0; index < recipe.length; index++) {
-        const program = recipe[index]
-        await processProgramSteps(program, index, {
-          planKey,
-          batchNo,
-          correctionNo,
-          machineId,
-          tankNo,
-          priority,
-          dmExchangeDB,
-          counterState,
-        })
-        const opParams = optimizationParams.filter(
-          p => p.programNo === program.programNo,
-        )
-
-        if (opParams.length > 0) {
-          await dmExchangeDB('Dyelot_Parameter').insert(opParams.map(p => ({
-            Dyelot: batchNo,
-            TreatmentCnt: index + 1,
-            TreatmentParaCnt: p.paramId,
-            TreatmentParaNo: p.paramIndex,
-            TreatmentParaValue: p.selectedValue,
-          })))
+        const counterState = {
+          counter: 0,
+          callOff: 0,
         }
-      }
-      await dmExchangeDB('Dyelots').insert({
-        Dyelot: batchNo,
-        ExternalDyelot: batchNo,
-        ReDye: 0,
-        Machine: machineId,
-        Color: recipeHeader.colorCode,
-        OrderNo: params.orderNo,
-        Customer: params.customerName,
-        RecipeNo: recipeHeader.recipeId,
-        Weight: params.totalWeight,
-        LiquorRatio: params.flotteRatio,
-        LiquorQuantity: params.flotte,
-        ImportState: 1,
-        State: 1,
+        const correctionNoQuery = await dmsDB('BATCH_PLAN')
+          .where('batch', batchNo)
+          .max('batch_correction_no as maxCorrectionNo')
+          .first()
+        const correctionNo = correctionNoQuery?.maxCorrectionNo ? correctionNoQuery.maxCorrectionNo + 1 : 1
+
+        const planKeyQuery = await dmsDB('BATCH_PLAN')
+          .max('plan_key as maxPlanKey')
+          .first()
+        const planKey = planKeyQuery?.maxPlanKey ? planKeyQuery?.maxPlanKey + 1 : 1
+
+        await dmsDB('BATCH_PLAN').insert({
+          plan_key: planKey,
+          batch: batchNo,
+          batch_correction_no: correctionNo,
+          planned_machine: machineId,
+          planned_start_date: new Date(),
+          color_code: recipeHeader.colorCode,
+          color_name: recipeHeader.colorName,
+          order_no: params.orderNo,
+          flotte: params.flotte,
+          total_weight: params.totalWeight,
+          notes: params.notes,
+          customer_name: params.customerName,
+          fabric_type: params.fabricType,
+          as_no: params.ASNo,
+          yarn: params.yarn,
+        })
+
+        for (let index = 0; index < recipe.length; index++) {
+          const program = recipe[index]
+          await processProgramSteps(program, index, {
+            planKey,
+            batchNo,
+            correctionNo,
+            machineId,
+            tankNo,
+            priority,
+            dmExchangeDB: trx,
+            counterState,
+          })
+          const opParams = optimizationParams.filter(
+            p => p.programNo === program.programNo,
+          )
+
+          if (opParams.length > 0) {
+            await trx('Dyelot_Parameter').insert(opParams.map(p => ({
+              Dyelot: batchNo,
+              TreatmentCnt: index + 1,
+              TreatmentParaCnt: p.paramId,
+              TreatmentParaNo: p.paramIndex,
+              TreatmentParaValue: p.selectedValue,
+            })))
+          }
+        }
+        await trx('Dyelots').insert({
+          Dyelot: batchNo,
+          ExternalDyelot: batchNo,
+          ReDye: 0,
+          Machine: machineId,
+          Color: recipeHeader.colorCode,
+          OrderNo: params.orderNo,
+          Customer: params.customerName,
+          RecipeNo: recipeHeader.recipeId,
+          Weight: params.totalWeight,
+          LiquorRatio: params.flotteRatio,
+          LiquorQuantity: params.flotte,
+          ImportState: 1,
+          State: 1,
+        })
       })
     } catch (error: any) {
       setResponseStatus(event, 400, error.message)
