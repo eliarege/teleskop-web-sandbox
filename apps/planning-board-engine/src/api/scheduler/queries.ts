@@ -3,7 +3,7 @@ import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { PlanParameter, QueueBasedActualEvent, QueueBasedBaseEvent, QueueBasedEventStop, StartingParameter, ValidatedPlanParameter } from 'types/planning-board'
 import { chunk } from 'lodash-es'
 import type { TonelloApi, TonelloBatch } from '@teleskop/core'
-import { isDef } from '@teleskop/utils'
+import { insertBatch, isDef } from '@teleskop/utils'
 import { config } from '~/config'
 import { knex } from '~/knexConfig'
 import { logger } from '~/composables/logger'
@@ -994,73 +994,44 @@ export async function bulkUpsertPlanParameters(
   await knex.transaction(async (trx) => {
     const [jobOrder, batchParams] = await Promise.all([
       getJobOrderWithPlanKey(planKey, trx),
-
-      trx('BFMACHBATCHPARAMETERS as p')
-        .leftJoin('DYBFBATCHPLANPARAMETERS as d', function () {
-          this.on('p.PARAMSTRING', 'd.PARAMSTRING')
-            .andOn('d.PLANKEY', '=', knex.raw(planKey))
-        })
+      trx('BFMACHBATCHPARAMETERS')
         .select({
-          id: 'p.BATCHPARAMETERID',
-          paramString: 'p.PARAMSTRING',
-          paramType: 'p.PARAMETERTYPE',
-          unitCode: 'p.UNITCODE',
-          hasValue: knex.raw('CASE WHEN d.VALUE IS NOT NULL THEN 1 ELSE 0 END'),
+          id: 'BATCHPARAMETERID',
+          paramString: 'PARAMSTRING',
+          paramType: 'PARAMETERTYPE',
+          unitCode: 'UNITCODE',
         })
-        .where('p.MACHINEID', machineId)
-        .whereIn('p.PARAMSTRING', parameters.map(p => p.parameter.paramString)),
+        .where('MACHINEID', machineId)
+        .whereIn('PARAMSTRING', parameters.map(p => p.parameter.paramString)),
     ])
 
     if (!jobOrder) {
       throw new Error(`Job order not found for planKey: ${planKey}`)
     }
 
-    const insertData = batchParams
-      .filter(bp => !bp.hasValue)
-      .map((bp) => {
-        const value = parameters.find(p => p.parameter.paramString === bp.paramString)?.value
-        if (!value) {
-          throw new Error(`${bp.paramString} parameter value required`)
-        }
+    // Delete old parameters
+    await trx('DYBFBATCHPLANPARAMETERS')
+      .where('PLANKEY', planKey)
+      .del()
 
-        return {
-          JOBORDER: jobOrder.code,
-          PLANKEY: planKey,
-          BATCHPARAMETERID: bp.id,
-          PARAMSTRING: bp.paramString,
-          VALUE: value,
-          PARAMETERTYPE: bp.paramType,
-          UNITCODE: bp.unitCode,
-          ADDEDWITHDEFAULT: 0,
-        }
-      })
+    // Insert new parameters
+    await insertBatch(trx, 'DYBFBATCHPLANPARAMETERS', batchParams.map((bp) => {
+      const value = parameters.find(p => p.parameter.paramString === bp.paramString)?.value
+      if (!value) {
+        throw new Error(`${bp.paramString} parameter value required`)
+      }
 
-    if (insertData.length > 0) {
-      await trx('DYBFBATCHPLANPARAMETERS').insert(insertData)
-    }
-
-    // Update existing parameters
-    const updateData = batchParams
-      .filter(bp => bp.hasValue)
-      .map((bp) => {
-        const newValue = parameters.find(p => p.parameter.paramString === bp.paramString)?.value
-        if (!newValue) {
-          throw new Error(`${bp.paramString} parameter value required`)
-        }
-
-        return {
-          VALUE: newValue,
-          PLANKEY: planKey,
-          PARAMSTRING: bp.paramString,
-        }
-      })
-
-    for (const ud of updateData) {
-      await trx('DYBFBATCHPLANPARAMETERS')
-        .update({ VALUE: ud.VALUE })
-        .where('PLANKEY', ud.PLANKEY)
-        .andWhere('PARAMSTRING', ud.PARAMSTRING)
-    }
+      return {
+        JOBORDER: jobOrder.code,
+        PLANKEY: planKey,
+        BATCHPARAMETERID: bp.id,
+        PARAMSTRING: bp.paramString,
+        VALUE: value,
+        PARAMETERTYPE: bp.paramType,
+        UNITCODE: bp.unitCode,
+        ADDEDWITHDEFAULT: 0,
+      }
+    }))
   })
 
   return await getPlanParameters(planKey, machineId)
