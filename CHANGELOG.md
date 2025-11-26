@@ -1,8 +1,79 @@
 # Changelog
 
+## 0.58.0 - 2025-11-26
+
+[Compare Changes](0de2c984262eecd04c1ec046808edb915b785c42...604d490a86fd70681929e22d27173ca37e89fed0)
+
+### 🚀 Features
+
+- **recipes**: JobOrderOverview access from JorOrderList added ([ccade4c](ccade4cb678f780dd8be5fac45d1d1917fb29720))
+- **recipe**: MaterialCode change and encoding added ([4c2cb16](4c2cb169be83b7913af90146eb9cb5a35de781c3))
+-  **PT**: Add bulk creation of plan parameters with API integration ([0801dbc](0801dbc2835130cb6a2e2be4e190ba4c1ef0bb9c))
+- Added mcp server for sql server ([d4891d0](d4891d0f3a2eef3b428dfd51a97ba2b0a979a6ec))
+- **core**: Add static method to create TonelloApi from hostname ([6ac216e](6ac216e6a38e91b03b401735c94a53d8c5f4b2d8))
+-  **PT**: Handle sending batches to tonello machines ([1528af3](1528af377ae3c8b582b6afb5a581ad3633dbf0ea))
+-  **MA**: Add mock weight batch parameter for tonello machines ([b605394](b6053947f948154474ff8131dc283f9bb1e512b0))
+-  **PB**: Enhance parameter handling and add fabric weight support for Tonello machines ([3385da1](3385da1390e6e394e55fb5cdd37dc055a7f160fa))
+- **recipes**: JobOrderPrefs added ([10cd1d0](10cd1d0b70dddc4b62d98b30a5f196563d4bdbb9))
+
+### 🐛 Bug Fixes
+
+- **iovalues-server**: Datetime values returned by tedious should be converted to ISO format ([636db11](636db117674cdb769a44b84596ccdfb9a94c3811))
+-  **MM**: I18n locale having multiple setters ([13826cb](13826cb0f1bc7b869c2c956c5d167a0e37614186))
+-  **PB**: Prevent casting of non-int parameter values at getFormula, refactor ([0170c1f](0170c1f6e90e18340209583f5747c1a9c4886587))
+- **recipe**: Program template order no update ([c3ac174](c3ac1744f7158ad2249385bf33a23623d7f400b4))
+- **recipes**: Wrong recipe Id sent on recipe creation ([56d6e36](56d6e3616ffc3a3c3a8da29604af83a8c9e893c8))
+-  **PT**: Update condition for manual event icon display ([51bae23](51bae23e676dca2a168a2b75ad7228d89686f7a3))
+-  **PT**: Add uploadToMachine call after parameter validation ([976f32e](976f32e0e41f0fdd4d210334fbd3bfc2af50524d))
+-  **PT**: Added forgotten ongoing event type ([c176ba6](c176ba60ba869743ed021b32e88b05295259d710))
+-  **PT**: Improve bulkCreatePlanParameter to handle job order and batch parameters correctly ([223a481](223a481388acd2d22a58ee2fae498152e7dcc447))
+-  **PT**: Correct table name in bulkCreatePlanParameter for job order retrieval ([43cb935](43cb935839415707e65b0d7adf54e506dba2ebad))
+-  **PB**: Move server host and port configs to config.ts ([ef2541f](ef2541f13f7a02adf97bdd1edc004a8334219269))
+-  **PB**: Ensure uniqueness in fetchPrograms ([f908893](f90889318b5d1ef4b90163b8158586ed1e22e5c4))
+-  **PB**: Sort programs before upload ([2614ef3](2614ef366377a12bde5958704213301081c2e7af))
+-  **PB**: Update checkMachineParameterRequest to correctly handle missing parameters ([d138854](d138854fe6f4014c7e7b7a620d06f17ac684b881))
+-  **PB**: Correct spelling of "occurred" in error messages ([12a99f5](12a99f52be5bb2613c23a84fd6518547c83278d0))
+-  **PB**: Correct column names in fetchPrograms query ([3b90dcd](3b90dcdd3daf093aadc4d89250cb05a017bb111f))
+-  **MA**: Update default value for mock batch parameters for tonello machines to -9999 ([adc367e](adc367e3c4f19b850207d09678a9a48f2ef18fe5))
+-  **PB**: Incorrect logic while checking if given starting parameters are correct ([826e9ff](826e9ff4c1c86f0824ba2274f72e239ee7f26c32))
+-  **PB**: Multiple fixes related to schedule/upload process ([4616a0e](4616a0e0429436745c0492ae97c219e7094a87ce))
+-  **PB**: Upload job order to machine after an unplanned event is scheduled ([c75cccf](c75cccf6a27e678da530ffa9eccfb4c956d407e8))
+-  **PB**: Return only incorrect parameters when trying to schedule or upload joborder as intended ([e82b27b](e82b27b90be53dd74f6093c6c39e1f5220357f3f))
+-  **PB**: Accidently deleted queueUnplannedEvent call at fc2605ae when scheduling job orders ([a2d04d1](a2d04d1de93622246d6aca2463849bdd80555418))
+-  **PB**: Use leftJoin when matching parameter types since some parameters may not have its type defined ([4e348cc](4e348ccad768dcd5d79564e451fee7636f3243d7))
+-  **PB**: Duplicate plan parameters on PlanParametersTable and fix success message typo in localization files ([fe16550](fe16550b8cd620f78f3ed9a97593600364f2aa8b))
+-  **PB**: Correct typo in upload success message in localization files ([ae4af04](ae4af04146ac1b98da8dfb0c6594868ae4ebadec))
+- **recipes**: Localization ([199c002](199c002388a3bed240d4cc690e3dfbf31c5bcac7))
+- **recipes**: Placeholder value removed ([5a3d813](5a3d813fb5fa2bc5443ead54f91b201de92f2485))
+-  **PB**: Inconsistent disable condition for plan parameter submit button ([33c488f](33c488f5f1ab20263a97fb28f0d3dac9a1e46641))
+-  **PE**: Added label name for contextBar buttons ([3096790](30967901d63fa1257fd4ceccee77572daf1bf6e0))
+-  **PE**: Add error handling for formula parsing and improve logging ([6d22901](6d22901df4ef80b03408876b71c543a1dc6e3799))
+-  **PE**: Update variable regex to allow specific characters ([6b56578](6b56578bb74dbd3a2d3cfd4bd893a3f1872d8229))
+
+### 📖 Documentation
+
+- Add MCP server configuration details for SQL Server and Nuxt ([5d21a2f](5d21a2fbbecaacb6060a41b4576d46bdd638e7f5))
+
+### ♻️ Refactor
+
+-  **PT**: Streamline event status calculation and update logic ([7883bdb](7883bdb923e3a17b042bee468f51a82555a38ee5))
+-  **PB**: Improve machine info handling and add Tonello support ([0d2a3cc](0d2a3cce0a4c162240706f20279f0187194c7453))
+-  **PB**: Upload and scheduling process ([57ec1df](57ec1df10582969408efddd04df82559930f017c))
+
+### 🔧 Miscellaneous Tasks
+
+- Add support for hotfix tagging in CI/CD pipeline ([6d96b2f](6d96b2f8e2224afee5f1637779a676bdcfdfb3d2))
+- Remove empty README.md file from apps directory ([de32d79](de32d791d856f5743e3dec729fd6d79743c6a171))
+- Add script to build and package apps into a tarball ([efac44d](efac44d694346fc9aefbbf0ea3664c474290972a))
+- Add mcp.json and extensions.json for multiple apps with shared configurations ([125b577](125b5770bf0993e2718883da79aeb813ba5cd016))
+- Add support for reading and updating mcp.json with database environment variables via generate-env ([e9667e1](e9667e1ac830149f15df3e9b1423871a5e0a62ab))
+- **build-tarball**: Allow specifying apps to include in the tarball via command line arguments ([263bdea](263bdea386668d5c19fbacac548e7ac0e8b4890e))
+- **recipes**: V-deep replaced with deep ([3412ddd](3412dddd4e9eab9e25464eb495df3e6c0e20f9ca))
+- **git-cliff**: Ignore hotfix tags in changelog configuration ([604d490](604d490a86fd70681929e22d27173ca37e89fed0))
+
 ## 0.57.0 - 2025-11-19
 
-[Compare Changes](b78cbc536bf0cb25e84cb5c6bdadbbc8ee912c89...52685c3c903404a2f8843b45852093e4cf3b2ee0)
+[Compare Changes](b78cbc536bf0cb25e84cb5c6bdadbbc8ee912c89...0de2c984262eecd04c1ec046808edb915b785c42)
 
 ### 🚀 Features
 
@@ -746,23 +817,23 @@
 
 ## 0.43.2 - 2025-08-12
 
-[Compare Changes](7747a52407ab0707806d060dc0f5d629e0432b2e...d82a460f33e06f6467aa1688c6471d5d3556d672)
+[Compare Changes](72bc5c31a21e9934d76ea15d3932ef96fc084ded...d82a460f33e06f6467aa1688c6471d5d3556d672)
 
 ### 🐛 Bug Fixes
 
 - **root**: Finalize look on app ([d82a460](d82a460f33e06f6467aa1688c6471d5d3556d672))
 
-### 🔧 Miscellaneous Tasks
-
-- Update lockfile ([72bc5c3](72bc5c31a21e9934d76ea15d3932ef96fc084ded))
-
 ## 0.43.1 - 2025-08-11
 
-[Compare Changes](ab2add20c9cf5324c22686634079a76b02e4f531...7747a52407ab0707806d060dc0f5d629e0432b2e)
+[Compare Changes](ab2add20c9cf5324c22686634079a76b02e4f531...72bc5c31a21e9934d76ea15d3932ef96fc084ded)
 
 ### 🐛 Bug Fixes
 
 - **root**: Missing dependencies and start script ([7747a52](7747a52407ab0707806d060dc0f5d629e0432b2e))
+
+### 🔧 Miscellaneous Tasks
+
+- Update lockfile ([72bc5c3](72bc5c31a21e9934d76ea15d3932ef96fc084ded))
 
 ## 0.43.0 - 2025-08-11
 
