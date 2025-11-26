@@ -8,7 +8,7 @@ const lexer = moo.compile({
   add_sub: /[+-]/,
   mul_div: /[*/]/,
   number: { match: /\d+(?:\.\d+)?/, value: v => parseFloat(v) },
-  variable: /[a-zA-Z0-9çÇğĞıİöÖşŞüÜ._<>\\]+(?:\s*[a-zA-Z0-9çÇğĞıİöÖşŞüÜ._<>\\]+)*/,
+  variable: /[^+\-*/\s()]+(?:\s+[^+\-*/\s()]+)*/,
 })
 
 const range = /[\u{00A0}-\u{024F}]/u
