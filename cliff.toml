@@ -80,4 +80,5 @@ sort_commits = "oldest"
 
 # Skip versions until v0.40
 skip_tags = "^(v0\\.[1-3]?[0-9]\\.|devops|hotfix)"
-
+# Ignore hotfix tags
+ignore_tags = "^[a-z._-]+@\\d+\\.\\d+\\.\\d+-hotfix\\d+$"
