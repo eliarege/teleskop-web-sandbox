@@ -59,6 +59,7 @@ function cloneMaterial(item: Material) {
     orderNo: 1,
     mainStep: 1,
     parallelStep: 1,
+    isManual: item.isManual,
   }
 }
 function materialFilter(rows: readonly Material[], terms: string): Material[] {
