@@ -377,7 +377,7 @@ function onMaterialAdded(material: any) {
     mainStep: 1,
     parallelStep: 1,
     programNo: programHeader.value.programNo,
-    isManual: false,
+    isManual: material.isManual,
   }
 
   if (clonedMaterial.type !== type) {

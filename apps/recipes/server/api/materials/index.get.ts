@@ -7,6 +7,7 @@ export default defineEventHandler(async () => {
       materialName: 'm.material_name',
       materialCode: 'm.material_code',
       materialGroupNo: 'm.material_group_no',
+      isManual: 'm.is_manual',
       connectedDispensers: dmsDB.raw(`
         ARRAY(
           SELECT JSON_BUILD_OBJECT('dispenserId', d.dispenser_id, 'dispenserName', d.dispenser_name)
