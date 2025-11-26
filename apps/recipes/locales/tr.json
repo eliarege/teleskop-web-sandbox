@@ -175,7 +175,8 @@
     "PreparedBy": "Hazırlayan",
     "ASNo": "A.S. No",
     "Yarn": "İplik",
-    "Of": "/"
+    "Of": "/",
+    "BatchNoValidation": "İş emri numarası sadece alfanumerik karakterler ve alt çizgi içerebilir"
   },
   "settings": {
     "App": "Uygulama Ayarları",

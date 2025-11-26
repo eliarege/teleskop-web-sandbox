@@ -28,7 +28,7 @@ const selectedRecipe = ref<RecipeMasterStep[]>([])
 const selectedMachines = ref<Machine[]>([])
 const recipeHeader = ref<RecipeProgramMaster>()
 const jobOrderParams = ref<JobOrderParams>({
-  jobNo: 1,
+  jobNo: '1',
   numberOfJobs: 1,
   totalWeight: 20,
   flotteRatio: 1,
@@ -489,6 +489,12 @@ async function onSave() {
             optimizationParams,
           },
         })
+
+        await $fetch('/api/job-orders/batch-no', {
+          method: 'POST',
+          body: { batchNo: jobOrderParams.value.jobNo },
+        })
+
         dataStore.newJobOrders = true
         stateStore.isLoading = false
         onDialogOK({
@@ -513,6 +519,12 @@ async function onSave() {
         optimizationParams,
       },
     })
+
+    await $fetch('/api/job-orders/batch-no', {
+      method: 'POST',
+      body: { batchNo: jobOrderParams.value.jobNo },
+    })
+
     dataStore.newJobOrders = true
     onDialogOK({
       print: printWhenDone.value,
@@ -674,14 +686,26 @@ async function onCancel() {
         </div>
         <div class="row-item">
           <span class="item-label">{{ t('jobOrderParams.ID') }}</span>
-          <QInput
-            v-model="jobOrderParams.jobNo"
-            class="item-input"
-            dense
-            type="number"
-            min="0"
-            filled
-          />
+          <div class="flex-row" style="display: flex; align-items: flex-start;">
+            <QInput
+              v-model="jobOrderParams.jobNo"
+              borderless
+              dense
+              type="text"
+              filled
+              :rules="[val => /^[a-zA-Z0-9_]+$/.test(val) || t('jobOrderParams.BatchNoValidation')]"
+              class="flex-grow-1"
+            />
+            <QBtn
+              dense
+              flat
+              icon="autorenew"
+              color="primary"
+              size="sm"
+              style="height: 40px;"
+              @click="getDefaultBatchNo"
+            />
+          </div>
         </div>
         <div class="row-item">
           <span class="item-label">{{ t('jobOrderParams.TotalWeight') }}</span>

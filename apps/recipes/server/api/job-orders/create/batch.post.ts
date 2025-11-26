@@ -7,7 +7,7 @@ async function insertRecipeMaterials(
   material: RecipeMasterMaterial,
   context: {
     planKey: number
-    batchNo: number
+    batchNo: string
     correctionNo: number
     machineId: number
     program: any
@@ -89,8 +89,8 @@ async function insertRecipeMaterials(
     ProductName: material.materialName,
     Amount: material.calculated,
     RecipeAmount: material.amount,
-    KindOfProduct: material.type === RecipeType.DYE? 1 : 2,
-    KindOfStation: material.isManual ? 1 : 2,
+    KindOfProduct: material.type === RecipeType.DYE ? 1 : 2,
+    KindOfStation: material.isManual ? 5 : 2,
     TreatmentNo: program.programNo,
     Program_order: program.stepNo + 1,
     Preparation_counter: material.orderNo,
@@ -105,7 +105,7 @@ async function processProgramSteps(
   index: number,
   context: {
     planKey: number
-    batchNo: number
+    batchNo: string
     correctionNo: number
     machineId: number
     tankNo: number
@@ -182,7 +182,7 @@ export default defineEventHandler(async (event) => {
     recipe: RecipeMasterStep[]
     recipeHeader: RecipeProgramMaster
     machines: number[]
-    params: JobOrderParams,
+    params: JobOrderParams
     optimizationParams: CommandParameter[]
   }>(event)
   const dmExchangeDB = await getDmExchangeDB()
@@ -191,7 +191,8 @@ export default defineEventHandler(async (event) => {
   for (let i = 0; i < params.numberOfJobs; i++) {
     try {
       const machineId = machines[i]
-      const batchNo = Number(params.jobNo) + i
+      // For multiple batches, append suffix _1, _2, etc.
+      const batchNo = params.numberOfJobs > 1 ? `${params.jobNo}_${i + 1}` : params.jobNo
 
       // Delete all existing Dyelot records for this batch before creating new ones
       await dmExchangeDB('Dyelots').where('Dyelot', batchNo).del()
@@ -229,7 +230,7 @@ export default defineEventHandler(async (event) => {
         customer_name: params.customerName,
         fabric_type: params.fabricType,
         as_no: params.ASNo,
-        yarn: params.yarn
+        yarn: params.yarn,
       })
 
       for (let index = 0; index < recipe.length; index++) {
@@ -245,7 +246,7 @@ export default defineEventHandler(async (event) => {
           counterState,
         })
         const opParams = optimizationParams.filter(
-          p => p.programNo === program.programNo
+          p => p.programNo === program.programNo,
         )
 
         if (opParams.length > 0) {
@@ -253,8 +254,8 @@ export default defineEventHandler(async (event) => {
             Dyelot: batchNo,
             TreatmentCnt: index + 1,
             TreatmentParaCnt: p.paramId,
-            TreatmentParaNo:  p.paramIndex,
-            TreatmentParaValue: p.selectedValue
+            TreatmentParaNo: p.paramIndex,
+            TreatmentParaValue: p.selectedValue,
           })))
         }
       }

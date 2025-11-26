@@ -1,5 +1,10 @@
 import { z } from 'zod'
 
+export const BatchNoSchema = z.string()
+  .min(1, 'Batch number is required')
+  .max(50, 'Batch number must be 50 characters or less')
+  .regex(/^[a-zA-Z0-9_]+$/, 'Batch number must contain only alphanumeric characters and underscores')
+
 export const DispenserSchema = z.object({
   dispenserId: z.number(),
   dispenserName: z.string(),

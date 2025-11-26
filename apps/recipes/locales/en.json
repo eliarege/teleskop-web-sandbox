@@ -175,7 +175,8 @@
     "PreparedBy": "Prepared By",
     "ASNo": "A.S. No",
     "Yarn": "Yarn",
-    "Of": "of"
+    "Of": "of",
+    "BatchNoValidation": "Batch number must contain only alphanumeric characters and underscores"
   },
   "settings": {
     "App": "App Settings",

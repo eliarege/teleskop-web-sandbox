@@ -4,7 +4,7 @@ export interface OptionMap {
 }
 export interface JobOrder {
   jobId: number
-  batchNo: number
+  batchNo: string
   batchCorrectionNo: number
   machineName: string
   machineId: number
@@ -260,7 +260,7 @@ export interface RecipeVariant {
   colorName: string
 }
 export interface JobOrderParams {
-  jobNo: number
+  jobNo: string
   numberOfJobs: number
   totalWeight: number
   partyNo: number
@@ -274,7 +274,7 @@ export interface JobOrderParams {
   ASNo: string | undefined
 }
 export interface ContinueJobOrderParams {
-  jobNo: number
+  jobNo: string
   fabricSize: number
   fabricWeight: number
   grammage: number

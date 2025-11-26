@@ -1,9 +1,12 @@
 import { dmsDB } from '~/server/connectionPool'
 
 export default defineEventHandler(async () => {
-  const result = await dmsDB('JOB_ORDER')
-    .max('batch_no as maxBatchNo')
-    .first()
+  const result = await dmsDB.raw('SELECT last_value FROM batch_number_seq')
+  const currentValue = result.rows[0]?.last_value
 
-  return (result?.maxBatchNo || 0) + 1
+  if (currentValue) {
+    return String(currentValue)
+  }
+
+  return '1'
 })

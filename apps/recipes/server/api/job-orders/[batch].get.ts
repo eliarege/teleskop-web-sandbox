@@ -3,9 +3,9 @@ import { dmsDB } from '~/server/connectionPool'
 import type { JobOrderParams, Machine, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
-  const batchNo = Number(getRouterParam(event, 'batch'))
+  const batchNo = getRouterParam(event, 'batch')
 
-  if (!batchNo || isNaN(batchNo)) {
+  if (!batchNo) {
     throw createError({
       statusCode: 400,
       message: 'Invalid batch number',
@@ -82,33 +82,35 @@ export default defineEventHandler(async (event) => {
     for (const step of recipeSteps) {
       // Find the corresponding job order for this recipe step
       // Match by recipe_type, main_step, and material through material_request
-      const jobOrder = jobOrders.find(j => {
+      const jobOrder = jobOrders.find((j) => {
         if (j.step_no !== step.main_step || j.recipe_type !== step.recipe_type) {
           return false
         }
 
         // Check if this job order's material request matches the step
         const matReq = materialRequests.find(m =>
-          m.req_no === j.job_id &&
-          m.material_code === step.material_code &&
-          m.main_step === step.main_step &&
-          m.parallel_step === step.parallel_step
+          m.req_no === j.job_id
+          && m.material_code === step.material_code
+          && m.main_step === step.main_step
+          && m.parallel_step === step.parallel_step,
         )
 
         return !!matReq
       })
 
-      if (!jobOrder) continue
+      if (!jobOrder)
+        continue
 
       // Find the material request for this job order
       const materialRequest = materialRequests.find(m =>
-        m.req_no === jobOrder.job_id &&
-        m.material_code === step.material_code &&
-        m.main_step === step.main_step &&
-        m.parallel_step === step.parallel_step
+        m.req_no === jobOrder.job_id
+        && m.material_code === step.material_code
+        && m.main_step === step.main_step
+        && m.parallel_step === step.parallel_step,
       )
 
-      if (!materialRequest) continue
+      if (!materialRequest)
+        continue
 
       const stepKey = `${jobOrder.program_no}-${step.main_step}-${step.recipe_type}`
 
