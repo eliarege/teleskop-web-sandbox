@@ -35,7 +35,7 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
 
   const theoreticalDurationValue = eventRecord.originalData.theoreticalDuration
   const theoreticalDuration = formatSeconds(theoreticalDurationValue)
-  const isEventFinishedorOngoing = eventRecord.originalData.eventType === 'finished' || eventRecord.originalData.eventType === 'ongoing' || eventRecord.originalData.eventType === 'manual'
+  const isEventFinishedorOngoing = eventRecord.originalData.eventType === 'finished' || eventRecord.originalData.eventType === 'ongoing'
   const actualDurationValue = isEventFinishedorOngoing
     ? Math.floor(
       differenceInMilliseconds(

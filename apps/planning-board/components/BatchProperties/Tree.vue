@@ -4,7 +4,7 @@ import type { QTableColumn } from 'quasar'
 import { formatSeconds } from '../../composables/helper'
 
 const props = defineProps<{
-  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
+  eventType: 'planned' | 'finished' | 'ongoing' | 'stop' | 'unplanned'
   machineId: number
   planKey: number
   theoreticalDuration: number
@@ -12,6 +12,7 @@ const props = defineProps<{
   realDuration: number
   deviation: number
   batchKey?: number
+  isManual?: boolean
 }>()
 const { t } = useI18n()
 
@@ -80,7 +81,7 @@ const time = computed(() => {
   }
 })
 
-const validEventTypes = ['finished', 'ongoing', 'manual']
+const validEventTypes = ['finished', 'ongoing']
 
 function formatDeviation(actualDuration: number, theoreticalDuration: number) {
   if (!validEventTypes.includes(props.eventType)) {
