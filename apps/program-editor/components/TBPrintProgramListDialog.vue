@@ -11,77 +11,98 @@ const props = defineProps<{
 const $q = useQuasar()
 const editor = useEditorStore()
 const { t, locale } = useI18n()
+const { notifyError } = useNotify()
 const { $commandManager } = useNuxtApp()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
 const machineOption = ref<string>('1')
 
+const selectedMachines = computed(() =>
+  machineOption.value === '1' ? [editor.machine] : editor.selectedMachines,
+)
+
+const isDisabled = computed(() =>
+  machineOption.value === '2' && editor.selectedMachines.length === 0,
+)
+
 const selectMachineDialog = () => $commandManager.executeCommand('selectMachine', { $q })
 
-function getProcessTypeName(typeValue: number): string {
+function getProcessTypeName(typeValue: number) {
   return editor.allProcessTypes.find(pt => pt.value === typeValue)?.label || ''
 }
 
-function formatDate(date: string | Date): string {
-  const dateLocale = locale.value === 'tr' ? tr : enGB
-  return format(new Date(date), 'dd.MM.yyyy HH:mm', { locale: dateLocale })
+function formatDate(date: string | Date) {
+  return format(new Date(date), 'dd.MM.yyyy HH:mm', {
+    locale: locale.value === 'tr' ? tr : enGB,
+  })
+}
+
+async function generatePDF() {
+  // eslint-disable-next-line new-cap
+  const doc = new jsPDF()
+  let startY = 10
+
+  for (const machine of selectedMachines.value) {
+    const programs = await editor.fetchAllPrograms(machine.id)
+    if (!programs.length)
+      continue
+
+    doc.setFontSize(12)
+    doc.text(`${machine.id} - ${machine.name}`, 14, startY + 8)
+
+    autoTable(doc, {
+      startY: startY + 12,
+      head: [[
+        t('printProgramListDialog.programNo'),
+        t('printProgramListDialog.programName'),
+        t('printProgramListDialog.duration'),
+        t('printProgramListDialog.stepCount'),
+        t('printProgramListDialog.type'),
+        t('printProgramListDialog.updatedAt'),
+      ]],
+      body: programs.map(p => [
+        p.programNo,
+        p.name,
+        formatDuration(p.duration),
+        p.stepCount,
+        getProcessTypeName(p.type),
+        formatDate(p.updatedAt),
+      ]),
+      margin: { top: startY + 12 },
+    })
+
+    startY = (doc as any).lastAutoTable.finalY + 15
+
+    if (startY > 250 && machine !== selectedMachines.value[selectedMachines.value.length - 1]) {
+      doc.addPage()
+      startY = 10
+    }
+  }
+
+  return doc
 }
 
 async function printProgramList() {
   try {
-    const machines = machineOption.value === '1'
-      ? [editor.machine]
-      : editor.selectedMachines
-
-    // eslint-disable-next-line new-cap
-    const doc = new jsPDF()
-    let startY = 10
-
-    for (const machine of machines) {
-      const programs = await editor.fetchAllPrograms(machine.id)
-
-      if (!programs.length)
-        continue
-
-      // Makine bilgileri
-      doc.setFontSize(14)
-      doc.text(`${machine.id} - ${machine.name}`, 14, startY + 7)
-
-      // Program tablosu
-      autoTable(doc, {
-        startY: startY + 12,
-        head: [[
-          t('printProgramListDialog.programNo'),
-          t('printProgramListDialog.programName'),
-          t('printProgramListDialog.duration'),
-          t('printProgramListDialog.stepCount'),
-          t('printProgramListDialog.type'),
-          t('printProgramListDialog.updatedAt'),
-        ]],
-        body: programs.map(p => [
-          p.programNo,
-          p.name,
-          formatDuration(p.duration),
-          p.stepCount,
-          getProcessTypeName(p.type),
-          formatDate(p.updatedAt),
-        ]),
-        margin: { top: startY + 12 },
-      })
-
-      startY = (doc as any).lastAutoTable.finalY + 15
-
-      // Yeni sayfa kontrolü
-      if (startY > 250 && machine !== machines[machines.length - 1]) {
-        doc.addPage()
-        startY = 10
-      }
-    }
-
-    doc.save('program_list.pdf')
+    const doc = await generatePDF()
+    doc.autoPrint()
+    window.open(doc.output('bloburl'), '_blank')
     onDialogCancel()
   } catch (error) {
-    $q.notify({ type: 'negative', message: t('printError') })
+    notifyError(t('printError'))
+  }
+}
+
+async function downloadProgramList() {
+  try {
+    const doc = await generatePDF()
+    const fileName = machineOption.value === '1'
+      ? `${editor.machine.name}_program_listesi.pdf`
+      : 'program_listesi.pdf'
+    doc.save(fileName)
+    onDialogCancel()
+  } catch (error) {
+    notifyError(t('downloadError'))
   }
 }
 </script>
@@ -109,11 +130,11 @@ async function printProgramList() {
       </q-card-section>
 
       <q-card-section>
-        <div class="text-body1 q-mb-md">
+        <div class="q-mb-md">
           {{ t('printProgramListDialog.message') }}
         </div>
 
-        <div class="q-mb-sm">
+        <div class="m-2">
           <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
             {{ t('printProgramListDialog.machineOption') }}
           </label>
@@ -143,7 +164,6 @@ async function printProgramList() {
                 />
               </div>
 
-              <!-- Selected machines display -->
               <div v-if="editor.selectedMachines.length > 0" class="pl-6 pt-1">
                 <div class="text-xs text-grey-6 dark:text-grey-4 cursor-help">
                   <span class="font-medium">
@@ -179,21 +199,26 @@ async function printProgramList() {
         </div>
       </q-card-section>
 
-      <q-card-actions
-        align="right"
-        class="q-pa-md bg-gray-1 dark:bg-dark-4"
-      >
+      <q-card-actions align="right" class="q-pa-md bg-gray-1 dark:bg-dark-4">
         <q-btn
           :label="t('close')"
-          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          class="bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
           flat
           @click="onDialogCancel"
         />
         <q-btn
+          :label="t('download')"
+          :disable="isDisabled"
+          class="bg-primary text-white"
+          flat
+          @click="downloadProgramList()"
+        />
+        <q-btn
           :label="t('print')"
-          color="primary"
-          :disable="machineOption === '2' && editor.selectedMachines.length === 0"
-          @click="printProgramList(machineOption)"
+          :disable="isDisabled"
+          class="bg-primary text-white"
+          flat
+          @click="printProgramList()"
         />
       </q-card-actions>
     </q-card>
