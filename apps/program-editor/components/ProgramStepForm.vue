@@ -53,7 +53,7 @@ function deleteParallelStep(stepIndex: number, index: number): void {
   const settings = useProgramWriteSettings()
   if (!isLastStep(stepIndex) && settings.value.removeParallelCommandFromOtherSteps) {
     const parallelStep = editor.program.steps[stepIndex].parallelCommands[index]
-    $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', parallelStep.commandNo, parallelStep)
+    $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', parallelStep.commandNo)
   }
   editor.deleteParallelStep(stepIndex, index)
 }

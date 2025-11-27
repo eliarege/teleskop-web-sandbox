@@ -52,93 +52,91 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
 <template>
   <div class="w-full h-full select-none">
     <QDialog ref="dialogRef" persistent>
-      <QCard>
+      <QCard style="width: 450px">
         <QForm @submit.prevent="onDialogOK(newProgram)">
-          <QCard style="width: 500px">
-            <QCardSection>
-              <div class="text-h6 text-center">
-                {{ t(`menu.${props.type}`) }} - {{ machineName }}
-              </div>
-            </QCardSection>
+          <QCardSection>
+            <div class="text-h6 text-center">
+              {{ t(`menu.${props.type}`) }} - {{ machineName }}
+            </div>
+          </QCardSection>
 
-            <QCardSection class="mx-4">
-              <InputNumber
-                v-model="programNo"
-                type="positive-integer"
-                :label="t('program.programNo')"
-                :maxlength="10"
-                :rules="[
-                  (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
-                  (val: number) => !allProgramNos.includes(val) || t('input.unique', { field: t('program.programNo') }),
-                ]"
-                :disable="isRename"
-                class="mb-3"
-                dense
-              />
+          <QCardSection class="mx-4">
+            <InputNumber
+              v-model="programNo"
+              type="positive-integer"
+              :label="t('program.programNo')"
+              :maxlength="10"
+              :rules="[
+                (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
+                (val: number) => !allProgramNos.includes(val) || t('input.unique', { field: t('program.programNo') }),
+              ]"
+              :disable="isRename"
+              class="mb-3"
+              dense
+            />
 
-              <QInput
-                v-model="programName"
-                :label="t('program.name')"
-                :rules="[(val: string) => !!val || t('input.required', { field: t('program.name') })]"
-                class="mb-3"
-                dense
-              />
+            <QInput
+              v-model="programName"
+              :label="t('program.name')"
+              :rules="[(val: string) => !!val || t('input.required', { field: t('program.name') })]"
+              class="mb-3"
+              dense
+            />
 
-              <QSelect
-                v-if="!isTonello"
-                v-model="processType"
-                :options="allProcessTypes"
-                :label="t('program.processType')"
-                options-dense
-                :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.processType') })]"
-                :disable="isRename"
-                map-options
-                emit-value
-                dense
-              />
+            <QSelect
+              v-if="!isTonello"
+              v-model="processType"
+              :options="allProcessTypes"
+              :label="t('program.processType')"
+              options-dense
+              :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.processType') })]"
+              :disable="isRename"
+              map-options
+              emit-value
+              dense
+            />
 
-              <QSelect
-                v-if="!isTonello && isIlaveSelected"
-                v-model="additionalProcessType"
-                :options="additionalProcessTypeOptions"
-                :label="t('program.additionalProcessType')"
-                options-dense
-                :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.additionalProcessType') })]"
-                :disable="isRename"
-                map-options
-                emit-value
-                dense
-                class="mt-3"
-              />
+            <QSelect
+              v-if="!isTonello && isIlaveSelected"
+              v-model="additionalProcessType"
+              :options="additionalProcessTypeOptions"
+              :label="t('program.additionalProcessType')"
+              options-dense
+              :rules="[(val: number) => isDef(val) || t('input.required', { field: t('program.additionalProcessType') })]"
+              :disable="isRename"
+              map-options
+              emit-value
+              dense
+              class="mt-3"
+            />
 
-              <QCheckbox
-                v-if="!isTonello"
-                v-model="operator"
-                :label="t('operator')"
-                dense
-              />
-            </QCardSection>
+            <QCheckbox
+              v-if="!isTonello"
+              v-model="operator"
+              :label="t('operator')"
+              dense
+            />
+          </QCardSection>
 
-            <QCardActions
-              align="right"
-              class="q-pa-md bg-gray-1 dark:bg-dark-4"
-            >
-              <QBtn
-                flat
-                :label="t('cancel')"
-                class="q-mr-sm bg-gray-2  dark:bg-dark-3 text-dark-4 dark:text-gray-2"
-                type="reset"
-                @click="onDialogCancel"
-              />
-              <QBtn
-                flat
-                :label="isRename ? t('save') : t('create')"
-                class="q-mr-sm bg-primary text-gray-1 dark:text-gray-2"
-                type="submit"
-                :disable="!newProgram.programNo || !newProgram.name"
-              />
-            </QCardActions>
-          </QCard>
+          <QCardActions
+            align="right"
+            class="q-pa-md bg-gray-1 dark:bg-dark-4"
+          >
+            <QBtn
+              flat
+              :label="t('cancel')"
+              class="q-mr-sm bg-gray-2  dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+              type="reset"
+              @click="onDialogCancel"
+            />
+            <QBtn
+              flat
+              :label="isRename ? t('save') : t('create')"
+              class="q-mr-sm bg-primary text-gray-1 dark:text-gray-2"
+              type="submit"
+              :disable="!newProgram.programNo || !newProgram.name"
+            />
+          </QCardActions>
         </QForm>
       </QCard>
     </QDialog>
