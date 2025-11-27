@@ -106,6 +106,15 @@ function toggleTick(nodeId: string, isDisabled: boolean, isSelectable: boolean) 
       ticked.value.push(nodeId)
   }
 }
+
+watch(ticked, (newVal, oldVal) => {
+  if (props.singleSelection && newVal.length > 1) {
+    const newlyAdded = newVal.find(item => !oldVal.includes(item))
+    if (newlyAdded) {
+      ticked.value = [newlyAdded]
+    }
+  }
+})
 </script>
 
 <template>
