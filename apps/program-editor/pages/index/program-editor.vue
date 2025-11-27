@@ -271,7 +271,7 @@ watch(locale, () => {
 
 editor.isLoading = true
 if (editor.machine.id !== machineId) {
-  await editor.fetchMachine(machineId)
+  await editor.loadMachine(machineId)
   await editor.fetchCommandTypes(machineId)
   await editor.refreshAllPrograms()
 }

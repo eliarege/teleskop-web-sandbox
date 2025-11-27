@@ -9,6 +9,9 @@ const dmp = new DMP()
 const kc = useKeycloak()
 const route = useRoute()
 const editor = useEditorStore()
+const { notifyError } = useNotify()
+
+const loading = ref(true)
 
 const buttons = computed<ContextBarButtons[]>(() => [])
 useContextBar(buttons)
@@ -48,13 +51,13 @@ if (v1 && v2) {
   isValid2 = true
 }
 
-const loading = ref(true)
-editor.fetchMachine(Number(m)).then(() => {
+try {
+  await editor.loadMachine(Number(m))
+} catch (error) {
+  notifyError('Machine could not be loaded.')
+} finally {
   loading.value = false
-}).catch((err) => {
-  console.error(`Failed to load machine data for machine '${m}'`, err)
-  navigateTo('/')
-})
+}
 
 const { program: programOneData } = await kc.fetch<{ program: Program }>(paths[0])
 const { program: programTwoData } = await kc.fetch<{ program: Program }>(paths[1])

@@ -617,13 +617,26 @@ export const useEditorStore = defineStore('editor', () => {
    * Veriler, `Machine` ve `MachineCommand` türlerini içeren bir nesne olarak döner.
    * Elde edilen makine komutları, bir `Map` yapısına dönüştürülerek `machine` değişkenine atanır.
    */
-  async function fetchMachine(machineId: number): Promise<void> {
+  async function fetchMachine(machineId: number): Promise<Machine & { commands: Map<number, MachineCommand> }> {
     const machineData = await kc.fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
 
-    machine.value = {
+    return {
       ...machineData,
       commands: new Map((machineData.commands).map(command => [command.commandNo, command])),
     }
+  }
+
+  /**
+   * Belirtilen makine ID'sine göre makine verilerini yükler.
+   *
+   * @param {number} machineId - Yüklenecek makinenin ID'si.
+   *
+   * @returns {Promise<void>} Makine verileri başarıyla yüklendikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, `fetchMachine` fonksiyonunu kullanarak belirtilen makine ID'sine sahip makine verilerini çeker ve `machine` değişkenine atar.
+   */
+  async function loadMachine(machineId: number): Promise<void> {
+    machine.value = await fetchMachine(machineId)
   }
 
   /**
@@ -1049,6 +1062,7 @@ export const useEditorStore = defineStore('editor', () => {
     changeMachine,
     fetchProgram,
     fetchMachine,
+    loadMachine,
     fetchAllMachine,
     fetchMachineGroups,
     fetchAllPrograms,

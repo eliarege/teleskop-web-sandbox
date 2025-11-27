@@ -74,7 +74,7 @@ onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
 // onKeyStroke(['r', 'R'], async (event: KeyboardEvent) => {
 //   if (event.ctrlKey && !isActiveElementEditable()) {
 //     event.preventDefault()
-//     await editor.fetchMachine(machineId)
+//     await editor.loadMachine(machineId)
 //   }
 // })
 
@@ -157,7 +157,7 @@ if (filter.existingFilter.clearOnChange)
 
 editor.isLoading = true
 if (editor.machine.id !== machineId) {
-  await editor.fetchMachine(machineId)
+  await editor.loadMachine(machineId)
   await editor.fetchCommandTypes(machineId)
 }
 await editor.refreshAllPrograms().then(() => {
