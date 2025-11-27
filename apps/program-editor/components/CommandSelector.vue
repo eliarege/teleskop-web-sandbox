@@ -12,7 +12,6 @@ const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
 const { $commandManager } = useNuxtApp()
-const config = useRuntimeConfig()
 const selectRef = ref<QSelect>()
 
 const { mt } = useProjectTranslations()
@@ -95,7 +94,7 @@ async function updateStepCommand(commandNo: number) {
 
   if (!isMainCommand.value && !isLastStep.value && isNewCommand) {
     if (settings.value.confirmAddParallelCommandToSteps)
-      $commandManager.executeCommand('moveParallelStep', { $q }, 'add', commandNo, programCommand.value)
+      $commandManager.executeCommand('moveParallelStep', { $q }, 'add', commandNo)
   }
 }
 
