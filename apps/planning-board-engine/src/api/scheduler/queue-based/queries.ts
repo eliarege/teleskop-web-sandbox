@@ -171,10 +171,10 @@ export async function getQueueBasedActualEvents(startTime: string, endTime: stri
     WITH ActualEvent AS (
       SELECT
         CASE
-          WHEN planKey IS NULL THEN 'manual'
           WHEN endTime IS NULL AND cancelTime IS NULL then 'ongoing'
           WHEN endTime IS NOT NULL OR cancelTime IS NOT NULL then 'finished'
         END as eventType,
+        CAST(CASE WHEN planKey IS NULL THEN 1 ELSE 0 END AS BIT) as isManual,
         DATEADD(MINUTE, :timezoneOffset, startTime) as startTime,
         DATEADD(MINUTE, :timezoneOffset, COALESCE(endTime, cancelTime,
           IIF(

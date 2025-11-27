@@ -450,7 +450,7 @@ export class TaskStore extends EventStore {
     let currentDate = new Date()
 
     const hasUnfinishedEvent = machine.events.some(event =>
-      event.eventType === 'ongoing' || event.eventType === 'manual',
+      event.eventType === 'ongoing',
     )
 
     if (hasUnfinishedEvent) {

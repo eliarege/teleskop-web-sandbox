@@ -164,8 +164,9 @@ const propertiesModal = reactive({
   planParameters: {},
   eventType: '',
   batchKey: null,
+  isManual: false,
 })
-function setProperties(machineId: number, jobOrder: string, planKey: number, fabricWeight: number, theoreticalDuration: number, realDuration: number, deviation: number, program: string, isBatchStarted: boolean, eventType: string, batchKey?: number) {
+function setProperties(machineId: number, jobOrder: string, planKey: number, fabricWeight: number, theoreticalDuration: number, realDuration: number, deviation: number, program: string, isBatchStarted: boolean, eventType: string, batchKey?: number, isManual?: boolean) {
   propertiesModal.show = true
   propertiesModal.planKey = planKey
   propertiesModal.jobOrder = jobOrder
@@ -176,6 +177,7 @@ function setProperties(machineId: number, jobOrder: string, planKey: number, fab
   propertiesModal.deviation = deviation
   propertiesModal.eventType = eventType
   propertiesModal.batchKey = batchKey || null
+  propertiesModal.isManual = isManual || false
 
   setPlanParameters(false, planKey, machineId, program, isBatchStarted, [], false)
 }
@@ -248,12 +250,6 @@ function setFabricColor(event: QueueBasedEvent) {
   if (event.eventType === 'ongoing') {
     return ongoingBatchFabricColor && event.fabricColor ? integerToHex(event.fabricColor) : ongoingBatchColor
   }
-  if (event.eventType === 'manual') {
-    if (new Date(event.endTime) < new Date()) {
-      return completedBatchFabricColor && event.fabricColor ? integerToHex(event.fabricColor) : completedBatchColor
-    }
-    return ongoingBatchFabricColor && event.fabricColor ? integerToHex(event.fabricColor) : ongoingBatchColor
-  }
   return showStops.color
 }
 
@@ -285,7 +281,7 @@ function setEventName(event: QueueBasedEvent): Values<QueueBasedEvent> {
   if (event.eventType === 'planned') {
     return formatBatchText(store.settings.plannedBatchText)
   }
-  if (event.eventType === 'finished' || event.eventType === 'manual') {
+  if (event.eventType === 'finished') {
     return formatBatchText(store.settings.completedBatchText)
   } else if (event.eventType === 'ongoing') {
     return formatBatchText(store.settings.ongoingBatchText)
@@ -297,8 +293,6 @@ function setEventName(event: QueueBasedEvent): Values<QueueBasedEvent> {
 function setId(event: QueueBasedEvent) {
   switch (event.eventType) {
     case 'finished':
-      return `batch-key-${event.batchKey}`
-    case 'manual':
       return `batch-key-${event.batchKey}`
     case 'ongoing':
       return `batch-key-${event.batchKey}`
@@ -609,13 +603,6 @@ onMounted(async () => {
           icons.push('b-fa b-fa-solid b-fa-flag-checkered')
         } else if (eventRecord.originalData.eventType === 'ongoing') {
           icons.push('b-fa b-fa-solid b-fa-play')
-        } else if (eventRecord.originalData.eventType === 'manual') {
-          if (new Date(eventRecord.originalData.endDate) <= new Date()) {
-            icons.push('b-fa b-fa-solid b-fa-flag-checkered')
-          } else {
-            icons.push('b-fa b-fa-solid b-fa-play')
-          }
-          icons.push('b-fa b-fa-solid b-fa-m')
         } else if (eventRecord.originalData.isStopped) {
           icons.push('b-fa b-fa-solid b-fa-stop')
         } else {
@@ -626,6 +613,9 @@ onMounted(async () => {
         }
         if (eventRecord.originalData.isDeleted) {
           icons.push('b-fa b-fa-solid b-fa-ban')
+        }
+        if (eventRecord.originalData.isManual) {
+          icons.push('b-fa b-fa-solid b-fa-m')
         }
       }
 
@@ -852,12 +842,13 @@ onMounted(async () => {
               const deviation = eventRecord.originalData.eventType === 'finished' ? eventRecord.originalData.deviation : 0
               const eventType = eventRecord.originalData.eventType
               const batchKey = eventRecord.originalData.batchKey || null
+              const isManual = eventRecord.originalData.isManual || false
               let program: string = eventRecord.originalData.programList
               if (program.endsWith(',')) {
                 program = program.slice(0, -1)
               }
               const isBatchStarted = eventRecord.originalData.isStarted
-              setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, realDuration, deviation, program, isBatchStarted, eventType, batchKey)
+              setProperties(machineId, jobOrder, planKey, fabricWeight, theoreticalDuration, realDuration, deviation, program, isBatchStarted, eventType, batchKey, isManual)
             },
           },
           process: {
@@ -1062,6 +1053,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(bryntumLocale))
           :deviation="propertiesModal.deviation"
           :event-type="propertiesModal.eventType"
           :batch-key="propertiesModal.batchKey"
+          :is-manual="propertiesModal.isManual"
         />
       </template>
     </EliarModal>

@@ -17,6 +17,7 @@ import {
 import { StartingParameters } from '~/composables/enums'
 import { getMachineInfo, isTonello } from '~/lib/machine'
 import { parseProgramListString } from '~/lib/program'
+import { config } from '~/config'
 
 export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   fastify.get(
@@ -125,15 +126,14 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           planParameters = await getEveryPlanParameter(planKey, machineId)
         } else {
           const parameters = await getRequiredStartingParametersForPrograms(programNoList, machineId)
-          if (parameters.length === 0) {
-            return reply.code(200).send('NO PARAMETER')
-          }
           planParameters = await getStartingParametersWithValues(parameters, planKey)
         }
 
         if (planParameters.every(e => e.paramStatus === StartingParameters.Correct)) {
           await queueUnplannedEvent(newEvent)
-          if (isTonello(machineInfo)) {
+          if (config.nodeEnv === 'development') {
+            return reply.code(200).send('DONE')
+          } else if (isTonello(machineInfo)) {
             const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
             await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder.code, planParameters)
           } else {

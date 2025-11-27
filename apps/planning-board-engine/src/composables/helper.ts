@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { addSeconds } from 'date-fns'
-import type { QueueBasedEvent, QueueBasedEventStop, QueueBasedEventWithStops, QueueBasedNonActualEvent } from '../../types/planning-board'
+import type { QueueBasedActualEvent, QueueBasedEvent, QueueBasedEventStop, QueueBasedNonActualEvent } from '../../types/planning-board'
 import { knex } from '../knexConfig'
 
 export function generateClientId() {
@@ -36,17 +36,17 @@ export async function queueBasedEventStatus(events: QueueBasedEvent[], includeSt
 }
 
 function ongoingEvents(events: QueueBasedEvent[]): void {
-  const activeManualEvents = events.filter(
-    event => event.eventType === 'manual' && new Date(event.endTime) >= new Date() || event.eventType === 'ongoing',
-  )
+  const activeEvents = events.filter(
+    event => event.eventType === 'ongoing',
+  ) as QueueBasedActualEvent[]
 
-  activeManualEvents.forEach((manualEvent) => {
+  activeEvents.forEach((ongoingEvent) => {
     const plannedEventsOnSameMachine = events.filter(
-      ev => ev.eventType === 'planned' && ev.machineId === manualEvent.machineId,
-    )
+      ev => ev.eventType === 'planned' && ev.machineId === ongoingEvent.machineId,
+    ) as QueueBasedNonActualEvent[]
 
     plannedEventsOnSameMachine.forEach((plannedEvent) => {
-      updatePlannedEvent(plannedEvent, manualEvent, events)
+      updatePlannedEvent(plannedEvent, ongoingEvent, events)
     })
   })
 }
@@ -54,13 +54,13 @@ function ongoingEvents(events: QueueBasedEvent[]): void {
 function calculateEventProgress(events: QueueBasedEvent[]): QueueBasedEvent[] {
   return events.map(event => ({
     ...event,
-    percentDone: event.deviation > 0
+    percentDone: 'deviation' in event && event.deviation > 0
       ? 100 - ((event.deviation / event.theoreticalDuration) * 100)
       : 100,
   }))
 }
 
-function updatePlannedEvent(ev: QueueBasedNonActualEvent, event: QueueBasedEvent, events: QueueBasedEvent[]) {
+function updatePlannedEvent(ev: QueueBasedNonActualEvent, event: QueueBasedActualEvent, events: QueueBasedEvent[]) {
   if (ev.queueNumber === 1) {
     ev.startTime = addSeconds(event.endTime, 300).toString()
     ev.endTime = addSeconds(ev.startTime, ev.theoreticalDuration).toString()

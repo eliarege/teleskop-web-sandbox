@@ -35,7 +35,7 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
 
   const theoreticalDurationValue = eventRecord.originalData.theoreticalDuration
   const theoreticalDuration = formatSeconds(theoreticalDurationValue)
-  const isEventFinishedorOngoing = eventRecord.originalData.eventType === 'finished' || eventRecord.originalData.eventType === 'ongoing' || eventRecord.originalData.eventType === 'manual'
+  const isEventFinishedorOngoing = eventRecord.originalData.eventType === 'finished' || eventRecord.originalData.eventType === 'ongoing'
   const actualDurationValue = isEventFinishedorOngoing
     ? Math.floor(
       differenceInMilliseconds(
@@ -275,11 +275,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       method: 'POST',
       body: { newEvent },
     })
-    if (res === UploadJoborder.MissingParameter) {
-      Toast.show('Cannot schedule due to missing parameters')
-      refreshScheduler()
-      schedule.renderRows()
-    } else if (typeof res !== 'string' && res.some(f => f.value === null)) {
+    if (typeof res !== 'string' && res.some(f => f.value === null)) {
       const uploadData = {
         program: newEvent.program,
         machineId: newEvent.machineId,

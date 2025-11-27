@@ -64,4 +64,8 @@ export const config = defineConfiguration({
     type: 'integer',
     default: -180,
   },
+  nodeEnv: {
+    env: ['NODE_ENV'],
+    default: 'development',
+  },
 })

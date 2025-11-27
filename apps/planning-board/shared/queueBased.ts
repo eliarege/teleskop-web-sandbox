@@ -1,8 +1,9 @@
 export interface QueueBasedBaseEventRaw {
-  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'stop' | 'unplanned'
+  eventType: 'planned' | 'finished' | 'ongoing' | 'stop' | 'unplanned'
   machineId: number
   startTime: string
   endTime: string
+  isManual?: boolean
 }
 export interface QueueBasedEventStop extends QueueBasedBaseEventRaw {
   eventType: 'stop'
@@ -10,7 +11,7 @@ export interface QueueBasedEventStop extends QueueBasedBaseEventRaw {
   stopReason: string
 }
 export interface QueueBasedBaseEvent extends QueueBasedBaseEventRaw {
-  eventType: 'planned' | 'finished' | 'ongoing' | 'manual' | 'unplanned'
+  eventType: 'planned' | 'finished' | 'ongoing' | 'unplanned'
   planKey: number
   jobOrder: string
   programList: string
@@ -19,9 +20,10 @@ export interface QueueBasedBaseEvent extends QueueBasedBaseEventRaw {
   fabricWeight: number
   fabricColor: number
   note: string
+  isManual: boolean
 }
 export interface QueueBasedActualEvent extends QueueBasedBaseEvent {
-  eventType: 'finished' | 'ongoing' | 'manual'
+  eventType: 'finished' | 'ongoing'
   batchKey: number
   deviation: number
 }
