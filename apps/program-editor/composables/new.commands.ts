@@ -90,6 +90,7 @@ export interface RegisteredCommands {
   checkErrors: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
   getAllPrograms: [ctx: any, machine: { id: number, name: string }]
   sendAllPrograms: [ctx: any, machine: { id: number, name: string }]
+  selectMachine: [ctx: any, options?: { singleSelection?: boolean }]
 }
 
 registerCommand(() => {
@@ -944,6 +945,34 @@ registerCommand(() => {
 
       await contextMenuStore.getAllPrograms(machine)
       await editor.refreshAllPrograms()
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+
+  return {
+    name: 'selectMachine',
+    async execute(ctx: any, options: { singleSelection?: boolean } = {}) {
+      await editor.fetchAllMachine()
+      await editor.fetchMachineGroups()
+
+      ctx.$q.dialog({
+        component: CMMachineListDialog,
+        componentProps: {
+          type: 'selectMachine',
+          allMachines: editor.allMachines,
+          machineGroups: editor.machineGroups,
+          selectedMachineIds: editor.selectedMachines.map(m => m.id),
+          singleSelection: options.singleSelection,
+        },
+      }).onOk(async (machines: MachineInfo[]) => {
+        editor.selectedMachines = machines
+      }).onCancel(() => {
+        return false
+      })
+      return true
     },
   }
 })

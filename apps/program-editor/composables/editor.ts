@@ -3,7 +3,7 @@ import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
 import { useErrorStore } from './utils'
-import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandEligibility, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -15,6 +15,7 @@ export const useEditorStore = defineStore('editor', () => {
   const machine = ref<Machine>(createMachine())
   const allMachines = ref<Machine[]>([])
   const machineGroups = ref<MachineGroup[]>([])
+  const selectedMachines = ref<MachineInfo[]>([])
   const selectedPrograms = ref<ProgramTableRow[]>([])
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTableRow[]>([])
@@ -1029,6 +1030,7 @@ export const useEditorStore = defineStore('editor', () => {
     machine,
     allMachines,
     machineGroups,
+    selectedMachines,
     selectedPrograms,
     selectedSteps,
     isLoading,

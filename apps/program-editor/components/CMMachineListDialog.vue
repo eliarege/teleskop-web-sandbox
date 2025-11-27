@@ -9,6 +9,7 @@ const props = defineProps<{
   machineGroups: MachineGroup[]
   disabledMachineIds?: number[]
   selectedMachineIds?: number[]
+  singleSelection?: boolean
 }>()
 
 defineEmits([
@@ -63,6 +64,9 @@ const expanded = ref<number[]>(
 )
 
 function selectAllMachines() {
+  if (props.singleSelection)
+    return
+
   selectAll.value = !selectAll.value
 
   if (selectAll.value) {
@@ -84,15 +88,23 @@ function expandToggle() {
 }
 
 function toggleTick(nodeId: string, isDisabled: boolean, isSelectable: boolean) {
-  // Grup başlıkları veya disabled makineler tıklanamaz
   if (isSelectable || isDisabled)
     return
 
   const index = ticked.value.indexOf(nodeId)
-  if (index > -1)
-    ticked.value.splice(index, 1)
-  else
-    ticked.value.push(nodeId)
+
+  if (props.singleSelection) {
+    if (index > -1) {
+      ticked.value = []
+    } else {
+      ticked.value = [nodeId]
+    }
+  } else {
+    if (index > -1)
+      ticked.value.splice(index, 1)
+    else
+      ticked.value.push(nodeId)
+  }
 }
 </script>
 
@@ -143,6 +155,7 @@ function toggleTick(nodeId: string, isDisabled: boolean, isSelectable: boolean) 
 
         <div class="flex gap-4 justify-start p-2">
           <QBtn
+            v-if="!props.singleSelection"
             class="w-40 bg-gray-1 dark:bg-dark-4"
             :label="selectAll ? t('dropAll') : t('selectAll')"
             dense
