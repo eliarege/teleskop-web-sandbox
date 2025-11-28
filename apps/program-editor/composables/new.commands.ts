@@ -964,6 +964,7 @@ registerCommand(() => {
         component: CMMachineListDialog,
         componentProps: {
           type: 'selectMachine',
+          currentMachineId: editor.machine.id,
           allMachines: editor.allMachines,
           machineGroups: editor.machineGroups,
           selectedMachineIds: editor.selectedMachines.map(m => m.id),

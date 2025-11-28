@@ -445,6 +445,11 @@
     "updateHeaderNotification": {
       "success": "{programNo} numaralı programın baslığı basarıyla değiştirildi.",
       "fail": "{programNo} numaralı programın baslığı değiştirme işlemi basarısız."
+    },
+    "selectMachine": {
+      "title": "Makine Seçimi",
+      "selectMachine": "İşlemi gerçekleştirmek istediğiniz makineyi seçiniz.",
+      "operate": "Tamam"
     }
   },
   "exportExcelDialog": {
@@ -634,12 +639,38 @@
     "machinesSelected": "{count} makine seçildi",
     "selectedMachinesList": "Seçili Makine Listesi",
     "noMachinesSelected": "Makine Seçilmedi",
-
-    "programNo": "No",
-    "programName": "Ad",
+    "noMachineSelected": "Lütfen bir makine seçiniz",
+    "selectPrograms": "Yazdırmak istediğiniz programları seçiniz",
+    "selectCommands": "Çıktıda görünmesini istediğiniz komutları seçiniz",
+    "machineNo": "Makine No",
+    "machineName": "Makine Ad",
+    "program": "Program",
+    "programNo": "Program No",
+    "programName": "Program Ad",
     "duration": "Süre",
-    "stepCount": "Adim Say.",
+    "stepCount": "Adim Sayisi",
     "type": "Tipi",
-    "updatedAt": "Günc. Tarihi"
-  }
+    "processCode": "Proses Kodu",
+    "createdAt": "Olusturma Tarihi",
+    "updatedAt": "Degistirme Tarihi",
+    "step": "Adim",
+    "command": "Komut",
+    "commandNo": "Komut No",
+    "commandName": "Komut Ad",
+    "commandType": "Komut Tipi",
+    "parameter": "Parametre",
+    "name": "Ad",
+    "value": "Degeri",
+    "page": "Sayfa",
+    "machine": "Makine",
+    "selectedPrograms": "Seçili Programlar",
+    "selectedCommands": "Seçili Komutlar",
+    "mainCommand": "Ana Komut",
+    "parallelCommand": "Paralel Komut",
+    "noSelectedCommands": "Bu programda seçili komut bulunmamaktadir",
+    "printError": "Yazdırma sırasında hata oluştu",
+    "downloadError": "İndirme sırasında hata oluştu",
+    "programList": "program_listesi"
+  },
+  "download": "İndir"
 }

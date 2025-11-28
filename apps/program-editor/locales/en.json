@@ -428,6 +428,11 @@
     "updateHeaderNotification": {
       "success": "Update header operation is succeed for program with program no {programNo}.",
       "fail": "Update header operation is failed for program with program no {programNo}."
+    },
+    "selectMachine": {
+      "title": "Machine Selection",
+      "selectMachine": "Select machines that you want to perform the operation on.",
+      "operate": "Ok"
     }
   },
   "exportExcelDialog": {
@@ -616,12 +621,38 @@
     "machinesSelected": "{count} machines selected",
     "selectedMachinesList": "Selected Machines List",
     "noMachinesSelected": "No Machines Selected",
-
-    "programNo": "No",
-    "programName": "Name",
+    "noMachineSelected": "Please select a machine",
+    "selectPrograms": "Select programs to print",
+    "selectCommands": "Select commands to include in print",
+    "machineNo": "Machine No",
+    "machineName": "Machine Name",
+    "program": "Program",
+    "programNo": "Program No",
+    "programName": "Program Name",
     "duration": "Duration",
     "stepCount": "Step Count",
     "type": "Type",
-    "updatedAt": "Updated At"
-  }
+    "processCode": "Process Code",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "step": "Step",
+    "command": "Command",
+    "commandNo": "Command No",
+    "commandName": "Command Name",
+    "commandType": "Command Type",
+    "parameter": "Parameter",
+    "name": "Name",
+    "value": "Value",
+    "page": "Page",
+    "machine": "Machine",
+    "selectedPrograms": "Selected Programs",
+    "selectedCommands": "Selected Commands",
+    "mainCommand": "Main Command",
+    "parallelCommand": "Parallel Command",
+    "noSelectedCommands": "No selected commands in this program",
+    "printError": "An error occurred while printing",
+    "downloadError": "An error occurred while downloading",
+    "programList": "program_list"
+  },
+  "download": "Download"
 }
