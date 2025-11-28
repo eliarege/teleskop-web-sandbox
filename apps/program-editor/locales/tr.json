@@ -473,14 +473,16 @@
     "commandIOName": "Komut IO ismi",
     "IOName": "IO ismi",
     "default": "Varsayılan",
+    "report": "Rapor"
+  },
+  "machineSelectorDialog": {
     "machineOptions": "Makine Seçenekleri",
     "thisMachine": "Bu Makine ({machineName})",
     "selectedMachines": "Seçili Makineler",
     "selectMachine": "Makine Seçiniz",
     "machinesSelected": "{count} makine seçildi",
     "selectedMachinesList": "Seçili Makine Listesi",
-    "noMachinesSelected": "Makine Seçilmedi",
-    "report": "Rapor"
+    "noMachinesSelected": "Makine Seçilmedi"
   },
   "commandType": {
     "chemicalRequest": "Kimyasal İstek",
@@ -640,16 +642,9 @@
   "printProgramListDialog": {
     "title": "Program Listesini Yazdır",
     "message": "Programlarını yazdırmak istediğiniz makineyi seçiniz",
-    "machineOptions": "Makine Seçenekleri",
-    "thisMachine": "Bu Makine ({machineName})",
-    "selectedMachines": "Seçili Makineler",
-    "selectMachine": "Makine Seçiniz",
-    "machinesSelected": "{count} makine seçildi",
-    "selectedMachinesList": "Seçili Makine Listesi",
-    "noMachinesSelected": "Makine Seçilmedi",
-    "noMachineSelected": "Lütfen bir makine seçiniz",
     "selectPrograms": "Yazdırmak istediğiniz programları seçiniz",
     "selectCommands": "Çıktıda görünmesini istediğiniz komutları seçiniz",
+    "noMachineSelected": "Lütfen bir makine seçiniz",
     "machineNo": "Makine No",
     "machineName": "Makine Ad",
     "program": "Program",

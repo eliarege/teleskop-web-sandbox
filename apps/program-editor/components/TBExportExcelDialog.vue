@@ -10,10 +10,7 @@ const props = defineProps<{
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const { $q, $commandManager } = useNuxtApp()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
-
-const selectMachineDialog = () => $commandManager.executeCommand('selectMachine', { $q })
 
 const machineOption = ref<string>('1')
 const selectedMachines = computed(() =>
@@ -233,69 +230,10 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
       </q-card-section>
 
       <q-card-section>
-        <div class="m-2">
-          <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
-            {{ t('exportExcelDialog.machineOptions') }}
-          </label>
-          <div class="q-gutter-sm">
-            <q-radio
-              v-model="machineOption"
-              val="1"
-              :label="t('exportExcelDialog.thisMachine', { machineName: props.machineName })"
-              dense
-            />
-            <div class="flex flex-col">
-              <div class="flex items-center gap-2">
-                <q-radio
-                  v-model="machineOption"
-                  val="2"
-                  :label="t('exportExcelDialog.selectedMachines')"
-                  dense
-                />
-                <q-btn
-                  :label="t('exportExcelDialog.selectMachine')"
-                  :disable="machineOption !== '2'"
-                  color="primary"
-                  size="sm"
-                  outline
-                  dense
-                  @click="selectMachineDialog()"
-                />
-              </div>
-
-              <div v-if="editor.selectedMachines.length > 0" class="pl-6 pt-1">
-                <div class="text-xs text-grey-6 dark:text-grey-4 cursor-help">
-                  <span class="font-medium">
-                    {{ t('exportExcelDialog.machinesSelected', { count: editor.selectedMachines.length }) }}
-                  </span>
-                  <q-tooltip
-                    class="bg-white text-dark shadow-4 text-body2"
-                    anchor="top middle"
-                    self="bottom middle"
-                  >
-                    <div class="q-pa-sm">
-                      <div class="text-weight-medium q-mb-xs">
-                        {{ t('exportExcelDialog.selectedMachinesList') }}:
-                      </div>
-                      <div
-                        v-for="machine in editor.selectedMachines"
-                        :key="machine.id"
-                        class="q-mb-xs"
-                      >
-                        • {{ machine.name }}
-                      </div>
-                    </div>
-                  </q-tooltip>
-                </div>
-              </div>
-              <div v-else class="pl-6 pt-1">
-                <div class="text-xs text-grey-6 dark:text-grey-4 italic">
-                  {{ t('exportExcelDialog.noMachinesSelected') }}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CMMachineSelector
+          v-model="machineOption"
+          :machine-name="props.machineName"
+        />
       </q-card-section>
 
       <q-card-section class="q-pt-none">

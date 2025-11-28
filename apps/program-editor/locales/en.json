@@ -456,14 +456,16 @@
     "commandIOName": "Command IO Name",
     "IOName": "IO Name",
     "default": "Default",
+    "report": "Report"
+  },
+  "machineSelectorDialog": {
     "machineOptions": "Machine Options",
     "thisMachine": "This Machine ({machineName})",
     "selectedMachines": "Selected Machines",
     "selectMachine": "Select Machine",
     "machinesSelected": "{count} machines selected",
     "selectedMachinesList": "Selected Machines List",
-    "noMachinesSelected": "No Machines Selected",
-    "report": "Report"
+    "noMachinesSelected": "No Machines Selected"
   },
   "commandType": {
     "chemicalRequest": "Chemical Request",
@@ -622,16 +624,9 @@
   "printProgramListDialog": {
     "title": "Print Program List",
     "message": "Select the machine whose programs you want to print",
-    "machineOptions": "Machine Options",
-    "thisMachine": "This Machine ({machineName})",
-    "selectedMachines": "Selected Machines",
-    "selectMachine": "Select Machine",
-    "machinesSelected": "{count} machines selected",
-    "selectedMachinesList": "Selected Machines List",
-    "noMachinesSelected": "No Machines Selected",
-    "noMachineSelected": "Please select a machine",
     "selectPrograms": "Select programs to print",
     "selectCommands": "Select commands to include in print",
+    "noMachineSelected": "Please select a machine",
     "machineNo": "Machine No",
     "machineName": "Machine Name",
     "program": "Program",
