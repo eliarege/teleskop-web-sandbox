@@ -698,15 +698,15 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const { fetch } = useKeycloak()
+  const editor = useEditorStore()
+
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
-      const machineGroups = await fetch('/api/machine-group')
       ctx.$q.dialog({
         component: TBExportExcelDialog,
         componentProps: {
-          machineGroups,
+          machineName: editor.machine.name,
         },
       })
       return true
