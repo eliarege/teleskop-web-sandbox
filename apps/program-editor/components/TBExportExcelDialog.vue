@@ -198,8 +198,8 @@ async function exportExcel() {
 
   const buffer = await workbook.xlsx.writeBuffer()
   const fileName = machineOption.value === '1'
-    ? `${editor.machine.name}_${t('exportExcelDialog.report')}.pdf`
-    : `${t('exportExcelDialog.report')}.pdf`
+    ? `${editor.machine.name}_${t('exportExcelDialog.report')}`
+    : `${t('exportExcelDialog.report')}`
   downloadExcelFile(fileName, buffer)
   onDialogCancel()
 }
