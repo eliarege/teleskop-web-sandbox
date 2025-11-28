@@ -438,7 +438,7 @@
   "exportExcelDialog": {
     "_": "Export To Excel",
     "machineList": "Machine List",
-    "fields": "Fields",
+    "fieldsToExport": "Fields To Export",
     "commandList": "Command List",
     "detailedCommandList": "Detailed Command List",
     "machineConstantsList": "Machine Constants List",
@@ -455,7 +455,15 @@
     "parameterName": "Parameter Name",
     "commandIOName": "Command IO Name",
     "IOName": "IO Name",
-    "default": "Default"
+    "default": "Default",
+    "machineOptions": "Machine Options",
+    "thisMachine": "This Machine ({machineName})",
+    "selectedMachines": "Selected Machines",
+    "selectMachine": "Select Machine",
+    "machinesSelected": "{count} machines selected",
+    "selectedMachinesList": "Selected Machines List",
+    "noMachinesSelected": "No Machines Selected",
+    "report": "Report"
   },
   "commandType": {
     "chemicalRequest": "Chemical Request",

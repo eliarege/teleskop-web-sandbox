@@ -455,7 +455,7 @@
   "exportExcelDialog": {
     "_": "Excele Aktar",
     "machineList": "Makine Listesi",
-    "fields": "Alanlar",
+    "fieldsToExport": "Aktarılacak Alanlar",
     "commandList": "Komut Listesi",
     "detailedCommandList": "Detaylı Komut Listesi",
     "machineConstantsList": "Makine Sabitleri Listesi",
@@ -472,7 +472,15 @@
     "parameterName": "Parameter Name",
     "commandIOName": "Komut IO ismi",
     "IOName": "IO ismi",
-    "default": "Varsayılan"
+    "default": "Varsayılan",
+    "machineOptions": "Makine Seçenekleri",
+    "thisMachine": "Bu Makine ({machineName})",
+    "selectedMachines": "Seçili Makineler",
+    "selectMachine": "Makine Seçiniz",
+    "machinesSelected": "{count} makine seçildi",
+    "selectedMachinesList": "Seçili Makine Listesi",
+    "noMachinesSelected": "Makine Seçilmedi",
+    "report": "Rapor"
   },
   "commandType": {
     "chemicalRequest": "Kimyasal İstek",

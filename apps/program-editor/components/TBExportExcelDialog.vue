@@ -1,54 +1,44 @@
 <script setup lang="ts">
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
-import type { MachineCommand, MachineConstant, MachineGroup, MachineInfo } from '~/shared/types'
+import type { MachineCommand, MachineConstant } from '~/shared/types'
 
 const props = defineProps<{
-  machineGroups: MachineGroup[]
+  machineName: string
 }>()
 
-const kc = useKeycloak()
 const { t } = useI18n()
+const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-
+const { $q, $commandManager } = useNuxtApp()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
-let sheet: ExcelJS.Worksheet
 
-const selectedMachines = ref<string[]>([])
-const expanded = ref<string[]>([])
-const nodes = computed(() => {
-  if (!props.machineGroups)
-    return []
+const selectMachineDialog = () => $commandManager.executeCommand('selectMachine', { $q })
 
-  return props.machineGroups.filter(group => group.machines.length > 0).map(group => ({
-    id: group.groupId,
-    label: group.name,
-    selectable: false,
-    children: group.machines.map(machine => ({
-      id: `${machine.groupId}-${machine.id}`,
-      label: machine.name,
-      selectable: false,
-    })),
-  }))
-})
+const machineOption = ref<string>('1')
+const selectedMachines = computed(() =>
+  machineOption.value === '1' ? [editor.machine] : editor.selectedMachines,
+)
 
-const fields = ref([
+const fields = [
   { label: t('exportExcelDialog.commandList'), value: 1 },
   { label: t('exportExcelDialog.detailedCommandList'), value: 2 },
   { label: t('exportExcelDialog.machineConstantsList'), value: 3 },
   { label: t('exportExcelDialog.startParametersList'), value: 4 },
-])
+]
 const selectedFields = ref<number[]>([1, 2, 3, 4])
 
 async function excelFormatter(workbook: ExcelJS.Workbook) {
-  const selectedMachineIds = selectedMachines.value.map(machine => Number(machine.split('-')[1]))
+  const commands: MachineCommand[] = []
 
-  const commands: MachineCommand[] = await kc.fetch(`/api/machine/commands`, {
-    method: 'POST',
-    body: { machineIds: selectedMachineIds },
-  })
+  for (const machine of selectedMachines.value) {
+    const machineData = await editor.fetchMachine(machine.id)
+    commands.push(...machineData.commands.values())
+  }
 
   for (const field of selectedFields.value) {
+    let sheet: ExcelJS.Worksheet | null = null
+
     if (field === 1) {
       sheet = workbook.addWorksheet(t('exportExcelDialog.commandList'))
       sheet.columns = [
@@ -61,8 +51,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
         commandNo: t('exportExcelDialog.commandNo'),
         commandName: t('exportExcelDialog.commandName'),
       }).font = { bold: true }
-    }
-    if (field === 2) {
+    } else if (field === 2) {
       sheet = workbook.addWorksheet(t('exportExcelDialog.detailedCommandList'))
       sheet.columns = [
         { key: 'machineName', width: 10 },
@@ -75,8 +64,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
         machineName: t('exportExcelDialog.machine'),
         commandName: t('exportExcelDialog.commandName'),
       }).font = { bold: true }
-    }
-    if (field === 3) {
+    } else if (field === 3) {
       sheet = workbook.addWorksheet(t('exportExcelDialog.machineConstantsList'))
       sheet.columns = [
         { key: 'machineName', width: 10 },
@@ -94,8 +82,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
         min: t('exportExcelDialog.min'),
         max: t('exportExcelDialog.max'),
       }).font = { bold: true }
-    }
-    if (field === 4) {
+    } else if (field === 4) {
       sheet = workbook.addWorksheet(t('exportExcelDialog.startParametersList'))
       sheet.columns = [
         { key: 'machineName', width: 10 },
@@ -115,23 +102,23 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
       }).font = { bold: true }
     }
 
-    for (const machineId of selectedMachineIds) {
-      const machine = props.machineGroups.find(group => group.machines.find(machine => machine.id === machineId))
+    if (!sheet)
+      continue
 
+    for (const machine of selectedMachines.value) {
       if (field === 1) {
         commands.forEach((command) => {
           sheet.addRow({
             machineName: machine?.name,
             commandNo: command.commandNo,
-            commandName: mt(command.name, machineId),
+            commandName: mt(command.name, machine.id),
           })
         })
-      }
-      if (field === 2) {
+      } else if (field === 2) {
         for (const command of commands) {
           sheet.addRow({
             machineName: machine?.name,
-            commandName: mt(command.name, machineId),
+            commandName: mt(command.name, machine.id),
           })
 
           if (command.parameters.find(param => param.editable === true)) {
@@ -177,9 +164,8 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
           }
           sheet.addRow({})
         }
-      }
-      if (field === 3) {
-        const machineConstants = await kc.fetch(`/api/machine/${machineId}/constants`)
+      } else if (field === 3) {
+        const { constants: machineConstants } = await editor.fetchMachine(machine.id)
 
         machineConstants.forEach((constant: MachineConstant) => {
           sheet.addRow({
@@ -191,8 +177,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
             max: constant.paramHighLimit,
           })
         })
-      }
-      if (field === 4) {
+      } else if (field === 4) {
         commands.forEach((command) => {
           command.parameters.forEach((param) => {
             sheet.addRow({
@@ -215,7 +200,11 @@ async function exportExcel() {
   await excelFormatter(workbook)
 
   const buffer = await workbook.xlsx.writeBuffer()
-  downloadExcelFile('Program Editor Report', buffer)
+  const fileName = machineOption.value === '1'
+    ? `${editor.machine.name}_${t('exportExcelDialog.report')}.pdf`
+    : `${t('exportExcelDialog.report')}.pdf`
+  downloadExcelFile(fileName, buffer)
+  onDialogCancel()
 }
 
 function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
@@ -225,14 +214,14 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
 </script>
 
 <template>
-  <QDialog ref="dialogRef" class="select-none">
-    <QCard class="min-w-100">
-      <QCardSection class="row items-center q-pb-none">
+  <q-dialog ref="dialogRef" class="select-none">
+    <q-card class="min-w-100">
+      <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">
           {{ t('exportExcelDialog._') }}
         </div>
-        <QSpace />
-        <QBtn
+        <q-space />
+        <q-btn
           v-close-popup
           icon="close"
           class="color-gray-6"
@@ -241,60 +230,108 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
           dense
           @click="onDialogCancel"
         />
-      </QCardSection>
-      <QCardSection>
-        <div class="flex items-center">
-          <span>{{ t('exportExcelDialog.machineList') }}</span>
-          <QSpace />
-          <OptionGroupFunctionalityButtons
-            v-model="selectedMachines"
-            :options="machineGroups?.flatMap(mg => mg.machines.map(m => `${m.groupId}-${m.id}`))"
-          />
-        </div>
+      </q-card-section>
 
-        <QTree
-          v-model:ticked="selectedMachines"
-          v-model:expanded="expanded"
-          :nodes="nodes"
-          node-key="id"
-          tick-strategy="leaf"
-          default-expand-all
-          dense
-          class="w-full min-h-120 max-h-120 overflow-y-scroll"
-        />
-      </QCardSection>
-      <QCardSection>
-        <div>
-          {{ t('exportExcelDialog.fields') }}
+      <q-card-section>
+        <div class="m-2">
+          <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
+            {{ t('exportExcelDialog.machineOptions') }}
+          </label>
+          <div class="q-gutter-sm">
+            <q-radio
+              v-model="machineOption"
+              val="1"
+              :label="t('exportExcelDialog.thisMachine', { machineName: props.machineName })"
+              dense
+            />
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <q-radio
+                  v-model="machineOption"
+                  val="2"
+                  :label="t('exportExcelDialog.selectedMachines')"
+                  dense
+                />
+                <q-btn
+                  :label="t('exportExcelDialog.selectMachine')"
+                  :disable="machineOption !== '2'"
+                  color="primary"
+                  size="sm"
+                  outline
+                  dense
+                  @click="selectMachineDialog()"
+                />
+              </div>
+
+              <div v-if="editor.selectedMachines.length > 0" class="pl-6 pt-1">
+                <div class="text-xs text-grey-6 dark:text-grey-4 cursor-help">
+                  <span class="font-medium">
+                    {{ t('exportExcelDialog.machinesSelected', { count: editor.selectedMachines.length }) }}
+                  </span>
+                  <q-tooltip
+                    class="bg-white text-dark shadow-4 text-body2"
+                    anchor="top middle"
+                    self="bottom middle"
+                  >
+                    <div class="q-pa-sm">
+                      <div class="text-weight-medium q-mb-xs">
+                        {{ t('exportExcelDialog.selectedMachinesList') }}:
+                      </div>
+                      <div
+                        v-for="machine in editor.selectedMachines"
+                        :key="machine.id"
+                        class="q-mb-xs"
+                      >
+                        • {{ machine.name }}
+                      </div>
+                    </div>
+                  </q-tooltip>
+                </div>
+              </div>
+              <div v-else class="pl-6 pt-1">
+                <div class="text-xs text-grey-6 dark:text-grey-4 italic">
+                  {{ t('exportExcelDialog.noMachinesSelected') }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="flex max-h-60 overflow-y-scroll">
-          <QOptionGroup
-            v-model="selectedFields"
-            dense
-            class="p-5"
-            :options="fields"
-            type="checkbox"
-          />
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        <div class="m-2">
+          <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
+            {{ t('exportExcelDialog.fieldsToExport') }}
+          </label>
+          <div>
+            <q-option-group
+              v-model="selectedFields"
+              :options="fields"
+              type="checkbox"
+              dense
+            />
+          </div>
         </div>
-      </QCardSection>
-      <QCardActions
+      </q-card-section>
+
+      <q-card-actions
         align="right"
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
-        <QBtn
+        <q-btn
           :label="t('cancel')"
-          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          class="bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
           flat
           @click="onDialogCancel"
         />
-        <QBtn
+        <q-btn
           :label="t('ok')"
-          class="q-mr-sm bg-primary"
+          class="bg-primary text-white"
           flat
           :disable="!(selectedFields.length && selectedMachines.length)"
           @click="exportExcel"
         />
-      </QCardActions>
-    </QCard>
-  </QDialog>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
