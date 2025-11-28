@@ -622,7 +622,7 @@
   "printProgramListDialog": {
     "title": "Print Program List",
     "message": "Select the machine whose programs you want to print",
-    "machineOption": "Machine Options",
+    "machineOptions": "Machine Options",
     "thisMachine": "This Machine ({machineName})",
     "selectedMachines": "Selected Machines",
     "selectMachine": "Select Machine",

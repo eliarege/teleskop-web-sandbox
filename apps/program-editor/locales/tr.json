@@ -640,7 +640,7 @@
   "printProgramListDialog": {
     "title": "Program Listesini Yazdır",
     "message": "Programlarını yazdırmak istediğiniz makineyi seçiniz",
-    "machineOption": "Makine Seçenekleri",
+    "machineOptions": "Makine Seçenekleri",
     "thisMachine": "Bu Makine ({machineName})",
     "selectedMachines": "Seçili Makineler",
     "selectMachine": "Makine Seçiniz",

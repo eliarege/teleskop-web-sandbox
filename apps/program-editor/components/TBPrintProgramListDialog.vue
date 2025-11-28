@@ -140,14 +140,10 @@ async function downloadProgramList() {
         </div>
       </q-card-section>
 
-      <q-card-section>
-        <div class="q-mb-md">
-          {{ t('printProgramListDialog.message') }}
-        </div>
-
+      <q-card-section class="pt-0">
         <div class="m-2">
           <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
-            {{ t('printProgramListDialog.machineOption') }}
+            {{ t('printProgramListDialog.machineOptions') }}
           </label>
           <div class="q-gutter-sm">
             <q-radio
