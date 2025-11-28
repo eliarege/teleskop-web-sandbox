@@ -670,7 +670,8 @@
     "noSelectedCommands": "Bu programda seçili komut bulunmamaktadir",
     "printError": "Yazdırma sırasında hata oluştu",
     "downloadError": "İndirme sırasında hata oluştu",
-    "programList": "program_listesi"
+    "programList": "program_listesi",
+    "printProgram": "Program Yazdır"
   },
   "download": "İndir"
 }

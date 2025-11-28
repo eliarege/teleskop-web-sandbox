@@ -652,7 +652,8 @@
     "noSelectedCommands": "No selected commands in this program",
     "printError": "An error occurred while printing",
     "downloadError": "An error occurred while downloading",
-    "programList": "program_list"
+    "programList": "program_list",
+    "printProgram": "Print Program"
   },
   "download": "Download"
 }

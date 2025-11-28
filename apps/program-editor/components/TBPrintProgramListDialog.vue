@@ -49,9 +49,9 @@ async function generatePDF() {
 
     doc.setFontSize(12)
     doc.text(`${t('printProgramListDialog.machineNo')}`, 14, startY + 8)
-    doc.text(`: ${machine.id}`, 50, startY + 8)
+    doc.text(`: ${machine.id}`, 40, startY + 8)
     doc.text(`${t('printProgramListDialog.machineName')}`, 80, startY + 8)
-    doc.text(`: ${machine.name}`, 105, startY + 8)
+    doc.text(`: ${machine.name}`, 115, startY + 8)
 
     autoTable(doc, {
       startY: startY + 12,

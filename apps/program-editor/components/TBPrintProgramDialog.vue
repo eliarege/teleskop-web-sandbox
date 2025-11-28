@@ -362,7 +362,7 @@ async function downloadProgramList() {
       <!-- Header -->
       <q-card-section>
         <div class="text-h6 flex">
-          {{ t('printProgramListDialog.title') }}
+          {{ t('printProgramListDialog.printProgram') }}
           <q-space />
           <q-btn
             class="text-gray-4 dark:text-gray-6"
