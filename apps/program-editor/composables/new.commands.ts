@@ -560,6 +560,8 @@ registerCommand(() => {
         component: TBPrintProgramDialog,
         componentProps: {
           machineName: editor.machine.name,
+          programList: editor.allPrograms,
+          commandList: Array.from(editor.machine.commands.values()),
         },
       })
       return true
