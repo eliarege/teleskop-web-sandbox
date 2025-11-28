@@ -4,7 +4,7 @@ import type { JobOrderParams, Machine, RecipeMasterStep, RecipeProgramMaster } f
 
 const props = defineProps({
   batchNo: {
-    type: Number,
+    type: String,
     required: false,
   },
   steps: {
@@ -24,7 +24,6 @@ const props = defineProps({
     required: false,
   },
 })
-
 const { t } = useI18n()
 const companyInfo = ref(null)
 const currentUser = ref('Default User')
@@ -45,7 +44,8 @@ const actualParams = computed(() => props.params || fetchedParams.value)
 const actualMachines = computed(() => props.machines || fetchedMachines.value)
 
 const jobNumbers = computed(() => {
-  if (!actualParams.value) return ''
+  if (!actualParams.value)
+    return ''
 
   const result = []
   const baseJobNo = actualParams.value.jobNo
@@ -58,12 +58,14 @@ const jobNumbers = computed(() => {
 })
 
 const hasManyJobs = computed(() => {
-  if (!actualParams.value) return false
+  if (!actualParams.value)
+    return false
   return (actualParams.value.numberOfJobs || 1) > 3
 })
 
 const barcodeUrl = computed(() => {
-  if (!actualParams.value) return ''
+  if (!actualParams.value)
+    return ''
 
   if (hasManyJobs.value) {
     const baseJobNo = actualParams.value.jobNo
@@ -81,7 +83,8 @@ onMounted(async () => {
 })
 
 async function fetchJobOrderData() {
-  if (!props.batchNo) return
+  if (!props.batchNo)
+    return
 
   isLoading.value = true
   error.value = null
@@ -111,7 +114,8 @@ function getAllMaterialsFromSteps(program: RecipeMasterStep) {
   return materials.sort((a, b) => a.orderNo - b.orderNo)
 }
 function calculateAmount(row: any, program: any) {
-  if (!actualParams.value) return '0'
+  if (!actualParams.value)
+    return '0'
 
   if (row.type === RecipeType.DYE) {
     if (row.unit === 0) {
