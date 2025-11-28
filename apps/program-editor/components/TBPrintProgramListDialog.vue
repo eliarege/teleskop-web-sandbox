@@ -48,7 +48,10 @@ async function generatePDF() {
       continue
 
     doc.setFontSize(12)
-    doc.text(`${machine.id} - ${machine.name}`, 14, startY + 8)
+    doc.text(`${t('printProgramListDialog.machineNo')}`, 14, startY + 8)
+    doc.text(`: ${machine.id}`, 50, startY + 8)
+    doc.text(`${t('printProgramListDialog.machineName')}`, 80, startY + 8)
+    doc.text(`: ${machine.name}`, 105, startY + 8)
 
     autoTable(doc, {
       startY: startY + 12,
@@ -68,15 +71,23 @@ async function generatePDF() {
         getProcessTypeName(p.type),
         formatDate(p.updatedAt),
       ]),
-      margin: { top: startY + 12 },
+      margin: { top: 15, right: 14, bottom: 20, left: 14 },
     })
 
     startY = (doc as any).lastAutoTable.finalY + 15
 
     if (startY > 250 && machine !== selectedMachines.value[selectedMachines.value.length - 1]) {
       doc.addPage()
-      startY = 10
+      startY = 15
     }
+  }
+
+  const pageCount = (doc as any).internal.getNumberOfPages()
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`${t('printProgramListDialog.page')} ${i} / ${pageCount}`, 105, 287, { align: 'center' })
   }
 
   return doc
@@ -89,7 +100,7 @@ async function printProgramList() {
     window.open(doc.output('bloburl'), '_blank')
     onDialogCancel()
   } catch (error) {
-    notifyError(t('printError'))
+    notifyError(t('printProgramListDialog.printError'))
   }
 }
 
@@ -97,12 +108,12 @@ async function downloadProgramList() {
   try {
     const doc = await generatePDF()
     const fileName = machineOption.value === '1'
-      ? `${editor.machine.name}_program_listesi.pdf`
-      : 'program_listesi.pdf'
+      ? `${editor.machine.name}_${t('printProgramListDialog.programList')}.pdf`
+      : `${t('printProgramListDialog.programList')}.pdf`
     doc.save(fileName)
     onDialogCancel()
   } catch (error) {
-    notifyError(t('downloadError'))
+    notifyError(t('printProgramListDialog.downloadError'))
   }
 }
 </script>
