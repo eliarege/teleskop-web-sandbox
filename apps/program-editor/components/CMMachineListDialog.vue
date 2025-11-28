@@ -118,7 +118,11 @@ watch(ticked, (newVal, oldVal) => {
 </script>
 
 <template>
-  <QDialog ref="dialogRef">
+  <QDialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogCancel"
+  >
     <QCard>
       <QCardSection class="w-100">
         <div class="text-h6 flex">

@@ -122,7 +122,7 @@ async function downloadProgramList() {
   <q-dialog
     ref="dialogRef"
     class="select-none"
-    persistent
+    @hide="onDialogCancel"
   >
     <q-card class="w-120 select-none">
       <q-card-section>
