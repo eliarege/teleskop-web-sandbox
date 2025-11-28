@@ -140,6 +140,7 @@
   "JobOrderStarted": "İş Emri Başlatılmış!",
   "JobOrderPreferences": "İş Emri Tercihleri",
   "AllowOverrideStartedJobOrders": "Başlatılmış veya devam eden İş Emirlerinin üzerine yazılmasına izin ver",
+  "OptionalFields": "Opsiyonel Alanlar",
   "jobOrderActions": {
     "Retry": "Seçili İsteği Tekrarla",
     "Cancel": "Seçili İsteği İptal Et",

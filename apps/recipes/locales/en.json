@@ -140,6 +140,7 @@
   "JobOrderStarted": "Job Order Already Started!",
   "JobOrderPreferences": "Job Order Preferences",
   "AllowOverrideStartedJobOrders": "Allow overriding started or ongoing Job Orders",
+  "OptionalFields": "Optional Fields",
   "jobOrderActions": {
     "Retry": "Repeat Selected Request",
     "Cancel": "Cancel Selected Request",

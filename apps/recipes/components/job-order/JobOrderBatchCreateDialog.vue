@@ -778,7 +778,7 @@ async function onCancel() {
             filled
           />
         </div>
-        <div class="row-item">
+        <div v-if="stateStore.jobOrderPrefs.show?.yarn" class="row-item">
           <span class="item-label">{{ t('jobOrderParams.Yarn') }}</span>
           <QInput
             v-model="jobOrderParams.yarn"
@@ -788,7 +788,7 @@ async function onCancel() {
             filled
           />
         </div>
-        <div class="row-item">
+        <div v-if="stateStore.jobOrderPrefs.show?.ASNo" class="row-item">
           <span class="item-label">{{ t('jobOrderParams.ASNo') }}</span>
           <QInput
             v-model="jobOrderParams.ASNo"
@@ -798,7 +798,7 @@ async function onCancel() {
             filled
           />
         </div>
-        <div class="row-item">
+        <div v-if="stateStore.jobOrderPrefs.show?.orderNo" class="row-item">
           <span class="item-label">{{ t('jobOrderParams.OrderNo') }}</span>
           <QInput
             v-model="jobOrderParams.orderNo"
