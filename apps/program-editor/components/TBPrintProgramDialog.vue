@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { jsPDF } from 'jspdf'
 import type { MachineCommand, Program, ProgramTableRow } from '~/shared/types'
-import { formatDuration } from '~/composables/utils'
 import CMMachineSelector from '~/components/CMMachineSelector.vue'
 
 const props = defineProps<{
@@ -24,6 +22,8 @@ const selectedPrograms = ref<ProgramTableRow[]>(props.programList)
 const commandList = ref<MachineCommand[]>(props.commandList)
 const isLoadingCommands = ref(false)
 const selectedCommands = ref<any[]>(props.commandList)
+const isPrinting = ref(false)
+const isDownloading = ref(false)
 
 const selectedMachine = computed(() => {
   if (machineOption.value === '1') {
@@ -37,7 +37,9 @@ const selectedMachine = computed(() => {
 const isDisabled = computed(() =>
   machineOption.value === '2' && !editor.selectedMachines.length
   || selectedPrograms.value.length === 0
-  || selectedCommands.value.length === 0,
+  || selectedCommands.value.length === 0
+  || isPrinting.value
+  || isDownloading.value,
 )
 
 async function loadData() {
@@ -74,7 +76,7 @@ async function loadCommandList() {
   }
 }
 
-async function getPrograms(machineId: number, programNos: number[]) {
+async function getPrograms(machineId: number, programNos: number[]): Promise<Program[]> {
   isLoadingPrograms.value = true
   const programs = ref<Program[]>([])
 
@@ -109,9 +111,6 @@ function getProcessTypeName(typeValue: number) {
 }
 
 async function generatePDF() {
-  const doc = new jsPDF() as any // eslint-disable-line new-cap
-  let startY = 10
-
   if (!selectedMachine.value) {
     throw new Error('No machine selected')
   }
@@ -120,231 +119,121 @@ async function generatePDF() {
   const machineName = selectedMachine.value.name
   const programNos = selectedPrograms.value.map(p => p.programNo)
   const programs = await getPrograms(machineId, programNos)
-
-  // Seçilen komut numaralarını al
   const selectedCommandNos = selectedCommands.value.map(c => c.commandNo)
 
-  // Her program için
-  programs.forEach((program, programIndex) => {
-    if (programIndex > 0) {
-      doc.addPage()
-    }
-    startY = 10
-
-    // Makine ve Program Başlık Kutusu
-    doc.setDrawColor(0)
-    doc.setLineWidth(0.5)
-    doc.rect(14, startY, 182, 23)
-
-    // Başlık içeriği
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'bold')
-
-    // İlk satır: Makine No ve Makine Adı
-    doc.text(`${t('printProgramListDialog.machineNo')}`, 20, startY + 5)
-    doc.text(`: ${machineId}`, 50, startY + 5)
-    doc.text(`${t('printProgramListDialog.machineName')}`, 80, startY + 5)
-    doc.text(`: ${machineName}`, 105, startY + 5)
-
-    // İkinci satır: Program No ve Program Adı
-    doc.text(`${t('printProgramListDialog.programNo')}`, 20, startY + 10)
-    doc.text(`: ${program.programNo}`, 50, startY + 10)
-    doc.text(`${t('printProgramListDialog.programName')}`, 80, startY + 10)
-    doc.text(`: ${program.name}`, 105, startY + 10)
-
-    // Üçüncü satır: Adım Sayısı, Süre, Proses Kodu
-    doc.text(`${t('printProgramListDialog.stepCount')}`, 20, startY + 15)
-    doc.text(`: ${program.steps.length}`, 50, startY + 15)
-    doc.text(`${t('printProgramListDialog.duration')}`, 80, startY + 15)
-    doc.text(`: ${formatDuration(program.duration)}`, 100, startY + 15)
-    doc.text(`${t('printProgramListDialog.processCode')}`, 130, startY + 15)
-    doc.text(`: ${getProcessTypeName(program.typeId)}`, 160, startY + 15)
-
-    // Dördüncü satır: Oluşturma ve Değiştirme Tarihleri
-    doc.setFontSize(9)
-    doc.text(`${t('printProgramListDialog.createdAt')}`, 20, startY + 20)
-    doc.text(`: ${program.createdAt ? new Date(program.createdAt).toLocaleString('tr-TR') : '-'}`, 50, startY + 20)
-    doc.text(`${t('printProgramListDialog.updatedAt')}`, 110, startY + 20)
-    doc.text(`: ${program.updatedAt ? new Date(program.updatedAt).toLocaleString('tr-TR') : '-'}`, 145, startY + 20)
-
-    startY += 30
-
-    // Programdaki adımları filtrele - sadece seçilen komutları içerenleri al
-    const filteredSteps: any[] = []
-    let stepNumber = 1
-
-    program.steps.forEach((step) => {
-      // Ana komut seçili mi kontrol et
-      if (selectedCommandNos.includes(step.mainCommand.commandNo)) {
-        const mainCommandInfo = commandList.value.find(cmd => cmd.commandNo === step.mainCommand.commandNo)
-
-        if (mainCommandInfo) {
-          filteredSteps.push({
-            stepNumber,
-            commandNo: step.mainCommand.commandNo,
-            commandName: mainCommandInfo.name,
-            parameters: step.mainCommand.parameters,
-            ioList: step.mainCommand.ioList,
-            commandInfo: mainCommandInfo,
-            isParallel: false,
-          })
-
-          // Bu ana komutun paralel komutlarını ekle
-          step.parallelCommands.forEach((parallelCmd) => {
-            const parallelCommandInfo = commandList.value.find(cmd => cmd.commandNo === parallelCmd.commandNo)
-            if (parallelCommandInfo) {
-              filteredSteps.push({
-                stepNumber,
-                commandNo: parallelCmd.commandNo,
-                commandName: parallelCommandInfo.name,
-                parameters: parallelCmd.parameters,
-                ioList: parallelCmd.ioList,
-                commandInfo: parallelCommandInfo,
-                isParallel: true,
-              })
-            }
-          })
-
-          stepNumber++
-        }
-      }
-    })
-
-    // Eğer bu programda seçili komut varsa detayları göster
-    if (filteredSteps.length > 0) {
-      filteredSteps.forEach((step) => {
-        // Sayfa kontrolü
-        if (startY > 250) {
-          doc.addPage()
-          startY = 15
-        }
-
-        // Adım ve Komut Başlığı
-        doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
-        const stepText = step.isParallel ? '' : `${step.stepNumber}    `
-        const leftMargin = step.isParallel ? 60 : 14
-        doc.text(`${stepText}    ${step.commandNo}  ${step.commandName}`, leftMargin, startY)
-
-        startY += step.parameters.length > 0 || step.ioList.length > 0 ? 4 : 1
-
-        // Parametreler
-        if (step.parameters && step.parameters.length > 0) {
-          doc.setFontSize(9)
-          doc.setFont('helvetica', 'bold')
-          doc.text(t('printProgramListDialog.parameter'), 80, startY)
-          doc.text(t('printProgramListDialog.name'), 110, startY)
-          doc.text(t('printProgramListDialog.value'), 150, startY)
-          startY += 1
-
-          doc.setDrawColor(200)
-          doc.setLineWidth(0.1)
-          doc.line(80, startY, 196, startY)
-          startY += 4
-
-          doc.setFont('helvetica', 'normal')
-          step.parameters.forEach((param: any) => {
-            const paramInfo = step.commandInfo.parameters.find((p: any) => p.index === param.index)
-            if (paramInfo && startY < 280) {
-              doc.text(paramInfo.name || '-', 110, startY)
-              doc.text(String(param.value || '0'), 150, startY)
-              startY += 4
-            }
-          })
-          startY -= 2
-        }
-
-        // IO Listesi
-        if (step.ioList && step.ioList.length > 0) {
-          if (startY > 250) {
-            doc.addPage()
-            startY = 15
-          }
-
-          doc.setFontSize(9)
-          doc.setFont('helvetica', 'bold')
-          doc.text('IO', 80, startY)
-          doc.text(t('printProgramListDialog.name'), 110, startY)
-          doc.text(t('printProgramListDialog.value'), 150, startY)
-          startY += 1
-
-          doc.setDrawColor(200)
-          doc.setLineWidth(0.1)
-          doc.line(80, startY, 196, startY)
-          startY += 4
-
-          doc.setFont('helvetica', 'normal')
-          step.ioList.forEach((io: any) => {
-            const ioInfo = step.commandInfo.ioList.find((i: any) => i.index === io.ioIndex)
-            if (ioInfo && startY < 280) {
-              doc.text(ioInfo.name || '-', 110, startY)
-              // IO value formatı: [[index, value]]
-              const ioValue = io.value && io.value.length > 0
-                ? io.value.map((v: any) => ioInfo.selections.find((s: any) => s.index === v[0])?.name || v[1]).join(', ')
-                : '-'
-              doc.text(ioValue, 150, startY)
-              startY += 4
-            }
-          })
-          startY -= 2
-        }
-
-        // startY += 1
-
-        // Ayırıcı çizgi
-        if (startY < 280) {
-          doc.setDrawColor(200)
-          doc.setLineWidth(0.1)
-          const lineStartX = step.isParallel ? 60 : 14
-          doc.line(lineStartX, startY, 196, startY)
-          startY += 4
-        }
-      })
-    } else {
-      // Seçili komut yoksa bilgi mesajı
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'italic')
-      doc.text(t('printProgramListDialog.noSelectedCommands'), 14, startY)
-    }
-  })
-
-  // Tüm sayfalara sayfa numarası ekle
-  const pageCount = doc.internal.getNumberOfPages()
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i)
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`${t('printProgramListDialog.page')} ${i} / ${pageCount}`, 105, 287, { align: 'center' })
+  const translations = {
+    machineNo: t('printProgramListDialog.machineNo'),
+    machineName: t('printProgramListDialog.machineName'),
+    programNo: t('printProgramListDialog.programNo'),
+    programName: t('printProgramListDialog.programName'),
+    stepCount: t('printProgramListDialog.stepCount'),
+    duration: t('printProgramListDialog.duration'),
+    processCode: t('printProgramListDialog.processCode'),
+    createdAt: t('printProgramListDialog.createdAt'),
+    updatedAt: t('printProgramListDialog.updatedAt'),
+    parameter: t('printProgramListDialog.parameter'),
+    name: t('printProgramListDialog.name'),
+    value: t('printProgramListDialog.value'),
+    page: t('printProgramListDialog.page'),
+    noSelectedCommands: t('printProgramListDialog.noSelectedCommands'),
   }
 
-  return doc
+  const worker = new Worker(new URL('~/workers/pdf-generator.worker.ts', import.meta.url), { type: 'module' })
+
+  const pdfArrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+    worker.onmessage = (e: MessageEvent) => {
+      if (e.data.success) {
+        resolve(e.data.data)
+      } else {
+        reject(new Error(e.data.error))
+      }
+      worker.terminate()
+    }
+
+    worker.onerror = (error) => {
+      reject(error)
+      worker.terminate()
+    }
+
+    worker.postMessage({
+      data: {
+        machineName,
+        machineId,
+        programs: JSON.parse(JSON.stringify(programs)),
+        selectedCommandNos,
+        commandList: JSON.parse(JSON.stringify(commandList.value)),
+        translations,
+      },
+      processTypes: JSON.parse(JSON.stringify(editor.allProcessTypes)),
+    })
+  })
+
+  const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
+  return blob
 }
 
 async function printProgramList() {
+  if (isPrinting.value)
+    return
+
+  isPrinting.value = true
+
   try {
-    const doc = await generatePDF()
-    doc.autoPrint()
-    window.open(doc.output('bloburl'), '_blank')
+    const pdfBlob = await generatePDF()
+    const url = URL.createObjectURL(pdfBlob)
+
+    // Yeni pencerede aç ve print
+    const printWindow = window.open(url, '_blank')
+
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print()
+        setTimeout(() => {
+          URL.revokeObjectURL(url)
+        }, 1000)
+      }
+    } else {
+      notifyError(t('printProgramListDialog.popupBlocked'))
+      URL.revokeObjectURL(url)
+    }
+
     onDialogCancel()
   } catch (error) {
+    console.error('Print error:', error)
     notifyError(t('printProgramListDialog.printError'))
+  } finally {
+    isPrinting.value = false
   }
 }
 
 async function downloadProgramList() {
+  if (isDownloading.value)
+    return
+
+  isDownloading.value = true
+
   try {
     if (!selectedMachine.value) {
       notifyError(t('printProgramListDialog.noMachineSelected'))
       return
     }
 
-    const doc = await generatePDF()
+    const pdfBlob = await generatePDF()
     const fileName = `${selectedMachine.value.name}_program_listesi.pdf`
-    doc.save(fileName)
+
+    const url = URL.createObjectURL(pdfBlob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(url)
+
     onDialogCancel()
   } catch (error) {
     console.error('Download error:', error)
     notifyError(t('printProgramListDialog.downloadError'))
+  } finally {
+    isDownloading.value = false
   }
 }
 </script>
@@ -442,6 +331,7 @@ async function downloadProgramList() {
         <q-btn
           :label="t('download')"
           :disable="isDisabled"
+          :loading="isDownloading"
           class="bg-primary text-white"
           flat
           @click="downloadProgramList()"
@@ -449,6 +339,7 @@ async function downloadProgramList() {
         <q-btn
           :label="t('print')"
           :disable="isDisabled"
+          :loading="isPrinting"
           class="bg-primary text-white"
           flat
           @click="printProgramList()"
