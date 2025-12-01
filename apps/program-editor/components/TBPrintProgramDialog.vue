@@ -159,6 +159,7 @@ async function generatePDF() {
       data: {
         machineName,
         machineId,
+        // Deep copy: Vue reactive proxy'leri ve circular reference'ları temizleyerek plain object'e çevirir
         programs: JSON.parse(JSON.stringify(programs)),
         selectedCommandNos,
         commandList: JSON.parse(JSON.stringify(commandList.value)),
