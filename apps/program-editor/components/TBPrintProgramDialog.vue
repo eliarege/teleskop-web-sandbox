@@ -2,6 +2,7 @@
 import { jsPDF } from 'jspdf'
 import type { MachineCommand, Program, ProgramTableRow } from '~/shared/types'
 import { formatDuration } from '~/composables/utils'
+import CMMachineSelector from '~/components/CMMachineSelector.vue'
 
 const props = defineProps<{
   machineName: string
@@ -18,7 +19,7 @@ const machineOption = ref<string>('1')
 
 const programList = ref<ProgramTableRow[]>(props.programList)
 const isLoadingPrograms = ref(false)
-const selectedPrograms = ref<ProgramTableRow[]>([])
+const selectedPrograms = ref<ProgramTableRow[]>(props.programList)
 
 const commandList = ref<MachineCommand[]>(props.commandList)
 const isLoadingCommands = ref(false)
@@ -376,6 +377,7 @@ async function downloadProgramList() {
         <CMMachineSelector
           v-model="machineOption"
           :machine-name="props.machineName"
+          single-selection
         />
       </q-card-section>
 

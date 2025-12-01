@@ -478,6 +478,7 @@
   "machineSelectorDialog": {
     "machineOptions": "Makine Seçenekleri",
     "thisMachine": "Bu Makine ({machineName})",
+    "selectedMachine": "Seçili Makine",
     "selectedMachines": "Seçili Makineler",
     "selectMachine": "Makine Seçiniz",
     "machinesSelected": "{count} makine seçildi",

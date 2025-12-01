@@ -461,6 +461,7 @@
   "machineSelectorDialog": {
     "machineOptions": "Machine Options",
     "thisMachine": "This Machine ({machineName})",
+    "selectedMachine": "Selected Machine",
     "selectedMachines": "Selected Machines",
     "selectMachine": "Select Machine",
     "machinesSelected": "{count} machines selected",

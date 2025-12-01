@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   machineName: string
+  singleSelection?: boolean
 }>()
 
 const model = defineModel<string>({ required: true })
@@ -10,7 +11,11 @@ const editor = useEditorStore()
 const { t } = useI18n()
 const { $commandManager } = useNuxtApp()
 
-const selectMachineDialog = () => $commandManager.executeCommand('selectMachine', { $q })
+function selectMachineDialog() {
+  return $commandManager.executeCommand('selectMachine', { $q }, {
+    singleSelection: props.singleSelection,
+  })
+}
 </script>
 
 <template>
@@ -30,7 +35,7 @@ const selectMachineDialog = () => $commandManager.executeCommand('selectMachine'
           <q-radio
             v-model="model"
             val="2"
-            :label="t('machineSelectorDialog.selectedMachines')"
+            :label="props.singleSelection ? t('machineSelectorDialog.selectedMachine') : t('machineSelectorDialog.selectedMachines')"
             dense
           />
           <q-btn
