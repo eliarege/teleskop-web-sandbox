@@ -3,7 +3,7 @@ import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
 import { useErrorStore } from './utils'
-import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandEligibility, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -15,6 +15,7 @@ export const useEditorStore = defineStore('editor', () => {
   const machine = ref<Machine>(createMachine())
   const allMachines = ref<Machine[]>([])
   const machineGroups = ref<MachineGroup[]>([])
+  const selectedMachines = ref<MachineInfo[]>([])
   const selectedPrograms = ref<ProgramTableRow[]>([])
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTableRow[]>([])
@@ -555,32 +556,34 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Belirtilen makine ID'si ve program numarasına göre program verisini getirir.
+   * Belirtilen makine ID'si ve program numarasına göre program verisini backend'den çeker.
    *
    * @param {number} machineId - Programın ait olduğu makinenin ID'si.
    * @param {number} programNo - Getirilecek programın numarası.
    * @param {number} [version] - (İsteğe bağlı) Getirilecek programın versiyonu. Eğer sağlanmazsa en son sürüm getirilir.
    *
-   * @returns {Promise<void>} Program verisi başarıyla getirildikten sonra `Promise` döner.
+   * @returns {Promise<Program>} Program verisi döner.
    *
    * @description Bu fonksiyon, belirtilen makine ID'si ve program numarasına göre program verilerini API'den çeker.
    * Programın versiyonu sağlanmışsa, belirtilen versiyon getirilir; aksi takdirde en son sürüm getirilir.
    * Veriler çekildikten sonra, programın her bir adımı (`step`) ve paralel komutları (`parallelCommands`) işlenir.
-   * Her bir adım ve komut için benzersiz ID'ler atanır.
+   * Her bir adım ve komut için benzersiz ID'ler atanır. Bu fonksiyon sadece backend'den veriyi çeker,
+   * `editor.program`'a atamaz. Program verilerini yüklemek için `loadProgram` fonksiyonunu kullanın.
    */
   async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<Program> {
     const errorStore = useErrorStore()
 
-    selectedSteps.value = []
     lastStepId = 0
     lastCommandId = 0
 
+    let fetchedProgram: Program
+
     if (isDef(version)) {
-      program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
+      fetchedProgram = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
       errorStore.clearErrors(programNo) // version’lı çağrıda hata listesi temizlenebilir
     } else {
       const response = await kc.fetch<ProgramWithErrors>(`/api/machine/${machineId}/program/${programNo}`)
-      program.value = response.program
+      fetchedProgram = response.program
       errorStore.setErrors(machineId, programNo, response.programError.steps)
 
       errorIds.value.clear()
@@ -591,7 +594,7 @@ export const useEditorStore = defineStore('editor', () => {
       })
     }
 
-    for (const step of program.value.steps) {
+    for (const step of fetchedProgram.steps) {
       step.stepId = lastStepId++
       step.mainCommand.commandId = lastCommandId++
       for (const command of step.parallelCommands) {
@@ -600,9 +603,25 @@ export const useEditorStore = defineStore('editor', () => {
       lastCommandId = 0
     }
 
-    originalProgram.value = klona(program.value)
+    return fetchedProgram
+  }
 
-    return program.value
+  /**
+   * Belirtilen makine ID'si ve program numarasına göre program verilerini yükler.
+   *
+   * @param {number} machineId - Programın ait olduğu makinenin ID'si.
+   * @param {number} programNo - Getirilecek programın numarası.
+   * @param {number} [version] - (İsteğe bağlı) Getirilecek programın versiyonu. Eğer sağlanmazsa en son sürüm getirilir.
+   *
+   * @returns {Promise<void>} Program verisi başarıyla yüklendikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, `fetchProgram` fonksiyonunu kullanarak program verilerini çeker ve `program` değişkenine atar.
+   * Ayrıca seçili adımları temizler ve orijinal program kopyasını saklar.
+   */
+  async function loadProgram(machineId: number, programNo: number, version?: number): Promise<void> {
+    selectedSteps.value = []
+    program.value = await fetchProgram(machineId, programNo, version)
+    originalProgram.value = klona(program.value)
   }
 
   /**
@@ -616,13 +635,26 @@ export const useEditorStore = defineStore('editor', () => {
    * Veriler, `Machine` ve `MachineCommand` türlerini içeren bir nesne olarak döner.
    * Elde edilen makine komutları, bir `Map` yapısına dönüştürülerek `machine` değişkenine atanır.
    */
-  async function fetchMachine(machineId: number): Promise<void> {
+  async function fetchMachine(machineId: number): Promise<Machine & { commands: Map<number, MachineCommand> }> {
     const machineData = await kc.fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
 
-    machine.value = {
+    return {
       ...machineData,
       commands: new Map((machineData.commands).map(command => [command.commandNo, command])),
     }
+  }
+
+  /**
+   * Belirtilen makine ID'sine göre makine verilerini yükler.
+   *
+   * @param {number} machineId - Yüklenecek makinenin ID'si.
+   *
+   * @returns {Promise<void>} Makine verileri başarıyla yüklendikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, `fetchMachine` fonksiyonunu kullanarak belirtilen makine ID'sine sahip makine verilerini çeker ve `machine` değişkenine atar.
+   */
+  async function loadMachine(machineId: number): Promise<void> {
+    machine.value = await fetchMachine(machineId)
   }
 
   /**
@@ -658,7 +690,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Filtre parametreleri, program numarası (programNo), program adı (programName) ve işlem tipi (processType) gibi alanları içerebilir.
    * Filtre verilmediği takdirde tüm programlar getirilir ve `allPrograms` değişkenine atanır.
    */
-  async function fetchAllPrograms(): Promise<void> {
+  async function fetchAllPrograms(machineId: number): Promise<ProgramTableRow[]> {
     const filter = useProgramFilterStore()
     const query = filter.hasFilter()
       ? {
@@ -668,10 +700,21 @@ export const useEditorStore = defineStore('editor', () => {
         }
       : undefined
 
-    allPrograms.value = await kc.fetch<ProgramTableRow[]>(
-      `/api/machine/${machine.value.id}/program`,
+    return await kc.fetch<ProgramTableRow[]>(
+      `/api/machine/${machineId}/program`,
       { query },
     )
+  }
+
+  /**
+   * Tüm programları yeniler.
+   *
+   * @returns {Promise<void>} Programlar başarıyla yenilendikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, mevcut makinenin ID'sine göre tüm programları yeniden getirir ve `allPrograms` değişkenine atar.
+   */
+  async function refreshAllPrograms(): Promise<void> {
+    allPrograms.value = await fetchAllPrograms(machine.value.id)
   }
 
   /**
@@ -1018,6 +1061,7 @@ export const useEditorStore = defineStore('editor', () => {
     machine,
     allMachines,
     machineGroups,
+    selectedMachines,
     selectedPrograms,
     selectedSteps,
     isLoading,
@@ -1035,10 +1079,13 @@ export const useEditorStore = defineStore('editor', () => {
     createEmptyCommand,
     changeMachine,
     fetchProgram,
+    loadProgram,
     fetchMachine,
+    loadMachine,
     fetchAllMachine,
     fetchMachineGroups,
     fetchAllPrograms,
+    refreshAllPrograms,
     createMachine,
     createEmptyProgram,
     updateProgram,

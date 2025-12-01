@@ -53,7 +53,7 @@ onKeyStroke('F3', (event: KeyboardEvent) => {
 onKeyStroke('F5', async (event: KeyboardEvent) => {
   event.preventDefault()
   editor.isLoading = true
-  await editor.fetchAllPrograms()
+  await editor.refreshAllPrograms()
   editor.isLoading = false
 })
 
@@ -74,7 +74,7 @@ onKeyStroke(['l', 'L'], (event: KeyboardEvent) => {
 // onKeyStroke(['r', 'R'], async (event: KeyboardEvent) => {
 //   if (event.ctrlKey && !isActiveElementEditable()) {
 //     event.preventDefault()
-//     await editor.fetchMachine(machineId)
+//     await editor.loadMachine(machineId)
 //   }
 // })
 
@@ -157,10 +157,10 @@ if (filter.existingFilter.clearOnChange)
 
 editor.isLoading = true
 if (editor.machine.id !== machineId) {
-  await editor.fetchMachine(machineId)
+  await editor.loadMachine(machineId)
   await editor.fetchCommandTypes(machineId)
 }
-await editor.fetchAllPrograms().then(() => {
+await editor.refreshAllPrograms().then(() => {
   editor.isLoading = false
 })
 

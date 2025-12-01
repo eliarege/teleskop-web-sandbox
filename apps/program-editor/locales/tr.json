@@ -223,6 +223,7 @@
   "ok": "Tamam",
   "close": "Kapat",
   "save": "Kaydet",
+  "print": "Yazdır",
   "message": {
     "delete_program": "Program Teleskop'tan silindi",
     "program_not_deleted": "Program Teleskop'tan silinemedi"
@@ -230,17 +231,6 @@
   "iconSettingsDialog": {
     "title": "Komut İkonu Ayarları",
     "selectIcons": "Editörde görüntülenecek ikonları seçin."
-  },
-  "printProgramListDialog": {
-    "printOptions": "Yazdırma Seçenekleri",
-    "machineList": "Makine Listesi",
-    "machine": "Makine",
-    "selectedMachine": "Seçili Makine",
-    "all": "Hepsi",
-    "printer": "Yazıcı",
-    "print": "Yazdır",
-    "preview": "Önizleme",
-    "cancel": "İptal"
   },
   "printProgramDialog": {
     "programPrintOptions": "Program Yazdırma Seçenekleri",
@@ -455,12 +445,17 @@
     "updateHeaderNotification": {
       "success": "{programNo} numaralı programın baslığı basarıyla değiştirildi.",
       "fail": "{programNo} numaralı programın baslığı değiştirme işlemi basarısız."
+    },
+    "selectMachine": {
+      "title": "Makine Seçimi",
+      "selectMachine": "İşlemi gerçekleştirmek istediğiniz makineyi seçiniz.",
+      "operate": "Tamam"
     }
   },
   "exportExcelDialog": {
     "_": "Excele Aktar",
     "machineList": "Makine Listesi",
-    "fields": "Alanlar",
+    "fieldsToExport": "Aktarılacak Alanlar",
     "commandList": "Komut Listesi",
     "detailedCommandList": "Detaylı Komut Listesi",
     "machineConstantsList": "Makine Sabitleri Listesi",
@@ -477,7 +472,18 @@
     "parameterName": "Parameter Name",
     "commandIOName": "Komut IO ismi",
     "IOName": "IO ismi",
-    "default": "Varsayılan"
+    "default": "Varsayılan",
+    "report": "Rapor"
+  },
+  "machineSelectorDialog": {
+    "machineOptions": "Makine Seçenekleri",
+    "thisMachine": "Bu Makine ({machineName})",
+    "selectedMachine": "Seçili Makine",
+    "selectedMachines": "Seçili Makineler",
+    "selectMachine": "Makine Seçiniz",
+    "machinesSelected": "{count} makine seçildi",
+    "selectedMachinesList": "Seçili Makine Listesi",
+    "noMachinesSelected": "Makine Seçilmedi"
   },
   "commandType": {
     "chemicalRequest": "Kimyasal İstek",
@@ -633,5 +639,43 @@
   "programExist": {
     "title": "Program Zaten Var",
     "message": "{programNo} numaralı program zaten var. Üzerine yazmak ister misiniz?"
-  }
+  },
+  "printProgramListDialog": {
+    "title": "Program Listesini Yazdır",
+    "message": "Programlarını yazdırmak istediğiniz makineyi seçiniz",
+    "selectPrograms": "Yazdırmak istediğiniz programları seçiniz",
+    "selectCommands": "Çıktıda görünmesini istediğiniz komutları seçiniz",
+    "noMachineSelected": "Lütfen bir makine seçiniz",
+    "machineNo": "Makine No",
+    "machineName": "Makine Ad",
+    "program": "Program",
+    "programNo": "Program No",
+    "programName": "Program Ad",
+    "duration": "Süre",
+    "stepCount": "Adim Sayisi",
+    "type": "Tipi",
+    "processCode": "Proses Kodu",
+    "createdAt": "Olusturma Tarihi",
+    "updatedAt": "Degistirme Tarihi",
+    "step": "Adim",
+    "command": "Komut",
+    "commandNo": "Komut No",
+    "commandName": "Komut Ad",
+    "commandType": "Komut Tipi",
+    "parameter": "Parametre",
+    "name": "Ad",
+    "value": "Degeri",
+    "page": "Sayfa",
+    "machine": "Makine",
+    "selectedPrograms": "Seçili Programlar",
+    "selectedCommands": "Seçili Komutlar",
+    "mainCommand": "Ana Komut",
+    "parallelCommand": "Paralel Komut",
+    "noSelectedCommands": "Bu programda seçili komut bulunmamaktadir",
+    "printError": "Yazdırma sırasında hata oluştu",
+    "downloadError": "İndirme sırasında hata oluştu",
+    "programList": "program_listesi",
+    "printProgram": "Program Yazdır"
+  },
+  "download": "İndir"
 }

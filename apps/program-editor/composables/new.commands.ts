@@ -90,6 +90,7 @@ export interface RegisteredCommands {
   checkErrors: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
   getAllPrograms: [ctx: any, machine: { id: number, name: string }]
   sendAllPrograms: [ctx: any, machine: { id: number, name: string }]
+  selectMachine: [ctx: any, options?: { singleSelection?: boolean }]
 }
 
 registerCommand(() => {
@@ -204,7 +205,7 @@ registerCommand(() => {
         editor.isLoading = true
         try {
           await contextMenuStore.deleteProgram(selectedRows, option, machineId)
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
         } catch (error) {
           console.error('Error during program deletion:', error)
         }
@@ -255,7 +256,7 @@ registerCommand(() => {
           }
         }
 
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
         return true
       } finally {
         editor.isLoading = false
@@ -291,7 +292,7 @@ registerCommand(() => {
           },
         }).onOk(async (option: string) => {
           await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
           return true
         }).onCancel(() => {
           return false
@@ -319,7 +320,7 @@ registerCommand(() => {
 
         // Programları birleştir
         await contextMenuStore.concatenatePrograms(programsOrder, programDetails, machineId)
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
 
         return true
       } catch (error) {
@@ -392,7 +393,7 @@ registerCommand(() => {
         }).onOk(async (program: ProgramHeader) => {
           editor.isLoading = true
           await contextMenuStore.updateProgramHeader(machineId, programNo, program)
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
           editor.isLoading = false
           return true
         }).onCancel(() => {
@@ -420,7 +421,7 @@ registerCommand(() => {
         },
       }).onOk(async (result: { type: number, additionalType: number | null }) => {
         await contextMenuStore.changeProcessType(machineId, selectedRows, result)
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
         return true
       }).onCancel(() => {
         return false
@@ -441,7 +442,7 @@ registerCommand(() => {
         const status = await machineStatusStore.checkMachineStatus(machineId)
         if (status) {
           await contextMenuStore.sendProgram(selectedRows, machineId)
-          await editor.fetchAllPrograms()
+          await editor.refreshAllPrograms()
 
           return true
         }
@@ -473,7 +474,7 @@ registerCommand(() => {
         },
       }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
         await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
       }).onCancel(() => false)
       return true
     },
@@ -543,22 +544,24 @@ registerCommand(() => {
         }
       }
 
-      await editor.fetchAllPrograms()
+      await editor.refreshAllPrograms()
       return false
     },
   }
 })
 
 registerCommand(() => {
-  const { fetch } = useKeycloak()
+  const editor = useEditorStore()
+
   return {
     name: 'printProgram',
     async execute(ctx: any) {
-      const machines = await fetch('/api/machine')
       ctx.$q.dialog({
         component: TBPrintProgramDialog,
         componentProps: {
-          machines,
+          machineName: editor.machine.name,
+          programList: editor.allPrograms,
+          commandList: Array.from(editor.machine.commands.values()),
         },
       })
       return true
@@ -567,15 +570,15 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const { fetch } = useKeycloak()
+  const editor = useEditorStore()
+
   return {
     name: 'printProgramList',
     async execute(ctx: any) {
-      const machines = await fetch('/api/machine')
       ctx.$q.dialog({
         component: TBPrintProgramListDialog,
         componentProps: {
-          machines,
+          machineName: editor.machine.name,
         },
       })
       return true
@@ -634,7 +637,7 @@ registerCommand(() => {
           // Dialog closed after successful operation, refresh program
           editor.isLoading = true
           try {
-            await editor.fetchProgram(machine.id, program.programNo)
+            await editor.loadProgram(machine.id, program.programNo)
           } catch (error) {
             console.error('Error refreshing program:', error)
           } finally {
@@ -695,15 +698,15 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const { fetch } = useKeycloak()
+  const editor = useEditorStore()
+
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
-      const machineGroups = await fetch('/api/machine-group')
       ctx.$q.dialog({
         component: TBExportExcelDialog,
         componentProps: {
-          machineGroups,
+          machineName: editor.machine.name,
         },
       })
       return true
@@ -731,7 +734,7 @@ registerCommand(() => {
           method: 'POST',
         })
 
-        await editor.fetchAllPrograms()
+        await editor.refreshAllPrograms()
         return true
       } finally {
         editor.isLoading = false
@@ -903,7 +906,7 @@ registerCommand(() => {
 
       editor.isLoading = true
       for (const { programNo } of selectedRows) {
-        await editor.fetchProgram(machineId, programNo)
+        await editor.loadProgram(machineId, programNo)
       }
       editor.isLoading = false
     },
@@ -924,7 +927,7 @@ registerCommand(() => {
       }
 
       await contextMenuStore.sendAllPrograms(machine)
-      await editor.fetchAllPrograms()
+      await editor.refreshAllPrograms()
     },
   }
 })
@@ -943,7 +946,36 @@ registerCommand(() => {
       }
 
       await contextMenuStore.getAllPrograms(machine)
-      await editor.fetchAllPrograms()
+      await editor.refreshAllPrograms()
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+
+  return {
+    name: 'selectMachine',
+    async execute(ctx: any, options: { singleSelection?: boolean } = {}) {
+      await editor.fetchAllMachine()
+      await editor.fetchMachineGroups()
+
+      ctx.$q.dialog({
+        component: CMMachineListDialog,
+        componentProps: {
+          type: 'selectMachine',
+          currentMachineId: editor.machine.id,
+          allMachines: editor.allMachines,
+          machineGroups: editor.machineGroups,
+          selectedMachineIds: editor.selectedMachines.map(m => m.id),
+          singleSelection: options.singleSelection,
+        },
+      }).onOk(async (machines: MachineInfo[]) => {
+        editor.selectedMachines = machines
+      }).onCancel(() => {
+        return false
+      })
+      return true
     },
   }
 })

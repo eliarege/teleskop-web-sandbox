@@ -6,7 +6,7 @@ const inputId = useId()
 
 async function applyFilter() {
   editor.isLoading = true
-  await editor.fetchAllPrograms()
+  await editor.refreshAllPrograms()
   editor.isLoading = false
   filter.showFilterPopup = false
 }
@@ -14,7 +14,7 @@ async function applyFilter() {
 async function deleteFilter() {
   filter.clearFilter()
   editor.isLoading = true
-  await editor.fetchAllPrograms()
+  await editor.refreshAllPrograms()
   editor.isLoading = false
   filter.showFilterPopup = false
 }

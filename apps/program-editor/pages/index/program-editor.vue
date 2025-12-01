@@ -271,11 +271,11 @@ watch(locale, () => {
 
 editor.isLoading = true
 if (editor.machine.id !== machineId) {
-  await editor.fetchMachine(machineId)
+  await editor.loadMachine(machineId)
   await editor.fetchCommandTypes(machineId)
-  await editor.fetchAllPrograms()
+  await editor.refreshAllPrograms()
 }
-await editor.fetchProgram(machineId, programNo)
+await editor.loadProgram(machineId, programNo)
 editor.isLoading = false
 
 onBeforeRouteLeave(() => {

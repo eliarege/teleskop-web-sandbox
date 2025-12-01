@@ -1,117 +1,351 @@
 <script setup lang="ts">
-import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import type { Machine } from '@teleskop/tbb-ftp-client'
-import type { MachineCommand, ProgramTableRow } from '~/shared/types'
+import type { MachineCommand, Program, ProgramTableRow } from '~/shared/types'
+import CMMachineSelector from '~/components/CMMachineSelector.vue'
 
 const props = defineProps<{
-  machines: Machine[]
+  machineName: string
+  programList: ProgramTableRow[]
+  commandList: MachineCommand[]
 }>()
 
-defineEmits([
-  ...useDialogPluginComponent.emits,
-])
-
-const { fetch } = useKeycloak()
-
+const editor = useEditorStore()
 const { t } = useI18n()
+const { notifyError } = useNotify()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
-const selectedMachine = ref<Machine>()
-const programGroup = ref([])
-const programOptions = ref([] as any[])
-const commandGroup = ref([])
-const commandOptions = ref([] as any[])
-async function machineSelected(machine: Machine) {
-  selectedMachine.value = machine
-  programOptions.value = await fetch<{ programNo: number, name: string }[] | ProgramTableRow[]>(`/api/machine/${selectedMachine.value.id}/program?asList=true`)
-  commandOptions.value = await fetch<Pick<MachineCommand, 'commandNo' | 'name'>[] | MachineCommand[]>(`/api/machine/${selectedMachine.value.id}/commands?asList=true`)
-  commandOptions.value = commandOptions.value.map(row => ({
-    name: row.name,
-    value: row.value,
-    label: `${row.value}. ${row.name}`,
-  }))
-  programOptions.value = programOptions.value.map(row => ({
-    name: row.name,
-    value: row.value,
-    label: `${row.value}. ${row.name}`,
-  }))
+const machineOption = ref<string>('1')
+
+const programList = ref<ProgramTableRow[]>(props.programList)
+const isLoadingPrograms = ref(false)
+const selectedPrograms = ref<ProgramTableRow[]>(props.programList)
+
+const commandList = ref<MachineCommand[]>(props.commandList)
+const isLoadingCommands = ref(false)
+const selectedCommands = ref<any[]>(props.commandList)
+const isPrinting = ref(false)
+const isDownloading = ref(false)
+
+const selectedMachine = computed(() => {
+  if (machineOption.value === '1') {
+    return editor.machine
+  } else if (machineOption.value === '2' && editor.selectedMachines.length > 0) {
+    return editor.selectedMachines[0]
+  }
+  return null
+})
+
+const isDisabled = computed(() =>
+  machineOption.value === '2' && !editor.selectedMachines.length
+  || selectedPrograms.value.length === 0
+  || selectedCommands.value.length === 0
+  || isPrinting.value
+  || isDownloading.value,
+)
+
+async function loadData() {
+  selectedPrograms.value = []
+  selectedCommands.value = []
+
+  await Promise.all([loadProgramList(), loadCommandList()])
+}
+
+async function loadProgramList() {
+  isLoadingPrograms.value = true
+  selectedPrograms.value = []
+
+  try {
+    if (selectedMachine.value) {
+      programList.value = await editor.fetchAllPrograms(selectedMachine.value.id)
+    }
+  } finally {
+    isLoadingPrograms.value = false
+  }
+}
+
+async function loadCommandList() {
+  isLoadingCommands.value = true
+  selectedCommands.value = []
+
+  try {
+    if (selectedMachine.value) {
+      const machine = await editor.fetchMachine(selectedMachine.value.id)
+      commandList.value = Array.from(machine.commands.values())
+    }
+  } finally {
+    isLoadingCommands.value = false
+  }
+}
+
+async function getPrograms(machineId: number, programNos: number[]): Promise<Program[]> {
+  isLoadingPrograms.value = true
+  const programs = ref<Program[]>([])
+
+  try {
+    for (const programNo of programNos) {
+      const program = await editor.fetchProgram(machineId, programNo)
+      programs.value.push(program)
+    }
+
+    return programs.value
+  } finally {
+    isLoadingPrograms.value = false
+  }
+}
+
+watch([machineOption, () => editor.selectedMachines], loadData)
+
+const programColumns = computed(() => [
+  { name: 'programNo', label: t('printProgramListDialog.programNo'), field: 'programNo', align: 'left' as const, sortable: true },
+  { name: 'name', label: t('printProgramListDialog.programName'), field: 'name', align: 'left' as const, sortable: true },
+  { name: 'stepCount', label: t('printProgramListDialog.stepCount'), field: 'stepCount', align: 'center' as const, sortable: true },
+  { name: 'type', label: t('printProgramListDialog.type'), field: (row: any) => getProcessTypeName(row.type), align: 'left' as const, sortable: true },
+])
+
+const commandColumns = computed(() => [
+  { name: 'commandNo', label: t('printProgramListDialog.commandNo'), field: 'commandNo', align: 'left' as const, sortable: true },
+  { name: 'name', label: t('printProgramListDialog.commandName'), field: 'name', align: 'left' as const, sortable: true },
+])
+
+function getProcessTypeName(typeValue: number) {
+  return editor.allProcessTypes.find(pt => pt.value === typeValue)?.label || ''
+}
+
+async function generatePDF() {
+  if (!selectedMachine.value) {
+    throw new Error('No machine selected')
+  }
+
+  const machineId = selectedMachine.value.id
+  const machineName = selectedMachine.value.name
+  const programNos = selectedPrograms.value.map(p => p.programNo)
+  const programs = await getPrograms(machineId, programNos)
+  const selectedCommandNos = selectedCommands.value.map(c => c.commandNo)
+
+  const translations = {
+    machineNo: t('printProgramListDialog.machineNo'),
+    machineName: t('printProgramListDialog.machineName'),
+    programNo: t('printProgramListDialog.programNo'),
+    programName: t('printProgramListDialog.programName'),
+    stepCount: t('printProgramListDialog.stepCount'),
+    duration: t('printProgramListDialog.duration'),
+    processCode: t('printProgramListDialog.processCode'),
+    createdAt: t('printProgramListDialog.createdAt'),
+    updatedAt: t('printProgramListDialog.updatedAt'),
+    parameter: t('printProgramListDialog.parameter'),
+    name: t('printProgramListDialog.name'),
+    value: t('printProgramListDialog.value'),
+    page: t('printProgramListDialog.page'),
+    noSelectedCommands: t('printProgramListDialog.noSelectedCommands'),
+  }
+
+  const worker = new Worker(new URL('~/workers/pdf-generator.worker.ts', import.meta.url), { type: 'module' })
+
+  const pdfArrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+    worker.onmessage = (e: MessageEvent) => {
+      if (e.data.success) {
+        resolve(e.data.data)
+      } else {
+        reject(new Error(e.data.error))
+      }
+      worker.terminate()
+    }
+
+    worker.onerror = (error) => {
+      reject(error)
+      worker.terminate()
+    }
+
+    worker.postMessage({
+      data: {
+        machineName,
+        machineId,
+        // Deep copy: Vue reactive proxy'leri ve circular reference'ları temizleyerek plain object'e çevirir
+        programs: JSON.parse(JSON.stringify(programs)),
+        selectedCommandNos,
+        commandList: JSON.parse(JSON.stringify(commandList.value)),
+        translations,
+      },
+      processTypes: JSON.parse(JSON.stringify(editor.allProcessTypes)),
+    })
+  })
+
+  const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
+  return blob
+}
+
+async function printProgramList() {
+  if (isPrinting.value)
+    return
+
+  isPrinting.value = true
+
+  try {
+    const pdfBlob = await generatePDF()
+    const url = URL.createObjectURL(pdfBlob)
+
+    // Yeni pencerede aç ve print
+    const printWindow = window.open(url, '_blank')
+
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print()
+        setTimeout(() => {
+          URL.revokeObjectURL(url)
+        }, 1000)
+      }
+    } else {
+      notifyError(t('printProgramListDialog.popupBlocked'))
+      URL.revokeObjectURL(url)
+    }
+
+    onDialogCancel()
+  } catch (error) {
+    console.error('Print error:', error)
+    notifyError(t('printProgramListDialog.printError'))
+  } finally {
+    isPrinting.value = false
+  }
+}
+
+async function downloadProgramList() {
+  if (isDownloading.value)
+    return
+
+  isDownloading.value = true
+
+  try {
+    if (!selectedMachine.value) {
+      notifyError(t('printProgramListDialog.noMachineSelected'))
+      return
+    }
+
+    const pdfBlob = await generatePDF()
+    const fileName = `${selectedMachine.value.name}_program_listesi.pdf`
+
+    const url = URL.createObjectURL(pdfBlob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(url)
+
+    onDialogCancel()
+  } catch (error) {
+    console.error('Download error:', error)
+    notifyError(t('printProgramListDialog.downloadError'))
+  } finally {
+    isDownloading.value = false
+  }
 }
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
-    <q-card class="min-h-40 min-w-120">
-      <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">
-          {{ t('printProgramDialog.programPrintOptions') }}
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogCancel"
+  >
+    <q-card class="w-120 select-none">
+      <!-- Header -->
+      <q-card-section>
+        <div class="text-h6 flex">
+          {{ t('printProgramListDialog.printProgram') }}
+          <q-space />
+          <q-btn
+            class="text-gray-4 dark:text-gray-6"
+            icon="close"
+            flat
+            round
+            dense
+            @click="onDialogCancel"
+          />
         </div>
-        <q-space />
-        <q-btn
-          v-close-popup
-          icon="close"
-          flat
-          round
-          dense
-          @click="onDialogCancel"
+      </q-card-section>
+
+      <!-- Machine Selection -->
+      <q-card-section class="pt-0">
+        <CMMachineSelector
+          v-model="machineOption"
+          :machine-name="props.machineName"
+          single-selection
         />
       </q-card-section>
 
-      <q-card-section>
-        <div>{{ t('printProgramDialog.selectMachine') }}</div>
-        <q-select
-          :model-value="selectedMachine"
+      <!-- Programs Table -->
+      <q-card-section class="pt-0">
+        <div class="text-sm mb-2">
+          {{ t('printProgramListDialog.selectPrograms') }}
+        </div>
+        <q-table
+          v-model:selected="selectedPrograms"
+          :rows="programList"
+          :columns="programColumns"
+          row-key="programNo"
+          selection="multiple"
           dense
-          :options="props.machines"
-          option-label="name"
-          @update:model-value="machineSelected"
+          flat
+          bordered
+          virtual-scroll
+          :loading="isLoadingPrograms"
+          :rows-per-page-options="[0]"
+          class="h-50"
+          hide-bottom
+          hide-pagination
+          table-header-style="position: sticky; top: 0; z-index: 1; height: 30px;"
+          table-header-class="bg-gray-1 dark:bg-dark-4"
         />
       </q-card-section>
-      <q-card-section v-if="programOptions.length">
-        <div class="flex">
-          {{ t('printProgramDialog.selectPrograms') }}
-          <q-space />
-          <OptionGroupFunctionalityButtons
-            v-model="programGroup"
-            :options="programOptions"
-          />
+
+      <!-- Commands Table -->
+      <q-card-section class="pt-0">
+        <div class="text-sm mb-2">
+          {{ t('printProgramListDialog.selectCommands') }}
         </div>
-        <div class="flex max-h-60 overflow-y-scroll">
-          <q-option-group
-            v-model="programGroup"
-            dense
-            class="p-5"
-            :options="programOptions"
-            type="checkbox"
-          />
-        </div>
+        <q-table
+          v-model:selected="selectedCommands"
+          :rows="commandList"
+          :columns="commandColumns"
+          row-key="commandNo"
+          selection="multiple"
+          dense
+          flat
+          bordered
+          virtual-scroll
+          :loading="isLoadingCommands"
+          :rows-per-page-options="[0]"
+          class="h-50"
+          hide-bottom
+          hide-pagination
+          table-header-style="position: sticky; top: 0; z-index: 1; height: 30px;"
+          table-header-class="bg-gray-1 dark:bg-dark-4"
+        />
       </q-card-section>
-      <q-card-section v-if="commandOptions.length">
-        <div class="flex">
-          {{ t('printProgramDialog.selectCommands') }}
-          <q-space />
-          <OptionGroupFunctionalityButtons
-            v-model="commandGroup"
-            :options="commandOptions"
-          />
-        </div>
-        <div class="flex max-h-60 overflow-y-scroll">
-          <q-option-group
-            v-model="commandGroup"
-            dense
-            class="p-5"
-            :options="commandOptions"
-            type="checkbox"
-          />
-        </div>
-      </q-card-section>
-      <q-card-section v-if="programOptions.length && commandOptions.length">
-        <div class="flex">
-          <q-space />
-          <q-btn
-            :label="t('submit')"
-          />
-        </div>
-      </q-card-section>
+
+      <!-- Actions -->
+      <q-card-actions align="right" class="q-pa-md bg-gray-1 dark:bg-dark-4">
+        <q-btn
+          :label="t('close')"
+          class="bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          flat
+          @click="onDialogCancel"
+        />
+        <q-btn
+          :label="t('download')"
+          :disable="isDisabled"
+          :loading="isDownloading"
+          class="bg-primary text-white"
+          flat
+          @click="downloadProgramList()"
+        />
+        <q-btn
+          :label="t('print')"
+          :disable="isDisabled"
+          :loading="isPrinting"
+          class="bg-primary text-white"
+          flat
+          @click="printProgramList()"
+        />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>

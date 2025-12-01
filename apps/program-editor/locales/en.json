@@ -220,6 +220,7 @@
   "ok": "OK",
   "close": "Close",
   "save": "Save",
+  "print": "Print",
   "message": {
     "delete_program": "Delete program from Teleskop",
     "program_not_deleted": "Program could not be deleted from Teleskop"
@@ -227,18 +228,6 @@
   "iconSettingsDialog": {
     "title": "Command Icon Settings",
     "selectIcons": "Select icons to be displayed in the editor."
-  },
-  "printProgramListDialog": {
-    "printOptions": "Printing Options",
-    "machineList": "Machine List",
-    "machine": "Machine",
-    "selectedMachine": "Selected Machine",
-    "all": "All",
-    "printer": "Printer",
-    "print": "Print",
-    "preview": "Preview",
-    "cancel": "Cancel",
-    "send": "Send"
   },
   "printProgramDialog": {
     "programPrintOptions": "Program Printing Options",
@@ -439,12 +428,17 @@
     "updateHeaderNotification": {
       "success": "Update header operation is succeed for program with program no {programNo}.",
       "fail": "Update header operation is failed for program with program no {programNo}."
+    },
+    "selectMachine": {
+      "title": "Machine Selection",
+      "selectMachine": "Select machines that you want to perform the operation on.",
+      "operate": "Ok"
     }
   },
   "exportExcelDialog": {
     "_": "Export To Excel",
     "machineList": "Machine List",
-    "fields": "Fields",
+    "fieldsToExport": "Fields To Export",
     "commandList": "Command List",
     "detailedCommandList": "Detailed Command List",
     "machineConstantsList": "Machine Constants List",
@@ -461,7 +455,18 @@
     "parameterName": "Parameter Name",
     "commandIOName": "Command IO Name",
     "IOName": "IO Name",
-    "default": "Default"
+    "default": "Default",
+    "report": "Report"
+  },
+  "machineSelectorDialog": {
+    "machineOptions": "Machine Options",
+    "thisMachine": "This Machine ({machineName})",
+    "selectedMachine": "Selected Machine",
+    "selectedMachines": "Selected Machines",
+    "selectMachine": "Select Machine",
+    "machinesSelected": "{count} machines selected",
+    "selectedMachinesList": "Selected Machines List",
+    "noMachinesSelected": "No Machines Selected"
   },
   "commandType": {
     "chemicalRequest": "Chemical Request",
@@ -616,5 +621,43 @@
   "programExist": {
     "title": "Program Already Exists",
     "message": "Program with number {programNo} already exists. Do you want to overwrite it?"
-  }
+  },
+  "printProgramListDialog": {
+    "title": "Print Program List",
+    "message": "Select the machine whose programs you want to print",
+    "selectPrograms": "Select programs to print",
+    "selectCommands": "Select commands to include in print",
+    "noMachineSelected": "Please select a machine",
+    "machineNo": "Machine No",
+    "machineName": "Machine Name",
+    "program": "Program",
+    "programNo": "Program No",
+    "programName": "Program Name",
+    "duration": "Duration",
+    "stepCount": "Step Count",
+    "type": "Type",
+    "processCode": "Process Code",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "step": "Step",
+    "command": "Command",
+    "commandNo": "Command No",
+    "commandName": "Command Name",
+    "commandType": "Command Type",
+    "parameter": "Parameter",
+    "name": "Name",
+    "value": "Value",
+    "page": "Page",
+    "machine": "Machine",
+    "selectedPrograms": "Selected Programs",
+    "selectedCommands": "Selected Commands",
+    "mainCommand": "Main Command",
+    "parallelCommand": "Parallel Command",
+    "noSelectedCommands": "No selected commands in this program",
+    "printError": "An error occurred while printing",
+    "downloadError": "An error occurred while downloading",
+    "programList": "program_list",
+    "printProgram": "Print Program"
+  },
+  "download": "Download"
 }
