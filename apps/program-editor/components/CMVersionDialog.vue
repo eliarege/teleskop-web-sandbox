@@ -71,7 +71,7 @@ async function setActiveVersion() {
   try {
     await contextMenuStore.setActiveVersion(props.machine.id, props.program.programNo, version, isOperatorEditable.value)
     await contextMenuStore.fetchVersions(props.machine.id, props.program.programNo)
-    await editor.fetchProgram(props.machine.id, props.program.programNo)
+    await editor.loadProgram(props.machine.id, props.program.programNo)
     notifySuccess(t('contextMenu.version.setActiveSuccess', { version }))
   } catch (error) {
     console.error('Error setting active version:', error)

@@ -637,7 +637,7 @@ registerCommand(() => {
           // Dialog closed after successful operation, refresh program
           editor.isLoading = true
           try {
-            await editor.fetchProgram(machine.id, program.programNo)
+            await editor.loadProgram(machine.id, program.programNo)
           } catch (error) {
             console.error('Error refreshing program:', error)
           } finally {
@@ -906,7 +906,7 @@ registerCommand(() => {
 
       editor.isLoading = true
       for (const { programNo } of selectedRows) {
-        await editor.fetchProgram(machineId, programNo)
+        await editor.loadProgram(machineId, programNo)
       }
       editor.isLoading = false
     },

@@ -556,32 +556,34 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Belirtilen makine ID'si ve program numarasına göre program verisini getirir.
+   * Belirtilen makine ID'si ve program numarasına göre program verisini backend'den çeker.
    *
    * @param {number} machineId - Programın ait olduğu makinenin ID'si.
    * @param {number} programNo - Getirilecek programın numarası.
    * @param {number} [version] - (İsteğe bağlı) Getirilecek programın versiyonu. Eğer sağlanmazsa en son sürüm getirilir.
    *
-   * @returns {Promise<void>} Program verisi başarıyla getirildikten sonra `Promise` döner.
+   * @returns {Promise<Program>} Program verisi döner.
    *
    * @description Bu fonksiyon, belirtilen makine ID'si ve program numarasına göre program verilerini API'den çeker.
    * Programın versiyonu sağlanmışsa, belirtilen versiyon getirilir; aksi takdirde en son sürüm getirilir.
    * Veriler çekildikten sonra, programın her bir adımı (`step`) ve paralel komutları (`parallelCommands`) işlenir.
-   * Her bir adım ve komut için benzersiz ID'ler atanır.
+   * Her bir adım ve komut için benzersiz ID'ler atanır. Bu fonksiyon sadece backend'den veriyi çeker,
+   * `editor.program`'a atamaz. Program verilerini yüklemek için `loadProgram` fonksiyonunu kullanın.
    */
   async function fetchProgram(machineId: number, programNo: number, version?: number): Promise<Program> {
     const errorStore = useErrorStore()
 
-    selectedSteps.value = []
     lastStepId = 0
     lastCommandId = 0
 
+    let fetchedProgram: Program
+
     if (isDef(version)) {
-      program.value = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
+      fetchedProgram = await kc.fetch<Program>(`/api/machine/${machineId}/program/${programNo}/version/${version}`)
       errorStore.clearErrors(programNo) // version’lı çağrıda hata listesi temizlenebilir
     } else {
       const response = await kc.fetch<ProgramWithErrors>(`/api/machine/${machineId}/program/${programNo}`)
-      program.value = response.program
+      fetchedProgram = response.program
       errorStore.setErrors(machineId, programNo, response.programError.steps)
 
       errorIds.value.clear()
@@ -592,7 +594,7 @@ export const useEditorStore = defineStore('editor', () => {
       })
     }
 
-    for (const step of program.value.steps) {
+    for (const step of fetchedProgram.steps) {
       step.stepId = lastStepId++
       step.mainCommand.commandId = lastCommandId++
       for (const command of step.parallelCommands) {
@@ -601,9 +603,25 @@ export const useEditorStore = defineStore('editor', () => {
       lastCommandId = 0
     }
 
-    originalProgram.value = klona(program.value)
+    return fetchedProgram
+  }
 
-    return program.value
+  /**
+   * Belirtilen makine ID'si ve program numarasına göre program verilerini yükler.
+   *
+   * @param {number} machineId - Programın ait olduğu makinenin ID'si.
+   * @param {number} programNo - Getirilecek programın numarası.
+   * @param {number} [version] - (İsteğe bağlı) Getirilecek programın versiyonu. Eğer sağlanmazsa en son sürüm getirilir.
+   *
+   * @returns {Promise<void>} Program verisi başarıyla yüklendikten sonra `Promise` döner.
+   *
+   * @description Bu fonksiyon, `fetchProgram` fonksiyonunu kullanarak program verilerini çeker ve `program` değişkenine atar.
+   * Ayrıca seçili adımları temizler ve orijinal program kopyasını saklar.
+   */
+  async function loadProgram(machineId: number, programNo: number, version?: number): Promise<void> {
+    selectedSteps.value = []
+    program.value = await fetchProgram(machineId, programNo, version)
+    originalProgram.value = klona(program.value)
   }
 
   /**
@@ -1061,6 +1079,7 @@ export const useEditorStore = defineStore('editor', () => {
     createEmptyCommand,
     changeMachine,
     fetchProgram,
+    loadProgram,
     fetchMachine,
     loadMachine,
     fetchAllMachine,

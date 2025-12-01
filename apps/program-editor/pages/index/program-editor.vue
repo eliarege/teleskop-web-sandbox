@@ -275,7 +275,7 @@ if (editor.machine.id !== machineId) {
   await editor.fetchCommandTypes(machineId)
   await editor.refreshAllPrograms()
 }
-await editor.fetchProgram(machineId, programNo)
+await editor.loadProgram(machineId, programNo)
 editor.isLoading = false
 
 onBeforeRouteLeave(() => {
