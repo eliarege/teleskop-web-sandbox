@@ -47,6 +47,7 @@
     "paste": "Paste",
     "refresh": "Refresh",
     "save": "Save",
+    "saveWithoutVersion": "Save Without Version",
     "saveAs": "Save As",
     "reset": "Reset",
     "findReplace": "Find - Replace",

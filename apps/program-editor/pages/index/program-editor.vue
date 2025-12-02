@@ -15,8 +15,6 @@ const { $commandManager } = useNuxtApp()
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
 
-const isNewVersion = ref(true)
-
 const ctrl = useKeyModifier('Control')
 
 definePageMeta({
@@ -44,19 +42,20 @@ const buttons = computed<ContextBarButtons[]>(() => [
     icon: 'save',
     disable: editor.isLoading,
     onClick: async () => {
-      await editor.onSubmit(undefined, isNewVersion.value)
+      await editor.onSubmit(undefined, true)
     },
   },
-  {
-    label: t('menu.isNewVersion'),
-    originalLabel: t('menu.isNewVersion'),
-    tooltip: t('menu.isNewVersion'),
-    icon: isNewVersion.value ? 'toggle_on' : 'toggle_off',
-    disable: editor.isLoading,
-    onClick: async () => {
-      isNewVersion.value = !isNewVersion.value
-    },
-  },
+  // {
+  //   label: t('menu.saveWithoutVersion'),
+  //   originalLabel: t('menu.saveWithoutVersion'),
+  //   tooltip: t('menu.saveWithoutVersion'),
+  //   shortcut: 'Ctrl+Shift+S',
+  //   icon: 'save',
+  //   disable: editor.isLoading,
+  //   onClick: async () => {
+  //     await editor.onSubmit(undefined, false)
+  //   },
+  // },
   {
     label: t('menu.saveAs'),
     originalLabel: t('menu.saveAs'),
@@ -239,9 +238,12 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && event.shiftKey) {
     event.preventDefault()
-    await editor.onSubmit()
+    await editor.onSubmit(undefined, false)
+  } else if (event.ctrlKey) {
+    event.preventDefault()
+    await editor.onSubmit(undefined, true)
   }
 })
 
