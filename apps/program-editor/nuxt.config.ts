@@ -62,5 +62,8 @@ export default defineNuxtConfig({
     plugins: [
       Nearley(),
     ],
+    worker: {
+      format: 'es',
+    },
   },
 })

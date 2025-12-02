@@ -138,7 +138,7 @@ async function generatePDF() {
     noSelectedCommands: t('printProgramListDialog.noSelectedCommands'),
   }
 
-  const worker = new Worker(new URL('~/workers/pdf-generator.worker.ts', import.meta.url), { type: 'module' })
+  const worker = new Worker(new URL('~/workers/pdf-generator.worker', import.meta.url), { type: 'module' })
 
   const pdfArrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
     worker.onmessage = (e: MessageEvent) => {
