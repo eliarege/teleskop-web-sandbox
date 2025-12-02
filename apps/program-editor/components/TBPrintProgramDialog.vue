@@ -8,8 +8,8 @@ const props = defineProps<{
   commandList: MachineCommand[]
 }>()
 
-const editor = useEditorStore()
 const { t } = useI18n()
+const editor = useEditorStore()
 const { notifyError } = useNotify()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
@@ -22,6 +22,7 @@ const selectedPrograms = ref<ProgramTableRow[]>(props.programList)
 const commandList = ref<MachineCommand[]>(props.commandList)
 const isLoadingCommands = ref(false)
 const selectedCommands = ref<MachineCommand[]>(props.commandList)
+
 const isPrinting = ref(false)
 const isDownloading = ref(false)
 

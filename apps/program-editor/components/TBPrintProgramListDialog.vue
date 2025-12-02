@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { format } from 'date-fns'
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
-import { enGB, tr } from 'date-fns/locale'
 import type { MachineOption } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
 }>()
 
+const { t, d } = useI18n()
 const editor = useEditorStore()
-const { t, locale } = useI18n()
 const { notifyError } = useNotify()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
@@ -29,9 +27,7 @@ function getProcessTypeName(typeValue: number) {
 }
 
 function formatDate(date: string | Date) {
-  return format(new Date(date), 'dd.MM.yyyy HH:mm', {
-    locale: locale.value === 'tr' ? tr : enGB,
-  })
+  return d(new Date(date), 'datetime')
 }
 
 async function generatePDF() {
