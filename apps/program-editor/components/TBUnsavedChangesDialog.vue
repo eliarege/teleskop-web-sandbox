@@ -1,10 +1,14 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 </script>
 
 <template>
-  <QDialog ref="dialogRef">
+  <QDialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <QCard class="w-120">
       <QCardSection class="row items-center">
         <span class="text-4"> {{ t('unsavedChanges.title') }}</span>

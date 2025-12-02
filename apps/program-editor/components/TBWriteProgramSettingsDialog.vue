@@ -6,7 +6,7 @@ const { t } = useI18n()
 const settings = useProgramWriteSettings()
 const tempSettings = ref({ ...settings.value }) // Ayarların geçici bir kopyası
 
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 function onDialogOK() {
   settings.value = tempSettings.value
@@ -18,7 +18,7 @@ function onDialogOK() {
   <QDialog
     ref="dialogRef"
     class="select-none"
-    @hide="onDialogCancel"
+    @hide="onDialogHide"
   >
     <QCard>
       <!-- Başlık -->

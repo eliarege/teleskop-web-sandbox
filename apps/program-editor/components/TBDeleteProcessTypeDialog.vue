@@ -8,13 +8,16 @@ const props = defineProps<{
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
+
 const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 </script>
 
 <template>
   <QDialog
     ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
   >
     <QCard>
       <QCardSection>

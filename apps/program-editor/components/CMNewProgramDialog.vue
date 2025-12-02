@@ -14,7 +14,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const isRename = props.type === 'rename'
 const isSaveAs = props.type === 'saveAs'
@@ -51,7 +51,11 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
 
 <template>
   <div class="w-full h-full select-none">
-    <QDialog ref="dialogRef" persistent>
+    <QDialog
+      ref="dialogRef"
+      class="select-none"
+      @hide="onDialogHide"
+    >
       <QCard style="width: 450px">
         <QForm @submit.prevent="onDialogOK(newProgram)">
           <QCardSection>

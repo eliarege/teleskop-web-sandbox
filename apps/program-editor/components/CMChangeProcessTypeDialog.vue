@@ -12,7 +12,7 @@ defineEmits([
 ])
 
 const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const selectedOption = ref(
   props.programType || props.options[0]?.value || 0,
@@ -25,7 +25,11 @@ const additionalOptions = computed(() => props.options.filter(option => option.v
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" persistent>
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <q-card style="width: 500px" class="select-none">
       <q-card-section>
         <div class="text-h6 flex">

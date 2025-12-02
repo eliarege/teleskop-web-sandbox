@@ -11,7 +11,7 @@ const props = defineProps<{
 const editor = useEditorStore()
 const { t, locale } = useI18n()
 const { notifyError } = useNotify()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const machineOption = ref<string>('1')
 
@@ -118,7 +118,7 @@ async function downloadProgramList() {
   <q-dialog
     ref="dialogRef"
     class="select-none"
-    @hide="onDialogCancel"
+    @hide="onDialogHide"
   >
     <q-card class="w-120 select-none">
       <q-card-section>
