@@ -1,9 +1,9 @@
 import { dmsDB } from '~/server/connectionPool'
 import { RecipeType } from '~/shared/constants'
-import type { RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
+import type { RecipeMasterStep } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
-  const { template, machineId } = await readBody<{ template: RecipeMasterStep[], machineId: number }>(event)
+  const { template, machineId } = await readBody<{ template: RecipeMasterStep, machineId: number }>(event)
   const { id } = getRouterParams(event)
   try {
     await dmsDB.transaction(async (trx) => {
@@ -36,6 +36,7 @@ export default defineEventHandler(async (event) => {
             material_code: material.materialCode,
             unit: material.unit,
             amount: material.amount,
+            next_step: material.nextStep ?? null,
           })
         })
       })
@@ -49,6 +50,7 @@ export default defineEventHandler(async (event) => {
             material_code: material.materialCode,
             unit: material.unit,
             amount: material.amount,
+            next_step: material.nextStep ?? null,
           })
         })
       })
@@ -62,6 +64,22 @@ export default defineEventHandler(async (event) => {
             material_code: material.materialCode,
             unit: material.unit,
             amount: material.amount,
+            next_step: material.nextStep ?? null,
+          })
+        })
+      })
+      // Handle manual steps (materials with step_no = -1)
+      template.manualSteps?.forEach((intStep) => {
+        intStep.materials.forEach((material) => {
+          materialData.push({
+            program_no: id,
+            machine_id: machineId,
+            step_no: -1,
+            type: intStep.type,
+            material_code: material.materialCode,
+            unit: material.unit,
+            amount: material.amount,
+            next_step: intStep.nextStep,
           })
         })
       })

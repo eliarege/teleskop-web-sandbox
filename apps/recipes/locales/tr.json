@@ -398,6 +398,13 @@
     "20": "oz"
   },
   "InvalidMaterialType": "Malzeme türü adım türüyle eşleşmiyor",
+  "MaterialNotManual": "Manuel adımlara yalnızca manuel malzemeler eklenebilir",
   "NoStepSelected": "Lütfen önce bir adım seçin",
-  "AddToSelectedStep": "Seçili Adıma Ekle"
+  "AddToSelectedStep": "Seçili Adıma Ekle",
+  "ManualStep": "Manuel Adım",
+  "AddManualStep": "Manuel Adım Ekle",
+  "ManualStepInfo": "Adım {step} öncesine manuel malzeme ekle",
+  "NoManualMaterials": "Manuel malzeme bulunmuyor",
+  "ManualOnly": "Sadece Manuel",
+  "Close": "Kapat"
 }

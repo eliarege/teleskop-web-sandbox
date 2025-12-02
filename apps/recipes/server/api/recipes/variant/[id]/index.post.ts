@@ -47,6 +47,25 @@ export default defineEventHandler(async (event) => {
             amount: material.amount,
             program_index: program.stepNo,
             variant_name: variant.variantName,
+            next_step: material.nextStep ?? null,
+          })
+        })
+      })
+      // Handle manual steps
+      program.manualSteps?.forEach((intStep) => {
+        intStep.materials.forEach((material) => {
+          materialData.push({
+            recipe_id: id,
+            machine_id: machineId,
+            program_no: program.programNo,
+            step_no: -1,
+            type: material.type,
+            material_code: material.materialCode,
+            unit: material.unit,
+            amount: material.amount,
+            program_index: program.stepNo,
+            variant_name: variant.variantName,
+            next_step: intStep.nextStep,
           })
         })
       })

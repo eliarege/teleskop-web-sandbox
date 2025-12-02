@@ -46,6 +46,7 @@ export default defineEventHandler(async (event) => {
               unit: material.unit,
               amount: material.amount,
               program_index: program.stepNo,
+              next_step: material.nextStep ?? null,
             })
           })
         })
@@ -61,6 +62,7 @@ export default defineEventHandler(async (event) => {
               unit: material.unit,
               amount: material.amount,
               program_index: program.stepNo,
+              next_step: material.nextStep ?? null,
             })
           })
         })
@@ -76,6 +78,24 @@ export default defineEventHandler(async (event) => {
               unit: material.unit,
               amount: material.amount,
               program_index: program.stepNo,
+              next_step: material.nextStep ?? null,
+            })
+          })
+        })
+        // Handle manual steps (materials with step_no = -1)
+        program.manualSteps?.forEach((intStep) => {
+          intStep.materials.forEach((material) => {
+            materialData.push({
+              recipe_id: id,
+              machine_id: recipeHeader.machineId,
+              program_no: program.programNo,
+              step_no: -1,
+              type: intStep.type,
+              material_code: material.materialCode,
+              unit: material.unit,
+              amount: material.amount,
+              program_index: program.stepNo,
+              next_step: intStep.nextStep,
             })
           })
         })

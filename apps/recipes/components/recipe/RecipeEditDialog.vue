@@ -2,7 +2,7 @@
 import { klona } from 'klona'
 import draggable from 'vuedraggable'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import type { Material, OptionMap, ProgramHeader, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
+import type { ManualStep, Material, OptionMap, ProgramHeader, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
 import { RecipeType } from '~/shared/constants'
 import { rgbStringToColorCode } from '~/utils/utils'
 
@@ -66,6 +66,11 @@ const selectedMaterial = ref<Material>()
 const materialSelection = ref<{
   program: number
   step: number
+  type: number
+} | null>(null)
+const manualStepSelection = ref<{
+  programIndex: number
+  stepNo: number
   type: number
 } | null>(null)
 getPrograms()
@@ -227,6 +232,80 @@ function onRemoveItem(materials: any, index: number) {
 }
 function selectMaterial(program: number, type: RecipeType, step: number) {
   materialSelection.value = { program, type, step }
+}
+
+function selectManualMaterial(programIndex: number, type: RecipeType, stepNo: number) {
+  manualStepSelection.value = { programIndex, type, stepNo }
+}
+
+function onManualMaterialSelected(material: RecipeMasterMaterial) {
+  if (!manualStepSelection.value || !editedPrograms.value)
+    return
+
+  const { programIndex, stepNo, type } = manualStepSelection.value
+  const program = editedPrograms.value[programIndex]
+
+  if (!program)
+    return
+
+  if (!program.manualSteps) {
+    program.manualSteps = []
+  }
+
+  let manualStep = program.manualSteps.find(ms => ms.nextStep === stepNo && ms.type === type)
+  if (!manualStep) {
+    manualStep = { nextStep: stepNo, type, materials: [] }
+    program.manualSteps.push(manualStep)
+    program.manualSteps.sort((a, b) => a.nextStep - b.nextStep)
+  }
+
+  const newMaterial: RecipeMasterMaterial = {
+    materialCode: material.materialCode,
+    materialName: material.materialName,
+    type: material.type,
+    amount: 1,
+    unit: type === RecipeType.DYE ? 0 : 1,
+    orderNo: -1, // -1 indicates manual step material
+    programIndex: program.stepNo,
+    isManual: material.isManual,
+    calculated: undefined,
+    nextStep: stepNo,
+  }
+
+  manualStep.materials.push(newMaterial)
+  manualStepSelection.value = null
+  selectedMaterial.value = undefined
+}
+
+function removeManualStepMaterial(programIndex: number, type: number, stepNo: number, materialIndex: number) {
+  if (!editedPrograms.value)
+    return
+
+  const program = editedPrograms.value[programIndex]
+  if (!program?.manualSteps)
+    return
+
+  const manualStep = program.manualSteps.find(ms => ms.nextStep === stepNo && ms.type === type)
+  if (manualStep) {
+    manualStep.materials.splice(materialIndex, 1)
+    if (manualStep.materials.length === 0) {
+      const idx = program.manualSteps.findIndex(ms => ms.nextStep === stepNo && ms.type === type)
+      if (idx !== -1) {
+        program.manualSteps.splice(idx, 1)
+      }
+    }
+  }
+}
+
+function filterManualMaterials(val: any, type: RecipeType, update: (param: any) => void) {
+  update(() => {
+    const needle = val.toLowerCase()
+    materialOptions.value = materials.value.filter(material =>
+      `${material.materialCode} - ${material.materialName.toLowerCase()}`.includes(needle)
+      && material.materialGroupNo === type + 1
+      && material.isManual,
+    )
+  })
 }
 
 function onMaterialSelected(material: RecipeMasterMaterial) {
@@ -561,53 +640,41 @@ async function onDelete() {
                       class="table-wrapper"
                       my-2
                     >
-                      <div class="flex items-start">
-                        <h3 class="step-header mr-4 mt-2 text-xl font-bold">
-                          {{ step.orderNo }}
-                        </h3>
-
-                        <div class="flex gap-4 flex-nowrap">
-                          <div class="table-content">
-                            <QMarkupTable
-                              class="fixed-table"
-                              overflow-hidden
-                              dense
-                              border-gray
-                              border-rd-2
-                              border-2
-                            >
-                              <thead>
-                                <tr :class="{ 'invisible-header': idx !== 0 }">
-                                  <th class="text-left" w-10 />
-                                  <th class="text-left" w-10>
-                                    {{ t('materialFields.IsManual') }}
-                                  </th>
-                                  <th class="text-left" w-10>
-                                    {{ t('materialFields.Code') }}
-                                  </th>
-                                  <th class="text-left" w-20>
-                                    {{ t('materialFields.Name') }}
-                                  </th>
-                                  <th class="text-left" w-25>
-                                    {{ t('recipeFields.Amount') }}
-                                  </th>
-                                  <th class="text-left" w-10>
-                                    {{ t('recipeFields.Unit') }}
-                                  </th>
-                                </tr>
-                              </thead>
-                              <draggable
-                                v-model="step.materials"
-                                class="draggable-area"
-                                item-key="materialCode"
-                                :group="{ name: 'materials', pull: false }"
-                                :sort="false"
-                                ghost-class="material-ghost"
-                                tag="tbody"
-                                @change="(event) => changeItem(program.chemSteps, event)"
+                      <div class="flex flex-col gap-2">
+                        <!-- Manual step row -->
+                        <div class="flex items-start">
+                          <span class="manual-label">{{ t('Man') }}</span>
+                          <div class="flex gap-4 flex-nowrap">
+                            <div class="table-content">
+                              <QMarkupTable
+                                class="fixed-table manual-table"
+                                overflow-hidden
+                                dense
+                                border-rd-2
+                                border-2
                               >
-                                <template #item="{ element, index }">
-                                  <tr>
+                                <thead>
+                                  <tr :class="{ 'invisible-header': idx !== 0 }">
+                                    <th class="text-left" w-10 />
+                                    <th class="text-left" w-10>
+                                      {{ t('materialFields.Code') }}
+                                    </th>
+                                    <th class="text-left" w-20>
+                                      {{ t('materialFields.Name') }}
+                                    </th>
+                                    <th class="text-left" w-25>
+                                      {{ t('recipeFields.Amount') }}
+                                    </th>
+                                    <th class="text-left" w-10>
+                                      {{ t('recipeFields.Unit') }}
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr
+                                    v-for="(manMat, manIdx) in program.manualSteps?.find(ms => ms.nextStep === step.orderNo && ms.type === RecipeType.CHEM)?.materials || []"
+                                    :key="manIdx"
+                                  >
                                     <td important-p-0>
                                       <QBtn
                                         icon="close"
@@ -616,25 +683,22 @@ async function onDelete() {
                                         pr-0
                                         op-70
                                         size="sm"
-                                        @click="onRemoveItem(step.materials, index)"
+                                        @click="removeManualStepMaterial(programIndex, RecipeType.CHEM, step.orderNo, manIdx)"
                                       />
                                     </td>
                                     <td w-10>
-                                      {{ element.isManual ? t('Yes') : t('No') }}
-                                    </td>
-                                    <td w-10>
-                                      <span>{{ element.materialCode }}</span>
+                                      <span>{{ manMat.materialCode }}</span>
                                     </td>
                                     <td
                                       w-20
                                       font-size-4
                                       font-900
                                     >
-                                      <span>{{ element.materialName }}</span>
+                                      <span>{{ manMat.materialName }}</span>
                                     </td>
                                     <td w-10>
                                       <QInput
-                                        v-model.number="element.amount"
+                                        v-model.number="manMat.amount"
                                         dense
                                         type="number"
                                         :rules="[(val: number) => val >= 0]"
@@ -644,7 +708,7 @@ async function onDelete() {
                                     </td>
                                     <td w-10>
                                       <QSelect
-                                        v-model="element.unit"
+                                        v-model="manMat.unit"
                                         borderless
                                         dense
                                         filled
@@ -657,93 +721,78 @@ async function onDelete() {
                                       />
                                     </td>
                                   </tr>
-                                </template>
-                              </draggable>
-                              <tfoot
-                                v-show="materialSelection?.program === program.stepNo
-                                  && materialSelection?.type === RecipeType.CHEM
-                                  && materialSelection?.step === step.orderNo"
-                              >
-                                <tr>
-                                  <td colspan="7">
-                                    <div class="p-4" justify-center>
-                                      {{ t('AddNewMaterial') }}:
-                                      <QSelect
-                                        v-model="selectedMaterial"
-                                        borderless
-                                        clearable
-                                        dense
-                                        filled
-                                        use-input
-                                        input-debounce="0"
-                                        :option-label="getMaterialName"
-                                        :options="materialOptions"
-                                        @filter="(val, doneFn) => filterMaterials(val, RecipeType.CHEM, doneFn)"
-                                        @update:model-value="onMaterialSelected"
-                                      />
-                                      <QBtn
-                                        mt-2
-                                        :label="t('Cancel')"
-                                        icon="cancel"
-                                        @click.stop="materialSelection = null; selectedMaterial = undefined;"
-                                      />
-                                    </div>
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </QMarkupTable>
-                          </div>
-                          <div v-show="!materialSelection" class="flex flex-col justify-center">
-                            <div
-                              class="border-2 border-gray-300 rounded-full hover:border-primary hover:bg-primary-light transition-all duration-200 cursor-pointer group"
-                            >
-                              <QBtn
-                                round
-                                flat
-                                icon="add"
-                                class="transition-colors duration-200"
-                                @click="selectMaterial(program.stepNo, RecipeType.CHEM, step.orderNo)"
-                              >
-                                <QTooltip
-                                  transition-show="scale"
-                                  transition-hide="scale"
-                                  :offset="[8, 0]"
-                                  anchor="center right"
-                                  self="center left"
+                                </tbody>
+                                <tfoot
+                                  v-show="manualStepSelection?.programIndex === programIndex && manualStepSelection?.type === RecipeType.CHEM && manualStepSelection?.stepNo === step.orderNo"
                                 >
-                                  {{ t('AddNewMaterial') }}
-                                </QTooltip>
-                              </QBtn>
+                                  <tr>
+                                    <td colspan="5">
+                                      <div class="p-4" justify-center>
+                                        {{ t('AddManualStep') }}:
+                                        <QSelect
+                                          v-model="selectedMaterial"
+                                          borderless
+                                          clearable
+                                          dense
+                                          filled
+                                          use-input
+                                          input-debounce="0"
+                                          :option-label="getMaterialName"
+                                          :options="materialOptions"
+                                          @filter="(val, doneFn) => filterManualMaterials(val, RecipeType.CHEM, doneFn)"
+                                          @update:model-value="onManualMaterialSelected"
+                                        />
+                                        <QBtn
+                                          mt-2
+                                          :label="t('Cancel')"
+                                          icon="cancel"
+                                          @click.stop="manualStepSelection = null; selectedMaterial = undefined;"
+                                        />
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              </QMarkupTable>
+                            </div>
+                            <div v-show="!manualStepSelection" class="flex flex-col justify-center">
+                              <div
+                                class="border-2 border-amber-600 rounded-full hover:border-amber-500 hover:bg-amber-100 transition-all duration-200 cursor-pointer"
+                              >
+                                <QBtn
+                                  round
+                                  flat
+                                  icon="add"
+                                  size="sm"
+                                  class="text-amber-700"
+                                  @click="selectManualMaterial(programIndex, RecipeType.CHEM, step.orderNo)"
+                                >
+                                  <QTooltip
+                                    transition-show="scale"
+                                    transition-hide="scale"
+                                    :offset="[8, 0]"
+                                    anchor="center right"
+                                    self="center left"
+                                  >
+                                    {{ t('AddManualStep') }}
+                                  </QTooltip>
+                                </QBtn>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    <!-- Dye Requests Section -->
-                    <div>
-                      <h4 class="flex justify-center text-xl my-2">
-                        {{ t('programFields.DyeRequests') }}
-                      </h4>
-                      <div
-                        v-for="(step, idx) in program.dyeSteps"
-                        :key="idx"
-                        class="table-wrapper"
-                        my-2
-                      >
+
+                        <!-- Regular materials row -->
                         <div class="flex items-start">
-                          <h3 class="step-header mr-4 mt-2 text-xl font-bold">
+                          <h3 class="step-label text-xl font-bold">
                             {{ step.orderNo }}
                           </h3>
-
                           <div class="flex gap-4 flex-nowrap">
-                            <!-- fixed-width table -->
                             <div class="table-content">
                               <QMarkupTable
                                 class="fixed-table"
                                 overflow-hidden
                                 dense
                                 border-gray
-                                bg-orange
                                 border-rd-2
                                 border-2
                               >
@@ -753,29 +802,29 @@ async function onDelete() {
                                     <th class="text-left" w-10>
                                       {{ t('materialFields.IsManual') }}
                                     </th>
-                                    <th class="text-center" w-10>
+                                    <th class="text-left" w-10>
                                       {{ t('materialFields.Code') }}
                                     </th>
-                                    <th class="text-center" w-20>
+                                    <th class="text-left" w-20>
                                       {{ t('materialFields.Name') }}
                                     </th>
-                                    <th class="text-center" w-25>
+                                    <th class="text-left" w-25>
                                       {{ t('recipeFields.Amount') }}
                                     </th>
-                                    <th class="text-center" w-10>
+                                    <th class="text-left" w-10>
                                       {{ t('recipeFields.Unit') }}
                                     </th>
                                   </tr>
                                 </thead>
                                 <draggable
                                   v-model="step.materials"
-                                  item-key="materialCode"
                                   class="draggable-area"
+                                  item-key="materialCode"
                                   :group="{ name: 'materials', pull: false }"
                                   :sort="false"
                                   ghost-class="material-ghost"
                                   tag="tbody"
-                                  @change="(e) => changeItem(program.dyeSteps, e)"
+                                  @change="(event) => changeItem(program.chemSteps, event)"
                                 >
                                   <template #item="{ element, index }">
                                     <tr>
@@ -808,7 +857,7 @@ async function onDelete() {
                                           v-model.number="element.amount"
                                           dense
                                           type="number"
-                                          :rules="[(v) => v >= 0]"
+                                          :rules="[(val: number) => val >= 0]"
                                           min="0"
                                           hide-bottom-space
                                         />
@@ -832,9 +881,8 @@ async function onDelete() {
                                 </draggable>
                                 <tfoot
                                   v-show="materialSelection?.program === program.stepNo
-                                    && materialSelection?.type === RecipeType.DYE
-                                    && materialSelection?.step === step.orderNo
-                                  "
+                                    && materialSelection?.type === RecipeType.CHEM
+                                    && materialSelection?.step === step.orderNo"
                                 >
                                   <tr>
                                     <td colspan="7">
@@ -850,17 +898,14 @@ async function onDelete() {
                                           input-debounce="0"
                                           :option-label="getMaterialName"
                                           :options="materialOptions"
-                                          @filter="(val, done) => filterMaterials(val, RecipeType.DYE, done)"
+                                          @filter="(val, doneFn) => filterMaterials(val, RecipeType.CHEM, doneFn)"
                                           @update:model-value="onMaterialSelected"
                                         />
                                         <QBtn
                                           mt-2
                                           :label="t('Cancel')"
                                           icon="cancel"
-                                          @click.stop="
-                                            materialSelection = null;
-                                            selectedMaterial = undefined;
-                                          "
+                                          @click.stop="materialSelection = null; selectedMaterial = undefined;"
                                         />
                                       </div>
                                     </td>
@@ -868,7 +913,6 @@ async function onDelete() {
                                 </tfoot>
                               </QMarkupTable>
                             </div>
-
                             <div v-show="!materialSelection" class="flex flex-col justify-center">
                               <div
                                 class="border-2 border-gray-300 rounded-full hover:border-primary hover:bg-primary-light transition-all duration-200 cursor-pointer group"
@@ -878,7 +922,7 @@ async function onDelete() {
                                   flat
                                   icon="add"
                                   class="transition-colors duration-200"
-                                  @click="selectMaterial(program.stepNo, RecipeType.DYE, step.orderNo)"
+                                  @click="selectMaterial(program.stepNo, RecipeType.CHEM, step.orderNo)"
                                 >
                                   <QTooltip
                                     transition-show="scale"
@@ -890,6 +934,325 @@ async function onDelete() {
                                     {{ t('AddNewMaterial') }}
                                   </QTooltip>
                                 </QBtn>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Dye Requests Section -->
+                    <div>
+                      <h4 class="flex justify-center text-xl my-2">
+                        {{ t('programFields.DyeRequests') }}
+                      </h4>
+                      <div
+                        v-for="(step, idx) in program.dyeSteps"
+                        :key="idx"
+                        class="table-wrapper"
+                        my-2
+                      >
+                        <div class="flex flex-col gap-2">
+                          <!-- Manual step row -->
+                          <div class="flex items-start">
+                            <span class="manual-label">{{ t('Man') }}</span>
+                            <div class="flex gap-4 flex-nowrap">
+                              <div class="table-content">
+                                <QMarkupTable
+                                  class="fixed-table manual-table"
+                                  overflow-hidden
+                                  dense
+                                  border-rd-2
+                                  border-2
+                                >
+                                  <thead>
+                                    <tr :class="{ 'invisible-header': idx !== 0 }">
+                                      <th class="text-left" w-10 />
+                                      <th class="text-left" w-10>
+                                        {{ t('materialFields.Code') }}
+                                      </th>
+                                      <th class="text-left" w-20>
+                                        {{ t('materialFields.Name') }}
+                                      </th>
+                                      <th class="text-left" w-25>
+                                        {{ t('recipeFields.Amount') }}
+                                      </th>
+                                      <th class="text-left" w-10>
+                                        {{ t('recipeFields.Unit') }}
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr
+                                      v-for="(manMat, manIdx) in program.manualSteps?.find(ms => ms.nextStep === step.orderNo && ms.type === RecipeType.DYE)?.materials || []"
+                                      :key="manIdx"
+                                    >
+                                      <td important-p-0>
+                                        <QBtn
+                                          icon="close"
+                                          flat
+                                          pl-2
+                                          pr-0
+                                          op-70
+                                          size="sm"
+                                          @click="removeManualStepMaterial(programIndex, RecipeType.DYE, step.orderNo, manIdx)"
+                                        />
+                                      </td>
+                                      <td w-10>
+                                        <span>{{ manMat.materialCode }}</span>
+                                      </td>
+                                      <td
+                                        w-20
+                                        font-size-4
+                                        font-900
+                                      >
+                                        <span>{{ manMat.materialName }}</span>
+                                      </td>
+                                      <td w-10>
+                                        <QInput
+                                          v-model.number="manMat.amount"
+                                          dense
+                                          type="number"
+                                          :rules="[(val: number) => val >= 0]"
+                                          min="0"
+                                          hide-bottom-space
+                                        />
+                                      </td>
+                                      <td w-10>
+                                        <QSelect
+                                          v-model="manMat.unit"
+                                          borderless
+                                          dense
+                                          filled
+                                          emit-value
+                                          map-options
+                                          options-dense
+                                          option-value="id"
+                                          option-label="name"
+                                          :options="units"
+                                        />
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                  <tfoot
+                                    v-show="manualStepSelection?.programIndex === programIndex && manualStepSelection?.type === RecipeType.DYE && manualStepSelection?.stepNo === step.orderNo"
+                                  >
+                                    <tr>
+                                      <td colspan="5">
+                                        <div class="p-4" justify-center>
+                                          {{ t('AddManualStep') }}:
+                                          <QSelect
+                                            v-model="selectedMaterial"
+                                            borderless
+                                            clearable
+                                            dense
+                                            filled
+                                            use-input
+                                            input-debounce="0"
+                                            :option-label="getMaterialName"
+                                            :options="materialOptions"
+                                            @filter="(val, doneFn) => filterManualMaterials(val, RecipeType.DYE, doneFn)"
+                                            @update:model-value="onManualMaterialSelected"
+                                          />
+                                          <QBtn
+                                            mt-2
+                                            :label="t('Cancel')"
+                                            icon="cancel"
+                                            @click.stop="manualStepSelection = null; selectedMaterial = undefined;"
+                                          />
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  </tfoot>
+                                </QMarkupTable>
+                              </div>
+                              <div v-show="!manualStepSelection" class="flex flex-col justify-center">
+                                <div
+                                  class="border-2 border-amber-600 rounded-full hover:border-amber-500 hover:bg-amber-100 transition-all duration-200 cursor-pointer"
+                                >
+                                  <QBtn
+                                    round
+                                    flat
+                                    icon="add"
+                                    size="sm"
+                                    class="text-amber-700"
+                                    @click="selectManualMaterial(programIndex, RecipeType.DYE, step.orderNo)"
+                                  >
+                                    <QTooltip
+                                      transition-show="scale"
+                                      transition-hide="scale"
+                                      :offset="[8, 0]"
+                                      anchor="center right"
+                                      self="center left"
+                                    >
+                                      {{ t('AddManualStep') }}
+                                    </QTooltip>
+                                  </QBtn>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Regular materials row -->
+                          <div class="flex items-start">
+                            <h3 class="step-label text-xl font-bold">
+                              {{ step.orderNo }}
+                            </h3>
+                            <div class="flex gap-4 flex-nowrap">
+                              <!-- fixed-width table -->
+                              <div class="table-content">
+                                <QMarkupTable
+                                  class="fixed-table"
+                                  overflow-hidden
+                                  dense
+                                  border-gray
+                                  bg-orange
+                                  border-rd-2
+                                  border-2
+                                >
+                                  <thead>
+                                    <tr :class="{ 'invisible-header': idx !== 0 }">
+                                      <th class="text-left" w-10 />
+                                      <th class="text-left" w-10>
+                                        {{ t('materialFields.IsManual') }}
+                                      </th>
+                                      <th class="text-center" w-10>
+                                        {{ t('materialFields.Code') }}
+                                      </th>
+                                      <th class="text-center" w-20>
+                                        {{ t('materialFields.Name') }}
+                                      </th>
+                                      <th class="text-center" w-25>
+                                        {{ t('recipeFields.Amount') }}
+                                      </th>
+                                      <th class="text-center" w-10>
+                                        {{ t('recipeFields.Unit') }}
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <draggable
+                                    v-model="step.materials"
+                                    item-key="materialCode"
+                                    class="draggable-area"
+                                    :group="{ name: 'materials', pull: false }"
+                                    :sort="false"
+                                    ghost-class="material-ghost"
+                                    tag="tbody"
+                                    @change="(e) => changeItem(program.dyeSteps, e)"
+                                  >
+                                    <template #item="{ element, index }">
+                                      <tr>
+                                        <td important-p-0>
+                                          <QBtn
+                                            icon="close"
+                                            flat
+                                            pl-2
+                                            pr-0
+                                            op-70
+                                            size="sm"
+                                            @click="onRemoveItem(step.materials, index)"
+                                          />
+                                        </td>
+                                        <td w-10>
+                                          {{ element.isManual ? t('Yes') : t('No') }}
+                                        </td>
+                                        <td w-10>
+                                          <span>{{ element.materialCode }}</span>
+                                        </td>
+                                        <td
+                                          w-20
+                                          font-size-4
+                                          font-900
+                                        >
+                                          <span>{{ element.materialName }}</span>
+                                        </td>
+                                        <td w-10>
+                                          <QInput
+                                            v-model.number="element.amount"
+                                            dense
+                                            type="number"
+                                            :rules="[(v) => v >= 0]"
+                                            min="0"
+                                            hide-bottom-space
+                                          />
+                                        </td>
+                                        <td w-10>
+                                          <QSelect
+                                            v-model="element.unit"
+                                            borderless
+                                            dense
+                                            filled
+                                            emit-value
+                                            map-options
+                                            options-dense
+                                            option-value="id"
+                                            option-label="name"
+                                            :options="units"
+                                          />
+                                        </td>
+                                      </tr>
+                                    </template>
+                                  </draggable>
+                                  <tfoot
+                                    v-show="materialSelection?.program === program.stepNo
+                                      && materialSelection?.type === RecipeType.DYE
+                                      && materialSelection?.step === step.orderNo
+                                    "
+                                  >
+                                    <tr>
+                                      <td colspan="7">
+                                        <div class="p-4" justify-center>
+                                          {{ t('AddNewMaterial') }}:
+                                          <QSelect
+                                            v-model="selectedMaterial"
+                                            borderless
+                                            clearable
+                                            dense
+                                            filled
+                                            use-input
+                                            input-debounce="0"
+                                            :option-label="getMaterialName"
+                                            :options="materialOptions"
+                                            @filter="(val, done) => filterMaterials(val, RecipeType.DYE, done)"
+                                            @update:model-value="onMaterialSelected"
+                                          />
+                                          <QBtn
+                                            mt-2
+                                            :label="t('Cancel')"
+                                            icon="cancel"
+                                            @click.stop="
+                                              materialSelection = null;
+                                              selectedMaterial = undefined;
+                                            "
+                                          />
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  </tfoot>
+                                </QMarkupTable>
+                              </div>
+
+                              <div v-show="!materialSelection" class="flex flex-col justify-center">
+                                <div
+                                  class="border-2 border-gray-300 rounded-full hover:border-primary hover:bg-primary-light transition-all duration-200 cursor-pointer group"
+                                >
+                                  <QBtn
+                                    round
+                                    flat
+                                    icon="add"
+                                    class="transition-colors duration-200"
+                                    @click="selectMaterial(program.stepNo, RecipeType.DYE, step.orderNo)"
+                                  >
+                                    <QTooltip
+                                      transition-show="scale"
+                                      transition-hide="scale"
+                                      :offset="[8, 0]"
+                                      anchor="center right"
+                                      self="center left"
+                                    >
+                                      {{ t('AddNewMaterial') }}
+                                    </QTooltip>
+                                  </QBtn>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -908,55 +1271,41 @@ async function onDelete() {
                         class="table-wrapper"
                         my-2
                       >
-                        <div class="flex items-start">
-                          <h3 class="step-header mr-4 mt-2 text-xl font-bold">
-                            {{ step.orderNo }}
-                          </h3>
-
-                          <div class="flex gap-4 flex-nowrap">
-                            <!-- fixed-width table -->
-                            <div class="table-content">
-                              <QMarkupTable
-                                class="fixed-table"
-                                overflow-hidden
-                                dense
-                                border-gray
-                                bg-light-blue
-                                border-rd-2
-                                border-2
-                              >
-                                <thead>
-                                  <tr :class="{ 'invisible-header': idx !== 0 }">
-                                    <th class="text-left" w-10 />
-                                    <th class="text-left" w-10>
-                                      {{ t('materialFields.IsManual') }}
-                                    </th>
-                                    <th class="text-center" w-10>
-                                      {{ t('materialFields.Code') }}
-                                    </th>
-                                    <th class="text-center" w-20>
-                                      {{ t('materialFields.Name') }}
-                                    </th>
-                                    <th class="text-center" w-25>
-                                      {{ t('recipeFields.Amount') }}
-                                    </th>
-                                    <th class="text-center" w-10>
-                                      {{ t('recipeFields.Unit') }}
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <draggable
-                                  v-model="step.materials"
-                                  item-key="materialCode"
-                                  class="draggable-area"
-                                  :group="{ name: 'materials', pull: false }"
-                                  :sort="false"
-                                  ghost-class="material-ghost"
-                                  tag="tbody"
-                                  @change="(e) => changeItem(program.saltSteps, e)"
+                        <div class="flex flex-col gap-2">
+                          <!-- Manual step row -->
+                          <div class="flex items-start">
+                            <span class="manual-label">{{ t('Man') }}</span>
+                            <div class="flex gap-4 flex-nowrap">
+                              <div class="table-content">
+                                <QMarkupTable
+                                  class="fixed-table manual-table"
+                                  overflow-hidden
+                                  dense
+                                  border-rd-2
+                                  border-2
                                 >
-                                  <template #item="{ element, index }">
-                                    <tr>
+                                  <thead>
+                                    <tr :class="{ 'invisible-header': idx !== 0 }">
+                                      <th class="text-left" w-10 />
+                                      <th class="text-left" w-10>
+                                        {{ t('materialFields.Code') }}
+                                      </th>
+                                      <th class="text-left" w-20>
+                                        {{ t('materialFields.Name') }}
+                                      </th>
+                                      <th class="text-left" w-25>
+                                        {{ t('recipeFields.Amount') }}
+                                      </th>
+                                      <th class="text-left" w-10>
+                                        {{ t('recipeFields.Unit') }}
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr
+                                      v-for="(manMat, manIdx) in program.manualSteps?.find(ms => ms.nextStep === step.orderNo && ms.type === RecipeType.SALT)?.materials || []"
+                                      :key="manIdx"
+                                    >
                                       <td important-p-0>
                                         <QBtn
                                           icon="close"
@@ -965,35 +1314,32 @@ async function onDelete() {
                                           pr-0
                                           op-70
                                           size="sm"
-                                          @click="onRemoveItem(step.materials, index)"
+                                          @click="removeManualStepMaterial(programIndex, RecipeType.SALT, step.orderNo, manIdx)"
                                         />
                                       </td>
                                       <td w-10>
-                                        {{ element.isManual ? t('Yes') : t('No') }}
-                                      </td>
-                                      <td w-10>
-                                        <span>{{ element.materialCode }}</span>
+                                        <span>{{ manMat.materialCode }}</span>
                                       </td>
                                       <td
                                         w-20
                                         font-size-4
                                         font-900
                                       >
-                                        <span>{{ element.materialName }}</span>
+                                        <span>{{ manMat.materialName }}</span>
                                       </td>
                                       <td w-10>
                                         <QInput
-                                          v-model.number="element.amount"
+                                          v-model.number="manMat.amount"
                                           dense
                                           type="number"
-                                          :rules="[(v) => v >= 0]"
+                                          :rules="[(val: number) => val >= 0]"
                                           min="0"
                                           hide-bottom-space
                                         />
                                       </td>
                                       <td w-10>
                                         <QSelect
-                                          v-model="element.unit"
+                                          v-model="manMat.unit"
                                           borderless
                                           dense
                                           filled
@@ -1006,68 +1352,227 @@ async function onDelete() {
                                         />
                                       </td>
                                     </tr>
-                                  </template>
-                                </draggable>
-                                <tfoot
-                                  v-show="materialSelection?.program === program.stepNo
-                                    && materialSelection?.type === RecipeType.SALT
-                                    && materialSelection?.step === step.orderNo
-                                  "
-                                >
-                                  <tr>
-                                    <td colspan="7">
-                                      <div class="p-4" justify-center>
-                                        {{ t('AddNewMaterial') }}:
-                                        <QSelect
-                                          v-model="selectedMaterial"
-                                          borderless
-                                          clearable
-                                          dense
-                                          filled
-                                          use-input
-                                          input-debounce="0"
-                                          :option-label="getMaterialName"
-                                          :options="materialOptions"
-                                          @filter="(val, done) => filterMaterials(val, RecipeType.SALT, done)"
-                                          @update:model-value="onMaterialSelected"
-                                        />
-                                        <QBtn
-                                          mt-2
-                                          :label="t('Cancel')"
-                                          icon="cancel"
-                                          @click.stop="
-                                            materialSelection = null;
-                                            selectedMaterial = undefined;
-                                          "
-                                        />
-                                      </div>
-                                    </td>
-                                  </tr>
-                                </tfoot>
-                              </QMarkupTable>
-                            </div>
-
-                            <div v-show="!materialSelection" class="flex flex-col justify-center">
-                              <div
-                                class="border-2 border-gray-300 rounded-full hover:border-primary hover:bg-primary-light transition-all duration-200 cursor-pointer group"
-                              >
-                                <QBtn
-                                  round
-                                  flat
-                                  icon="add"
-                                  class="transition-colors duration-200"
-                                  @click="selectMaterial(program.stepNo, RecipeType.SALT, step.orderNo)"
-                                >
-                                  <QTooltip
-                                    transition-show="scale"
-                                    transition-hide="scale"
-                                    :offset="[8, 0]"
-                                    anchor="center right"
-                                    self="center left"
+                                  </tbody>
+                                  <tfoot
+                                    v-show="manualStepSelection?.programIndex === programIndex && manualStepSelection?.type === RecipeType.SALT && manualStepSelection?.stepNo === step.orderNo"
                                   >
-                                    {{ t('AddNewMaterial') }}
-                                  </QTooltip>
-                                </QBtn>
+                                    <tr>
+                                      <td colspan="5">
+                                        <div class="p-4" justify-center>
+                                          {{ t('AddManualStep') }}:
+                                          <QSelect
+                                            v-model="selectedMaterial"
+                                            borderless
+                                            clearable
+                                            dense
+                                            filled
+                                            use-input
+                                            input-debounce="0"
+                                            :option-label="getMaterialName"
+                                            :options="materialOptions"
+                                            @filter="(val, doneFn) => filterManualMaterials(val, RecipeType.SALT, doneFn)"
+                                            @update:model-value="onManualMaterialSelected"
+                                          />
+                                          <QBtn
+                                            mt-2
+                                            :label="t('Cancel')"
+                                            icon="cancel"
+                                            @click.stop="manualStepSelection = null; selectedMaterial = undefined;"
+                                          />
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  </tfoot>
+                                </QMarkupTable>
+                              </div>
+                              <div v-show="!manualStepSelection" class="flex flex-col justify-center">
+                                <div
+                                  class="border-2 border-amber-600 rounded-full hover:border-amber-500 hover:bg-amber-100 transition-all duration-200 cursor-pointer"
+                                >
+                                  <QBtn
+                                    round
+                                    flat
+                                    icon="add"
+                                    size="sm"
+                                    class="text-amber-700"
+                                    @click="selectManualMaterial(programIndex, RecipeType.SALT, step.orderNo)"
+                                  >
+                                    <QTooltip
+                                      transition-show="scale"
+                                      transition-hide="scale"
+                                      :offset="[8, 0]"
+                                      anchor="center right"
+                                      self="center left"
+                                    >
+                                      {{ t('AddManualStep') }}
+                                    </QTooltip>
+                                  </QBtn>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Regular materials row -->
+                          <div class="flex items-start">
+                            <h3 class="step-label text-xl font-bold">
+                              {{ step.orderNo }}
+                            </h3>
+                            <div class="flex gap-4 flex-nowrap">
+                              <!-- fixed-width table -->
+                              <div class="table-content">
+                                <QMarkupTable
+                                  class="fixed-table"
+                                  overflow-hidden
+                                  dense
+                                  border-gray
+                                  bg-light-blue
+                                  border-rd-2
+                                  border-2
+                                >
+                                  <thead>
+                                    <tr :class="{ 'invisible-header': idx !== 0 }">
+                                      <th class="text-left" w-10 />
+                                      <th class="text-left" w-10>
+                                        {{ t('materialFields.IsManual') }}
+                                      </th>
+                                      <th class="text-center" w-10>
+                                        {{ t('materialFields.Code') }}
+                                      </th>
+                                      <th class="text-center" w-20>
+                                        {{ t('materialFields.Name') }}
+                                      </th>
+                                      <th class="text-center" w-25>
+                                        {{ t('recipeFields.Amount') }}
+                                      </th>
+                                      <th class="text-center" w-10>
+                                        {{ t('recipeFields.Unit') }}
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <draggable
+                                    v-model="step.materials"
+                                    item-key="materialCode"
+                                    class="draggable-area"
+                                    :group="{ name: 'materials', pull: false }"
+                                    :sort="false"
+                                    ghost-class="material-ghost"
+                                    tag="tbody"
+                                    @change="(e) => changeItem(program.saltSteps, e)"
+                                  >
+                                    <template #item="{ element, index }">
+                                      <tr>
+                                        <td important-p-0>
+                                          <QBtn
+                                            icon="close"
+                                            flat
+                                            pl-2
+                                            pr-0
+                                            op-70
+                                            size="sm"
+                                            @click="onRemoveItem(step.materials, index)"
+                                          />
+                                        </td>
+                                        <td w-10>
+                                          {{ element.isManual ? t('Yes') : t('No') }}
+                                        </td>
+                                        <td w-10>
+                                          <span>{{ element.materialCode }}</span>
+                                        </td>
+                                        <td
+                                          w-20
+                                          font-size-4
+                                          font-900
+                                        >
+                                          <span>{{ element.materialName }}</span>
+                                        </td>
+                                        <td w-10>
+                                          <QInput
+                                            v-model.number="element.amount"
+                                            dense
+                                            type="number"
+                                            :rules="[(v) => v >= 0]"
+                                            min="0"
+                                            hide-bottom-space
+                                          />
+                                        </td>
+                                        <td w-10>
+                                          <QSelect
+                                            v-model="element.unit"
+                                            borderless
+                                            dense
+                                            filled
+                                            emit-value
+                                            map-options
+                                            options-dense
+                                            option-value="id"
+                                            option-label="name"
+                                            :options="units"
+                                          />
+                                        </td>
+                                      </tr>
+                                    </template>
+                                  </draggable>
+                                  <tfoot
+                                    v-show="materialSelection?.program === program.stepNo
+                                      && materialSelection?.type === RecipeType.SALT
+                                      && materialSelection?.step === step.orderNo
+                                    "
+                                  >
+                                    <tr>
+                                      <td colspan="7">
+                                        <div class="p-4" justify-center>
+                                          {{ t('AddNewMaterial') }}:
+                                          <QSelect
+                                            v-model="selectedMaterial"
+                                            borderless
+                                            clearable
+                                            dense
+                                            filled
+                                            use-input
+                                            input-debounce="0"
+                                            :option-label="getMaterialName"
+                                            :options="materialOptions"
+                                            @filter="(val, done) => filterMaterials(val, RecipeType.SALT, done)"
+                                            @update:model-value="onMaterialSelected"
+                                          />
+                                          <QBtn
+                                            mt-2
+                                            :label="t('Cancel')"
+                                            icon="cancel"
+                                            @click.stop="
+                                              materialSelection = null;
+                                              selectedMaterial = undefined;
+                                            "
+                                          />
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  </tfoot>
+                                </QMarkupTable>
+                              </div>
+
+                              <div v-show="!materialSelection" class="flex flex-col justify-center">
+                                <div
+                                  class="border-2 border-gray-300 rounded-full hover:border-primary hover:bg-primary-light transition-all duration-200 cursor-pointer group"
+                                >
+                                  <QBtn
+                                    round
+                                    flat
+                                    icon="add"
+                                    class="transition-colors duration-200"
+                                    @click="selectMaterial(program.stepNo, RecipeType.SALT, step.orderNo)"
+                                  >
+                                    <QTooltip
+                                      transition-show="scale"
+                                      transition-hide="scale"
+                                      :offset="[8, 0]"
+                                      anchor="center right"
+                                      self="center left"
+                                    >
+                                      {{ t('AddNewMaterial') }}
+                                    </QTooltip>
+                                  </QBtn>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1300,5 +1805,64 @@ async function onDelete() {
   margin: 0 !important;
   padding: 0 !important;
   border: none !important;
+}
+
+.step-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 1rem;
+  min-width: 40px;
+}
+
+.step-header {
+  margin: 0;
+}
+
+.step-label {
+  min-width: 40px;
+  margin-right: 1rem;
+  text-align: center;
+}
+
+.manual-label {
+  font-size: 0.7rem;
+  color: #b45309;
+  font-weight: 600;
+  min-width: 40px;
+  margin-right: 1rem;
+  text-align: center;
+}
+
+:deep(.manual-table) {
+  border-color: #d97706 !important;
+  background-color: rgba(217, 119, 6, 0.05) !important;
+}
+
+:deep(.manual-table thead th) {
+  background-color: rgba(217, 119, 6, 0.15) !important;
+}
+
+:deep(.manual-table .q-markup-table__overflow table th:nth-child(1)),
+:deep(.manual-table .q-markup-table__overflow table td:nth-child(1)) {
+  width: 40px !important;
+}
+
+:deep(.manual-table .q-markup-table__overflow table th:nth-child(2)),
+:deep(.manual-table .q-markup-table__overflow table td:nth-child(2)) {
+  width: 80px !important;
+}
+
+:deep(.manual-table .q-markup-table__overflow table th:nth-child(3)),
+:deep(.manual-table .q-markup-table__overflow table td:nth-child(3)) {
+  width: 1fr !important;
+  max-width: 200px !important;
+}
+
+:deep(.manual-table .q-markup-table__overflow table th:nth-child(4)),
+:deep(.manual-table .q-markup-table__overflow table td:nth-child(4)),
+:deep(.manual-table .q-markup-table__overflow table th:nth-child(5)),
+:deep(.manual-table .q-markup-table__overflow table td:nth-child(5)) {
+  width: 60px !important;
 }
 </style>

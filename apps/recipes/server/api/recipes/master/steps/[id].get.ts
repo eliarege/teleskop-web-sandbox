@@ -1,10 +1,11 @@
 import { dmsDB } from '~/server/connectionPool'
-import type { RecipeMasterStep } from '~/shared/types'
+import type { ManualStep, RecipeMasterStep } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
   const { id } = getRouterParams(event)
   const { machineId } = getQuery(event)
 
+  // Fetch regular materials
   const rawRecipeSteps = await dmsDB('RECIPE_MASTER_STEP as s')
     .select({
       recipeId: 's.recipe_id',
@@ -23,10 +24,11 @@ export default defineEventHandler(async (event) => {
       isManual: 'mat.is_manual',
       unit: 'm.unit',
       amount: 'm.amount',
+      nextStep: 'm.next_step',
     })
-    .leftJoin('RECIPE_MASTER as mas', function(){
+    .leftJoin('RECIPE_MASTER as mas', function () {
       this.on('mas.recipe_id', 's.recipe_id')
-      .andOn('mas.machine_id', 's.machine_id')
+        .andOn('mas.machine_id', 's.machine_id')
     })
     .leftJoin('PROGRAM_HEADER as p', (builder) => {
       builder
@@ -44,7 +46,29 @@ export default defineEventHandler(async (event) => {
     .where('s.recipe_id', id)
     .andWhere('s.machine_id', machineId)
     .whereNotNull('m.material_code')
+    .where('m.step_no', '!=', -1) // Exclude intermediate steps from regular query
     .orderBy('s.step_no')
+
+  // Fetch intermediate materials (step_no = -1)
+  const intermediateSteps = await dmsDB('RECIPE_MASTER_MATERIAL as m')
+    .select({
+      programNo: 'm.program_no',
+      programIndex: 'm.program_index',
+      type: 'm.type',
+      materialCode: 'm.material_code',
+      materialName: 'mat.material_name',
+      isManual: 'mat.is_manual',
+      unit: 'm.unit',
+      amount: 'm.amount',
+      nextStep: 'm.next_step',
+    })
+    .leftJoin('MATERIAL as mat', 'm.material_code', 'mat.material_code')
+    .where('m.recipe_id', id)
+    .andWhere('m.machine_id', machineId)
+    .andWhere('m.step_no', -1) // Only intermediate steps
+    .whereNotNull('m.next_step')
+    .orderBy('m.next_step')
+
   const recipeSteps: RecipeMasterStep[] = []
   rawRecipeSteps.forEach((row) => {
     let program = recipeSteps.find(s => row.programNo === s.programNo && s.stepNo === row.programOrder)
@@ -60,6 +84,7 @@ export default defineEventHandler(async (event) => {
         dyeRequests: row.dyeRequests,
         saltRequests: row.saltRequests,
         steps: [],
+        manualSteps: [],
       }
       recipeSteps.push(program)
     }
@@ -78,7 +103,37 @@ export default defineEventHandler(async (event) => {
       amount: Number(row.amount),
       orderNo: row.stepNo,
       programIndex: row.programIndex,
+      nextStep: row.nextStep,
     })
   })
+
+  // Add manual steps to programs
+  intermediateSteps.forEach((row) => {
+    const program = recipeSteps.find(s => s.programNo === row.programNo && s.stepNo === row.programIndex)
+    if (program) {
+      if (!program.manualSteps) {
+        program.manualSteps = []
+      }
+
+      let intStep = program.manualSteps.find((is: ManualStep) => is.nextStep === row.nextStep && is.type === row.type)
+      if (!intStep) {
+        intStep = { nextStep: row.nextStep, type: row.type, materials: [] }
+        program.manualSteps.push(intStep)
+      }
+
+      intStep.materials.push({
+        materialCode: row.materialCode,
+        materialName: row.materialName,
+        type: row.type,
+        unit: row.unit,
+        isManual: row.isManual,
+        amount: Number(row.amount),
+        orderNo: -1,
+        programIndex: row.programIndex,
+        nextStep: row.nextStep,
+      })
+    }
+  })
+
   return recipeSteps
 })

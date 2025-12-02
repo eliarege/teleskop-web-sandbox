@@ -199,6 +199,11 @@ export interface RecipeMaster {
   recipeId: number
   recipeName: string
 }
+export interface RecipeStep {
+  orderNo: number
+  materials: RecipeMasterMaterial[]
+}
+
 export interface RecipeMasterStep {
   recipeId: number
   machineId: number
@@ -209,12 +214,19 @@ export interface RecipeMasterStep {
   chemRequests: number
   dyeRequests: number
   saltRequests: number
-  chemSteps: RecipeMasterMaterial[]
-  dyeSteps: RecipeMasterMaterial[]
-  saltSteps: RecipeMasterMaterial[]
-  flotte: number | undefined
-  flotteRatio: number | undefined
-  totalWeight: number | undefined
+  chemSteps: RecipeStep[]
+  dyeSteps: RecipeStep[]
+  saltSteps: RecipeStep[]
+  manualSteps?: ManualStep[]
+  flotte?: number | undefined
+  flotteRatio?: number | undefined
+  totalWeight?: number | undefined
+}
+
+export interface ManualStep {
+  nextStep: number // The step number this manual step appears before
+  type: number // The recipe type (CHEM, DYE, SALT)
+  materials: RecipeMasterMaterial[]
 }
 export interface RecipeMasterMaterial {
   materialCode: string
@@ -226,6 +238,7 @@ export interface RecipeMasterMaterial {
   orderNo: number
   programIndex: number
   calculated: number | undefined
+  nextStep?: number // For intermediate steps: -1 means regular step, positive number indicates which step this appears before
 }
 export interface RecipeProgramMaster {
   recipeId: number

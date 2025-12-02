@@ -398,6 +398,13 @@
     "20": "oz"
   },
   "InvalidMaterialType": "Material type does not match step type",
+  "MaterialNotManual": "Only manual materials can be added to manual steps",
   "NoStepSelected": "Please select a step first",
-  "AddToSelectedStep": "Add to Selected Step"
+  "AddToSelectedStep": "Add to Selected Step",
+  "ManualStep": "Manual Step",
+  "AddManualStep": "Add Manual Step",
+  "ManualStepInfo": "Add manual materials before step {step}",
+  "NoManualMaterials": "No manual materials available",
+  "ManualOnly": "Manual Only",
+  "Close": "Close"
 }
