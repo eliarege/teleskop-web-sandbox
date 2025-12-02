@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { QList } from 'quasar'
+import { withBase } from 'ufo'
 import type { MachineGroup } from '~/shared/types'
 import { useMachineStatusStore } from '~/composables/machine'
 
@@ -35,8 +36,11 @@ async function onUpdateSelected(selection: string) {
   }
 }
 
+const baseURL = useRuntimeConfig().app.baseURL
+
 function openMachineInNewTab(machineId: number) {
-  window.open(`/machine/${machineId}`, '_blank')
+  const path = withBase(`/machine/${machineId}`, baseURL)
+  window.open(path, '_blank')
 }
 
 const thumbStyle = { opacity: '0' }
