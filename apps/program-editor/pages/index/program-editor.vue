@@ -93,6 +93,17 @@ const buttons = computed<ContextBarButtons[]>(() => [
     },
   },
   {
+    label: t('menu.newStepBetween'),
+    originalLabel: t('menu.newStepBetween'),
+    tooltip: t('menu.newStepBetween'),
+    shortcut: 'F4',
+    icon: 'vertical_align_center',
+    disable: editor.isLoading || !editor.selectedSteps.length,
+    onClick() {
+      editor.addStepBetween()
+    },
+  },
+  {
     label: t('menu.newParallelStep'),
     originalLabel: t('menu.newParallelStep'),
     tooltip: t('menu.newParallelStep'),

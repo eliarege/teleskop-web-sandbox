@@ -54,6 +54,7 @@
     "tools": "Tools",
     "newProgram": "New Program",
     "newStep": "New Step",
+    "newStepBetween": "New Step Between",
     "newParallelStep": "New Parallel Step",
     "deleteStep": "Delete Step",
     "deleteParallelStep": "Delete Parallel Step",

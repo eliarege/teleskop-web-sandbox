@@ -54,6 +54,7 @@
     "tools": "Araçlar",
     "newProgram": "Yeni Program",
     "newStep": "Yeni Adım",
+    "newStepBetween": "Araya Yeni Adım",
     "newParallelStep": "Yeni Paralel Adım",
     "deleteStep": "Adımı Sil",
     "deleteParallelStep": "Paralel Adımı Sil",
