@@ -535,3 +535,5 @@ export interface CopyAndSendResult {
 }
 
 export type PasteOptions = 'overwrite' | 'skip'
+
+export type MachineOption = 'current' | 'selected'

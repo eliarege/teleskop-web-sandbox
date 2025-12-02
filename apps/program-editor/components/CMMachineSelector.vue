@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import type { MachineOption } from '~/shared/types'
+
 const props = defineProps<{
   machineName: string
   singleSelection?: boolean
 }>()
 
-const model = defineModel<string>({ required: true })
+const model = defineModel<MachineOption>({ required: true })
 
 const $q = useQuasar()
-const editor = useEditorStore()
 const { t } = useI18n()
+const editor = useEditorStore()
 const { $commandManager } = useNuxtApp()
 
 function selectMachineDialog() {
@@ -26,7 +28,7 @@ function selectMachineDialog() {
     <div class="q-gutter-sm">
       <q-radio
         v-model="model"
-        val="1"
+        val="current"
         :label="t('machineSelectorDialog.thisMachine', { machineName: props.machineName })"
         dense
       />
@@ -34,13 +36,13 @@ function selectMachineDialog() {
         <div class="flex items-center gap-2">
           <q-radio
             v-model="model"
-            val="2"
+            val="selected"
             :label="props.singleSelection ? t('machineSelectorDialog.selectedMachine') : t('machineSelectorDialog.selectedMachines')"
             dense
           />
           <q-btn
             :label="t('machineSelectorDialog.selectMachine')"
-            :disable="model !== '2'"
+            :disable="model !== 'selected'"
             color="primary"
             size="sm"
             outline
