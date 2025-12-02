@@ -7,6 +7,8 @@ const props = defineProps<{
   machineName: string
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t, d } = useI18n()
 const editor = useEditorStore()
 const { notifyError } = useNotify()

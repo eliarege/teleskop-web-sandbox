@@ -8,7 +8,7 @@ defineEmits([...useDialogPluginComponent.emits])
 
 const $q = useQuasar()
 const { t } = useI18n()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const editor = useEditorStore()
 
@@ -68,7 +68,11 @@ function onRowDoubleClick(event: Event, row: ProcessType) {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <q-card class="w-120 select-none">
       <q-card-section>
         <div class="text-h6 flex">

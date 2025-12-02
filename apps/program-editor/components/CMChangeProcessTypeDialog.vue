@@ -7,9 +7,7 @@ const props = defineProps<{
   options: { label: string, value: number }[]
 }>()
 
-defineEmits([
-  ...useDialogPluginComponent.emits,
-])
+defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()

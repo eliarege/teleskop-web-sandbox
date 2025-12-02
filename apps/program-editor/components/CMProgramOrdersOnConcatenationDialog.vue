@@ -7,12 +7,10 @@ const props = defineProps<{
   programs: ProgramTableRow[]
 }>()
 
-defineEmits([
-  ...useDialogPluginComponent.emits,
-])
+defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 const programs = ref(props.programs)
 
 function moveItemInArray(array: ProgramTableRow[], from: number | undefined, to: number | undefined) {
@@ -29,7 +27,11 @@ const options = {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <q-card>
       <q-card-section class="w-100">
         <div class="text-h6 flex">

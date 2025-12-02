@@ -1,10 +1,16 @@
 <script setup lang="ts">
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <q-card class="w-120">
       <q-card-section class="row items-center">
         <span class="text-4"> {{ t('discardChanges.title') }}</span>

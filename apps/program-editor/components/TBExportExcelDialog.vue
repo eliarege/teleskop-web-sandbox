@@ -7,10 +7,12 @@ const props = defineProps<{
   machineName: string
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const machineOption = ref<MachineOption>('current')
 const selectedMachines = computed(() =>
@@ -211,7 +213,11 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" class="select-none">
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <q-card class="min-w-100">
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">

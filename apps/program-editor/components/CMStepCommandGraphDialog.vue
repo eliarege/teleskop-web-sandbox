@@ -10,9 +10,11 @@ const props = defineProps<{
   program: Program
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t } = useI18n()
 const { mt } = useProjectTranslations()
-const { dialogRef } = useDialogPluginComponent()
+const { dialogRef, onDialogHide } = useDialogPluginComponent()
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, BarController, CategoryScale, LinearScale)
 
@@ -133,15 +135,16 @@ function takeScreenshot(): void {
 
 onMounted(calculateChartData)
 
-function onDialogHide() {
+onBeforeUnmount(() => {
   chartData.value = undefined
   chartRef.value = undefined
-}
+})
 </script>
 
 <template>
   <q-dialog
     ref="dialogRef"
+    class="select-none"
     :full-height="isFullScreen"
     :full-width="isFullScreen"
     @hide="onDialogHide"

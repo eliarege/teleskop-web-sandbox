@@ -8,6 +8,8 @@ const props = defineProps<{
   commandList: MachineCommand[]
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t } = useI18n()
 const editor = useEditorStore()
 const { notifyError } = useNotify()

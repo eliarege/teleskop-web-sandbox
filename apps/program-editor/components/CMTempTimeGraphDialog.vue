@@ -15,11 +15,13 @@ const props = defineProps<{
   initialTemperature: number
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
 const { t } = useI18n()
 const editor = useEditorStore()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogHide } = useDialogPluginComponent()
 
 const showIcons = ref(true)
 const showSlopes = ref(true)
@@ -249,8 +251,10 @@ watch([showIcons, showSlopes, showDurations], () => {
 <template>
   <q-dialog
     ref="dialogRef"
+    class="select-none"
     :full-width="isFullScreen"
     :full-height="isFullScreen"
+    @hide="onDialogHide"
   >
     <q-card class="flex flex-col min-w-6xl min-h-2xl max-w-6xl max-h-2xl !dark:(bg-dark-4)">
       <div id="container">
@@ -265,7 +269,6 @@ watch([showIcons, showSlopes, showDurations], () => {
               flat
               round
               dense
-              @click="onDialogCancel"
             />
           </div>
           <div class="text-h8 flex flex-col color-gray-6 dark:text-gray-4">
