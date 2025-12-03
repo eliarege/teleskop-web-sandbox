@@ -306,13 +306,12 @@ export interface CalibrationAnalogInput {
   id: number
   calibType: number
   format: number
-  hat_rl?: number
+  hat_rl: number | null
   lowerLimitFormula: string
   upperLimitFormula: string
   unit: string
-  measureValue?: number
-  measureValues?: { level: number, value: number }[]
-  calibrationAlarmTasks?: number
+  measureValues: { level: number, value: number }[]
+  calibrationAlarmTasks: number
 }
 
 export interface IOChangedEvent {

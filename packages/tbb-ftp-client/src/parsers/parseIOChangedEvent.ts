@@ -1,4 +1,5 @@
 import type { IOChangedEvent } from '../types'
+import { splitLines } from '../utils/common'
 
 /**
  * **Path**: `/tbb6500/data/config/io_changed_event`
@@ -12,28 +13,26 @@ import type { IOChangedEvent } from '../types'
 export function parseIOChangedEvent(content: string) {
   const inputs = [] as IOChangedEvent[]
 
-  for (const line of content.split('\n')) {
-    if (line) {
-      const segment = line.trim().split(/\s+/)
-      const ioType = Number.parseInt(segment[0])
-      // Calculated Values
-      if (ioType === 6) {
-        inputs.push({
-          ioType,
-          ioIndex: Number.parseInt(segment[1]),
-          difference: 0,
-          period: segment[4] ? Number.parseInt(segment[4]) : null,
-          minPeriod: segment[4] ? Number.parseInt(segment[5]) : null,
-        })
-      } else {
-        inputs.push({
-          ioType,
-          ioIndex: Number.parseInt(segment[1]),
-          difference: Number.parseInt(segment[2]),
-          period: segment[3] ? Number.parseInt(segment[3]) : null,
-          minPeriod: segment[4] ? Number.parseInt(segment[4]) : null,
-        })
-      }
+  for (const line of splitLines(content)) {
+    const segment = line.split(/\s+/)
+    const ioType = Number.parseInt(segment[0])
+    // Calculated Values
+    if (ioType === 6) {
+      inputs.push({
+        ioType,
+        ioIndex: Number.parseInt(segment[1]),
+        difference: 0,
+        period: segment[4] ? Number.parseInt(segment[4]) : null,
+        minPeriod: segment[4] ? Number.parseInt(segment[5]) : null,
+      })
+    } else {
+      inputs.push({
+        ioType,
+        ioIndex: Number.parseInt(segment[1]),
+        difference: Number.parseInt(segment[2]),
+        period: segment[3] ? Number.parseInt(segment[3]) : null,
+        minPeriod: segment[4] ? Number.parseInt(segment[4]) : null,
+      })
     }
   }
 

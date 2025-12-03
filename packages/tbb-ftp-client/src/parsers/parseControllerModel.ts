@@ -1,8 +1,7 @@
-import type { Machine } from '../types'
-
-const pattern = /^(.+)-(.+)-(.+)$/gim
-
 /**
+ * Cihaz donanım bilgilerinin bulunduğu dosya, tek satır içerikten oluşur,
+ * `-` ile ayrılmış şekilde cihaz modeli, anakart modeli ve plc modeli yer alır.
+ *
  * **Path**: `/var/controllerModel`
  *
  * **Example**:
@@ -11,16 +10,11 @@ const pattern = /^(.+)-(.+)-(.+)$/gim
  * ```
  */
 export function parseControllerModel(content: string) {
-  const match = pattern.exec(content)
-  if (match) {
-    const controllerModel: Pick<Machine, 'productModel' | 'hardwareModel' | 'plcModel'> = {
-      productModel: match[1],
-      hardwareModel: match[2],
-      plcModel: match[3],
-    }
-    pattern.lastIndex = 0
-    return controllerModel
-  } else {
-    throw new TypeError(`Failed to parse controllerModel`)
+  const parts = content.trim().split('-')
+  const controllerModel = {
+    productModel: parts[0] || '',
+    hardwareModel: parts[1] || '',
+    plcModel: parts[2] || '',
   }
+  return controllerModel
 }

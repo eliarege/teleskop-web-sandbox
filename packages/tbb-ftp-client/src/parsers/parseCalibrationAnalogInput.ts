@@ -1,13 +1,20 @@
 import type { CalibrationAnalogInput } from '../types'
-
-const generalPattern = /^(\d+) (\d+) (\d+) (.+)$/gm
-
-// typeZeroPattern is for if the calibration type is 0 only
-const typeZeroPattern = /^(\S+) ("[^"]*") ("[^"]*") (\S+) (.+)$/
-const typeNonZeroPattern = /^("[^"]*") ("[^"]*") (\S+) (.+)$/
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
 /**
  * **Path**: `/tbb6500/data/kalibrasyon/aikalibrasyon`
+ *
+ * Dosya formatındaki her satırdaki değerler sırasıyla:
+ * 1) Analog giriş numarası, analog giriş dosyasındaki ile eşlenik şekilde.
+ * 2) Kalibrasyon tipi
+ * 3) Kalibrasyon formatı
+ * 4) Kalibrasyon tipi 0 ise hat_rl formülü (bu bilgi sadece tip 0 ise var, dolayısı ile bundan sonraki bilgilerin sırası da değişik)
+ * 5) Çift tırnak içerisinde alt limit formülü, epac’lı cihazlar için 0
+ * 6) Çift tırnak içerisinde üst limit formülü, epac’lı cihazlar için 0
+ * 7) Kalibrasyon birimi
+ * 8) Kalibrasyon tipi 1 veya 2 ise measure_values değerleri (epac’lılar için 50 çift, diğerleri için 10 çift) (aşağıda örnek olarak 3 çifti renklendirdim, çiftlerden ilki seviye, ikincisi analog girişten gelen değer)
+ * 9) Kalibrasyon alarm görevleri
  *
  * **Example**:
  * ```txt
@@ -17,71 +24,66 @@ const typeNonZeroPattern = /^("[^"]*") ("[^"]*") (\S+) (.+)$/
  * 5 1 0 "0" "T1_Max_Level+25" lt 0.00 0.09 50.00 0.73 100.00 1.88 150.00 3.03 200.00 4.05 250.00 5.12 300.00 6.27 400.00 8.50 500.00 10.63 600.00 12.85 0
  * ```
  */
-export function parseCalibrationAnalogInput(content: string) {
-  const inputs = []
-  let match = generalPattern.exec(content)
+export function parseCalibrationAnalogInput(content: string): CalibrationAnalogInput[] {
+  const lines = splitLines(content)
+  const calibrationAnalogInputs: CalibrationAnalogInput[] = []
 
-  while (match !== null) {
-    const id = Number.parseInt(match[1])
-    const calibType = Number.parseInt(match[2])
-    const format = Number.parseInt(match[3])
+  for (const line of lines) {
+    const tokens = tokenize(line)
+    const id = tokens.get(0, 'integer')
+    const calibType = tokens.get(1, 'integer')
+    const format = tokens.get(2, 'integer')
 
     if (calibType === 0) {
-      const zeroMatches = typeZeroPattern.exec(match[4])
-      if (zeroMatches !== null) {
-        const hat_rl = Number.parseInt(zeroMatches[1])
-        const lowerLimitFormula = zeroMatches[2].replace(/"/g, '')
-        const upperLimitFormula = zeroMatches[3].replace(/"/g, '')
-        const unit = zeroMatches[4]
-        const measureValue = Number.parseInt(zeroMatches[5])
+      const hat_rl = tokens.get(3, 'integer')
+      const lowerLimitFormula = tokens.get(4, 'string')
+      const upperLimitFormula = tokens.get(5, 'string')
+      const unit = tokens.get(6, 'string')
+      const calibrationAlarmTasks = tokens.get(7, 'integer')
 
-        const input: CalibrationAnalogInput = {
-          id,
-          calibType,
-          format,
-          hat_rl,
-          lowerLimitFormula,
-          upperLimitFormula,
-          unit,
-          measureValue,
-        }
-
-        inputs.push(input)
-      }
+      calibrationAnalogInputs.push({
+        id,
+        calibType,
+        format,
+        hat_rl,
+        lowerLimitFormula,
+        upperLimitFormula,
+        unit,
+        measureValues: [],
+        calibrationAlarmTasks,
+      })
     } else {
-      const nonZeroMatches = typeNonZeroPattern.exec(match[4])
-      if (nonZeroMatches !== null) {
-        const lowerLimitFormula = nonZeroMatches[1]
-        const upperLimitFormula = nonZeroMatches[2]
-        const unit = nonZeroMatches[3]
-        const [calibrationAlarmTasks, ...rest] = nonZeroMatches[4].split(/\s+/)
+      const lowerLimitFormula = tokens.get(3, 'string')
+      const upperLimitFormula = tokens.get(4, 'string')
+      const unit = tokens.get(5, 'string')
 
-        const input: CalibrationAnalogInput = {
-          id,
-          calibType,
-          format,
-          lowerLimitFormula,
-          upperLimitFormula,
-          unit,
-          calibrationAlarmTasks: Number.parseInt(calibrationAlarmTasks),
-        }
-
-        if (calibType === 1 || calibType === 2) {
-          const measureValues = []
-          for (let i = 0; i < rest.length; i += 2) {
-            measureValues.push({
-              level: Number.parseFloat(rest[i]),
-              value: Number.parseFloat(rest[i + 1]),
-            })
-          }
-          input.measureValues = measureValues
-        }
-
-        inputs.push(input)
+      const input: CalibrationAnalogInput = {
+        id,
+        calibType,
+        format,
+        hat_rl: null,
+        lowerLimitFormula,
+        upperLimitFormula,
+        unit,
+        measureValues: [],
+        calibrationAlarmTasks: 0,
       }
-    }
 
-    match = generalPattern.exec(content)
+      if (calibType === 1 || calibType === 2) {
+        let i = 6
+        for (; i < tokens.length - 1; i += 2) {
+          const level = tokens.get(i, 'float')
+          const value = tokens.get(i + 1, 'float')
+          input.measureValues!.push({ level, value })
+        }
+        // If there is a standalone number at end, it is calibrationAlarmTasks
+        if (i < tokens.length) {
+          input.calibrationAlarmTasks = tokens.get(i, 'integer')
+        }
+      }
+      calibrationAnalogInputs.push(input)
+    }
   }
-  return inputs
+
+  return calibrationAnalogInputs
 }

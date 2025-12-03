@@ -1,5 +1,38 @@
-const pattern = /^(\d+) "([^"]*)" (.*)$/gim
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
+
+export type SelectableIoDefinition = {
+  commandNo: number
+  ioName: string
+  isSelectableIO: true
+  ioIndex: number
+  selectionList: {
+    selectIndex: number
+    ioType: number
+    ioId: number
+    isDefault: boolean
+  }[]
+}
+
+export type NonSelectableIoDefinition = {
+  commandNo: number
+  ioIndex: number
+  ioName: string
+  isSelectableIO: false
+  ioType: number
+  ioId: number
+}
+
+export type IoDefinition = SelectableIoDefinition | NonSelectableIoDefinition
+
 /**
+ * Komutun kullandığı io tanımlarının tutulduğu dosyayı parse eder. Format boşlukla ayrılmış şekilde sırasıyla:
+ *
+ * 1. Komut Numarası (integer)
+ * 2. IO Adı (string)
+ * 3. IO Türü ve ID'si (string, format: "ioType,ioId") - Eğer seçimli IO ise bu ve sonraki çiftler tekrarlanır.
+ * 4. Seçim Durumu (integer, 1 = seçili, 0 = seçili değil) - Sadece seçimli IO'lar için geçerlidir.
+ *
  * **Path**: `/tbb6500/data/commands/io`
  *
  * **Example**:
@@ -7,67 +40,54 @@ const pattern = /^(\d+) "([^"]*)" (.*)$/gim
  * 1 "Referans Seçiniz" 4,13 1 4,28 0
  * ```
  */
+export function parseCommandIO(content: string): IoDefinition[] {
+  const ios: IoDefinition[] = []
+  const lines = splitLines(content)
+  const counters = new Map<number, number>()
 
-interface CommandIOGroup {
-  selectIndex: number
-  ioType: number
-  ioId: number
-  ioIndex: number
-  isDefault: number
-  name: string
-  isChoosableIO: boolean
-}
-interface Command {
-  commandNo: number
-  chooseList: CommandIOGroup[]
-}
-function getLastIOIndex(acc: Record<number, Command>, command: Command) {
-  return acc[command.commandNo].chooseList[acc[command.commandNo].chooseList.length - 1].ioIndex
-}
+  const getNext = (commandNo: number) => {
+    const current = counters.get(commandNo) || 0
+    counters.set(commandNo, current + 1)
+    return current
+  }
 
-export function parseCommandIO(content: string) {
-  const commands: Command[] = []
-  let match = pattern.exec(content)
-  while (match !== null) {
-    const command: Partial<Command> = {
-      commandNo: Number.parseInt(match[1]),
-    }
-    if (match) {
-      const groups = match[3].match(/(-?\d+),(-?\d+) (-?\d+)/g)
-      if (groups) {
-        command.chooseList = groups.map((g, selectIndex) => {
-          const [xy, z] = g.split(' ')
-          const [x, y] = xy.split(',')
+  for (const line of lines) {
+    const tokens = tokenize(line)
+    const isSelectableIO = tokens.length > 4
+    const commandNo = tokens.get(0, 'integer')
+    const ioIndex = getNext(commandNo)
 
-          return {
-            selectIndex,
-            ioType: Number.parseInt(x),
-            ioId: Number.parseInt(y),
-            isDefault: Number.parseInt(z),
-            name: match![2],
-            isChoosableIO: (groups.length > 1),
-            ioIndex: 0,
-          }
+    if (isSelectableIO) {
+      const io: SelectableIoDefinition = {
+        commandNo: tokens.get(0, 'integer'),
+        ioName: tokens.get(1, 'string'),
+        ioIndex,
+        isSelectableIO: true,
+        selectionList: [],
+      }
+      for (let i = 2; i < tokens.length; i += 2) {
+        const [ioType, ioId] = tokens.get(i, 'integer-list')
+        const isDefault = tokens.get(i + 1, 'integer') > 0
+        io.selectionList.push({
+          selectIndex: io.selectionList.length,
+          ioType,
+          ioId,
+          isDefault,
         })
-        commands.push(command as Command)
       }
-    }
-
-    match = pattern.exec(content)
-  }
-
-  const res: Record<number, Command> = {}
-
-  for (const command of commands) {
-    if (!res[command.commandNo]) {
-      res[command.commandNo] = {
-        commandNo: command.commandNo,
-        chooseList: command.chooseList,
-      }
+      ios.push(io)
     } else {
-      res[command.commandNo].chooseList = res[command.commandNo].chooseList.concat(command.chooseList.map(c => ({ ...c, ioIndex: getLastIOIndex(res, command) + 1 })))
+      const [ioType, ioId] = tokens.get(2, 'integer-list')
+      const io: NonSelectableIoDefinition = {
+        commandNo: tokens.get(0, 'integer'),
+        ioName: tokens.get(1, 'string'),
+        ioIndex,
+        isSelectableIO: false,
+        ioType,
+        ioId,
+      }
+      ios.push(io)
     }
   }
-
-  return Object.values(res)
+  return ios
 }

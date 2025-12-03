@@ -1,6 +1,7 @@
 import type { MasterCommandsAlarm } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
-const pattern = /^(\d+) (\d+) (\d+) -(\d+) "([^"]*)" "([^"]*)" ?$/gim
 /**
  * **Path**: `/tbb6500/data/commands/alarms`
  *
@@ -10,16 +11,17 @@ const pattern = /^(\d+) (\d+) (\d+) -(\d+) "([^"]*)" "([^"]*)" ?$/gim
  * ```
  */
 export function parseCommandAlarms(content: string) {
-  const commands = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const commands: MasterCommandsAlarm[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const command: MasterCommandsAlarm = {
-      commandNo: Number.parseInt(match[1]),
-      alarmNo: Number.parseInt(match[2]),
-      alarm: match[6],
+      commandNo: tokens.get(0, 'integer'),
+      alarmNo: tokens.get(1, 'integer'),
+      alarm: tokens.get(5, 'string'),
     }
     commands.push(command)
-    match = pattern.exec(content)
   }
   return commands
 }

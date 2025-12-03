@@ -1,6 +1,7 @@
 import type { IOOutput } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
-const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (.+) (\d+) (\d+)(?: "([^"]+)")?$/gim
 /**
  * **Path**: `/tbb6500/data/io/analogoutput`
  *
@@ -10,21 +11,22 @@ const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (.+) (\d+) (\d+)(?: "([^"]+)")?$/g
  * ```
  */
 export function parseAnalogOutput(content: string) {
-  const outputs = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const outputs: Omit<IOOutput, 'commandNo' | 'chooseList'>[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const output: Omit<IOOutput, 'commandNo' | 'chooseList'> = {
-      id: Number.parseInt(match[1]),
-      card: Number.parseInt(match[2]),
-      channel: Number.parseInt(match[3]),
-      name: match[4],
-      defaultValue: Number.parseFloat(match[5]),
-      enabled: Number.parseInt(match[6]),
-      plcIO: Number.parseInt(match[7]),
-      icon: match[8] ?? '',
+      id: tokens.get(0, 'integer'),
+      card: tokens.get(1, 'integer'),
+      channel: tokens.get(2, 'integer'),
+      name: tokens.get(3, 'string'),
+      defaultValue: tokens.get(4, 'float'),
+      enabled: tokens.get(5, 'integer'),
+      plcIO: tokens.get(6, 'integer'),
+      icon: tokens.get(7, 'string'),
     }
     outputs.push(output)
-    match = pattern.exec(content)
   }
   return outputs
 }

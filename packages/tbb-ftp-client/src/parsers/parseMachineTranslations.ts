@@ -1,5 +1,7 @@
+import { splitLines } from '../utils/common'
+
 export function parseMachineTranslations(content: string) {
-  const lines = content.split('\n').filter(Boolean)
+  const lines = splitLines(content)
   const messages: { locale: number, text: string }[][] = []
 
   for (const line of lines) {

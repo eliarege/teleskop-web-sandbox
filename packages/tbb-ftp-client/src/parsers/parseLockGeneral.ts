@@ -1,6 +1,6 @@
 import type { LockGeneral } from '../types'
-
-const pattern = /^(\d+) "([^"]*)" (\d+) (\d+) (\d+) (\d+) "([^"]*)" "([^"]*)" (\d+) "([^"]*)" (\d+)$/gim
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
 /**
  * **Path**: `/tbb6500/data/locks/locks_general`
@@ -11,24 +11,25 @@ const pattern = /^(\d+) "([^"]*)" (\d+) (\d+) (\d+) (\d+) "([^"]*)" "([^"]*)" (\
  * ```
  */
 export function parseLockGeneral(content: string) {
-  const locks = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const locks: Partial<LockGeneral>[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const lock: Partial<LockGeneral> = {
-      lockNo: Number.parseInt(match[1]) + 1,
-      lockName: match[2],
-      logicType: Number.parseInt(match[3]),
-      stopDyeing: Number.parseInt(match[4]),
-      jumpStep: Number.parseInt(match[5]),
-      alarm: Number.parseInt(match[6]),
-      onDelay: match[7],
-      stepDelay: match[8],
-      giveMessage: Number.parseInt(match[9]),
-      messageString: match[10],
-      active: Number.parseInt(match[11]),
+      lockNo: tokens.get(0, 'integer') + 1,
+      lockName: tokens.get(1, 'string'),
+      logicType: tokens.get(2, 'integer'),
+      stopDyeing: tokens.get(3, 'integer'),
+      jumpStep: tokens.get(4, 'integer'),
+      alarm: tokens.get(5, 'integer'),
+      onDelay: tokens.get(6, 'string'),
+      stepDelay: tokens.get(7, 'string'),
+      giveMessage: tokens.get(8, 'integer'),
+      messageString: tokens.get(9, 'string'),
+      active: tokens.get(10, 'integer'),
     }
     locks.push(lock)
-    match = pattern.exec(content)
   }
   return locks
 }

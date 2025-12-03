@@ -1,7 +1,6 @@
 import type { CommandParameter } from '../types'
-
-// 1: Float, 2: Integer, 3: String, 4: List
-const pattern = /(-?\d+\.\d+)|(-?\d+)|("[^"]*")|(\[[^\]]*\])/g
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
 /**
  * **Path**: `/tbb6500/data/commands/params`
@@ -25,54 +24,50 @@ const pattern = /(-?\d+\.\d+)|(-?\d+)|("[^"]*")|(\[[^\]]*\])/g
 
 export function parseCommandParams(content: string) {
   const parameters: CommandParameter[] = []
-  const lines = content.split('\n').map(l => l.trim()).filter(Boolean)
+  const lines = splitLines(content)
 
   for (const line of lines) {
-    const parts = [] as any[] // number | string | { name: string, value: number }[]
-    let match = pattern.exec(line)
-    let hasSelectionList = false
-    while (match !== null) {
-      if (match[1]) {
-        parts.push(Number.parseFloat(match[1]))
-      } else if (match[2]) {
-        parts.push(Number.parseInt(match[2]))
-      } else if (match[3]) {
-        parts.push(match[3].slice(1, -1))
-      } else if (match[4]) {
-        parts.push(processSelectionList(JSON.parse(match[4])))
-        hasSelectionList = true
-      }
-      match = pattern.exec(line)
-    }
+    const tokens = tokenize(line)
+
     const parameter: CommandParameter = {
-      commandNo: parts[0],
-      name: parts[2],
-      paramName: parts[3],
-      paramFormula: parts[4],
-      binding: parts[5],
-      defaultValue: parts[6],
-      minValue: parts[7],
-      maxValue: parts[8],
-      graphic: parts[9],
-      selectionList: hasSelectionList ? parts[10] : null,
+      commandNo: tokens.get(0, 'integer'),
+      name: tokens.get(2, 'string'),
+      paramName: tokens.get(3, 'string'),
+      paramFormula: tokens.get(4, 'string'),
+      binding: tokens.get(5, 'integer'),
+      defaultValue: tokens.get(6, 'float'),
+      minValue: tokens.get(7, 'float'),
+      maxValue: tokens.get(8, 'float'),
+      graphic: tokens.get(9, 'integer'),
+      selectionList: null,
     }
-    if (parts.length > 10 + Number(hasSelectionList)) {
-      parameter.machineConstantIdMin = parts[10 + Number(hasSelectionList)]
-      parameter.machineConstantIdMax = parts[11 + Number(hasSelectionList)]
+
+    // Check if index 10 is a list or an integer
+    if (tokens.length > 10) {
+      try {
+        const listValue = tokens.get(10, 'list')
+        if (listValue.length > 0) {
+          parameter.selectionList = listValue
+          // Check for machine constant IDs after the list
+          if (tokens.length > 12) {
+            parameter.machineConstantIdMin = tokens.get(11, 'integer')
+            parameter.machineConstantIdMax = tokens.get(12, 'integer')
+          }
+        } else {
+          // Empty list, check for machine constant IDs
+          if (tokens.length > 11) {
+            parameter.machineConstantIdMin = tokens.get(10, 'integer')
+            parameter.machineConstantIdMax = tokens.get(11, 'integer')
+          }
+        }
+      } catch {
+        // Not a list, treat as machine constant IDs
+        parameter.machineConstantIdMin = tokens.get(10, 'integer')
+        parameter.machineConstantIdMax = tokens.get(11, 'integer')
+      }
     }
 
     parameters.push(parameter)
   }
   return parameters
-}
-
-function processSelectionList(list: string[]) {
-  const processedList: { name: string, value: number }[] = []
-  for (let i = 0; i < list.length; i += 2) {
-    processedList.push({
-      name: list[i],
-      value: Number(list[i + 1]),
-    })
-  }
-  return processedList
 }

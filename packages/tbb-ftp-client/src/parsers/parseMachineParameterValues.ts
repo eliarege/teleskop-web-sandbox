@@ -1,6 +1,7 @@
 import type { MachineParameter } from '../types'
+import { splitLines } from '../utils/common'
 
-const pattern = /^SABIT_(\d+)=(\d+).(\d+)$/gim
+const pattern = /^SABIT_(\d+)=/i
 /**
  * **Path**: `/tbb6500/data/config/makinesabitleriDegerler`
  *
@@ -11,25 +12,26 @@ const pattern = /^SABIT_(\d+)=(\d+).(\d+)$/gim
  */
 export function parseMachineParameterValues(content: string) {
   const machineParameterValues: Partial<MachineParameter>[] = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+
+  for (const line of splitLines(content)) {
+    const match = pattern.exec(line)
+    if (!match)
+      continue
+
     const id = match[1]
-    const values = match[2].split(',')
+    const value = line.slice(match[0].length)
 
-    if (values && values.length) {
-      const parameter: Partial<MachineParameter> = {
+    if (value) {
+      machineParameterValues.push({
         machineParameterId: Number.parseInt(id),
-        currentValue: Number.parseInt(values[0]),
-      }
-      machineParameterValues.push(parameter)
+        currentValue: Number.parseFloat(value),
+      })
     }
-
-    match = pattern.exec(content)
   }
   return machineParameterValues
 }
 
 export function serializeMachineParameterValues(values: MachineParameter[]): string {
-  const regexStrings = values.map(value => `"SABIT_${value.machineParameterId}"=${value.currentValue}.000000`)
+  const regexStrings = values.map(value => `"SABIT_${value.machineParameterId}"=${value.currentValue.toFixed(6)}`)
   return regexStrings.join('\n')
 }

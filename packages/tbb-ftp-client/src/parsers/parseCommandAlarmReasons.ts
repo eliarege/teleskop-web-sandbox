@@ -1,6 +1,7 @@
 import type { CommandAlarmReason } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
-const pattern = /^(\d+) "([^"]+)" ((?:\d+(?:,\d+)*,)*\d+) (\d+)$/gim
 /**
  * **Path**: `/tbb6500/data/config/commandAlarmReasons`
  *
@@ -10,21 +11,17 @@ const pattern = /^(\d+) "([^"]+)" ((?:\d+(?:,\d+)*,)*\d+) (\d+)$/gim
  * ```
  */
 export function parseCommandAlarmReasons(content: string) {
-  const reasons = []
-  let match = pattern.exec(content)
-  while (match !== null) {
-    let commandNumbersArray
-    if (match[3])
-      commandNumbersArray = match[3].split(',').map(Number)
+  const lines = splitLines(content)
+  const reasons: CommandAlarmReason[] = []
 
-    const reason: CommandAlarmReason = {
-      id: Number.parseInt(match[1]),
-      reasonText: match[2],
-      commandNumbers: commandNumbersArray ?? [],
-      groupId: Number.parseInt(match[4]),
-    }
-    reasons.push(reason)
-    match = pattern.exec(content)
+  for (const line of lines) {
+    const tokens = tokenize(line)
+    reasons.push({
+      id: tokens.get(0, 'integer'),
+      reasonText: tokens.get(1, 'string'),
+      commandNumbers: tokens.get(2, 'integer-list'),
+      groupId: tokens.get(3, 'integer'),
+    })
   }
   return reasons
 }

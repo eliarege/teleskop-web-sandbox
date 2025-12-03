@@ -1,6 +1,7 @@
 import type { MasterCommand } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
-const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" "([^"]*)" "([^"]*)" "([^"]*)"$/gim
 /**
  * **Path**: `/tbb6500/data/commands/graphic`
  *
@@ -10,20 +11,21 @@ const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" "([^"]*)" "([^"]*)" "([^"]*)"$
  * ```
  */
 export function parseCommandGraphic(content: string) {
-  const groups = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const groups: Partial<MasterCommand>[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const group: Partial<MasterCommand> = {
-      commandNo: Number.parseInt(match[1]),
-      type: Number.parseInt(match[2]),
-      x: match[3],
-      y: match[4],
-      a: match[5],
-      maxA: match[6],
-      b: match[7],
+      commandNo: tokens.get(0, 'integer'),
+      type: tokens.get(1, 'integer'),
+      x: tokens.get(2, 'string'),
+      y: tokens.get(3, 'string'),
+      a: tokens.get(4, 'string'),
+      maxA: tokens.get(5, 'string'),
+      b: tokens.get(6, 'string'),
     }
     groups.push(group)
-    match = pattern.exec(content)
   }
   return groups
 }

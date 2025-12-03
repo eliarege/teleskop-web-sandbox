@@ -1,4 +1,5 @@
 import type { Consumption } from '../types'
+import { splitLines } from '../utils/common'
 
 /**
  * **Path**:  `/tbb6500/data/config/consumption`
@@ -10,20 +11,11 @@ import type { Consumption } from '../types'
  */
 export function parseConsumption(content: string) {
   const consumption: Record<string, string | number> = {}
-  const lines = content.split('\n')
+  const lines = splitLines(content)
 
-  if (lines && lines.length) {
-    for (const line of lines) {
-      const [key, value] = line.split('=')
-      if (key) {
-        if (value !== '') {
-          consumption[key] = key.includes('TIME')
-            ? value
-            : Number.parseInt(value)
-        }
-      }
-    }
+  for (const line of lines) {
+    const [key, value] = line.split('=')
+    consumption[key] = Number.isNaN(Number(value)) ? value : Number(value)
   }
-
   return consumption as unknown as Consumption
 }

@@ -1,6 +1,6 @@
 import type { GlobalCommandFormula } from '../types'
+import { splitLines, splitOnce } from '../utils/common'
 
-const pattern = /^(?:.+=)(.+),(\d+),(\d+),(\d+),(.+)$/gim
 /**
  * **Path**: `/tbb6500/data/config/globalCommandFormulas`
  *
@@ -10,25 +10,41 @@ const pattern = /^(?:.+=)(.+),(\d+),(\d+),(\d+),(.+)$/gim
  * ```
  */
 export function parseGlobalCommandFormulas(content: string) {
-  const commands = []
-  let match = pattern.exec(content)
-  while (match !== null) {
-    const input: GlobalCommandFormula = {
-      formula: match[1],
-      formulaId: Number.parseInt(match[2]),
-      commandNo: Number.parseInt(match[3]),
-      commandParameterNo: Number.parseInt(match[4]),
-      formulaName: match[5],
+  const commands: GlobalCommandFormula[] = []
+
+  for (const line of splitLines(content)) {
+    const [_, value] = splitOnce(line, '=')
+    if (!value) {
+      continue
     }
-    commands.push(input)
-    match = pattern.exec(content)
+    const [
+      formula,
+      formulaIdStr,
+      commandNoStr,
+      commandParameterNoStr,
+      formulaName,
+    ] = value.split(',')
+
+    commands.push({
+      formula,
+      formulaId: Number.parseInt(formulaIdStr, 10),
+      commandNo: Number.parseInt(commandNoStr, 10),
+      commandParameterNo: Number.parseInt(commandParameterNoStr, 10),
+      formulaName,
+    })
   }
   return commands
 }
 
 export function serializeGlobalCommandFormulas(formulas: GlobalCommandFormula[]): string {
   const lines = formulas.map((formula, index) => {
-    return `GLOBAL_FORMULA_${index + 1}=${formula.formula},${formula.formulaId},${formula.commandNo},${formula.commandParameterNo},${formula.formulaName}`
+    return `GLOBAL_FORMULA_${index + 1}=${[
+      formula.formula,
+      formula.formulaId,
+      formula.commandNo,
+      formula.commandParameterNo,
+      formula.formulaName,
+    ].join(',')}`
   })
 
   return lines.join('\n')

@@ -40,8 +40,6 @@ const unitMap = [
   'oz/Feet',
 ]
 
-// const pattern = /^SABIT_(\d+)=(.+), (.+), (.+), (.+), (.+), (.+), ([^\n,]*),(?:([^\n,]*),)?(\[.*\])$/gim
-// const pattern = /^SABIT_(\d+)=(.+),(.+)$/gim
 /**
  * **Path**: `/tbb6500/data/config/baslatmaParametreleri`
  *

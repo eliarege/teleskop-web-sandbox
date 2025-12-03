@@ -1,6 +1,7 @@
 import type { Knex } from 'knex'
 import type { CalibrationAnalogInput, LockOutputAnalog, LockOutputDigital, TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { insertBatch } from '@teleskop/utils'
+import type { BFCOMMANDINPUTOUTPUTS, BFCOMMANDSELECTIONLIST } from '@teleskop/core'
 import { DatabaseQueryError, MSSQL_ERROR_CODE, UnsupportedDatabaseVersionError, inferInvalidColumnError } from '../error'
 import { fetchDatabaseVersion } from './version'
 import { calcIONumber, getIONames, omitUndefined } from './index'
@@ -572,44 +573,53 @@ export async function updateCommandAlarms(machineId: number, tbb: TbbFtpClient, 
 }
 
 export async function updateCommandIO(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
-  const commands = await tbb.fetchCommandIO()
-  if (!commands.length)
+  const ioList = await tbb.fetchCommandIoList()
+  if (!ioList.length)
     return false
 
-  const inputsOutputs = []
-  const selectionList = []
+  const inputsOutputs = [] as BFCOMMANDINPUTOUTPUTS[]
+  const selectionList = [] as BFCOMMANDSELECTIONLIST[]
 
   const ioNames = await getIONames(machineId, trx)
 
-  for (const [_index, command] of commands.entries()) {
-    for (const [_i, c] of command.chooseList.entries()) {
-      const commonData = {
-        IOINDEX: c.ioIndex,
+  for (const io of ioList) {
+    if (io.isSelectableIO) {
+      inputsOutputs.push({
+        IOINDEX: io.ioIndex,
         MACHINEID: machineId,
-        COMMANDNO: command.commandNo,
-        IOID: c.ioId,
-      }
-      const ioName = ioNames[c.ioType - 1]?.find(d => d.id === c.ioId)?.name || ''
-
-      if (c.selectIndex === 0) {
-        inputsOutputs.push({
-          ...commonData,
-          NAME: c.name.length ? c.name : ioName,
-          IOTYPE: c.isChoosableIO ? 5 : c.ioType - 1,
-          PROGRAMEDITING: false,
-          COMMANDRUN: false,
-        })
-      }
-
-      selectionList.push({
-        ...commonData,
-        SELECTINDEX: c.selectIndex,
-        IOTYPE: c.ioType - 1,
-        NAME: ioName,
-        SELECTEDIOID: c.ioId,
-        ISDEFAULT: c.isDefault,
-        MODEL: 'MODEL',
-        EXTENTION: 'EXTENSION',
+        COMMANDNO: io.commandNo,
+        IOID: io.selectionList[0].ioId,
+        NAME: io.ioName,
+        IOTYPE: 5,
+        PROGRAMEDITING: false,
+        COMMANDRUN: false,
+      })
+      selectionList.push(...io.selectionList.map((c) => {
+        const ioName = ioNames[c.ioType - 1]?.find(d => d.id === c.ioId)?.name || ''
+        return {
+          IOINDEX: io.ioIndex,
+          MACHINEID: machineId,
+          COMMANDNO: io.commandNo,
+          IOID: c.ioId,
+          SELECTINDEX: c.selectIndex,
+          IOTYPE: c.ioType - 1,
+          NAME: ioName,
+          SELECTEDIOID: c.ioId,
+          ISDEFAULT: c.isDefault,
+          MODEL: 'MODEL',
+          EXTENTION: 'EXTENSION',
+        }
+      }))
+    } else {
+      inputsOutputs.push({
+        IOINDEX: io.ioIndex,
+        MACHINEID: machineId,
+        COMMANDNO: io.commandNo,
+        IOID: io.ioId,
+        NAME: io.ioName,
+        IOTYPE: io.ioType - 1,
+        PROGRAMEDITING: false,
+        COMMANDRUN: false,
       })
     }
   }
@@ -793,13 +803,11 @@ export async function updateSystemParams(machineId: number, tbb: TbbFtpClient, t
 
 export async function updateCycleControl(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const control = await tbb.fetchCycleControl()
-  if (!control.length)
-    return false
   try {
     await trx('BFMACHINES')
       .where('MACHINEID', machineId)
       .update({
-        REELCOUNT: control[0].reelCount,
+        REELCOUNT: control.reelCount,
       })
     return true
   } catch (error: any) {

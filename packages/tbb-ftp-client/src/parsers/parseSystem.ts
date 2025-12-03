@@ -1,6 +1,9 @@
-const pattern = /^(.+)=(.+)$/
+import { splitLines, splitOnce } from '../utils/common'
 
 /**
+ *
+ * Cihaz sistem ayarlarının saklandığı dosyayı parse eder.
+ *
  * **Path**: `/tbb6500/data/config/sistem`
  *
  * **Example**:
@@ -8,22 +11,18 @@ const pattern = /^(.+)=(.+)$/
  * BATCH_NO_DIGIT_COUNT=0
  * ```
  */
-export function parseSystem(content: string) {
-  const res: Record<string, any> = {}
-  const lines = content.split('\n')
+export function parseSystem(content: string): Record<string, any> {
+  const system: Record<string, any> = {}
+  const lines = splitLines(content)
 
-  if (lines && lines.length) {
-    lines.forEach((line) => {
-      const match = line.match(pattern)
-      if (match) {
-        const key = match[1]
-        const value: any = match[2]
-        res[key] = value
-      }
-    })
-  }
+  lines.forEach((line) => {
+    const [key, value] = splitOnce(line, '=')
+    if (key && value) {
+      system[key] = value
+    }
+  })
 
-  return res
+  return system
 }
 
 export function serializeSystem(data: Record<string, string>) {

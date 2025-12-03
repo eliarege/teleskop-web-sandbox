@@ -1,6 +1,7 @@
 import type { FeedbackCommand } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
-const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" (\d+) (\d+) ?(\d*)$/gim
 /**
  * **Path**: `/tbb6500/data/commands/feedback`
  *
@@ -10,19 +11,20 @@ const pattern = /^(\d+) (\d+) "([^"]*)" "([^"]*)" (\d+) (\d+) ?(\d*)$/gim
  * ```
  */
 export function parseCommandFeedback(content: string) {
-  const groups = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const groups: FeedbackCommand[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const group: FeedbackCommand = {
-      commandNo: Number.parseInt(match[1]),
-      format: Number.parseInt(match[2]),
-      pvNo: match[3],
-      returnValueName: match[4],
-      canShow: Number.parseInt(match[5]),
-      SPRelation: Number.parseInt(match[6]),
+      commandNo: tokens.get(0, 'integer'),
+      format: tokens.get(1, 'integer'),
+      pvNo: tokens.get(2, 'string'),
+      returnValueName: tokens.get(3, 'string'),
+      canShow: tokens.get(4, 'integer'),
+      SPRelation: tokens.get(5, 'integer'),
     }
     groups.push(group)
-    match = pattern.exec(content)
   }
   return groups
 }

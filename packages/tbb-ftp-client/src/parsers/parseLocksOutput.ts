@@ -7,11 +7,13 @@
  * ```
  */
 
+import { splitLines } from '../utils/common'
+
 const pattern = /^(\d+) (\d+) (.+)$/
 
 export function parseLocksOutput(content: string) {
-  const lines = content.split('\n')
-  if (!lines)
+  const lines = splitLines(content)
+  if (!lines.length)
     return { analogLocks: [], digitalLocks: [] }
 
   const analogLocks = []

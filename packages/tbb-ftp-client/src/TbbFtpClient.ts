@@ -39,6 +39,7 @@ import { parseCalibrationCounter } from './parsers/parseCalibrationCounter'
 import { parseCalibrationAnalogInput } from './parsers/parseCalibrationAnalogInput'
 import { parseIOChangedEvent } from './parsers/parseIOChangedEvent'
 import { parseMachineTranslations } from './parsers/parseMachineTranslations'
+import { splitLines } from './utils/common'
 
 export interface TbbFtpClientOptions {
   timeout?: number
@@ -289,7 +290,7 @@ export class TbbFtpClient {
     return commands
   }
 
-  async fetchCommandIO() {
+  async fetchCommandIoList() {
     const remotePath = '/tbb6500/data/commands/io'
     const content = await this._download(remotePath)
     const commandGroups = parseCommandIO(content)
@@ -348,7 +349,7 @@ export class TbbFtpClient {
   async fetchLocksInput() {
     const remotePath = '/tbb6500/data/locks/locks_inputs'
     const content = await this._download(remotePath)
-    const lines = content.split('\n').filter(line => line.length > 0)
+    const lines = splitLines(content)
     const parsedData = lines.map(parseSeperatedLocks)
 
     return parsedData

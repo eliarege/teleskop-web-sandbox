@@ -1,6 +1,7 @@
 import type { CommandGroup } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
-const pattern = /^(\d+) "([^"]+)" "([^"]+)"$/gim
 /**
  * **Path**: `/tbb6500/data/commands/commandGroup`
  *
@@ -10,16 +11,17 @@ const pattern = /^(\d+) "([^"]+)" "([^"]+)"$/gim
  * ```
  */
 export function parseCommandGroup(content: string) {
-  const groups = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const groups: CommandGroup[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const group: CommandGroup = {
-      commandGroupId: Number.parseInt(match[1]),
-      name: match[2],
-      icon: match[3].split('.')[0],
+      commandGroupId: tokens.get(0, 'integer'),
+      name: tokens.get(1, 'string'),
+      icon: tokens.get(2, 'string').split('.')[0],
     }
     groups.push(group)
-    match = pattern.exec(content)
   }
   return groups
 }

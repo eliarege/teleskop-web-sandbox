@@ -1,4 +1,6 @@
-const pattern = /^(\d+) (\d+) (.+) (.+)$/gim
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
+
 /**
  * **Path**: `/tbb6500/data/kalibrasyon/sayackalibrasyon`
  *
@@ -9,17 +11,18 @@ const pattern = /^(\d+) (\d+) (.+) (.+)$/gim
  * ```
  */
 export function parseCalibrationCounter(content: string) {
-  const inputs = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const inputs: { id: number, format: number, unit: string, pulse: number }[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const input = {
-      id: Number.parseInt(match[1]),
-      format: Number.parseInt(match[2]),
-      unit: match[3],
-      pulse: Number.parseInt(match[4]),
+      id: tokens.get(0, 'integer'),
+      format: tokens.get(1, 'integer'),
+      unit: tokens.get(2, 'string'),
+      pulse: tokens.get(3, 'float'),
     }
     inputs.push(input)
-    match = pattern.exec(content)
   }
   return inputs
 }

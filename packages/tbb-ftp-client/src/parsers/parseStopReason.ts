@@ -1,20 +1,29 @@
 import type { StopReason } from '../types'
-
-const pattern = /^(\d+) "([^"]+)"$/gim
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
 /**
  * **Path**: `/tbb6500/data/config/durusnedenleri`
+ *
+ * **Example**:
+ * ```txt
+ * 1 "Ham Açma Bekleme"
+ * 2 "İki Parti Arası Hazırlık"
+ * 3 "Sipariş Yok"
+ * 4 "Reçete Yok"
+ * ```
  */
 export function parseStopReason(content: string) {
-  const reasons = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const reasons: Partial<StopReason>[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const reason: Partial<StopReason> = {
-      stopCode: Number.parseInt(match[1]),
-      stopName: match[2],
+      stopCode: tokens.get(0, 'integer'),
+      stopName: tokens.get(1, 'string'),
     }
     reasons.push(reason)
-    match = pattern.exec(content)
   }
   return reasons
 }

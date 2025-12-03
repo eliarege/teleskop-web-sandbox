@@ -1,6 +1,7 @@
 import type { CommandIO } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
-const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (\d+) (\d+)(?: "([^"]+)")?$/gim
 /**
  * **Path**: `/tbb6500/data/io/sayac`
  *
@@ -10,20 +11,21 @@ const pattern = /^(\d+) (\d+) (\d+) "([^"]+)" (\d+) (\d+)(?: "([^"]+)")?$/gim
  * ```
  */
 export function parseCounter(content: string) {
-  const inputs = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const inputs: Omit<CommandIO, 'commandNo' | 'chooseList'>[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const input: Omit<CommandIO, 'commandNo' | 'chooseList'> = {
-      id: Number.parseInt(match[1]),
-      card: Number.parseInt(match[2]),
-      channel: Number.parseInt(match[3]),
-      name: match[4],
-      enabled: Number.parseInt(match[5]),
-      plcIO: Number.parseInt(match[6]),
-      icon: match[7] ?? '',
+      id: tokens.get(0, 'integer'),
+      card: tokens.get(1, 'integer'),
+      channel: tokens.get(2, 'integer'),
+      name: tokens.get(3, 'string'),
+      enabled: tokens.get(4, 'integer'),
+      plcIO: tokens.get(5, 'integer'),
+      icon: tokens.get(6, 'string'),
     }
     inputs.push(input)
-    match = pattern.exec(content)
   }
   return inputs
 }

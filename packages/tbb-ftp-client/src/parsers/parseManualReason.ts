@@ -1,6 +1,6 @@
 import type { ManualReason } from '../types'
-
-const pattern = /^(\d+) "([^"]+)"$/gim
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
 /**
  * **Path**: `/tbb6500/data/config/manuelmodnedenleri`
@@ -11,15 +11,16 @@ const pattern = /^(\d+) "([^"]+)"$/gim
  * ```
  */
 export function parseManualReason(content: string) {
-  const reasons = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const reasons: Partial<ManualReason>[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const reason: Partial<ManualReason> = {
-      manualCode: Number.parseInt(match[1]),
-      manualName: match[2],
+      manualCode: tokens.get(0, 'integer'),
+      manualName: tokens.get(1, 'string'),
     }
     reasons.push(reason)
-    match = pattern.exec(content)
   }
   return reasons
 }

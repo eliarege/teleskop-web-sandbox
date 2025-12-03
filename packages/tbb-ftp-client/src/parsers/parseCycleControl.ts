@@ -1,4 +1,4 @@
-const pattern = /^CYCLE_GOZ_SAYISI=(\d+)$/gim
+const pattern = /^CYCLE_GOZ_SAYISI=(\d+)$/im
 
 /**
  * **Path**: `/tbb6500/data/config/manuel/cycle_kontrol`
@@ -9,14 +9,8 @@ const pattern = /^CYCLE_GOZ_SAYISI=(\d+)$/gim
  * ```
  */
 export function parseCycleControl(content: string) {
-  const reasons = []
-  let match = pattern.exec(content)
-  while (match !== null) {
-    const reason = {
-      reelCount: Number.parseInt(match[1]),
-    }
-    reasons.push(reason)
-    match = pattern.exec(content)
+  const match = pattern.exec(content)
+  return {
+    reelCount: match ? Number.parseInt(match[1]) : 0,
   }
-  return reasons
 }

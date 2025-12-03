@@ -1,12 +1,12 @@
 import type { FinishReason } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
 const typeIdMap = {
   3: 'Bitir',
   4: 'Atla',
   5: 'Makine Duraklatma',
 } as Record<number, string>
-
-const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
 
 /**
  * **Path**: `/tbb6500/data/config/bitirmenedenleri`
@@ -17,16 +17,17 @@ const pattern = /^(\d+) "([^"]+)" (\d+) "([^"]+)"$/gim
  * ```
  */
 export function parseFinishReason(content: string) {
-  const reasons = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const reasons: Partial<FinishReason>[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const reason: Partial<FinishReason> = {
-      reasonId: match[1],
-      text: match[2],
-      typeId: Number.parseInt(match[3]),
+      reasonId: tokens.get(0, 'string'),
+      text: tokens.get(1, 'string'),
+      typeId: tokens.get(2, 'integer'),
     }
     reasons.push(reason)
-    match = pattern.exec(content)
   }
   return reasons
 }

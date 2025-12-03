@@ -9,8 +9,11 @@ import { parseCommandAlarms } from '../src/parsers/parseCommandAlarms'
 import { parseCommandFeedback } from '../src/parsers/parseCommandFeedback'
 import { parseCommandGraphic } from '../src/parsers/parseCommandGraphic'
 import { parseCommandGroup } from '../src/parsers/parseCommandGroup'
+import type { IoDefinition } from '../src/parsers/parseCommandIO'
 import { parseCommandIO } from '../src/parsers/parseCommandIO'
+import { parseCommandAlarmReasons } from '../src/parsers/parseCommandAlarmReasons'
 import { parseBatchParameters } from '../src/parsers/parseBatchParameters'
+import { parseCalibrationCounter } from '../src/parsers/parseCalibrationCounter'
 import { parseCommandParams } from '../src/parsers/parseCommandParams'
 import { parseCommandsGeneral } from '../src/parsers/parseCommandsGeneral'
 import { parseConsumption } from '../src/parsers/parseConsumption'
@@ -25,11 +28,13 @@ import { parseSeperatedLocks } from '../src/parsers/parseLocksInput'
 import { parseLocksOutput } from '../src/parsers/parseLocksOutput'
 import { parseMachineParameters } from '../src/parsers/parseMachineParameters'
 import { parseMachineParameterValues } from '../src/parsers/parseMachineParameterValues'
+import { parseCalibrationAnalogInput } from '../src/parsers/parseCalibrationAnalogInput'
 import { parseManualReason } from '../src/parsers/parseManualReason'
 import { parseStopReason } from '../src/parsers/parseStopReason'
 import { parseSystem } from '../src/parsers/parseSystem'
 import { parseUser } from '../src/parsers/parseUser'
 import { parseMachineTranslations } from '../src/parsers/parseMachineTranslations'
+import type { CalibrationAnalogInput } from '../src/types'
 
 // Helper: returns two variants of the given raw multiline content
 // 1. Without a trailing newline
@@ -197,16 +202,144 @@ describe('parseBatchParameters', () => {
   })
 })
 
-it.todo('parseCalibrationAnalogInput', () => {
+it('parseCalibrationAnalogInput', () => {
+  const base = [
+    '0 0 1 0 "-5" "KK Max.Isi+5" \'C 130',
+    '6 1 1 "-5" "100+5" % 0.00 3.99 100.00 20.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 0',
+    '12 1 1 "-5" "Max Basinc mbar+1" bar 0.00 4.00 10.00 20.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 130',
+    '13 1 0 "-5" "500" % 0 0.00 10 20 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 0.00 -1.0 2',
+  ].join('\n')
 
+  const results: CalibrationAnalogInput[] = [
+    {
+      id: 0,
+      calibType: 0,
+      format: 1,
+      hat_rl: 0,
+      lowerLimitFormula: '-5',
+      upperLimitFormula: 'KK Max.Isi+5',
+      unit: '\'C',
+      measureValues: [],
+      calibrationAlarmTasks: 130,
+    },
+    {
+      id: 6,
+      calibType: 1,
+      format: 1,
+      hat_rl: null,
+      lowerLimitFormula: '-5',
+      upperLimitFormula: '100+5',
+      unit: '%',
+      measureValues: [
+        { level: 0.00, value: 3.99 },
+        { level: 100.00, value: 20.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+      ],
+      calibrationAlarmTasks: 0,
+    },
+    {
+      id: 12,
+      calibType: 1,
+      format: 1,
+      hat_rl: null,
+      lowerLimitFormula: '-5',
+      upperLimitFormula: 'Max Basinc mbar+1',
+      unit: 'bar',
+      measureValues: [
+        { level: 0.00, value: 4.00 },
+        { level: 10.00, value: 20.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+      ],
+      calibrationAlarmTasks: 130,
+    },
+    {
+      id: 13,
+      calibType: 1,
+      format: 0,
+      hat_rl: null,
+      lowerLimitFormula: '-5',
+      upperLimitFormula: '500',
+      unit: '%',
+      measureValues: [
+        { level: 0, value: 0.00 },
+        { level: 10, value: 20 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 0.00 },
+        { level: -1.0, value: 2 },
+      ],
+      calibrationAlarmTasks: 0,
+    },
+  ]
+
+  for (const variant of withVariants(base)) {
+    const output = parseCalibrationAnalogInput(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
-it.todo('parseCalibrationCounter', () => {
-
+it('parseCalibrationCounter', () => {
+  const base = [
+    '0 0 lt 1',
+    '1 0 kWh 0.100',
+    '2 0 Kg 1',
+    '3 0 lt 9.700',
+  ].join('\n')
+  const results = [
+    { id: 0, format: 0, unit: 'lt', pulse: 1 },
+    { id: 1, format: 0, unit: 'kWh', pulse: 0.100 },
+    { id: 2, format: 0, unit: 'Kg', pulse: 1 },
+    { id: 3, format: 0, unit: 'lt', pulse: 9.700 },
+  ]
+  for (const variant of withVariants(base)) {
+    const output = parseCalibrationCounter(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
-it.todo('parseCommandAlarmReasons', () => {
+it('parseCommandAlarmReasons', () => {
+  const base = [
+    '7 "Dozaj Vanası Açmadı" 1',
+    '8 "Dozaj Vanası Kaçırıyor." 1',
+    '9 "Tambur salmastra kaçırıyor" 1',
+    '10 "Basınç Açmadı" 1',
+    '11 "Pompa Kaçıyor" 1',
+    '12 "Hava Yok" 1',
+    '13 "Sıcak Su Vanası Açmıyor" 1',
+  ].join('\n')
 
+  const results = [
+    { id: 7, reasonText: 'Dozaj Vanası Açmadı', commandNumbers: [1], groupId: 0 },
+    { id: 8, reasonText: 'Dozaj Vanası Kaçırıyor.', commandNumbers: [1], groupId: 0 },
+    { id: 9, reasonText: 'Tambur salmastra kaçırıyor', commandNumbers: [1], groupId: 0 },
+    { id: 10, reasonText: 'Basınç Açmadı', commandNumbers: [1], groupId: 0 },
+    { id: 11, reasonText: 'Pompa Kaçıyor', commandNumbers: [1], groupId: 0 },
+    { id: 12, reasonText: 'Hava Yok', commandNumbers: [1], groupId: 0 },
+    { id: 13, reasonText: 'Sıcak Su Vanası Açmıyor', commandNumbers: [1], groupId: 0 },
+  ]
+
+  for (const variant of withVariants(base)) {
+    const output = parseCommandAlarmReasons(variant)
+    expect(output).toStrictEqual(results)
+  }
 })
 
 it('parseCommandAlarms', () => {
@@ -277,58 +410,52 @@ it('parseCommandGroup', () => {
 
 it('parseCommandIO', () => {
   const base = [
-    '5 "Giriş Seviye" 1,5 1 5,3 0',
-    '5 "" 1,1 0',
+    '1 "Kaynak Seciniz" 4,16 1 4,17 0 4,18 0 4,19 0 4,37 0',
     '4 "" -1,-1 -1',
+    '5 "Giriş Seviye" 1,5 1 5,3 0',
+    '5 "" 4,32 0',
   ].join('\n')
   const results = [
     {
+      commandNo: 1,
+      ioName: 'Kaynak Seciniz',
+      ioIndex: 0,
+      isSelectableIO: true,
+      selectionList: [
+        { ioType: 4, ioId: 16, selectIndex: 0, isDefault: true },
+        { ioType: 4, ioId: 17, selectIndex: 1, isDefault: false },
+        { ioType: 4, ioId: 18, selectIndex: 2, isDefault: false },
+        { ioType: 4, ioId: 19, selectIndex: 3, isDefault: false },
+        { ioType: 4, ioId: 37, selectIndex: 4, isDefault: false },
+      ],
+    },
+    {
       commandNo: 4,
-      chooseList: [
-        {
-          selectIndex: 0,
-          ioType: -1,
-          ioId: -1,
-          isDefault: -1,
-          name: '',
-          isChoosableIO: false,
-          ioIndex: 0,
-        },
+      ioName: '',
+      ioIndex: 0,
+      isSelectableIO: false,
+      ioType: -1,
+      ioId: -1,
+    },
+    {
+      commandNo: 5,
+      ioName: 'Giriş Seviye',
+      ioIndex: 0,
+      isSelectableIO: true,
+      selectionList: [
+        { ioType: 1, ioId: 5, selectIndex: 0, isDefault: true },
+        { ioType: 5, ioId: 3, selectIndex: 1, isDefault: false },
       ],
     },
     {
       commandNo: 5,
-      chooseList: [
-        {
-          selectIndex: 0,
-          ioType: 1,
-          ioId: 5,
-          isDefault: 1,
-          name: 'Giriş Seviye',
-          isChoosableIO: true,
-          ioIndex: 0,
-        },
-        {
-          selectIndex: 1,
-          ioType: 5,
-          ioId: 3,
-          isDefault: 0,
-          name: 'Giriş Seviye',
-          isChoosableIO: true,
-          ioIndex: 0,
-        },
-        {
-          selectIndex: 0,
-          ioType: 1,
-          ioId: 1,
-          isDefault: 0,
-          name: '',
-          isChoosableIO: false,
-          ioIndex: 1,
-        },
-      ],
+      ioName: '',
+      ioIndex: 1,
+      isSelectableIO: false,
+      ioType: 4,
+      ioId: 32,
     },
-  ]
+  ] satisfies IoDefinition[]
 
   for (const variant of withVariants(base)) {
     const output = parseCommandIO(variant)
@@ -618,21 +745,37 @@ it('parseCounter', () => {
   }
 })
 
-it('parseCycleControl', () => {
-  const base = [
-    'CYCLE_GOZ_SAYISI=6',
-  ].join('\n')
+describe('parseCycleControl', () => {
+  it('with cycle', () => {
+    const base = [
+      'CYCLE_GOZ_SAYISI=6',
+      'CYCLE_BASLANGIC_GECIKMESI=10',
+      'CYCLE_BITIS_GECIKMESI=15',
+    ].join('\n')
 
-  const results = [
-    {
+    const results = {
       reelCount: 6,
-    },
-  ]
+    }
+    for (const variant of withVariants(base)) {
+      const output = parseCycleControl(variant)
+      expect(output).toStrictEqual(results)
+    }
+  })
 
-  for (const variant of withVariants(base)) {
-    const output = parseCycleControl(variant)
-    expect(output).toStrictEqual(results)
-  }
+  it('without cycle', () => {
+    const base = [
+      'CYCLE_BASLANGIC_GECIKMESI=10',
+      'CYCLE_BITIS_GECIKMESI=15',
+    ].join('\n')
+
+    const results = {
+      reelCount: 0,
+    }
+    for (const variant of withVariants(base)) {
+      const output = parseCycleControl(variant)
+      expect(output).toStrictEqual(results)
+    }
+  })
 })
 
 it('parseDigitalInput', () => {

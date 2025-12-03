@@ -1,6 +1,7 @@
 import type { MasterCommand } from '../types'
+import { splitLines } from '../utils/common'
+import { tokenize } from '../utils/tokenize'
 
-const pattern = /^(\d+) (\d+) "([^"]+)" "([^"]+)" "([^"]+)" (\d+) (\d+) (-\d+) (\d+) (\d+) *(-?\d+)?$/gim
 /**
  * **Path**: `/tbb6500/data/commands/general`
  *
@@ -10,23 +11,24 @@ const pattern = /^(\d+) (\d+) "([^"]+)" "([^"]+)" "([^"]+)" (\d+) (\d+) (-\d+) (
  * ```
  */
 export function parseCommandsGeneral(content: string) {
-  const groups = []
-  let match = pattern.exec(content)
-  while (match !== null) {
+  const lines = splitLines(content)
+  const groups: Partial<MasterCommand>[] = []
+
+  for (const line of lines) {
+    const tokens = tokenize(line)
     const group: Partial<MasterCommand> = {
-      commandNo: Number.parseInt(match[1]),
-      activated: Number.parseInt(match[2]),
-      name: match[3],
-      tbbFunctionName: match[4],
-      icon: match[5],
-      commandType: Number.parseInt(match[6]),
-      isRunManual: Number.parseInt(match[7]),
-      moveParallel: Number.parseInt(match[9]),
-      groupId: Number.parseInt(match[10]),
-      machineConstantId: match[11] ? Number.parseInt(match[11]) : -1,
+      commandNo: tokens.get(0, 'integer'),
+      activated: tokens.get(1, 'integer'),
+      name: tokens.get(2, 'string'),
+      tbbFunctionName: tokens.get(3, 'string'),
+      icon: tokens.get(4, 'string'),
+      commandType: tokens.get(5, 'integer'),
+      isRunManual: tokens.get(6, 'integer'),
+      moveParallel: tokens.get(8, 'integer'),
+      groupId: tokens.get(9, 'integer'),
+      machineConstantId: tokens.length > 10 ? tokens.get(10, 'integer') : -1,
     }
     groups.push(group)
-    match = pattern.exec(content)
   }
   return groups
 }
