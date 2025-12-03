@@ -110,7 +110,7 @@ function validateParallelCommands(stepIndex: number): boolean {
           dense
           tag="span"
           clickable
-          @dblclick="editor.addStep(command.commandNo)"
+          @dblclick="editor.addStepToEnd(command.commandNo)"
         >
           <QItemSection>
             <QItemLabel class="flex items-center gap-2">

@@ -244,6 +244,10 @@ const itemsMobile = [
   ],
   items,
 ] as TopbarMenuItem[][]
+
+const goRoot = computed(() => {
+  return route.path === '/' || /^\/machine\/(\d+)$/.test(route.path)
+})
 </script>
 
 <template>
@@ -255,7 +259,7 @@ const itemsMobile = [
       <QToolbar class="min-h-unset">
         <template v-if="sm">
           <QToolbarTitle shrink>
-            <TopbarHomeButton />
+            <TopbarHomeButton :go-root="goRoot" />
           </QToolbarTitle>
           <TopbarButton
             v-for="(item, index) in items"

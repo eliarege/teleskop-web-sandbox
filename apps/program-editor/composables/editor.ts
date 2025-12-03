@@ -134,18 +134,13 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Yeni bir adım ekler.
+   * Yeni bir adım ekler. Steplerin sonuna veya seçili adımın yerine ekler ve bir önceki adımın paralel komutlarını kopyalar.
    *
-   * Bu fonksiyon, yeni bir adım oluşturur, komut numarası verilmişse ilgili komutu kullanarak günceller.
-   * Eğer komut paralel türde ise hata mesajı gösterir. Aksi takdirde yeni adımı belirtilen konuma ekler
-   * ve paralel komutları kopyalar. Yeni adım eklendikten sonra sayfayı kaydırarak, yeni adımı görünür yapar.
-   *
-   * @param {number | undefined} commandNo - Kullanılacak komutun numarası. Eğer `undefined` ise boş bir adım ekler.
-   * @param {number | undefined} stepIndex - Yeni adımın ekleneceği mevcut adımın indeksini belirtir.
-   *
+   * @param {number | null} commandNo - Kullanılacak komutun numarası. Eğer `null` ise boş bir adım ekler.
+   * @param {number} stepIndex - Yeni adımın ekleneceği mevcut adımın indeksini belirtir.
    * @returns {void}
    */
-  function addStep(commandNo?: number, stepIndex?: number): void {
+  function addStep(commandNo: number | null, stepIndex: number): void {
     const newStep = createEmptyStep()
 
     // Belirli bir komut numarası verilmişse, komut bilgilerini al ve kontrol et
@@ -165,11 +160,10 @@ export const useEditorStore = defineStore('editor', () => {
       updateStepCommandFromDefinition(machineCommand, newStep.mainCommand)
     }
 
-    const targetIndex = stepIndex ?? getStepIndex()
-
-    // Paralel komutları kopyala (eğer varsa)
-    if (program.value.steps[targetIndex]) {
-      const parallelCommands = program.value.steps[targetIndex]?.parallelCommands || []
+    // Bir önceki adımın paralel komutlarını kopyala
+    const previousIndex = stepIndex - 1
+    if (previousIndex >= 0 && program.value.steps[previousIndex]) {
+      const parallelCommands = program.value.steps[previousIndex]?.parallelCommands || []
       const settings = useProgramWriteSettings()
 
       for (const command of parallelCommands) {
@@ -207,14 +201,32 @@ export const useEditorStore = defineStore('editor', () => {
     newStep.mainCommand.commandId = lastCommandId++
     newStep.parallelCommands.forEach(command => command.commandId = lastCommandId++)
 
-    // Yeni adımı mevcut step'in yerine ekle
-    program.value.steps.splice(targetIndex, 0, newStep)
+    // Yeni adımı ekle
+    program.value.steps.splice(stepIndex, 0, newStep)
 
     // Seçim ve kaydırma işlemleri
-    selectedSteps.value = [program.value.steps[targetIndex]]
+    selectedSteps.value = [program.value.steps[stepIndex]]
     nextTick(() => {
-      scrollPage(targetIndex, true)
+      scrollPage(stepIndex, true)
     })
+  }
+
+  /**
+   * Yeni bir adım ekler ve programın sonuna ekler.
+   *
+   * @param {number | null} commandNo - Kullanılacak komutun numarası. Eğer `null` ise boş bir adım ekler.
+   * @returns {void}
+   */
+  function addStepToEnd(commandNo: number | null): void {
+    addStep(commandNo, program.value.steps.length)
+  }
+
+  function addStepBeforeSelection(commandNo: number | null): void {
+    if (selectedSteps.value.length === 0) {
+      addStep(commandNo, program.value.steps.length)
+    } else {
+      addStep(commandNo, getStepIndex())
+    }
   }
 
   /**
@@ -1093,6 +1105,8 @@ export const useEditorStore = defineStore('editor', () => {
     insertProgram,
     insertStep,
     addStep,
+    addStepToEnd,
+    addStepBeforeSelection,
     newParallelStep,
     newParallelStepCommand,
     updateStepCommandFromDefinition,

@@ -59,7 +59,7 @@ function isScreenGtMd() {
 
   <q-space />
 
-  <div v-if="editor.program.programNo" class="flex items-center">
+  <div v-if="editor.program.programNo" class="flex items-center px-2">
     {{ formatDuration(calcProgramDuration()) }}
   </div>
 

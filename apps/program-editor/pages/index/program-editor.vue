@@ -15,8 +15,6 @@ const { $commandManager } = useNuxtApp()
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
 
-const isNewVersion = ref(true)
-
 const ctrl = useKeyModifier('Control')
 
 definePageMeta({
@@ -44,19 +42,20 @@ const buttons = computed<ContextBarButtons[]>(() => [
     icon: 'save',
     disable: editor.isLoading,
     onClick: async () => {
-      await editor.onSubmit(undefined, isNewVersion.value)
+      await editor.onSubmit(undefined, true)
     },
   },
-  {
-    label: t('menu.isNewVersion'),
-    originalLabel: t('menu.isNewVersion'),
-    tooltip: t('menu.isNewVersion'),
-    icon: isNewVersion.value ? 'toggle_on' : 'toggle_off',
-    disable: editor.isLoading,
-    onClick: async () => {
-      isNewVersion.value = !isNewVersion.value
-    },
-  },
+  // {
+  //   label: t('menu.saveWithoutVersion'),
+  //   originalLabel: t('menu.saveWithoutVersion'),
+  //   tooltip: t('menu.saveWithoutVersion'),
+  //   shortcut: 'Ctrl+Shift+S',
+  //   icon: 'save',
+  //   disable: editor.isLoading,
+  //   onClick: async () => {
+  //     await editor.onSubmit(undefined, false)
+  //   },
+  // },
   {
     label: t('menu.saveAs'),
     originalLabel: t('menu.saveAs'),
@@ -89,7 +88,18 @@ const buttons = computed<ContextBarButtons[]>(() => [
     icon: 'add_box',
     disable: editor.isLoading,
     onClick() {
-      editor.addStep()
+      editor.addStepToEnd(null)
+    },
+  },
+  {
+    label: t('menu.newStepBetween'),
+    originalLabel: t('menu.newStepBetween'),
+    tooltip: t('menu.newStepBetween'),
+    shortcut: 'Insert',
+    icon: 'vertical_align_center',
+    disable: editor.isLoading || !editor.selectedSteps.length,
+    onClick() {
+      editor.addStepBeforeSelection(null)
     },
   },
   {
@@ -108,7 +118,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     label: t('menu.deleteStep'),
     originalLabel: t('menu.deleteStep'),
     tooltip: t('menu.deleteStep'),
-    shortcut: 'Del',
+    shortcut: 'Del', // Browser bookmark shortcut conflict with 'Ctrl+D'
     icon: 'delete',
     disable: editor.isLoading || !editor.selectedSteps.length,
     onClick() {
@@ -159,13 +169,20 @@ useContextBar(buttons)
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
-  editor.addStep()
+  editor.addStepToEnd(null)
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
   if (route.params.program_no && !editor.isTonello) {
     event.preventDefault()
     editor.newParallelStep()
+  }
+})
+
+onKeyStroke('Insert', (event: KeyboardEvent) => {
+  if (route.params.program_no && editor.selectedSteps.length) {
+    event.preventDefault()
+    editor.addStepBeforeSelection(null)
   }
 })
 
@@ -228,9 +245,12 @@ onKeyStroke('Escape', (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
-  if (event.ctrlKey) {
+  if (event.ctrlKey && event.shiftKey) {
     event.preventDefault()
-    await editor.onSubmit()
+    await editor.onSubmit(undefined, false)
+  } else if (event.ctrlKey) {
+    event.preventDefault()
+    await editor.onSubmit(undefined, true)
   }
 })
 
