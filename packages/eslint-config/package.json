@@ -1,7 +1,7 @@
 {
   "name": "@teleskop/eslint-config",
   "type": "module",
-  "version": "0.58.0",
+  "version": "0.59.0",
   "description": "",
   "exports": {
     ".": "./config.js"

@@ -1,8 +1,71 @@
 # Changelog
 
+## 0.59.0 - 2025-12-03
+
+[Compare Changes](2bb10545b950902e0041a063b8d84b65d2ef07a8...617ce98149a519e9cb96edf32adc9d758f18856f)
+
+### 🚀 Features
+
+-  **PE**: Update fetchAllPrograms to accept machineId and add refreshAllPrograms function ([b98c189](b98c189475b2328b857ffe358bec5a08e0ff9835))
+-  **PE**: Enhance PDF generation with machine selection and detailed program info ([8bd68b5](8bd68b5fa2d5c9a0ff49a2bb4df28864a1659d7c))
+-  **PE**: Update print commands to use machine name from editor store ([7081109](7081109b95161b72fc88dd4fe52a92ac07745769))
+-  **PE**: Update print program list dialog and enable print commands in menu ([4f6bb0b](4f6bb0b4927b60f65a73ada62ef8d2a2a92b9174))
+-  **PE**: Add jspdf and jspdf-autotable dependencies ([8447c1c](8447c1cde1d0123798e5b80abf322fc4eafe4239))
+-  **PE**: Add print label to English and Turkish locale files ([b43ca5d](b43ca5d02f4d16ba29a1888a49e1d8bd63971728))
+-  **PE**: Refactor PDF generation and enhance print/download functionality ([4a367ca](4a367ca74cada3bb939cf103201e7150589e9c50))
+-  **PE**: Implement single selection mode for machine selection dialog ([07a9e79](07a9e7950608c35c3ec0cd512725117fa73a5f22))
+-  **PE**: Enforce single selection mode in machine selection dialog ([78d1665](78d166511f1ad1fb4006f333c224da30ade8e7e7))
+-  **PE**: Implement loadMachine function for improved machine data loading ([b33b526](b33b5266a930cc5babe2b36692a55720407d63e7))
+-  **PE**: Enhance TBPrintProgramDialog with machine and program selection functionality ([9343089](9343089223783c778b07965531ac132c79a3dcc2))
+-  **PE**: Enhance PDF generation with detailed machine information and pagination ([000d5ac](000d5acc161ead0c7ee35cbe41209172ff8117db))
+-  **PE**: Add dialog hide event handler to TBPrint and CMMachineList dialogs ([f797079](f7970795ac9c576fd89b14eb2ce8ba9a72b63894))
+-  **PE**: Pass program and command lists to TBPrintProgramDialog component ([6f6bb19](6f6bb19119e021bebd3b2731b1592f7048d3d3bf))
+-  **PE**: Add current machine ID to CMMachineListDialog and enhance machine selection localization ([4cde7ae](4cde7ae3504c9a3887324b49e2fff57b976c6e39))
+-  **PE**: Update print program dialog title and enhance localization for print program functionality ([e29d73e](e29d73e29cb0720c570e1e2a140accd9d81459db))
+-  **PE**: Refactor TBExportExcelDialog to simplify machine selection and enhance export functionality ([98fa094](98fa09466331c15a38aac5475f3b145124e683cf))
+-  **PE**: Update machine option terminology in print program dialogs for consistency ([60e6dd9](60e6dd9cb3d7c484aa6b526d39203f5b7c0181bb))
+-  **PE**: Update exportToExcel command to use machine name from editor store ([93e3fdb](93e3fdb5f28941107e0d6aab96d8a4620d706bea))
+-  **PE**: Implement CMMachineSelector component for improved machine selection in dialogs ([e372964](e37296452f838b9837b0515a3a30af961163cbda))
+-  **PE**: Enhance CMMachineSelector with single selection support and update localization for machine selection ([df71d27](df71d27fdba75b70f20b5817df1f53498931ad95))
+-  **PE**: Implement PDF generation worker and enhance print/download functionality in TBPrintProgramDialog ([aec402e](aec402ef6df258c2e0aa9bf22fc5213ffb43d63a))
+-  **PE**: Refactor fetchProgram function to return program data and add loadProgram function for data loading ([0f1d8b1](0f1d8b12f6b3b2ea12e1bf9e3a65c49353843795))
+-  **PE**: Add functionality to insert a step between ([d9e7caa](d9e7caadad6f33df785f533105af8947fd43ccf3))
+
+### 🐛 Bug Fixes
+
+-  **PB**: Refactor bulkUpsertPlanParameters to delete old parameters and insert new ones in a single transaction ([854d34a](854d34a7bf3081d3e7cb5cf580bba42317c0608c))
+-  **PB**: Send all parameters when submitting plan parameters instead of only modified ones, remove parallelism during transations ([22adcda](22adcda38b5ab9c3b4a77bfbecafd2e79129f29c))
+- **recipes**: Dyelot tables cleanup on override ([cb4d24e](cb4d24efecd46f2d27fbf788da496f6c6e3663d2))
+- **recipes**: Materials isManual display ([993e03f](993e03fb8d6e776c8d1392c3a2a558460197cb0e))
+-  **PB**: Remove manual event type and related logic, update interfaces and components ([aa39fe2](aa39fe240ee07b87f317106cd65f6b9ec2390142))
+-  **PB**: Fixed an issue where events with no joborder's couldn't be scheduled ([a52a021](a52a02128a5ad96fff33926693bb61f341822b2c))
+-  **PE**: Clear error IDs on route leave to prevent stale error states ([b2553e4](b2553e412a19247035007f8d0d8e87e25338435f))
+-  **PE**: Remove file extension from exported Excel file name in exportExcel function ([352b487](352b487bbd66d94cdf47faea2a5d6a3791a436c9))
+-  **PE**: Add deep copy for programs and commandList in generatePDF function to handle Vue reactivity issues ([2ee8a52](2ee8a5239c8c3efc9e906d5d0c78ddc36ab58abc))
+-  **PE**: Use `es` format to build workers ([6263f52](6263f52bb626f56653828b14b0e377ef3dba6fcf))
+- **tbb-ftp-client**: Refactor almost all parsers and make them more robus ([77c3e7d](77c3e7da036dfaf967c11d236526630acb5688b7))
+-  **PE**: Add onDialogHide handler ([69dc9ac](69dc9ac87ce9744b06c68ac1c24ba2e37fd1d904))
+-  **PE**: Add MachineOption type for current and selected options ([d6e3819](d6e38195214a49cd6272a7139d630b5e110dfb1e))
+-  **PE**: Update worker URL to use .ts extension for PDF generator ([9511749](9511749f7304e7e27303b89671ce698d4a44561a))
+-  **PE**: Remove `isNewVersion` toggle button from toolbar ([29b9325](29b9325b0463af08812a4ca022b03925a25addbd))
+-  **PE**: Update openMachineInNewTab to use withBase for correct URL handling ([b8425bd](b8425bd6487840ba7d2e7229642f43bffdd40bfd))
+-  **PE**: Add goRoot computed property to properly handle root navigation logic ([b34f1aa](b34f1aa518efa4ea3b9343493b9e74e96d88bee8))
+
+### ♻️ Refactor
+
+-  **PE**: Remove CMChangeNameDialog component ([87be1a8](87be1a8166554c500a29f88ee62c6df3b713ca19))
+-  **PE**: Simplify date formatting in formatDate function ([d7e731d](d7e731d78edcfba49729f7f88f4ecb55e79f84f3))
+-  **PE**: Add onDialogHide handler ([88602e3](88602e32dce895854b9deb304e5f4532745edc05))
+-  **PE**: Add variations of addStep and make its parameters mandatory for clarity ([324a26c](324a26c0d65d2b9aa0d1b8b8a5424a373d038f21))
+
+### 🔧 Miscellaneous Tasks
+
+- Update lockfile ([fa1d3d9](fa1d3d97c16b024fe3e124d56de8d8f769b85140))
+- Add support for JSONC parsing in environment generation ([0410b1b](0410b1b1b2d4242d2712dc0ef771c508d211e1f9))
+
 ## 0.58.0 - 2025-11-26
 
-[Compare Changes](0de2c984262eecd04c1ec046808edb915b785c42...604d490a86fd70681929e22d27173ca37e89fed0)
+[Compare Changes](0de2c984262eecd04c1ec046808edb915b785c42...2bb10545b950902e0041a063b8d84b65d2ef07a8)
 
 ### 🚀 Features
 
