@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
-import type { MachineCommand, MachineConstant } from '~/shared/types'
+import type { MachineCommand, MachineConstant, MachineOption } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
-const machineOption = ref<string>('1')
+const machineOption = ref<MachineOption>('current')
 const selectedMachines = computed(() =>
-  machineOption.value === '1' ? [editor.machine] : editor.selectedMachines,
+  machineOption.value === 'current' ? [editor.machine] : editor.selectedMachines,
 )
 
 const fields = [
@@ -197,7 +199,7 @@ async function exportExcel() {
   await excelFormatter(workbook)
 
   const buffer = await workbook.xlsx.writeBuffer()
-  const fileName = machineOption.value === '1'
+  const fileName = machineOption.value === 'current'
     ? `${editor.machine.name}_${t('exportExcelDialog.report')}`
     : `${t('exportExcelDialog.report')}`
   downloadExcelFile(fileName, buffer)
@@ -211,7 +213,11 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" class="select-none">
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <q-card class="min-w-100">
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">

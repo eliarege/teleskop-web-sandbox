@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MachineCommand, Program, ProgramTableRow } from '~/shared/types'
+import type { MachineCommand, MachineOption, Program, ProgramTableRow } from '~/shared/types'
 import CMMachineSelector from '~/components/CMMachineSelector.vue'
 
 const props = defineProps<{
@@ -8,12 +8,14 @@ const props = defineProps<{
   commandList: MachineCommand[]
 }>()
 
-const editor = useEditorStore()
-const { t } = useI18n()
-const { notifyError } = useNotify()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 
-const machineOption = ref<string>('1')
+const { t } = useI18n()
+const editor = useEditorStore()
+const { notifyError } = useNotify()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+
+const machineOption = ref<MachineOption>('current')
 
 const programList = ref<ProgramTableRow[]>(props.programList)
 const isLoadingPrograms = ref(false)
@@ -21,21 +23,22 @@ const selectedPrograms = ref<ProgramTableRow[]>(props.programList)
 
 const commandList = ref<MachineCommand[]>(props.commandList)
 const isLoadingCommands = ref(false)
-const selectedCommands = ref<any[]>(props.commandList)
+const selectedCommands = ref<MachineCommand[]>(props.commandList)
+
 const isPrinting = ref(false)
 const isDownloading = ref(false)
 
 const selectedMachine = computed(() => {
-  if (machineOption.value === '1') {
+  if (machineOption.value === 'current') {
     return editor.machine
-  } else if (machineOption.value === '2' && editor.selectedMachines.length > 0) {
+  } else if (machineOption.value === 'selected' && editor.selectedMachines.length > 0) {
     return editor.selectedMachines[0]
   }
   return null
 })
 
 const isDisabled = computed(() =>
-  machineOption.value === '2' && !editor.selectedMachines.length
+  machineOption.value === 'selected' && !editor.selectedMachines.length
   || selectedPrograms.value.length === 0
   || selectedCommands.value.length === 0
   || isPrinting.value
@@ -138,7 +141,7 @@ async function generatePDF() {
     noSelectedCommands: t('printProgramListDialog.noSelectedCommands'),
   }
 
-  const worker = new Worker(new URL('~/workers/pdf-generator.worker', import.meta.url), { type: 'module' })
+  const worker = new Worker(new URL('~/workers/pdf-generator.worker.ts', import.meta.url), { type: 'module' })
 
   const pdfArrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
     worker.onmessage = (e: MessageEvent) => {
@@ -243,7 +246,7 @@ async function downloadProgramList() {
   <q-dialog
     ref="dialogRef"
     class="select-none"
-    @hide="onDialogCancel"
+    @hide="onDialogHide"
   >
     <q-card class="w-120 select-none">
       <!-- Header -->

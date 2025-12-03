@@ -9,7 +9,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const { mt } = useProjectTranslations()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const tab = ref('general')
 </script>
@@ -18,8 +18,8 @@ const tab = ref('general')
   <div>
     <QDialog
       ref="dialogRef"
-      class="select-none dialog-class"
-      @hide="onDialogCancel"
+      class="select-none"
+      @hide="onDialogHide"
     >
       <QCard>
         <QCardSection>

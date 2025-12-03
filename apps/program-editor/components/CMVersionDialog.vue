@@ -15,9 +15,11 @@ const props = defineProps<{
   rows: ProgramHeaderArchive[]
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t, locale } = useI18n()
 const editor = useEditorStore()
-const { dialogRef } = useDialogPluginComponent()
+const { dialogRef, onDialogHide } = useDialogPluginComponent()
 const { notifySuccess, notifyError } = useNotify()
 
 const deleteVersionDialogVis = ref(false)
@@ -89,7 +91,11 @@ function onRowClick(event: Event, row: ProgramHeaderArchive) {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <q-card class="w-200 select-none">
       <q-card-section>
         <div class="text-h6 flex">

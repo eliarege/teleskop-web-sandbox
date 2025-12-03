@@ -7,10 +7,12 @@ const props = defineProps<{
   machineCommands: MachineCommand[]
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const commandIcons = computed(() =>
   Object.fromEntries(
@@ -26,6 +28,7 @@ const commandIcons = computed(() =>
   <q-dialog
     ref="dialogRef"
     class="select-none"
+    @hide="onDialogHide"
   >
     <q-card>
       <q-card-section>

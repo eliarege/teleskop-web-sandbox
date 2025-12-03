@@ -11,10 +11,12 @@ const props = defineProps<{
   oldValue?: number | string
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const { dialogRef, onDialogOK } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent()
 
 const commandName = computed(() => mt(props.commandName, editor.machine.id))
 const startIndex = ref(props.stepIndex)
@@ -49,6 +51,7 @@ function onOk() {
   <q-dialog
     ref="dialogRef"
     class="select-none"
+    @hide="onDialogHide"
     @keydown.enter.prevent="onOk"
   >
     <q-card>

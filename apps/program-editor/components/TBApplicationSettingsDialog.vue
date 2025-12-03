@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { commandTypeMaps } from '~/shared/constants'
 
-defineEmits([
-  ...useDialogPluginComponent.emits,
-])
+defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
 const editor = useEditorStore()
 const selectedIcons = ref(editor.teleskopSettings.selectedIcons)
 const fullSelect = Number.parseInt('1'.repeat(commandTypeMaps.length), 2)
 const selectAll = ref(selectedIcons.value === fullSelect)
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 function toggleSelectAll() {
   selectAll.value = !selectAll.value
@@ -22,6 +20,7 @@ function toggleSelectAll() {
   <q-dialog
     ref="dialogRef"
     class="select-none"
+    @hide="onDialogHide"
   >
     <q-card>
       <q-card-section>

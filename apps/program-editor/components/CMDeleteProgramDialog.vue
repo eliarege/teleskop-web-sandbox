@@ -9,7 +9,7 @@ defineEmits([
   ...useDialogPluginComponent.emits,
 ])
 
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 const { t } = useI18n()
 const selectedOption = ref('db-machine')
 const options = [
@@ -20,7 +20,11 @@ const options = [
 </script>
 
 <template>
-  <QDialog ref="dialogRef">
+  <QDialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <QCard style="width: 500px" class="select-none">
       <QCardSection>
         <div class="text-h6 flex">

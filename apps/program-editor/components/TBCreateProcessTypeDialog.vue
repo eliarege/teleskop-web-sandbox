@@ -10,7 +10,7 @@ defineEmits([
 ])
 
 const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 const editor = useEditorStore()
 
 // Reactive form data
@@ -61,6 +61,8 @@ async function handleApply() {
 <template>
   <QDialog
     ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
   >
     <QCard>
       <QCardSection>

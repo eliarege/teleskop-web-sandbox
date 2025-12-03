@@ -78,7 +78,11 @@ function getAllNodeIds(node: any) {
 </script>
 
 <template>
-  <QDialog ref="dialogRef" @hide="onDialogHide">
+  <QDialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <QCard>
       <QCardSection class="w-100">
         <div class="text-h6 flex">

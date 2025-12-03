@@ -46,7 +46,7 @@ function clearAll() {
 <template>
   <q-dialog
     ref="dialogRef"
-    persistent
+    class="select-none"
     @hide="onDialogHide"
   >
     <q-card style="width: 500px; max-height: 800px; display: flex; flex-direction: column;">

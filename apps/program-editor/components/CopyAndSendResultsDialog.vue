@@ -7,8 +7,10 @@ const props = defineProps<{
   results: CopyAndSendResult[]
 }>()
 
+defineEmits([...useDialogPluginComponent.emits])
+
 const { t } = useI18n()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const columns = computed<QTableColumn[]>(() => [
   {
@@ -40,7 +42,11 @@ const columns = computed<QTableColumn[]>(() => [
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
+  <q-dialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <q-card class="select-none">
       <!-- Header -->
       <QCardSection>

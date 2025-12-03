@@ -1,26 +1,27 @@
 <script setup lang="ts">
-import { format } from 'date-fns'
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
-import { enGB, tr } from 'date-fns/locale'
+import type { MachineOption } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
 }>()
 
-const editor = useEditorStore()
-const { t, locale } = useI18n()
-const { notifyError } = useNotify()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 
-const machineOption = ref<string>('1')
+const { t, d } = useI18n()
+const editor = useEditorStore()
+const { notifyError } = useNotify()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+
+const machineOption = ref<MachineOption>('current')
 
 const selectedMachines = computed(() =>
-  machineOption.value === '1' ? [editor.machine] : editor.selectedMachines,
+  machineOption.value === 'current' ? [editor.machine] : editor.selectedMachines,
 )
 
 const isDisabled = computed(() =>
-  machineOption.value === '2' && editor.selectedMachines.length === 0,
+  machineOption.value === 'selected' && editor.selectedMachines.length === 0,
 )
 
 function getProcessTypeName(typeValue: number) {
@@ -28,9 +29,7 @@ function getProcessTypeName(typeValue: number) {
 }
 
 function formatDate(date: string | Date) {
-  return format(new Date(date), 'dd.MM.yyyy HH:mm', {
-    locale: locale.value === 'tr' ? tr : enGB,
-  })
+  return d(new Date(date), 'datetime')
 }
 
 async function generatePDF() {
@@ -103,7 +102,7 @@ async function printProgramList() {
 async function downloadProgramList() {
   try {
     const doc = await generatePDF()
-    const fileName = machineOption.value === '1'
+    const fileName = machineOption.value === 'current'
       ? `${editor.machine.name}_${t('printProgramListDialog.programList')}.pdf`
       : `${t('printProgramListDialog.programList')}.pdf`
     doc.save(fileName)
@@ -118,7 +117,7 @@ async function downloadProgramList() {
   <q-dialog
     ref="dialogRef"
     class="select-none"
-    @hide="onDialogCancel"
+    @hide="onDialogHide"
   >
     <q-card class="w-120 select-none">
       <q-card-section>

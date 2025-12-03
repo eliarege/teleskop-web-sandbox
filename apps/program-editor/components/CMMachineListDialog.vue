@@ -17,7 +17,7 @@ defineEmits([
 ])
 
 const { t } = useI18n()
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const getTicked = (machine: MachineInfo) => `${machine.groupId}-${machine.id}`
 
@@ -121,7 +121,7 @@ watch(ticked, (newVal, oldVal) => {
   <QDialog
     ref="dialogRef"
     class="select-none"
-    @hide="onDialogCancel"
+    @hide="onDialogHide"
   >
     <QCard>
       <QCardSection class="w-100">

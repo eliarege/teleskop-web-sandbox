@@ -6,11 +6,15 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const { dialogRef, onDialogCancel } = useDialogPluginComponent()
+const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 </script>
 
 <template>
-  <QDialog ref="dialogRef" class="select-none">
+  <QDialog
+    ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
+  >
     <QCard class="w-120">
       <QCardSection>
         <div class="text-h6 flex">
