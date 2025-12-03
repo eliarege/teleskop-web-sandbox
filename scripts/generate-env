@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Generates .env files for all apps based on the selected config (default: dev)
-import { readdir, writeFile } from 'fs/promises'
+import { readdir, readFile, writeFile } from 'fs/promises'
 import { join, resolve } from 'path'
 import { encode } from 'querystring'
 
@@ -11,7 +11,7 @@ if (!configName) {
   process.exit(1)
 }
 
-const workspaceDir =  resolve(import.meta.dirname, '..')
+const workspaceDir = resolve(import.meta.dirname, '..')
 const configDir = resolve(workspaceDir, 'config')
 const appsDir = resolve(workspaceDir, 'apps')
 const configPath = resolve(configDir, `${configName}.json`)
@@ -24,7 +24,7 @@ const teleskopPassword = config.teleskop?.password || ''
 const teleskopDatabase = config.teleskop?.database || 'Teleskop'
 const teleskopInstanceName = config.teleskop?.instanceName
 const teleskopTimezoneOffset = config.teleskop?.timezoneOffset || -180
-const teleskopConnectionOptions =  encode(config.teleskop?.connectionOptions || {})
+const teleskopConnectionOptions = encode(config.teleskop?.connectionOptions || {})
 
 const dmexchangeEnabled = config.dmexchange?.enabled || false
 const dmexchangeHost = config.dmexchange?.host || teleskopHost
@@ -33,7 +33,7 @@ const dmexchangeUser = config.dmexchange?.user || teleskopUser
 const dmexchangePassword = config.dmexchange?.password || teleskopPassword
 const dmexchangeDatabase = config.dmexchange?.database || 'DmExchange'
 const dmexchangeInstanceName = config.dmexchange?.instanceName || teleskopInstanceName
-const dmexchangeConnectionOptions =  encode(config.dmexchange?.connectionOptions || {})
+const dmexchangeConnectionOptions = encode(config.dmexchange?.connectionOptions || {})
 
 const keycloakEnabled = config.keycloak?.enabled || false
 
@@ -64,27 +64,41 @@ const envFile = [
 
 const appDirs = await readdir(appsDir, { withFileTypes: true })
   .then(files => files.filter(f => f.isDirectory())
-  .map(f => f.name))
+    .map(f => f.name))
 
 for (const appDir of appDirs) {
   const appEnvPath = resolve(appsDir, appDir, '.env')
   await writeFile(appEnvPath, envFile)
 }
 
-const readJSON = async (path) => {
-  return await import(path, { with: { type: 'json' } }).then(m => m.default).catch(() => null)
+const readJSONC = async (path) => {
+  const text = await readFile(path, 'utf-8')
+  return parseJSONC(text)
 }
+
+// Copied from `tiny-jsonc` package
+const parseJSONC = (text) => {
+  const stringOrCommentRe = /("(?:\\?[^])*?")|(\/\/.*)|(\/\*[^]*?\*\/)/g;
+  const stringOrTrailingCommaRe = /("(?:\\?[^])*?")|(,\s*)(?=]|})/g;
+
+  text = String(text); // To be extra safe
+  try { // Fast path for valid JSON
+    return JSON.parse(text);
+  } catch { // Slow path for JSONC and invalid inputs
+    return JSON.parse(text.replace(stringOrCommentRe, '$1').replace(stringOrTrailingCommaRe, '$1'));
+  }
+}
+
 const writeJSON = async (path, data) => {
   const content = JSON.stringify(data, null, 2) + '\n'
   await writeFile(path, content)
 }
 
 const mcpPath = join(workspaceDir, '.vscode/mcp.json')
-const mcpConfig = await readJSON(mcpPath)
+const mcpConfig = await readJSONC(mcpPath)
 
 if (mcpConfig?.servers?.['mssql-mcp-server']) {
-  const env = {}
-  mcpConfig.servers['mssql-mcp-server'].env ??= env
+  const env = mcpConfig.servers['mssql-mcp-server'].env ??= {}
   env['DB_USER'] = teleskopUser
   env['DB_PASSWORD'] = teleskopPassword
   env['DB_SERVER'] = teleskopHost
