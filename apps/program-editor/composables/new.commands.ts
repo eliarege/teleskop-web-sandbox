@@ -116,7 +116,7 @@ registerCommand(() => {
         if (!result)
           return false
         setTimeout(() => {
-          editor.addStep()
+          editor.addStepToEnd(null)
         }, 1000)
         return true
       }).onCancel(() => {

@@ -88,18 +88,18 @@ const buttons = computed<ContextBarButtons[]>(() => [
     icon: 'add_box',
     disable: editor.isLoading,
     onClick() {
-      editor.addStep()
+      editor.addStepToEnd(null)
     },
   },
   {
     label: t('menu.newStepBetween'),
     originalLabel: t('menu.newStepBetween'),
     tooltip: t('menu.newStepBetween'),
-    shortcut: 'F4',
+    shortcut: 'Insert',
     icon: 'vertical_align_center',
     disable: editor.isLoading || !editor.selectedSteps.length,
     onClick() {
-      editor.addStepBetween()
+      editor.addStepBeforeSelection(null)
     },
   },
   {
@@ -118,7 +118,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     label: t('menu.deleteStep'),
     originalLabel: t('menu.deleteStep'),
     tooltip: t('menu.deleteStep'),
-    shortcut: 'Del',
+    shortcut: 'Del', // Browser bookmark shortcut conflict with 'Ctrl+D'
     icon: 'delete',
     disable: editor.isLoading || !editor.selectedSteps.length,
     onClick() {
@@ -169,13 +169,20 @@ useContextBar(buttons)
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
-  editor.addStep()
+  editor.addStepToEnd(null)
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
   if (route.params.program_no && !editor.isTonello) {
     event.preventDefault()
     editor.newParallelStep()
+  }
+})
+
+onKeyStroke('Insert', (event: KeyboardEvent) => {
+  if (route.params.program_no && editor.selectedSteps.length) {
+    event.preventDefault()
+    editor.addStepBeforeSelection(null)
   }
 })
 
