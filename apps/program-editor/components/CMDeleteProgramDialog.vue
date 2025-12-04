@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar'
+import type { ProgramDeletionSource } from '~/shared/types'
 
 const props = defineProps<{
   programNos: number[]
@@ -9,11 +10,13 @@ defineEmits([
   ...useDialogPluginComponent.emits,
 ])
 
-const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 const { t } = useI18n()
-const selectedOption = ref('db-machine')
-const options = [
-  { label: t('contextMenu.deleteProgramDialog.deleteFromBoth'), value: 'db-machine' },
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+
+const selectedOption = ref<ProgramDeletionSource>('both')
+
+const options: { label: string, value: ProgramDeletionSource }[] = [
+  { label: t('contextMenu.deleteProgramDialog.deleteFromBoth'), value: 'both' },
   { label: t('contextMenu.deleteProgramDialog.deleteFromTeleskop'), value: 'db' },
   { label: t('contextMenu.deleteProgramDialog.deleteFromMachine'), value: 'machine' },
 ]

@@ -537,3 +537,25 @@ export interface CopyAndSendResult {
 export type PasteOptions = 'overwrite' | 'skip'
 
 export type MachineOption = 'current' | 'selected'
+
+export type ProgramDeletionSource = 'db' | 'machine' | 'both'
+
+export type DeletionResult<T extends ProgramDeletionSource> = {
+  programNo: number
+  programName: string
+  success: boolean
+  error?: string
+} & (
+  T extends 'db' ? { deletedFromDb: boolean } :
+    T extends 'machine' ? { deletedFromMachine: boolean } :
+      T extends 'both' ? { deletedFromDb: boolean, deletedFromMachine: boolean } :
+        never
+)
+export interface BulkDeletionResponse<T extends ProgramDeletionSource = ProgramDeletionSource> {
+  machineId: number
+  source: T
+  totalRequested: number
+  totalSuccess: number
+  totalFailed: number
+  results: DeletionResult<T>[]
+}

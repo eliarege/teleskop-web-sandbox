@@ -471,27 +471,6 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Verilen makine ID'si ve program numarasına göre programı veritabanından siler.
-   *
-   * @param {number} machineId - Silinecek programın ait olduğu makinenin ID'si.
-   * @param {number} programNo - Silinecek programın numarası.
-   *
-   * @returns {Promise<void>} Fonksiyon bir `Promise` döner ve işlemi tamamlar.
-   *
-   * @description Bu fonksiyon, belirtilen makine ID'si ve program numarasına göre,
-   * ilgili programı API üzerinden siler. Program silme işlemi başarılı olduğunda
-   * fonksiyon hiçbir değer döndürmez.
-   */
-  async function deleteProgram(machineId: number, programNo: number): Promise<void> {
-    await kc.fetch<boolean>(`/api/machine/${machineId}/program/${programNo}`, {
-      method: 'DELETE',
-      body: {
-        programNo,
-      },
-    })
-  }
-
-  /**
    * Belirtilen adım indeksine göre adımı siler.
    * Eğer indeks belirtilmezse, seçili adımlar üzerinden silme işlemi yapılır.
    *
@@ -1110,7 +1089,6 @@ export const useEditorStore = defineStore('editor', () => {
     newParallelStep,
     newParallelStepCommand,
     updateStepCommandFromDefinition,
-    deleteProgram,
     deleteStep,
     deleteParallelStep,
     selectStep,
