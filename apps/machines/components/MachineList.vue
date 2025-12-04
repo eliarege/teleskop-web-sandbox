@@ -97,6 +97,7 @@ function removeSelection(row: Machine) {
 const ctrl = useKeyModifier('Control')
 let cursor = -1
 let lastDirection = 0
+
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
   event.preventDefault()
   if (selected.value.length === 0 || cursor === -1) {
@@ -188,12 +189,12 @@ function selectAll() {
     <q-table
       :rows="rows"
       :columns
+      dense
       :hide-bottom="true"
       row-key="machineId"
       binary-state-sort
-      class="overflow-y-auto select-none"
+      class="machine-list"
       :rows-per-page-options="[0]"
-      table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
       table-header-class="bg-gray-1 dark:bg-dark-4"
     >
       <template #header="topProps">
@@ -221,7 +222,7 @@ function selectAll() {
         <q-tr
           :props="bodyProps"
           class="machine-row"
-          :class="isRowSelected(bodyProps.row) ? '!bg-blue-100' : ''"
+          :class="isRowSelected(bodyProps.row) ? '!bg-blue-100 dark:!bg-dark-3' : ''"
           @click="onRowClick(bodyProps.row, false)"
           @contextmenu.prevent="onRowClick(bodyProps.row, true)"
         >
@@ -280,3 +281,24 @@ function selectAll() {
     />
   </div>
 </template>
+
+<style lang="postcss">
+.machine-list {
+  height: calc(100vh - 110px);
+  overflow-y: auto;
+  user-select: none;
+
+  .q-table__top,
+  .q-table__bottom,
+  thead tr:first-child th {
+    @apply bg-white dark:bg-dark-4;
+  }
+  thead tr th {
+    position: sticky;
+    z-index: 1;
+  }
+  thead tr:first-child th {
+    top: 0;
+  }
+}
+</style>

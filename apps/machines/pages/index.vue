@@ -270,30 +270,6 @@ const columns = ref([
     align: 'left',
   },
   {
-    name: 'plcModel',
-    label: t('plcModel'),
-    field: 'plcModel',
-    align: 'left',
-  },
-  {
-    name: 'ip',
-    label: t('ip'),
-    field: 'ip',
-    align: 'left',
-  },
-  {
-    name: 'theoricalCharge',
-    label: t('theoricalCharge'),
-    field: 'theoricalCharge',
-    align: 'left',
-  },
-  {
-    name: 'theoricalChargeDuration',
-    label: t('theoricalChargeDuration'),
-    field: 'theoricalChargeDuration',
-    align: 'left',
-  },
-  {
     name: 'machineCapacity',
     label: t('machineCapacity'),
     field: 'machineCapacity',
@@ -306,51 +282,9 @@ const columns = ref([
     align: 'left',
   },
   {
-    name: 'nozzleCount',
-    label: t('nozzleCount'),
-    field: 'nozzleCount',
-    align: 'left',
-  },
-  {
-    name: 'steamUnit',
-    label: t('steamUnit'),
-    field: 'steamUnit',
-    align: 'left',
-  },
-  {
-    name: 'steamKgPerHour',
-    label: t('steamKgPerHour'),
-    field: 'steamKgPerHour',
-    align: 'left',
-  },
-  {
-    name: 'additionalTank1',
-    label: t('additionalTank1'),
-    field: 'additionalTank1',
-    align: 'left',
-  },
-  {
-    name: 'additionalTank2',
-    label: t('additionalTank2'),
-    field: 'additionalTank2',
-    align: 'left',
-  },
-  {
-    name: 'additionalTank3',
-    label: t('additionalTank3'),
-    field: 'additionalTank3',
-    align: 'left',
-  },
-  {
-    name: 'additionalTank4',
-    label: t('additionalTank4'),
-    field: 'additionalTank4',
-    align: 'left',
-  },
-  {
-    name: 'reserveTank',
-    label: t('reserveTank'),
-    field: 'reserveTank',
+    name: 'ip',
+    label: t('ip'),
+    field: 'ip',
     align: 'left',
   },
   {
@@ -360,39 +294,9 @@ const columns = ref([
     align: 'left',
   },
   {
-    name: 'MTTempIo',
-    label: t('MTTempIo'),
-    field: 'MTTempIoName',
-    align: 'left',
-  },
-  {
-    name: 'version',
-    label: t('version'),
-    field: 'version',
-    align: 'left',
-  },
-  {
-    name: 'productModel',
-    label: t('productModel'),
-    field: 'productModel',
-    align: 'left',
-  },
-  {
-    name: 'hardwareModel',
-    label: t('hardwareModel'),
-    field: 'hardwareModel',
-    align: 'left',
-  },
-  {
-    name: 'steamValveDo',
-    label: t('steamValveDo'),
-    field: 'steamValveDoName',
-    align: 'left',
-  },
-  {
-    name: 'theoreticalSteam',
-    label: t('theoreticalSteam'),
-    field: 'theoreticalSteam',
+    name: 'plcModel',
+    label: t('plcModel'),
+    field: 'plcModel',
     align: 'left',
   },
 ] as MachineTableColumn[])
@@ -518,7 +422,7 @@ async function receiveVersionInfo() {
 </script>
 
 <template>
-  <div class="actions">
+  <div class="actions border-b dark:border-dark-4 overflow-hidden">
     <div class="flex justify-between items-center grow">
       <div class="flex gap-4 m-4">
         <q-btn
@@ -569,7 +473,7 @@ async function receiveVersionInfo() {
           @click="receiveVersionInfo"
         />
       </div>
-      <q-chip class="self-end">
+      <q-chip class="self-end my-auto mr-4" :ripple="false">
         {{ `DB v${databaseVersion}` }}
       </q-chip>
     </div>
@@ -602,3 +506,9 @@ async function receiveVersionInfo() {
     />
   </div>
 </template>
+
+<style scoped>
+.actions {
+  height: 68px;
+}
+</style>
