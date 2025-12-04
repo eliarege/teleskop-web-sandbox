@@ -248,7 +248,7 @@ export class MachineController {
   }
 
   /**
-   * Makinenin tüm programlarının headers'larını getirir
+   * Makinenin tüm programlarının headers'ını getirir
    * @param query - Sorgu parametreleri
    * @returns {Promise<ProgramTableRow[]>} - Makinenin tüm programlarının dizisi
    */
@@ -1371,19 +1371,31 @@ export class MachineController {
   }
 
   /**
-   * Veritabanından belirtilen programı siler.
-   * @param programNo - Silinecek programın numarası
+   * Veritabanından belirtilen program(lar)ı siler.
+   * @param programNos - Silinecek programın numarası veya numaraları (tekli veya array)
    * @returns {Promise<boolean>} - İşlem başarılıysa true döner
    */
   @withTransaction
-  async deleteProgramFromDatabase(programNo: number): Promise<boolean> {
+  async deleteProgramFromDatabase(programNos: number | number[]): Promise<boolean> {
+    const programNumbers = Array.isArray(programNos) ? programNos : [programNos]
+
+    if (programNumbers.length === 0) {
+      return false
+    }
+
     let deletedCount = 0
-    const tables = ['BFMASTERPRGHEADER', 'BFMASTERSTEPS', 'BFMASTERSTEPPARAMS', 'BFMASTERSTEPINPUTOUTPUTS', 'BFMASTERSTEPSELECTIONLIST']
+    const tables = [
+      'BFMASTERPRGHEADER',
+      'BFMASTERSTEPS',
+      'BFMASTERSTEPPARAMS',
+      'BFMASTERSTEPINPUTOUTPUTS',
+      'BFMASTERSTEPSELECTIONLIST',
+    ]
 
     for (const table of tables) {
       deletedCount += await this.trx(table)
         .where('MACHINEID', this.id)
-        .andWhere('PROGNO', programNo)
+        .whereIn('PROGNO', programNumbers)
         .del()
     }
 
@@ -2039,22 +2051,24 @@ export class MachineController {
   @withProgramClient
   async getMachineStatus(machineId?: number): Promise<boolean> {
     const targetMachineId = machineId || this.id
-    const machine: { ip: string, name: string } = await this.trx('BFMACHINES')
-      .first({
-        ip: 'IP',
-        name: 'MACHINECODE',
-      })
-      .where('MACHINEID', targetMachineId)
 
-    if (!machine || !machine.ip) {
-      throw new PError('MACHINE_NOT_FOUND', { machineId: targetMachineId })
+    try {
+      const machine: { ip: string, name: string } = await this.trx('BFMACHINES')
+        .first({
+          ip: 'IP',
+          name: 'MACHINECODE',
+        })
+        .where('MACHINEID', targetMachineId)
+
+      if (!machine || !machine.ip) {
+        logger.warn(`Machine ${targetMachineId} not found or has no IP`)
+        return false
+      }
+
+      const isOnline = await this.client.ping()
+      return isOnline
+    } catch (error) {
+      return false
     }
-
-    const isOnline = await this.client.ping()
-    if (!isOnline) {
-      throw new PError('MACHINE_OFFLINE', { machineId: targetMachineId })
-    }
-
-    return isOnline
   }
 }

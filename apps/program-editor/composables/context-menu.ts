@@ -2,7 +2,7 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { isProgramError } from './utils'
 import { useCopyAndSendStore } from './copyAndSend'
-import type { CopyAndSendResult, CopyItem, MachineCommand, MachineInfo, PasteOptions, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
+import type { BulkDeletionResponse, CopyAndSendResult, CopyItem, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
 import { notification } from '~/shared/functions'
 
 export interface ContextMenuStore {
@@ -12,7 +12,7 @@ export interface ContextMenuStore {
   copy: (fromMachine: number, program: ProgramTableRow[]) => void
   paste: (machineId: number, remains?: CopyItem) => Promise<CopyItem>
   setCtx: (ctx?: any) => void
-  deleteProgram: (selectedRows: ProgramTableRow[], selectedOption: string, machineId: number) => Promise<void>
+  deleteProgram: (selectedRows: ProgramTableRow[], selectedOption: ProgramDeletionSource, machineId: number) => Promise<BulkDeletionResponse | undefined>
   getProgram: (programNo: number, machineId: number) => Promise<ProgramWithErrors>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
@@ -158,25 +158,24 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return conflicts
   }
 
-  async function deleteProgram(selectedRows: ProgramTableRow[], selectedOption: string, machineId: number) {
+  async function deleteProgram(selectedRows: ProgramTableRow[], selectedOption: ProgramDeletionSource, machineId: number): Promise<BulkDeletionResponse | undefined> {
     const { fetch } = useKeycloak()
     const { notifyError } = useNotify()
-    const query = `source=${selectedOption}`
 
-    for (const program of selectedRows) {
-      try {
-        const response = await fetch(`/api/machine/${machineId}/program/${program.programNo}?${query}`, {
-          method: 'DELETE',
-        })
+    const programs = selectedRows.map(row => ({ programNo: row.programNo, programName: row.name }))
+    const response = await fetch<BulkDeletionResponse>(`/api/machine/${machineId}/programs/delete`, {
+      method: 'DELETE',
+      body: {
+        programs,
+        source: selectedOption,
+      },
+    })
 
-        if (!response) {
-          notifyError(t('contextMenu.delete.fail', { programNo: program.programNo }))
-        }
-      } catch (error) {
-        console.error(`Error deleting program ${program.programNo}:`, error)
-        notifyError(t('contextMenu.delete.fail', { programNo: program.programNo }))
-      }
+    if (!response) {
+      notifyError(t('contextMenu.delete.fail'))
     }
+
+    return response
   }
 
   async function getProgram(programNo: number, machineId: number): Promise<ProgramWithErrors> {

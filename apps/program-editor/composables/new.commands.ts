@@ -5,7 +5,7 @@ import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPast
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
 import { contextMenuStore } from '~/utils/context-menu'
-import type { CopyItem, Machine, MachineCommand, MachineInfo, ParameterItem, PasteOptions, Program, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
+import type { BulkDeletionResponse, CopyItem, Machine, MachineCommand, MachineInfo, ParameterItem, PasteOptions, Program, ProgramDeletionSource, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
@@ -29,6 +29,7 @@ import { useMachineStatusStore } from '~/composables/machine'
 import CMVersionDialog from '~/components/CMVersionDialog.vue'
 import CMMachineListCopyAndSendDialog from '~/components/CMMachineListCopyAndSendDialog.vue'
 import CopyAndSendResultsDialog from '~/components/CopyAndSendResultsDialog.vue'
+import DeleteResultsDialog from '~/components/DeleteResultsDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -201,14 +202,22 @@ registerCommand(() => {
         componentProps: {
           programNos: selectedRows.map(row => row.programNo),
         },
-      }).onOk(async (option: string) => {
+      }).onOk(async (option: ProgramDeletionSource) => {
         editor.isLoading = true
         try {
-          await contextMenuStore.deleteProgram(selectedRows, option, machineId)
+          const response = await contextMenuStore.deleteProgram(selectedRows, option, machineId)
+          ctx.$q.dialog({
+            component: DeleteResultsDialog,
+            componentProps: {
+              machine: editor.machine,
+              results: response,
+            },
+          })
           await editor.refreshAllPrograms()
         } catch (error) {
           console.error('Error during program deletion:', error)
         }
+
         editor.isLoading = false
         editor.selectedPrograms = []
         return true
@@ -290,7 +299,7 @@ registerCommand(() => {
           componentProps: {
             programNos: selectedRows.map(row => row.programNo),
           },
-        }).onOk(async (option: string) => {
+        }).onOk(async (option: ProgramDeletionSource) => {
           await contextMenuStore.deleteProgramFromMachine(selectedRows, machines, option)
           await editor.refreshAllPrograms()
           return true
@@ -487,6 +496,22 @@ registerCommand(() => {
     async execute(ctx: any, machine: { id: number, name: string }, results: CopyAndSendResult[]) {
       ctx.$q.dialog({
         component: CopyAndSendResultsDialog,
+        componentProps: {
+          machine,
+          results,
+        },
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'showDeleteResultsDialog',
+    async execute(ctx: any, machine: { id: number, name: string }, results: BulkDeletionResponse) {
+      ctx.$q.dialog({
+        component: DeleteResultsDialog,
         componentProps: {
           machine,
           results,

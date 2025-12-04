@@ -363,8 +363,8 @@
       "machineOffline": "{machineId} numaralı makine çevrimdışı"
     },
     "delete": {
-      "success": "{programNo} numaralı program başarıyla silindi.",
-      "fail": "{programNo} numaralı program silinirken hata oluştu."
+      "success": "Program başarıyla silindi.",
+      "fail": "Program silinirken hata oluştu."
     },
     "getInMachine": {
       "success": "{programNo} numaralı program {machine} makinesine başarıyla alındı.",
@@ -678,6 +678,12 @@
     "downloadError": "İndirme sırasında hata oluştu",
     "programList": "program_listesi",
     "printProgram": "Program Yazdır"
+  },
+  "deleteResultsDialog": {
+    "title": "Silme Sonuçları",
+    "program": "Program",
+    "deletedFromMachine": "Makineden Silindi",
+    "deletedFromDb": "Veritabanından Silindi"
   },
   "download": "İndir"
 }

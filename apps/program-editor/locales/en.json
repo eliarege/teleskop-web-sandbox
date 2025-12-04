@@ -360,8 +360,8 @@
       "machineOffline": "Machine {machineId} is offline"
     },
     "delete": {
-      "success": "Program {programNo} is deleted successfully.",
-      "fail": "An error occured while deleting program {programNo}."
+      "success": "Program is deleted successfully.",
+      "fail": "An error occured while deleting program."
     },
     "getInMachine": {
       "success": "Program {programNo} is successfully taken in machine {machine}.",
@@ -660,6 +660,12 @@
     "downloadError": "An error occurred while downloading",
     "programList": "program_list",
     "printProgram": "Print Program"
+  },
+  "deleteResultsDialog": {
+    "title": "Delete Results",
+    "program": "Program",
+    "deletedFromMachine": "Deleted From Machine",
+    "deletedFromDb": "Deleted From DB"
   },
   "download": "Download"
 }

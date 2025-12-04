@@ -5,11 +5,14 @@ const props = defineProps<{
 }>()
 
 const maxLength = computed(() => props.maxLength ?? 15)
-const truncated = computed(() =>
-  props.text.length > maxLength.value
+const truncated = computed(() => {
+  if (!props.text)
+    return ''
+
+  return props.text.length > maxLength.value
     ? `${props.text.slice(0, maxLength.value)}…`
-    : props.text,
-)
+    : props.text
+})
 </script>
 
 <template>
