@@ -5,12 +5,13 @@ import pMemoize from 'p-memoize'
 import { LRUCache } from 'lru-cache'
 import { config } from '../config'
 import type { TeleskopDatabase } from '../types'
+import { BatchParameterType } from '../enums'
 
 interface MachineStatus {
   id: number
   runningJobOrder: string | null
   runningBatchKey: number | null
-  runningFabricWeight: string | number | null
+  runningFabricWeight: number | null
   runningPlankey: number | null
   erp: Record<string, unknown> | null
   [key: string]: any
@@ -22,6 +23,11 @@ const machineStatusCache = new LRUCache<string, MachineStatus[]>({
   ttl: config.machineStatusMaxAge,
   ttlAutopurge: false,
 })
+const machineParameterNameCache = new LRUCache<string, { machineId: number, parameterName: string | null }[]>({
+  ttl: config.machineParameterNamesMaxAge,
+  ttlAutopurge: false,
+})
+
 const fetchMachineStatus = pMemoize(async (teleskop: Kysely<TeleskopDatabase>): Promise<MachineStatus[]> => {
   return await teleskop
     .selectFrom('BFMACHINES as m')
@@ -101,12 +107,6 @@ const fetchMachineStatus = pMemoize(async (teleskop: Kysely<TeleskopDatabase>): 
       'totals.totalConsumedElectricity',
       sql<Record<string, any> | null>`null`.as('erp'),
       sql<number>`
-        (SELECT
-          COALESCE(TRY_CAST(ERPVALUE as float),0)
-        FROM DYBFBATCHPLANERPPARAMETERS
-        WHERE ERPFIELDNAME = 'Weight'
-        AND PLANKEY = b.PLANKEY)`.as('runningFabricWeight'),
-      sql<number>`
         (SELECT TOP 1
             DATEDIFF(SECOND, b.STARTTIME, GETDATE())
          FROM BAACTUALPRGSTEPS b
@@ -131,6 +131,25 @@ const fetchMachineStatus = pMemoize(async (teleskop: Kysely<TeleskopDatabase>): 
 }, {
   cacheKey: () => 'machineStatus',
   cache: machineStatusCache,
+})
+
+const fetchWeightParameterNames = pMemoize(async (
+  teleskop: Kysely<TeleskopDatabase>,
+): Promise<{ machineId: number, parameterName: string | null }[]> => {
+  return await teleskop
+    .selectFrom('BFMACHBATCHPARAMETERS as p')
+    .leftJoin('BFMACHBATCHPARAMETERTYPES as t', join => join
+      .onRef('p.MACHINEID', '=', 't.MACHINEID')
+      .onRef('p.BATCHPARAMETERID', '=', 't.PARAMID'))
+    .select([
+      'p.MACHINEID as machineId',
+      'p.PARAMSTRING as parameterName',
+    ])
+    .where('t.PARAMTYPEID', '=', BatchParameterType.FabricWeight)
+    .execute()
+}, {
+  cacheKey: () => 'weightParameterNames',
+  cache: machineParameterNameCache,
 })
 
 const fetchJobOrderErpParameters = pMemoize(async (
@@ -172,9 +191,28 @@ const route: FastifyPluginAsync = async (fastify) => {
     fastify.get(alias, async function () {
       const { teleskop } = this
       const machineStatuses = await fetchMachineStatus(teleskop)
+      const weightParameterNames = await fetchWeightParameterNames(teleskop)
+      const machineIdToWeightParamName: Record<number, string | null> = {}
+      for (const item of weightParameterNames) {
+        machineIdToWeightParamName[item.machineId] = item.parameterName
+      }
+
       for (const status of machineStatuses) {
         if (status.runningJobOrder && status.runningBatchKey && status.runningBatchKey > 0) {
-          status.erp = await fetchJobOrderErpParameters(teleskop, status.runningJobOrder, status.runningBatchKey)
+          status.erp = await fetchJobOrderErpParameters(
+            teleskop,
+            status.runningJobOrder,
+            status.runningBatchKey,
+          )
+          const paramName = machineIdToWeightParamName[status.id]
+          if (paramName) {
+            const weightValue = Number(status.erp[paramName])
+            if (!Number.isNaN(weightValue)) {
+              status.runningFabricWeight = weightValue
+            }
+          }
+          // Ensure runningFabricWeight is at least 0 for running job orders
+          status.runningFabricWeight ??= 0
         }
       }
       return machineStatuses

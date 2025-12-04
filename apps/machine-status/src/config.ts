@@ -59,13 +59,8 @@ export const config = defineConfiguration({
     type: 'integer',
     default: 10_000,
   },
-  machineErpMappingsMaxAge: {
-    env: 'MACHINE_ERP_MAPPINGS_MAX_AGE',
-    type: 'integer',
-    default: 3600_000,
-  },
-  jobOrderErpParametersMaxAge: {
-    env: 'JOB_ORDER_ERP_PARAMETERS_MAX_AGE',
+  machineParameterNamesMaxAge: {
+    env: 'MACHINE_PARAMETER_NAMES_MAX_AGE',
     type: 'integer',
     default: 60_000,
   },
