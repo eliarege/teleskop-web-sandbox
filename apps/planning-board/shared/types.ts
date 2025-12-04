@@ -27,7 +27,6 @@ export interface MachineStatus {
   runningPhaseNo: number
   runningPhaseName: string
   runningPhaseStepNo: number
-  runningMachineCapacity: number
   reqRecipeIndex: number
   reqOrderIndex: number
   reqOperationCode: number

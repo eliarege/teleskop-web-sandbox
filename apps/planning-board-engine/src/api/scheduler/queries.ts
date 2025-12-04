@@ -428,7 +428,6 @@ export async function getMachines(idList?: number[]) {
       runningPhaseNo: 's.RUNNING_PHASENO',
       runningPhaseName: 's.RUNNING_PHASENAME',
       runningPhaseStepNo: 's.RUNNING_PHASESTEPNO',
-      runningMachineCapacity: 'b.FABRIC_WEIGHT',
       reqRecipeIndex: 's.REQ_RECIPEINDEX',
       reqOrderIndex: 's.REQ_REQORDERINDEX',
       reqOperationCode: 's.REQ_OPERATIONCODE',

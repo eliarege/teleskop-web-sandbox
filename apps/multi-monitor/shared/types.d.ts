@@ -24,7 +24,6 @@ export interface MachineDataRaw {
   runningPhaseNo: number
   runningPhaseName: string
   runningPhaseStepNo: number
-  runningMachineCapacity: number
   runningFabricWeight: number
   reqRecipeIndex: number
   reqOrderIndex: number

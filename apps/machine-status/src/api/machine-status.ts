@@ -78,7 +78,7 @@ const fetchMachineStatus = pMemoize(async (teleskop: Kysely<TeleskopDatabase>): 
       's.RUNNING_PHASENO as runningPhaseNo',
       's.RUNNING_PHASENAME as runningPhaseName',
       's.RUNNING_PHASESTEPNO as runningPhaseStepNo',
-      'b.FABRIC_WEIGHT as runningMachineCapacity',
+      'b.FABRIC_WEIGHT as runningFabricWeight',
       's.REQ_RECIPEINDEX as reqRecipeIndex',
       's.REQ_REQORDERINDEX as reqOrderIndex',
       's.REQ_OPERATIONCODE as reqOperationCode',
@@ -180,7 +180,7 @@ const fetchJobOrderErpParameters = pMemoize(async (
   }
   return erp
 }, {
-  cacheKey: ([_, _jobOrder, batchKey]) => batchKey.toString(),
+  cacheKey: v => v[2].toString(), // batchKey
   cache: erpParameterCache,
 })
 
