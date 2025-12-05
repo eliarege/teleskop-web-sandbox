@@ -9,8 +9,8 @@ import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../consta
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
-import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
-import { AdditiveType, CommandType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
+import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import { AdditiveType, CommandType, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
@@ -2069,6 +2069,163 @@ export class MachineController {
       return isOnline
     } catch (error) {
       return false
+    }
+  }
+
+  /**
+   * Belirtilen kriterlere göre program adımlarını arar
+   * @param {FindInProgramsParams} params - Arama parametreleri
+   * @returns {Promise<any>} - Arama sonuçları
+   */
+  @withTransaction
+  async findInPrograms(params: FindInProgramsParams): Promise<any> {
+    const { machineIds, commandNo, searchCriteria, stepRange } = params
+
+    try {
+      if (!searchCriteria || searchCriteria.length === 0) {
+        let query = this.trx
+          .distinct()
+          .select({
+            machineId: 'M.MACHINEID',
+            machineName: 'M.MACHINECODE',
+            programNo: 'H.PROGNO',
+            programName: 'H.NAME',
+            stepNo: 'S.MAINSTEP',
+            parallelStep: 'S.PARALELSTEP',
+            currentCommandNo: 'S.COMMANDNO',
+          })
+          .from('BFMACHINES as M')
+          .join('BFMASTERPRGHEADER as H', 'M.MACHINEID', 'H.MACHINEID')
+          .join('BFMASTERSTEPS as S', function () {
+            this.on('H.MACHINEID', '=', 'S.MACHINEID')
+              .andOn('H.PROGNO', '=', 'S.PROGNO')
+          })
+          .whereIn('M.MACHINEID', machineIds)
+          .andWhere('S.COMMANDNO', commandNo)
+          .andWhere('M.USEINTELESKOP', 1)
+          .andWhere('M.INUSE', 1)
+
+        if (stepRange) {
+          query = query.andWhereBetween('S.MAINSTEP', [stepRange.start, stepRange.end])
+        }
+
+        const results = await query
+
+        return {
+          success: true,
+          operation: 'find',
+          count: results.length,
+          results: results.map(row => ({
+            machineId: row.machineId,
+            machineName: row.machineName,
+            programNo: row.programNo,
+            programName: row.programName,
+            stepNo: row.stepNo,
+            parallelStep: row.parallelStep,
+            currentCommandNo: row.currentCommandNo,
+            matchedParameter: null,
+            matchedIO: null,
+          })),
+        }
+      }
+
+      let query = this.trx
+        .distinct()
+        .select({
+          machineId: 'M.MACHINEID',
+          machineName: 'M.MACHINECODE',
+          programNo: 'H.PROGNO',
+          programName: 'H.NAME',
+          stepNo: 'S.MAINSTEP',
+          parallelStep: 'S.PARALELSTEP',
+          currentCommandNo: 'S.COMMANDNO',
+        })
+        .from('BFMACHINES as M')
+        .join('BFMASTERPRGHEADER as H', 'M.MACHINEID', 'H.MACHINEID')
+        .join('BFMASTERSTEPS as S', function () {
+          this.on('H.MACHINEID', '=', 'S.MACHINEID')
+            .andOn('H.PROGNO', '=', 'S.PROGNO')
+        })
+        .whereIn('M.MACHINEID', machineIds)
+        .andWhere('S.COMMANDNO', commandNo)
+        .andWhere('M.USEINTELESKOP', 1)
+        .andWhere('M.INUSE', 1)
+
+      // Apply step range filter
+      if (stepRange) {
+        query = query.andWhereBetween('S.MAINSTEP', [stepRange.start, stepRange.end])
+      }
+
+      // Apply search criteria filters using EXISTS subqueries
+      searchCriteria.forEach((criteria) => {
+        if (criteria.type === 'parameter' && isDef(criteria.parameterIndex)) {
+          // Use EXISTS subquery to check if parameter exists with criteria
+          query = query.whereExists(function (this: any) {
+            this.select(1)
+              .from('BFMASTERSTEPPARAMS as P')
+              .whereRaw('P.MACHINEID = S.MACHINEID')
+              .andWhereRaw('P.PROGNO = S.PROGNO')
+              .andWhereRaw('P.MAINSTEP = S.MAINSTEP')
+              .andWhereRaw('P.PARALELSTEP = S.PARALELSTEP')
+              .andWhere('P.PARAMETERINDEX', criteria.parameterIndex!)
+
+            if (criteria.parameterType === ParameterType.NUMBER) {
+              if (criteria.comparison === 'EQUALS') {
+                this.andWhere('P.VALUE', String(criteria.parameterValue))
+              } else if (criteria.comparison === 'GREATER_THAN') {
+                this.andWhereRaw('CAST(REPLACE(P.VALUE, \',\', \'.\') AS FLOAT) > ?', [Number(criteria.parameterValue)])
+              } else if (criteria.comparison === 'LESS_THAN') {
+                this.andWhereRaw('CAST(REPLACE(P.VALUE, \',\', \'.\') AS FLOAT) < ?', [Number(criteria.parameterValue)])
+              } else if (criteria.comparison === 'BETWEEN' && typeof criteria.parameterValue === 'string') {
+                const [min, max] = criteria.parameterValue.split('-').map(Number)
+                this.andWhereRaw('CAST(REPLACE(P.VALUE, \',\', \'.\') AS FLOAT) BETWEEN ? AND ?', [min, max])
+              }
+            } else if (criteria.parameterType === ParameterType.SELECT) {
+              this.andWhere('P.VALUE', String(criteria.parameterValue))
+            }
+          })
+        } else if (criteria.type === 'io' && isDef(criteria.ioIndex)) {
+          if (criteria.ioValues && criteria.ioValues.length > 0) {
+            query = query.whereExists(function (this: any) {
+              this.select(1)
+                .from('BFMASTERSTEPSELECTIONLIST as SL')
+                .whereRaw('SL.MACHINEID = S.MACHINEID')
+                .andWhereRaw('SL.PROGNO = S.PROGNO')
+                .andWhereRaw('SL.MAINSTEP = S.MAINSTEP')
+                .andWhereRaw('SL.PARALELSTEP = S.PARALELSTEP')
+                .andWhere('SL.IOINDEX', criteria.ioIndex!)
+                .groupBy('SL.MACHINEID', 'SL.PROGNO', 'SL.MAINSTEP', 'SL.PARALELSTEP')
+                .havingRaw(`
+                  COUNT(*) = ? AND
+                  ${criteria.ioValues.map((ioValue: any) => {
+                    const dbType = ioValue.type - 1
+                    return `COUNT(CASE WHEN SL.IOTYPE = ${dbType} AND SL.SELECTEDIOID = ${ioValue.physicalId} THEN 1 END) = 1`
+                  }).join(' AND ')}
+                `, [criteria.ioValues.length])
+            })
+          }
+        }
+      })
+
+      const results = await query
+
+      return {
+        success: true,
+        operation: 'find',
+        count: results.length,
+        results: results.map(row => ({
+          machineId: row.machineId,
+          machineName: row.machineName,
+          programNo: row.programNo,
+          programName: row.programName,
+          stepNo: row.stepNo,
+          parallelStep: row.parallelStep,
+          currentCommandNo: row.currentCommandNo,
+        })),
+      }
+    } catch (error) {
+      console.error('Error in findInPrograms:', error)
+      throw new Error('Failed to search in programs', { cause: error })
     }
   }
 }

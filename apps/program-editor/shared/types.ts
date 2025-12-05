@@ -559,3 +559,33 @@ export interface BulkDeletionResponse<T extends ProgramDeletionSource = ProgramD
   totalFailed: number
   results: DeletionResult<T>[]
 }
+
+// #region Find in Programs
+export interface FindInProgramsParams {
+  machineIds: number[]
+  commandNo: number
+  searchCriteria: SearchCriteria[]
+  stepRange?: {
+    start: number
+    end: number
+  }
+}
+
+type SearchCriteria = ParameterCriteria | IOCriteria
+
+interface ParameterCriteria {
+  type: 'parameter'
+  parameterIndex: number
+  parameterValue: string
+  parameterType: ParameterTypeValue
+  comparison?: ComparisonOperator
+}
+
+interface IOCriteria {
+  type: 'io'
+  ioIndex: number
+  ioValues: any[]
+}
+
+type ComparisonOperator = 'EQUALS' | 'GREATER_THAN' | 'LESS_THAN' | 'BETWEEN'
+// #endregion

@@ -34,11 +34,21 @@ const initialTickeds = computed(() =>
 )
 
 const ticked = ref<string[]>(initialTickeds.value)
-const selectAll = ref(false)
 
 const selectedMachines = computed(() =>
   props.allMachines.filter(machine => ticked.value.includes(getTicked(machine))),
 )
+
+// // Initialize ticked values from props.selectedMachines if provided
+// onMounted(() => {
+//   if (props.selectedMachines && props.selectedMachines.length > 0) {
+//     ticked.value = props.selectedMachines.map(machine => `${machine.groupId}-${machine.id}`)
+//   }
+// })
+
+// const selectedMachines = computed(() => {
+//   return props.allMachines.filter(machine => ticked.value.includes(`${machine.groupId}-${machine.id}`))
+// })
 
 const nodes = computed(() => {
   if (!props.machineGroups?.length || !props.allMachines?.length)
@@ -63,17 +73,26 @@ const expanded = ref<number[]>(
   props.machineGroups.map(g => g.groupId) ?? [],
 )
 
+const selectAll = computed(() => {
+  if (props.singleSelection)
+    return false
+
+  const allAvailable = nodes.value.flatMap(group =>
+    group.children.filter(m => !m.disabled).map(m => m.id),
+  )
+
+  return allAvailable.length > 0 && allAvailable.every(id => ticked.value.includes(id))
+})
+
 function selectAllMachines() {
   if (props.singleSelection)
     return
 
-  selectAll.value = !selectAll.value
-
-  if (selectAll.value) {
+  if (!selectAll.value) {
     const allAvailable = nodes.value.flatMap(group =>
       group.children.filter(m => !m.disabled).map(m => m.id),
     )
-    ticked.value = [...initialTickeds.value, ...allAvailable]
+    ticked.value = [...new Set([...initialTickeds.value, ...allAvailable])]
   } else {
     ticked.value = initialTickeds.value.filter(id => disabledTickeds.value.includes(id))
   }
@@ -118,17 +137,17 @@ watch(ticked, (newVal, oldVal) => {
 </script>
 
 <template>
-  <QDialog
+  <q-dialog
     ref="dialogRef"
     class="select-none"
     @hide="onDialogHide"
   >
-    <QCard>
-      <QCardSection class="w-100">
+    <q-card class="w-100">
+      <q-card-section>
         <div class="text-h6 flex">
           {{ t(`contextMenu.${props.type}.title`) }}
-          <QSpace />
-          <QBtn
+          <q-space />
+          <q-btn
             icon="close"
             class="text-gray-4 dark:text-gray-6"
             flat
@@ -137,9 +156,9 @@ watch(ticked, (newVal, oldVal) => {
             @click="onDialogCancel"
           />
         </div>
-      </QCardSection>
+      </q-card-section>
 
-      <QCardSection class="text-gray-8 dark:text-gray-3">
+      <q-card-section class="pt-0 text-gray-8 dark:text-gray-3">
         <div class="text-sm mb-2">
           {{ t(`contextMenu.${props.type}.selectMachine`) }}
         </div>
@@ -167,7 +186,7 @@ watch(ticked, (newVal, oldVal) => {
         </div>
 
         <div class="flex gap-4 justify-start p-2">
-          <QBtn
+          <q-btn
             v-if="!props.singleSelection"
             class="w-40 bg-gray-1 dark:bg-dark-4"
             :label="selectAll ? t('dropAll') : t('selectAll')"
@@ -176,7 +195,7 @@ watch(ticked, (newVal, oldVal) => {
             @click="selectAllMachines"
           />
 
-          <QBtn
+          <q-btn
             class="w-40 bg-gray-1 dark:bg-dark-4"
             :label="expanded.length ? t('collapseAll') : t('expandAll')"
             dense
@@ -184,27 +203,26 @@ watch(ticked, (newVal, oldVal) => {
             @click="expandToggle"
           />
         </div>
-      </QCardSection>
+      </q-card-section>
 
-      <QCardActions
+      <q-card-actions
         align="right"
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
-        <QBtn
+        <q-btn
           :label="t('cancel')"
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
           @click="onDialogCancel"
         />
-        <QBtn
+        <q-btn
           class="q-mr-sm text-gray-1 dark:text-gray-2"
           :class="props.type === 'deleteFromMultiMachine' ? 'bg-red-6' : 'bg-primary'"
-          :disabled="selectedMachines.length === 0"
           :label="t(`contextMenu.${props.type}.operate`)"
           flat
           @click="onDialogOK(selectedMachines)"
         />
-      </QCardActions>
-    </QCard>
-  </QDialog>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>

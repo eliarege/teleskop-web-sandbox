@@ -94,7 +94,9 @@
     "writeProgramSettings": "Program Write Settings",
     "commandDetails": "Command Details",
     "checkErrors": "Check Errors",
-    "isNewVersion": "Is New Version"
+    "isNewVersion": "Is New Version",
+    "findAndReplace": "Find Program",
+    "checkProgram": "Check Program"
   },
   "program": {
     "name": "Program Name",
@@ -223,6 +225,7 @@
   "close": "Close",
   "save": "Save",
   "print": "Print",
+  "download": "Download",
   "message": {
     "delete_program": "Delete program from Teleskop",
     "program_not_deleted": "Program could not be deleted from Teleskop"
@@ -411,6 +414,11 @@
       "selectMachine": "Select machines that you want to delete the programs.",
       "operate": "Delete"
     },
+    "selectMachine": {
+      "title": "Select Machine",
+      "selectMachine": "Please select a machine.",
+      "operate": "OK"
+    },
     "pasteNotification": {
       "success": "Program {name} is successfully saved with program no {programNo}.",
       "fail": "An error occured while saving program {name} with program no {programNo}."
@@ -430,11 +438,6 @@
     "updateHeaderNotification": {
       "success": "Update header operation is succeed for program with program no {programNo}.",
       "fail": "Update header operation is failed for program with program no {programNo}."
-    },
-    "selectMachine": {
-      "title": "Machine Selection",
-      "selectMachine": "Select machines that you want to perform the operation on.",
-      "operate": "Ok"
     }
   },
   "exportExcelDialog": {
@@ -667,5 +670,47 @@
     "deletedFromMachine": "Deleted From Machine",
     "deletedFromDb": "Deleted From DB"
   },
-  "download": "Download"
+  "findAndReplace": {
+    "title": "Find Program",
+    "machine": "Machine",
+    "programNo": "Program No",
+    "program": "Program",
+    "step": "Step",
+    "actions": "Actions",
+    "thisMachine": "This Machine ({machineName})",
+    "selectedMachines": "Selected Machines",
+    "selectMachine": "Select Machine",
+    "machinesSelected": "{count} machines selected",
+    "selectedMachinesList": "Selected Machines List",
+    "noMachinesSelected": "No machines selected",
+    "searchScope": "Search Scope",
+    "searchInSelectedSteps": "Search in Selected Steps",
+    "startStepNo": "Start Step No",
+    "endStepNo": "End Step No",
+    "selectedStepCount": "{count} steps selected",
+    "searchingAllSteps": "Searching all steps",
+    "find": "Find",
+    "searchCriteria": "Search Criteria",
+    "addSearchCriteria": "Add Search Criteria",
+    "selectCommandFirst": "Select command first",
+    "deleteSelectedCriteria": "Delete Selected Criteria",
+    "deleteSearchCriteria": "Delete Search Criteria",
+    "equals": "Equals",
+    "greaterThan": "Greater Than",
+    "lessThan": "Less Than",
+    "between": "Between",
+    "comparisonType": "Comparison Type",
+    "parameterDefaultValue": "Parameter Default Value",
+    "parameterMinValue": "Parameter Min Value",
+    "parameterMaxValue": "Parameter Max Value",
+    "searchValue": "Search Value",
+    "minValue": "Min Value",
+    "maxValue": "Max Value",
+    "selectParameterOrIO": "Select Parameter or IO",
+    "selectAtLeastOneIOValue": "Select at least one IO value",
+    "noMatchingResults": "No matching results found",
+    "openProgram": "Open Program",
+    "searchError": "Search error occurred",
+    "selectCommand": "Select Command"
+  }
 }

@@ -12,7 +12,7 @@ export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
   const machineId = Number(machine_id)
   if (!Number.isInteger(machineId)) {
-    throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo: 0 })
+    throw new PError('INVALID_MACHINE_NUMBER', { machineId })
   }
 
   const machine = await machineStore.get(machineId)

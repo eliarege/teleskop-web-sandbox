@@ -18,6 +18,7 @@ export type ErrorCode =
   | 'INVALID_VERSION_NUMBER'
   | 'INVALID_VERSION_LIST'
   | 'PROGRAM_VERSION_NOT_FOUND'
+  | 'INVALID_COMMAND_NUMBER'
   | 'COMMAND_NOT_FOUND'
   | 'PROGRAM_IO_NOT_FOUND'
   | 'MACHINE_PARAMETER_NOT_FOUND'
@@ -54,6 +55,11 @@ export interface ErrorTreatmentLimitDetail {
 }
 
 export interface ErrorCommandDetail {
+  machineId: number
+  commandNo: number
+}
+
+export interface ErrorProgramCommandDetail {
   machineId: number
   programNo: number
   commandNo: number
@@ -141,14 +147,24 @@ export interface ErrorNoCommandsFound extends PError {
   detail: ErrorProgramDetail
 }
 
-export interface ErrorInvalidMachineOrProgramNumber extends PError {
-  code: 'INVALID_MACHINE_OR_PROGRAM_NUMBER'
+export interface ErrorInvalidMachineNumber extends PError {
+  code: 'INVALID_MACHINE_NUMBER'
+  detail: ErrorMachineDetail
+}
+
+export interface ErrorInvalidProgramNumber extends PError {
+  code: 'INVALID_PROGRAM_NUMBER'
   detail: ErrorProgramDetail
+}
+
+export interface ErrorInvalidCommandNumber extends PError {
+  code: 'INVALID_COMMAND_NUMBER'
+  detail: ErrorCommandDetail
 }
 
 export interface ErrorCommandNotFound extends PError {
   code: 'COMMAND_NOT_FOUND'
-  detail: ErrorCommandDetail
+  detail: ErrorProgramCommandDetail
 }
 
 export interface ErrorProgramIoNotFound extends PError {
@@ -189,7 +205,9 @@ export type AnyError =
   | ErrorProgramUpdate
   | ErrorTreatmentLimit
   | ErrorNoCommandsFound
-  | ErrorInvalidMachineOrProgramNumber
+  | ErrorInvalidMachineNumber
+  | ErrorInvalidProgramNumber
+  | ErrorInvalidCommandNumber
   | ErrorCommandNotFound
   | ErrorProgramIoNotFound
   | ErrorMachineParameterNotFound
@@ -220,7 +238,8 @@ export class PError extends Error {
   constructor(code: 'INVALID_VERSION_NUMBER', detail: ErrorProgramArchiveDetail)
   constructor(code: 'INVALID_VERSION_LIST', detail: any)
   constructor(code: 'PROGRAM_VERSION_NOT_FOUND', detail: ErrorProgramArchiveDetail)
-  constructor(code: 'COMMAND_NOT_FOUND', detail: ErrorCommandDetail)
+  constructor(code: 'INVALID_COMMAND_NUMBER', detail: ErrorCommandDetail)
+  constructor(code: 'COMMAND_NOT_FOUND', detail: ErrorProgramCommandDetail)
   constructor(code: 'PROGRAM_IO_NOT_FOUND', detail: ErrorProgramIoDetail)
   constructor(code: 'MACHINE_PARAMETER_NOT_FOUND', detail: ErrorMachineParameterDetail)
   constructor(code: 'MACHINE_PARAMETER_TYPE_ERROR', detail: ErrorMachineParameterTypeDetail)

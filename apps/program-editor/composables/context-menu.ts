@@ -313,6 +313,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
           }
         } catch (error) {
           notifyError(t(`contextMenu.getInMachine.fail`, { name: program.name, machine: machine.name }))
+        } finally {
+          editor.isLoading = false
         }
       }
     }
