@@ -14,6 +14,11 @@ function toggleSelectAll() {
   selectAll.value = !selectAll.value
   selectedIcons.value = selectAll.value ? fullSelect : 0
 }
+
+function toggleReverseSelection() {
+  selectedIcons.value = selectedIcons.value ^ fullSelect
+  selectAll.value = selectedIcons.value === fullSelect
+}
 </script>
 
 <template>
@@ -38,21 +43,22 @@ function toggleSelectAll() {
         </div>
       </q-card-section>
 
-      <q-card-section>
+      <q-card-section class="pt-0">
         <div class="text-h8 w-100 mb-2 color-gray-6 dark:text-gray-4">
           {{ t('iconSettingsDialog.selectIcons') }}
         </div>
-        <div class="h-120 overflow-auto border-2 rounded pl-3 dark:border-dark-3">
+        <div class="h-110 overflow-auto border-1 rounded pl-3 dark:border-dark-3 p-3">
           <div
             v-for="commandType in commandTypeMaps"
             :key="commandType.index"
-            class="flex items-center"
+            class="flex items-center mb-2"
           >
             <ChemIconCheckbox
               v-model="selectedIcons"
               :command-index="commandType.index"
               :label="t(`commandType.${commandType.title}`)"
               class="mr-2"
+              dense
             />
             <UnoIcon
               :key="commandType.icon"
@@ -61,11 +67,20 @@ function toggleSelectAll() {
             />
           </div>
         </div>
-        <div>
-          <q-checkbox
-            :model-value="selectedIcons === fullSelect"
+        <div class="flex gap-4 justify-start p-2">
+          <q-btn
+            class="w-40 bg-gray-1 dark:bg-dark-4"
             :label="selectAll ? t('dropAll') : t('selectAll')"
-            @update:model-value="toggleSelectAll"
+            dense
+            flat
+            @click="toggleSelectAll"
+          />
+          <q-btn
+            class="w-40 bg-gray-1 dark:bg-dark-4"
+            :label="t('selectReverse')"
+            dense
+            flat
+            @click="toggleReverseSelection"
           />
         </div>
       </q-card-section>
@@ -74,13 +89,13 @@ function toggleSelectAll() {
         align="right"
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
-        <QBtn
+        <q-btn
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           :label="t('menu.close')"
           flat
           @click="onDialogCancel"
         />
-        <QBtn
+        <q-btn
           :label="t('apply')"
           class="bg-primary text-white"
           flat

@@ -20,17 +20,17 @@ const originalCommandTypes = ref<CommandType[]>([])
 
 const commandTypeMaps = reactive<commandTypeMap[]>([
   { ref: [], value: 100, title: t('chemicalRequestCommands'), icon: 'i-carbon-chemistry', color: '#00CC00' },
-  { ref: [], value: 101, title: t('manualChemicalRequestCommands'), icon: 'i-carbon-chemistry', color: '#00CC00' },
+  { ref: [], value: 101, title: t('manualChemicalRequestCommands'), icon: 'i-carbon-chemistry', color: '#E67E22' },
   { ref: [], value: 200, title: t('paintRequestCommands'), icon: 'i-mingcute:paint-line', color: '#FF00FF' },
   { ref: [], value: 201, title: t('manualPaintRequestCommands'), icon: 'i-mingcute:paint-line', color: '#E67E22' },
   { ref: [], value: 300, title: t('chemicalTankTransferCommands'), icon: 'i-ri-exchange-2-line', color: '#228B22' },
   { ref: [], value: 400, title: t('paintTankTransferCommands'), icon: 'i-ri-exchange-2-line', color: '#FF00FF' },
   { ref: [], value: 500, title: t('reserveTankTransferCommands'), icon: 'i-ri-exchange-2-line', color: '#0000FF' },
   { ref: [], value: 600, title: t('pHControl'), icon: 'i-material-symbols:water-ph-outline', color: '#0000FF' },
-  { ref: [], value: 700, title: t('takeSample'), icon: 'i-ph:eyedropper-sample-fill', color: '#0000FF' },
+  { ref: [], value: 700, title: t('takeSample'), icon: 'i-ph:eyedropper', color: '#0000FF' },
   { ref: [], value: 800, title: t('saltRequestCommands'), icon: 'i-tabler:salt', color: '#00CC00' },
   { ref: [], value: 810, title: t('genericMaterial1Request'), icon: 'i-streamline:interface-arrows-data-transfer-vertical-arrow-square-data-internet-transfer-network-vertical', color: '#00CC00' },
-  { ref: [], value: 820, title: t('genericMaterial2Request'), icon: 'i-streamline:interface-arrows-data-transfer-vertical-arrow-square-data-internet-transfer-network-vertical', color: '#00CC00' },
+  { ref: [], value: 820, title: t('genericMaterial2Request'), icon: 'i-streamline:interface-arrows-data-transfer-vertical-arrow-square-data-internet-transfer-network-vertical', color: '#E67E22' },
   { ref: [], value: 1000, title: t('manualMeasurementCommands'), icon: 'i-mdi:hydraulic-oil-level', color: '#1E90FF' },
 ])
 
