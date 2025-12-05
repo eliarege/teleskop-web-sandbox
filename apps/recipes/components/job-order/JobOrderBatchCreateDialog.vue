@@ -231,23 +231,63 @@ function getRecipeLabel(header: RecipeProgramMaster) {
   return `${header.recipeId} - ${header.recipeName} (${header.machineId})`
 }
 function getAllMaterialsFromSteps(program: RecipeMasterStep) {
-  const materials = program.steps.flatMap(step =>
+  // Get regular step materials
+  const regularMaterials = program.steps.flatMap(step =>
     step.materials.map(material => ({
       ...material,
       calculated: computed(() => calculateAmount(material, program)),
+      isIntermediateStep: false,
     })),
   )
-  return materials.sort((a, b) => a.orderNo - b.orderNo)
+
+  // Get manual step materials (intermediate steps)
+  const manualMaterials = (program.manualSteps || []).flatMap(manualStep =>
+    manualStep.materials.map(material => ({
+      ...material,
+      calculated: computed(() => calculateAmount(material, program)),
+      isIntermediateStep: true,
+      displayOrderNo: manualStep.nextStep, // For sorting: place before the nextStep
+    })),
+  )
+
+  // Combine and sort: regular materials by orderNo, manual materials placed before their nextStep
+  const allMaterials = [...regularMaterials, ...manualMaterials]
+  return allMaterials.sort((a, b) => {
+    const aOrder = a.isIntermediateStep ? a.displayOrderNo - 0.5 : a.orderNo
+    const bOrder = b.isIntermediateStep ? b.displayOrderNo - 0.5 : b.orderNo
+    return aOrder - bOrder
+  })
+}
+
+function getIntermediateStepStyle(isDarkMode: boolean) {
+  // Amber styling for intermediate/manual steps
+  return isDarkMode
+    ? 'background-color: #78350f; color: #fef3c7;'
+    : 'background-color: #fef3c7; color: #78350f;'
 }
 
 function updateRecipe(val: RecipeProgramMaster | undefined) {
   recipeHeader.value = { ...val, ...(props.variant || {}) }
   getRecipeSteps()
 }
-function updateAmount(programIndex: number, row: RecipeMasterMaterial) {
+function updateAmount(programIndex: number, row: any) {
+  // For intermediate steps, update in manualSteps
+  if (row.isIntermediateStep) {
+    const program = selectedRecipe.value[programIndex]
+    const manualStep = program.manualSteps?.find(ms => ms.nextStep === row.nextStep && ms.type === row.type)
+    const material = manualStep?.materials.find(m => m.materialCode === row.materialCode)
+    if (material) {
+      material.amount = row.amount
+    }
+    return
+  }
+
+  // For regular steps
   const step = selectedRecipe.value[programIndex].steps.find(step => step.stepNo === row.programIndex && step.type === row.type)
-  const material = step!.materials.find(material => material.materialCode === row.materialCode && material.orderNo === row.orderNo)
-  material!.amount = row.amount
+  const material = step?.materials.find(material => material.materialCode === row.materialCode && material.orderNo === row.orderNo)
+  if (material) {
+    material.amount = row.amount
+  }
 }
 function calculateAmount(row: any, program: any) {
   const weightSource = programWeightsEnabled.value ? program.totalWeight : jobOrderParams.value.totalWeight
@@ -374,11 +414,20 @@ async function onSave() {
       selectedValue: p.selectedValue,
     }))
   selectedRecipe.value.forEach((program) => {
+    // Calculate amounts for regular step materials
     program.steps.forEach((step) => {
       step.materials.forEach((material) => {
         material.calculated = calculateAmountVal(material, program)
       })
     })
+    // Calculate amounts for manual step materials
+    if (program.manualSteps) {
+      program.manualSteps.forEach((manualStep) => {
+        manualStep.materials.forEach((material) => {
+          material.calculated = calculateAmountVal(material, program)
+        })
+      })
+    }
   })
 
   // Check capacity for each selected machine
@@ -610,6 +659,7 @@ async function onCancel() {
           <QMenu
             v-model="showRecipeOptions"
             no-parent-event
+            no-focus
             max-height="300px"
             fit
           >
@@ -931,16 +981,17 @@ async function onCancel() {
                       :columns
                     >
                       <template #body="props">
-                        <QTr>
+                        <QTr :class="{ 'intermediate-step-row': props.row.isIntermediateStep }">
                           <QTd
                             v-for="col in props.cols"
                             :key="col.name"
                             :props="props"
-                            :style="cellStyle(col, props.row, props.row.orderNo, false, q.dark.isActive, colorStore.colors)"
+                            :style="props.row.isIntermediateStep ? getIntermediateStepStyle(q.dark.isActive) : cellStyle(col, props.row, props.row.orderNo, false, q.dark.isActive, colorStore.colors)"
                           >
                             <span v-if="col.field === 'unit'">{{ t(`units.${props.row.unit}`) }}</span>
                             <span v-else-if="col.field === 'type'">{{ t(`materialTypes.${props.row.type + 1}`) }}</span>
-                            <span v-else-if="col.field === 'isManual'">{{ props.row.isManual ? t('Man') : t('Auto') }}</span>
+                            <span v-else-if="col.field === 'isManual'">{{ props.row.isIntermediateStep ? t('Man') : (props.row.isManual ? t('Man') : t('Auto')) }}</span>
+                            <span v-else-if="col.field === 'orderNo'">{{ props.row.isIntermediateStep ? t('Man') : props.row.orderNo }}</span>
                             <span v-else-if="col.field === 'amount'">
                               <QInput
                                 v-model.number="props.row.amount"
@@ -1159,5 +1210,9 @@ async function onCancel() {
 }
 .toggle-border {
   border: 1px solid var(--q-primary);
+}
+
+.intermediate-step-row {
+  font-weight: 600;
 }
 </style>

@@ -105,13 +105,32 @@ async function fetchJobOrderData() {
 
 fetchCompanyInfo()
 function getAllMaterialsFromSteps(program: RecipeMasterStep) {
-  const materials = program.steps.flatMap(step =>
+  // Get regular step materials
+  const regularMaterials = program.steps.flatMap(step =>
     step.materials.map(material => ({
       ...material,
       calculated: computed(() => calculateAmount(material, program)),
+      isIntermediateStep: false,
     })),
   )
-  return materials.sort((a, b) => a.orderNo - b.orderNo)
+
+  // Get manual step materials (intermediate steps)
+  const manualMaterials = (program.manualSteps || []).flatMap(manualStep =>
+    manualStep.materials.map(material => ({
+      ...material,
+      calculated: computed(() => calculateAmount(material, program)),
+      isIntermediateStep: true,
+      displayOrderNo: manualStep.nextStep, // For sorting: place before the nextStep
+    })),
+  )
+
+  // Combine and sort: regular materials by orderNo, manual materials placed before their nextStep
+  const allMaterials = [...regularMaterials, ...manualMaterials]
+  return allMaterials.sort((a, b) => {
+    const aOrder = a.isIntermediateStep ? a.displayOrderNo - 0.5 : a.orderNo
+    const bOrder = b.isIntermediateStep ? b.displayOrderNo - 0.5 : b.orderNo
+    return aOrder - bOrder
+  })
 }
 function calculateAmount(row: any, program: any) {
   if (!actualParams.value)
@@ -317,17 +336,21 @@ function printPage() {
                 mb-5
               >
                 <template #body="props">
-                  <QTr :class="{ 'font-bold': props.row.type === 1 }">
+                  <QTr :class="{ 'font-bold': props.row.type === 1, 'intermediate-step-row': props.row.isIntermediateStep }">
                     <QTd
                       v-for="col in props.cols"
                       :key="col.name"
                       :props="props"
+                      :style="props.row.isIntermediateStep ? 'background-color: #fef3c7; color: #78350f;' : ''"
                     >
                       <span v-if="col.field === 'unit'">
                         {{ t(`units.${props.row.unit}`) }}
                       </span>
                       <span v-else-if="col.field === 'isManual'">
-                        {{ props.row.isManual ? t('Man') : t('Auto') }}
+                        {{ props.row.isIntermediateStep ? t('Man') : (props.row.isManual ? t('Man') : t('Auto')) }}
+                      </span>
+                      <span v-else-if="col.field === 'orderNo'">
+                        {{ props.row.isIntermediateStep ? t('Man') : props.row.orderNo }}
                       </span>
                       <span v-else>
                         {{ props.row[col.field] }}
@@ -457,6 +480,10 @@ td {
 
 .font-bold {
   font-weight: bold;
+}
+
+.intermediate-step-row {
+  font-weight: 600;
 }
 
 @media print {

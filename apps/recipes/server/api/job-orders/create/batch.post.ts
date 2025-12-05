@@ -16,6 +16,8 @@ async function insertRecipeMaterials(
     materialIndex: number
     counter: number
     callOff: number
+    callOffManual: number
+    isIntermediateStep: boolean
     tankNo: number
     priority: number
     dmExchangeDB: Knex<any, never[]>
@@ -32,6 +34,8 @@ async function insertRecipeMaterials(
     processIndex,
     counter,
     callOff,
+    callOffManual,
+    isIntermediateStep,
     tankNo,
     priority,
     dmExchangeDB,
@@ -93,10 +97,11 @@ async function insertRecipeMaterials(
     KindOfStation: material.isManual ? 5 : 2,
     TreatmentNo: program.programNo,
     Program_order: program.stepNo + 1,
-    Preparation_counter: material.orderNo,
+    Preparation_counter: isIntermediateStep ? callOff : material.orderNo,
     CallOff: callOff,
     Counter: counter,
     Unit: 'gr',
+    ...(isIntermediateStep && { CallOffManuel: callOffManual }),
   })
 }
 
@@ -111,7 +116,7 @@ async function processProgramSteps(
     tankNo: number
     priority: number
     dmExchangeDB: any
-    counterState: { counter: number, callOff: number }
+    counterState: { counter: number, callOff: number, callOffManual: number }
   },
 ) {
   const { planKey, batchNo, dmExchangeDB, counterState } = context
@@ -148,23 +153,53 @@ async function processProgramSteps(
     })
   }
 
-  const allMaterials = program.steps
+  const regularMaterials = program.steps
     .flatMap((step, stepIndex) =>
       step.materials.map((material, materialIndex) => ({
         ...material,
         step,
         materialIndex,
         stepIndex,
+        isIntermediateStep: false,
       })),
     )
-    .sort((a: RecipeMasterMaterial, b: RecipeMasterMaterial) => a.orderNo - b.orderNo)
+
+  const manualMaterials = (program.manualSteps || [])
+    .flatMap((manualStep, stepIndex) =>
+      manualStep.materials.map((material, materialIndex) => ({
+        ...material,
+        step: { stepNo: manualStep.nextStep, type: manualStep.type },
+        materialIndex,
+        stepIndex,
+        isIntermediateStep: true,
+        displayOrderNo: manualStep.nextStep,
+      })),
+    )
+
+  const allMaterials = [...regularMaterials, ...manualMaterials]
+    .sort((a: any, b: any) => {
+      const aOrder = a.isIntermediateStep ? a.displayOrderNo - 0.5 : a.orderNo
+      const bOrder = b.isIntermediateStep ? b.displayOrderNo - 0.5 : b.orderNo
+      return aOrder - bOrder
+    })
+
+  counterState.callOffManual = 0
 
   for (let i = 0; i < allMaterials.length; i++) {
     const material = allMaterials[i]
     counterState.counter++
-    if (i === 0 || allMaterials[i - 1].orderNo < material.orderNo) {
-      counterState.callOff++
+
+    let currentCallOff: number
+    if (material.isIntermediateStep) {
+      currentCallOff = material.displayOrderNo
+      counterState.callOffManual++
+    } else {
+      if (i === 0 || allMaterials[i - 1].orderNo < material.orderNo || allMaterials[i - 1].isIntermediateStep) {
+        counterState.callOff = material.orderNo
+      }
+      currentCallOff = counterState.callOff
     }
+
     await insertRecipeMaterials(material, {
       ...context,
       program,
@@ -172,7 +207,9 @@ async function processProgramSteps(
       materialIndex: material.materialIndex,
       processIndex: material.stepIndex,
       counter: counterState.counter,
-      callOff: counterState.callOff,
+      callOff: currentCallOff,
+      callOffManual: counterState.callOffManual,
+      isIntermediateStep: material.isIntermediateStep,
     })
   }
 }
@@ -202,6 +239,7 @@ export default defineEventHandler(async (event) => {
         const counterState = {
           counter: 0,
           callOff: 0,
+          callOffManual: 0,
         }
         const correctionNoQuery = await dmsDB('BATCH_PLAN')
           .where('batch', batchNo)
