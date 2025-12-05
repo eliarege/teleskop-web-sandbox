@@ -260,4 +260,9 @@ onMounted(() => {
 .input-number .q-field__native {
   padding: 0;
 }
+
+.input-number.q-field--auto-height.q-field--dense .q-field__control,
+.input-number.q-field--auto-height.q-field--dense .q-field__native {
+  min-height: 30px;
+}
 </style>

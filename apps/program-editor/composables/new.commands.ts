@@ -30,6 +30,7 @@ import CMVersionDialog from '~/components/CMVersionDialog.vue'
 import CMMachineListCopyAndSendDialog from '~/components/CMMachineListCopyAndSendDialog.vue'
 import CopyAndSendResultsDialog from '~/components/CopyAndSendResultsDialog.vue'
 import DeleteResultsDialog from '~/components/DeleteResultsDialog.vue'
+import TBFindAndReplaceDialog from '~/components/TBFindAndReplaceDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -92,6 +93,7 @@ export interface RegisteredCommands {
   getAllPrograms: [ctx: any, machine: { id: number, name: string }]
   sendAllPrograms: [ctx: any, machine: { id: number, name: string }]
   selectMachine: [ctx: any, options?: { singleSelection?: boolean }]
+  findAndReplace: [ctx: any, machineId: number, machineName: string]
 }
 
 registerCommand(() => {
@@ -216,9 +218,10 @@ registerCommand(() => {
           await editor.refreshAllPrograms()
         } catch (error) {
           console.error('Error during program deletion:', error)
+        } finally {
+          editor.isLoading = false
         }
 
-        editor.isLoading = false
         editor.selectedPrograms = []
         return true
       }).onCancel(() => {
@@ -567,10 +570,10 @@ registerCommand(() => {
         } else if (response === 'noToAll') {
           userChoice = 'noToAll'
         }
-      }
 
-      await editor.refreshAllPrograms()
-      return false
+        await editor.refreshAllPrograms()
+        return false
+      }
     },
   }
 })
@@ -926,14 +929,35 @@ registerCommand(() => {
 registerCommand(() => {
   return {
     name: 'checkErrors',
-    async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
+    async execute() {
       const editor = useEditorStore()
 
       editor.isLoading = true
-      for (const { programNo } of selectedRows) {
-        await editor.loadProgram(machineId, programNo)
+      try {
+        for (const { programNo } of editor.selectedPrograms) {
+          await editor.fetchProgram(editor.machine.id, programNo)
+        }
+      } finally {
+        editor.isLoading = false
       }
-      editor.isLoading = false
+    },
+  }
+})
+
+registerCommand(() => {
+  const editor = useEditorStore()
+  return {
+    name: 'findAndReplace',
+    async execute(ctx: any, machineId: number, machineName: string) {
+      ctx.$q.dialog({
+        component: TBFindAndReplaceDialog,
+        componentProps: {
+          machineId,
+          machineName,
+          machineCommands: editor.machine.commands,
+        },
+      })
+      return true
     },
   }
 })

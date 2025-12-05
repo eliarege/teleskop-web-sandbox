@@ -11,7 +11,7 @@ export default defineAuthEventHandler({
       const machineId = Number.parseInt(machine_id)
 
       if (Number.isNaN(machineId)) {
-        throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo: 0 })
+        throw new PError('INVALID_MACHINE_NUMBER', { machineId })
       }
 
       const body = await readBody(event)

@@ -63,7 +63,31 @@ const items = [
       ]],
     },
   },
-  { label: tt('menu.tools'), disabled: true },
+  {
+    label: tt('menu.tools'),
+    disabled: false,
+    subMenu: {
+      items: [[
+        {
+          label: tt('menu.findAndReplace'),
+          icon: 'search',
+          shortcut: 'Ctrl+F',
+          onClick() {
+            $commandManager.executeCommand('findAndReplace', { $q }, editor.machine.id, editor.machine.name)
+          },
+        },
+        {
+          label: tt('menu.checkProgram'),
+          icon: 'check_circle',
+          shortcut: 'F6',
+          disabled: () => !editor.selectedPrograms.length,
+          onClick() {
+            $commandManager.executeCommand('checkErrors', { $q }, editor.machine.id, editor.selectedPrograms)
+          },
+        },
+      ]],
+    },
+  },
   {
     label: tt('menu.program'),
     disabled: computed(() => !isDef(route.params.machine_id)),

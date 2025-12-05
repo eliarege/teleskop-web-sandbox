@@ -94,7 +94,9 @@
     "writeProgramSettings": "Program Yazma Ayarları",
     "commandDetails": "Komut Detayları",
     "checkErrors": "Hata Kontrolü",
-    "isNewVersion": "Yeni Versiyon mu?"
+    "isNewVersion": "Yeni Versiyon mu?",
+    "findAndReplace": "Program Ara",
+    "checkProgram": "Programı Kontrol Et"
   },
   "program": {
     "name": "Program Adı",
@@ -226,6 +228,7 @@
   "close": "Kapat",
   "save": "Kaydet",
   "print": "Yazdır",
+  "download": "İndir",
   "message": {
     "delete_program": "Program Teleskop'tan silindi",
     "program_not_deleted": "Program Teleskop'tan silinemedi"
@@ -428,6 +431,11 @@
       "selectMachine": "Programların silineceği makineleri seçin.",
       "operate": "Sil"
     },
+    "selectMachine": {
+      "title": "Makine Seçimi",
+      "selectMachine": "Lütfen makine seçiniz.",
+      "operate": "Tamam"
+    },
     "pasteNotification": {
       "success": "{name} programı {programNo} numarasıyla kaydedildi.",
       "fail": "{name} programı {programNo} numarasına kaydedilirken hata oluştu."
@@ -447,11 +455,6 @@
     "updateHeaderNotification": {
       "success": "{programNo} numaralı programın baslığı basarıyla değiştirildi.",
       "fail": "{programNo} numaralı programın baslığı değiştirme işlemi basarısız."
-    },
-    "selectMachine": {
-      "title": "Makine Seçimi",
-      "selectMachine": "İşlemi gerçekleştirmek istediğiniz makineyi seçiniz.",
-      "operate": "Tamam"
     }
   },
   "exportExcelDialog": {
@@ -685,5 +688,47 @@
     "deletedFromMachine": "Makineden Silindi",
     "deletedFromDb": "Veritabanından Silindi"
   },
-  "download": "İndir"
+  "findAndReplace": {
+    "title": "Program Ara",
+    "machine": "Makine",
+    "programNo": "Program No",
+    "program": "Program",
+    "step": "Adım",
+    "actions": "İşlemler",
+    "thisMachine": "Bu Makine ({machineName})",
+    "selectedMachines": "Seçili Makineler",
+    "selectMachine": "Makine Seçiniz",
+    "machinesSelected": "{count} makine seçildi",
+    "selectedMachinesList": "Seçili Makineler",
+    "noMachinesSelected": "Hiç makine seçilmedi",
+    "searchScope": "Arama Kapsamı",
+    "searchInSelectedSteps": "Seçili Adımlarda Ara",
+    "startStepNo": "Başlangıç Adım No",
+    "endStepNo": "Bitiş Adım No",
+    "selectedStepCount": "{count} adım seçildi",
+    "searchingAllSteps": "Tüm adımlarda aranıyor",
+    "find": "Bul",
+    "searchCriteria": "Arama Kriterleri",
+    "addSearchCriteria": "Arama Kriteri Ekle",
+    "selectCommandFirst": "Önce komut seçin",
+    "deleteSearchCriteria": "Arama Kriterini Sil",
+    "deleteSelectedCriteria": "Seçili kriteri sil",
+    "equals": "Eşittir",
+    "greaterThan": "Büyüktür",
+    "lessThan": "Küçüktür",
+    "between": "Arasında",
+    "comparisonType": "Karşılaştırma Türü",
+    "parameterDefaultValue": "Parametre Varsayılan Değeri",
+    "parameterMinValue": "Parametre Alt Limit",
+    "parameterMaxValue": "Parametre Üst Limit",
+    "searchValue": "Arama Değeri",
+    "minValue": "En Küçük Değer",
+    "maxValue": "En Büyük Değer",
+    "selectParameterOrIO": "Parametre/IO Seçiniz",
+    "selectAtLeastOneIOValue": "Lütfen arama yapmak için en az bir IO değeri seçin.",
+    "noMatchingResults": "Eşleşen sonuç bulunamadı",
+    "openProgram": "Programı Aç",
+    "searchError": "Arama sırasında hata oluştu",
+    "selectCommand": "Komut Seçiniz"
+  }
 }

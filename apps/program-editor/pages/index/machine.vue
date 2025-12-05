@@ -817,13 +817,13 @@ onUnmounted(() => {
         </template>
       </QTable>
 
-      <QMenu
+      <q-menu
         touch-position
         context-menu
         :transition-duration="0"
       >
         <ProgramContextMenu :items="contextMenuOptions" />
-      </QMenu>
+      </q-menu>
     </div>
 
     <CMProgramStateDialog v-if="!route.params.program_no" />
