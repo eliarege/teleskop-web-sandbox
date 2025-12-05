@@ -112,6 +112,13 @@ function isParallelCommandRestricted(commandNo: number): boolean {
   }
   return false
 }
+
+function handleFocus() {
+  const step = editor.program.steps[stepIndex.value]
+  if (step && !editor.isStepSelected(step.stepId)) {
+    editor.selectedSteps = [step]
+  }
+}
 </script>
 
 <template>
@@ -129,13 +136,15 @@ function isParallelCommandRestricted(commandNo: number): boolean {
       hide-bottom-space
       emit-value
       style="width: 250px"
-      class="text-3"
+      class="text-3 command-selector"
       options-dense
       dense
       auto-close
       outlined
       filled
+      prevent-down-when-closed
       @update:model-value="updateStepCommand"
+      @focus="handleFocus"
     >
       <QTooltip v-if="isParallelCommandRestricted(programCommand.commandNo)">
         {{ t('cannotParallelCommand', {

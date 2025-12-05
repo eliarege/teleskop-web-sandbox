@@ -926,6 +926,17 @@ export const useEditorStore = defineStore('editor', () => {
       selectedSteps.value = selectedSteps.value.filter(step => step.stepId !== stepId)
     else
       selectedSteps.value = [program.value.steps.find(step => step.stepId === stepId)!]
+
+    focusCommandSelector(stepId)
+  }
+
+  function focusCommandSelector(stepId: number): void {
+    const isFocused = document.activeElement?.closest(`#step-${stepId}`)
+    if (isFocused)
+      return
+
+    const selector = document.querySelector(`#step-${stepId} .command-selector`) as HTMLElement | null
+    selector?.focus()
   }
 
   function isStepSelected(stepId: number): boolean {

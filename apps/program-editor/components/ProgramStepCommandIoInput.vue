@@ -11,7 +11,6 @@ const props = defineProps<{
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const config = useRuntimeConfig()
 const programIO: ioListItem = editor.getPathElement(props.path)
 
 const model = computed({
@@ -43,6 +42,15 @@ const selectedOptionsText = computed(() => {
 
   return selected.length > 0 ? selected.join(', ').slice(0, 24) : t('noSelection')
 })
+
+const stepIndex = computed(() => Number(props.path.split('.')[1]))
+
+function handleFocus() {
+  const step = editor.program.steps[stepIndex.value]
+  if (step && !editor.isStepSelected(step.stepId)) {
+    editor.selectedSteps = [step]
+  }
+}
 </script>
 
 <template>
@@ -50,6 +58,7 @@ const selectedOptionsText = computed(() => {
     <div
       class="q-input-border border-[rgba(0,0,0,0.24)] border-1 mr-1 mb-1"
       :class="{ 'border-red border-2': props.ioError }"
+      @focusin="handleFocus"
     >
       <div class="relative pt-4 text-3 min-w-32 max-w-40">
         <div class="q-input-text">
