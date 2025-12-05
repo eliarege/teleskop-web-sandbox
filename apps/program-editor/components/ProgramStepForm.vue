@@ -94,6 +94,7 @@ function removeError(commandId: number) {
       :icon="expandIcon"
       flat
       dense
+      tabindex="-1"
       @click="expanded = !expanded"
     />
 

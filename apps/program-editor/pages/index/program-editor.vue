@@ -214,34 +214,23 @@ onKeyStroke(['Delete'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable())
-    return
-
-  event.preventDefault()
+  if (!isActiveElementEditable()) {
+    event.preventDefault()
+  }
 
   const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
-  const stepIndex = currentIndex > 0 ? currentIndex - 1 : editor.program.steps.length - 1
-  editor.selectedSteps = [editor.program.steps[stepIndex]]
-
-  editor.scrollPage(editor.selectedSteps[0].stepId)
+  if (currentIndex > 0)
+    editor.selectStep(false, currentIndex - 1)
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
-  if (isActiveElementEditable())
-    return
-
-  event.preventDefault()
+  if (!isActiveElementEditable()) {
+    event.preventDefault()
+  }
 
   const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
-  const stepIndex = currentIndex < editor.program.steps.length - 1 ? currentIndex + 1 : 0
-  editor.selectedSteps = [editor.program.steps[stepIndex]]
-
-  editor.scrollPage(editor.selectedSteps[0].stepId)
-})
-
-onKeyStroke('Escape', (event: KeyboardEvent) => {
-  event.preventDefault()
-  editor.selectedSteps = []
+  if (currentIndex < editor.program.steps.length - 1)
+    editor.selectStep(false, currentIndex + 1)
 })
 
 onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {

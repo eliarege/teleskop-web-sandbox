@@ -1,0 +1,55 @@
+diff --git a/dist/quasar.client.js b/dist/quasar.client.js
+index b337796910094e6801d31ae27366fda45a96d48d..d621ed94d75bce8a86e350c65ba050114397254f 100644
+--- a/dist/quasar.client.js
++++ b/dist/quasar.client.js
+@@ -20821,7 +20821,8 @@ var QSelect_default = createComponent({
+     // override of useVirtualScrollProps > virtualScrollItemSize (no default)
+     virtualScrollItemSize: useVirtualScrollProps.virtualScrollItemSize.type,
+     onNewValue: Function,
+-    onFilter: Function
++    onFilter: Function,
++    preventDownWhenClosed: Boolean,
+   },
+   emits: [
+     ...useFieldEmits,
+@@ -21209,6 +21210,7 @@ var QSelect_default = createComponent({
+       if (shouldIgnoreKey(e) === true) {
+         return;
+       }
++      
+       const newValueModeValid = inputValue.value.length !== 0 && (props4.newValueMode !== void 0 || props4.onNewValue !== void 0);
+       const tabShouldSelect = e.shiftKey !== true && props4.disableTabSelection !== true && props4.multiple !== true && (optionIndex.value !== -1 || newValueModeValid === true);
+       if (e.keyCode === 27) {
+@@ -21220,7 +21222,7 @@ var QSelect_default = createComponent({
+         return;
+       }
+       if (e.target === void 0 || e.target.id !== state.targetUid.value || state.editable.value !== true) return;
+-      if (e.keyCode === 40 && state.innerLoading.value !== true && menu.value === false) {
++      if (e.keyCode === 40 && state.innerLoading.value !== true && menu.value === false && props4.preventDownWhenClosed === false) {
+         stopAndPrevent(e);
+         showPopup();
+         return;
+@@ -21249,7 +21251,7 @@ var QSelect_default = createComponent({
+         );
+         moveOptionSelection(e.keyCode === 33 ? 1 : -1, props4.multiple);
+       }
+-      if (e.keyCode === 38 || e.keyCode === 40) {
++      if ((e.keyCode === 38 || e.keyCode === 40) && (menu.value === true || props4.preventDownWhenClosed === false)) {
+         stopAndPrevent(e);
+         moveOptionSelection(e.keyCode === 38 ? -1 : 1, props4.multiple);
+       }
+diff --git a/dist/types/index.d.ts b/dist/types/index.d.ts
+index da29c434007c6db64bececf40521ba75fa2fc41c..ca960ebdfed8b0e49688a2bfb1b4216de51ad3a7 100644
+--- a/dist/types/index.d.ts
++++ b/dist/types/index.d.ts
+@@ -10992,6 +10992,10 @@ export interface QSelectProps {
+    * Default value: 'default'
+    */
+   behavior?: "default" | "menu" | "dialog" | undefined;
++  /**
++   * When menu is closed, prevent ArrowDown from opening the menu
++   */
++  preventDownWhenClosed?: boolean
+   /**
+    * Emitted when the virtual scroll occurs
+    * @param details Object of properties on the new scroll position

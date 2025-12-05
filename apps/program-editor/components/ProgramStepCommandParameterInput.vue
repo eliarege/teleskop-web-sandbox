@@ -63,6 +63,15 @@ const isValueInRange = computed(() => {
   return value >= props.parameter.minValue && value <= props.parameter.maxValue
 })
 
+const stepIndex = computed(() => Number(props.path.split('.')[1]))
+
+function handleFocus() {
+  const step = editor.program.steps[stepIndex.value]
+  if (step && !editor.isStepSelected(step.stepId)) {
+    editor.selectedSteps = [step]
+  }
+}
+
 function handleBlur() {
   // Değer geçerli aralıkta değilse dialog çıkmasın
   if (!isValueInRange.value) {
@@ -91,6 +100,7 @@ function handleBlur() {
         class="text-3"
         hide-bottom-space
         @input-blur="handleBlur"
+        @focus="handleFocus"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -117,6 +127,7 @@ function handleBlur() {
         :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
         class="text-3 dynamic-min-width"
         @input-blur="handleBlur"
+        @focus="handleFocus"
       >
         <template #optimized>
           <div v-if="isOptimizable" class="ml-3 flex-center h-full">
@@ -144,6 +155,7 @@ function handleBlur() {
         dense
         :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
         class="text-3 q-select-nowrap dynamic-min-width"
+        @focus="handleFocus"
       />
     </template>
 
@@ -161,6 +173,7 @@ function handleBlur() {
         dense
         :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
         class="text-3 q-select-nowrap dynamic-min-width"
+        @focus="handleFocus"
       >
         <template #option="scope">
           <QItem
@@ -189,6 +202,7 @@ function handleBlur() {
         v-model="model"
         :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         @input-blur="handleBlur"
+        @focus="handleFocus"
       />
     </template>
   </div>
