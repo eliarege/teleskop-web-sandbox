@@ -98,17 +98,17 @@ export interface CommandTypeMap {
 
 export const commandTypeMaps: CommandTypeMap[] = [
   { index: 0, ref: [], value: CommandType.AutoChem, title: 'chemicalRequest', icon: 'i-carbon-chemistry', color: '#00CC00' },
-  { index: 1, ref: [], value: CommandType.ManChem, title: 'manualChemicalRequest', icon: 'i-carbon-chemistry', color: '#00CC00' },
+  { index: 1, ref: [], value: CommandType.ManChem, title: 'manualChemicalRequest', icon: 'i-carbon-chemistry', color: '#E67E22' },
   { index: 2, ref: [], value: CommandType.AutoDye, title: 'paintRequest', icon: 'i-mingcute:paint-line', color: '#FF00FF' },
   { index: 3, ref: [], value: CommandType.ManDye, title: 'manualPaintRequest', icon: 'i-mingcute:paint-line', color: '#E67E22' },
   { index: 4, ref: [], value: CommandType.ChemTankTransfer, title: 'chemicalTankTransfer', icon: 'i-ri-exchange-2-line', color: '#228b22' },
-  { index: 5, ref: [], value: CommandType.PaintTankTransfer, title: 'paintTankTransfer', icon: 'i-ri-exchange-2-line', color: '#ff00ff' },
-  { index: 6, ref: [], value: CommandType.ReserveTankTransfer, title: 'reserveTankTransfer', icon: 'i-ri-exchange-2-line', color: '#0000ff' },
-  { index: 7, ref: [], value: CommandType.PHControl, title: 'pHControl', icon: 'i-material-symbols:water-ph-outline', color: '#0000ff' },
-  { index: 8, ref: [], value: CommandType.TakeSample, title: 'takeSample', icon: 'i-ph:eyedropper-sample-fill', color: '#0000ff' },
+  { index: 5, ref: [], value: CommandType.PaintTankTransfer, title: 'paintTankTransfer', icon: 'i-ri-exchange-2-line', color: '#FF00FF' },
+  { index: 6, ref: [], value: CommandType.ReserveTankTransfer, title: 'reserveTankTransfer', icon: 'i-ri-exchange-2-line', color: '#0000FF' },
+  { index: 7, ref: [], value: CommandType.PHControl, title: 'pHControl', icon: 'i-material-symbols:water-ph-outline', color: '#0000FF' },
+  { index: 8, ref: [], value: CommandType.TakeSample, title: 'takeSample', icon: 'i-ph:eyedropper-sample-fill', color: '#0000FF' },
   { index: 9, ref: [], value: CommandType.SaltRequest, title: 'saltRequest', icon: 'i-tabler:salt', color: '#00CC00' },
   { index: 10, ref: [], value: CommandType.GenericMaterial1, title: 'genericMaterial1Request', icon: 'i-streamline:interface-arrows-data-transfer-vertical-arrow-square-data-internet-transfer-network-vertical', color: '#00CC00' },
-  { index: 11, ref: [], value: CommandType.GenericMaterial2, title: 'genericMaterial2Request', icon: 'i-streamline:interface-arrows-data-transfer-vertical-arrow-square-data-internet-transfer-network-vertical', color: '#00CC00' },
+  { index: 11, ref: [], value: CommandType.GenericMaterial2, title: 'genericMaterial2Request', icon: 'i-streamline:interface-arrows-data-transfer-vertical-arrow-square-data-internet-transfer-network-vertical', color: '#E67E22' },
   { index: 12, ref: [], value: CommandType.ManualMeasurement, title: 'manualMeasurement', icon: 'i-mdi:hydraulic-oil-level', color: '#1E90FF' },
 ]
 

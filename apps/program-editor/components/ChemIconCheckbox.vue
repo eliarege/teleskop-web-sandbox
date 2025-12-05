@@ -3,6 +3,7 @@ const props = defineProps<{
   modelValue: number
   commandIndex: number
   label: string
+  dense?: boolean
 }>()
 
 const emit = defineEmits(['update:modelValue'])
@@ -21,6 +22,7 @@ const isChecked = computed(() => {
     <q-checkbox
       v-model="isChecked"
       :label="t(props.label)"
+      :dense="props.dense"
       @update:model-value="toggle"
     />
   </div>
