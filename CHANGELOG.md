@@ -1,8 +1,31 @@
 # Changelog
 
+## 0.60.0 - 2025-12-08
+
+[Compare Changes](3cb79bd1242ae2c5d2f1478c18f46aac4972dca7...38453f9d4276388cc17fa8c7a75844d7c494c586)
+
+### 🚀 Features
+
+-  **PE**: Delete programs in bulk with its own report dialog and endpoint ([b79c535](b79c535f4cc3d7c5dd3fff422c32a7b966dbe518))
+-  **PE**: Search commands used in programs via parameter and io filters ([8838e7b](8838e7bda5db8a69c448ac7d6134b31a38f051ba))
+
+### 🐛 Bug Fixes
+
+- **migrations**: Add migration to alter PARAMSTRING size in BACOMMANDPARAMETERS table to make it consistent with BFCOMMANDPARAMETERS ([2a9cd1f](2a9cd1f92988aa96a362beff06b65061c145e666))
+-  **MA**: Remove redundant columns from MachineList, make table header sticky and action buttons stay on top ([8f7bb32](8f7bb32c374d6e9a54f9d01d5c38f3d795c20046))
+-  **MS**: Fetch running fabric weight more accurately ([31be83f](31be83f5b62e2c28b659e2979623b6d5bfc4e78e))
+- Remove `runningMachineCapacity` field from machine status interfaces ([24c60cc](24c60cc51d17b8240357d889b222d82310727b4a))
+-  **MA**: Missing icons it command types page ([b9987df](b9987df5323dd97d817d7ffc101442b834fb5854))
+-  **PE**: Improve navigation between program steps, disable de-selecting via `Escape` key ([4d12ca3](4d12ca37b8768499750862d81301666500ce5d69))
+
+### 🔧 Miscellaneous Tasks
+
+- Update lockfile ([46fea1f](46fea1f462d37a3167ec363e0de1c3a3dd9409d7))
+- Update package manager version to pnpm@10.24.0 ([38453f9](38453f9d4276388cc17fa8c7a75844d7c494c586))
+
 ## 0.59.0 - 2025-12-03
 
-[Compare Changes](2bb10545b950902e0041a063b8d84b65d2ef07a8...617ce98149a519e9cb96edf32adc9d758f18856f)
+[Compare Changes](2bb10545b950902e0041a063b8d84b65d2ef07a8...3cb79bd1242ae2c5d2f1478c18f46aac4972dca7)
 
 ### 🚀 Features
 
