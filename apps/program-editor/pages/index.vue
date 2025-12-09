@@ -22,6 +22,7 @@ const { notifyError } = useNotify()
 editor.isLoading = true
 await editor.fetchTeleskopSettings()
 await editor.fetchAllProcessTypes()
+await editor.fetchMachineGroups()
 editor.isLoading = false
 
 const tt = (key: string) => toRef(() => t(key))
@@ -326,7 +327,7 @@ const goRoot = computed(() => {
       borderless
       class="bg-light-7 dark:bg-dark-3"
     >
-      <MachineList />
+      <MachineList :machine-groups="editor.machineGroups" />
     </QDrawer>
 
     <QPageContainer>

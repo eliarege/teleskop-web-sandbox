@@ -4,18 +4,19 @@ import { withBase } from 'ufo'
 import type { MachineGroup } from '~/shared/types'
 import { useMachineStatusStore } from '~/composables/machine'
 
+const props = defineProps<{
+  machineGroups: MachineGroup[]
+}>()
+
 const { t } = useI18n()
 const route = useRoute()
 const editor = useEditorStore()
-const { fetch } = useKeycloak()
 const machineStatusStore = useMachineStatusStore()
 
-const machineGroups = await fetch<MachineGroup[]>('/api/machine-group')
-
 // İlk makineyi otomatik olarak seçer
-watch(() => [machineGroups.length, route.path], () => {
+watch(() => [props.machineGroups.length, route.path], () => {
   if (route.path === '/') {
-    const firstMachine = machineGroups.find(group => group.machines.length)?.machines[0]
+    const firstMachine = props.machineGroups.find(group => group.machines.length)?.machines[0]
     if (firstMachine)
       editor.changeMachine(firstMachine.id)
   }
