@@ -437,7 +437,7 @@ export const useEditorStore = defineStore('editor', () => {
           }
         }
       } else {
-        if (await updateProgram(undefined, isNewVersion)) {
+        if (await updateProgram(program.value, isNewVersion)) {
           originalProgram.value = klona(program.value)
           notifySuccess(t('saveProgram.success'))
         } else {
@@ -810,13 +810,12 @@ export const useEditorStore = defineStore('editor', () => {
    * Özellikle `PROGRAM_TREATMENT_COMMAND_LIMIT` hatası durumunda, ilgili limitin aşıldığına dair bir bildirim gösterilir.
    * Eğer işlem sırasında bir hata oluşursa, hata mesajına göre uygun bir bildirim gösterilir ve `false` döner.
    */
-  async function updateProgram(newProgram?: Program, isNewVersion: boolean = true): Promise<boolean> {
-    const updatedProgram = newProgram || program.value
+  async function updateProgram(program: Program, isNewVersion: boolean = true): Promise<boolean> {
     try {
-      return await kc.fetch<boolean>(`/api/machine/${route.params.machine_id}/program`, {
+      return await kc.fetch<boolean>(`/api/machine/${route.params.machine_id}/program/${program.programNo}`, {
         method: 'PUT',
         body: {
-          program: updatedProgram,
+          program,
           isNewVersion,
         },
       })
@@ -855,10 +854,6 @@ export const useEditorStore = defineStore('editor', () => {
           program: newProgram,
         },
       })
-
-      const hasChanged = hasProgramChanged()
-      if (hasChanged)
-        return false
 
       if (redirect)
         navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)

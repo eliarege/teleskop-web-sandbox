@@ -149,6 +149,7 @@ registerCommand(() => {
         },
       }).onOk(async (newProgram: Program) => {
         await editor.onSubmit(newProgram)
+        await editor.refreshAllPrograms()
         return true
       }).onCancel(() => {
         return false
