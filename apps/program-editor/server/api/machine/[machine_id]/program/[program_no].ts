@@ -6,6 +6,7 @@ import logger from '~/server/logger'
 import { ProgramStatus } from '~/shared/constants'
 import { checkPermission } from '~/server/utils/auth'
 import type { MachineController } from '~/server/classes/MachineController'
+import type { Program } from '~/shared/types'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id, program_no } = getRouterParams(event)
@@ -55,6 +56,29 @@ export default defineAuthEventHandler(async (event) => {
     checkPermission(event, 'program-delete')
     try {
       return await handleProgramDeletion(machine, programNo, query, machineId, event.context?.kauth?.name)
+    } catch (error) {
+      if (isPError(error)) {
+        throw createError({
+          statusCode: 400,
+          message: error.code,
+          data: error.detail,
+        })
+      }
+
+      throw createError({
+        statusCode: 500,
+        message: 'INTERNAL_SERVER_ERROR',
+      })
+    }
+  }
+
+  if (event.method === 'PUT') {
+    checkPermission(event, 'program-edit')
+    const body = await readBody<{ program: Program, isNewVersion: boolean }>(event)
+
+    try {
+      const { program, isNewVersion } = body
+      return await machine.updateProgram(program, isNewVersion)
     } catch (error) {
       if (isPError(error)) {
         throw createError({
