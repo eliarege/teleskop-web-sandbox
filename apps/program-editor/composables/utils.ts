@@ -75,35 +75,6 @@ export function assertIndex(index: number, max: number): void {
   }
 }
 
-/**
- * Belirtilen komut numarasına sahip komutun bilgilerini getirir
- * @param commandNo - Komut numarası
- * @param parameterOrIoList - 'parameters' veya 'ioList'
- * @param index - Parametre veya IO index
- * @param selectionIndex - Parametre veya IO selection index
- * @returns - Komut bilgileri
- */
-export function getMachineCommand(commandNo: number, parameterOrIoList?: 'parameters' | 'ioList', index?: number, selectionIndex?: number):
-  MachineCommand | CommandParameter | CommandIO | ParameterSelections | CommandIOSelection | MachineCommand[] | CommandParameter[] | CommandIO[] | ParameterSelections[] | CommandIOSelection[] | undefined {
-  const editor = useEditorStore()
-
-  const command: MachineCommand | undefined = editor.machine.commands.get(commandNo)
-
-  if (!command)
-    return undefined
-
-  if (parameterOrIoList) {
-    if (index) {
-      if (selectionIndex)
-        return command[parameterOrIoList][index].selections[selectionIndex]
-      else
-        return command[parameterOrIoList][index]
-    }
-    return command[parameterOrIoList]
-  }
-  return command
-}
-
 export function areCommandsEqual(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
   if (!isDef(stepA) || !isDef(stepB)) {
     return false
