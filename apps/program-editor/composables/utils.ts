@@ -237,7 +237,6 @@ export const useErrorStore = defineStore('program-errors', () => {
     const index = errors.value.findIndex(p => p.programNo === programNo)
 
     if (stepErrors.length === 0) {
-    // eğer daha önce kayıtlı varsa sil
       if (index !== -1) {
         errors.value.splice(index, 1)
       }
@@ -247,61 +246,44 @@ export const useErrorStore = defineStore('program-errors', () => {
     if (index !== -1) {
       errors.value[index].steps = stepErrors
     } else {
-      errors.value.push({
-        machineId,
-        programNo,
-        steps: stepErrors,
-      })
+      errors.value.push({ machineId, programNo, steps: stepErrors })
     }
   }
 
   function clearStepErrors(programNo: number, stepId: number) {
-    const index = errors.value.findIndex(p => p.programNo === programNo)
-    if (index !== -1) {
-      errors.value[index].steps = errors.value[index].steps.filter(s => s.stepId !== stepId)
+    const program = errors.value.find(p => p.programNo === programNo)
+    if (program) {
+      program.steps = program.steps.filter(s => s.stepId !== stepId)
     }
   }
 
   function clearCommandErrors(programNo: number, stepId: number, commandId: number) {
-    const index = errors.value.findIndex(p => p.programNo === programNo)
-    if (index !== -1) {
-      errors.value[index].steps = errors.value[index].steps
+    const program = errors.value.find(p => p.programNo === programNo)
+    if (program) {
+      program.steps = program.steps
         .map((step) => {
           if (step.stepId === stepId) {
             step.commands = step.commands.filter(c => c.commandId !== commandId)
           }
           return step
         })
-        .filter(step => step.commands && step.commands.length > 0)
+        .filter(step => step.commands?.length > 0)
     }
   }
 
   function getStepErrors(machineId: number, programNo: number, stepId: number): StepError[] {
-    return errors.value
-      .filter(p => p.machineId === machineId)
-      .filter(p => p.programNo === programNo)
-      .map(p => p.steps)
-      .flat()
-      .filter(s => s.stepId === stepId)
+    const program = errors.value.find(p => p.machineId === machineId && p.programNo === programNo)
+    return program?.steps.filter(s => s.stepId === stepId) ?? []
   }
 
   function getCommandErrors(programNo: number, stepId: number, commandId: number): CommandError[] {
-    return errors.value
-      .filter(p => p.programNo === programNo)
-      .map(p => p.steps)
-      .flat()
-      .filter(s => s.stepId === stepId)
-      .map(s => s.commands)
-      .flat()
-      .filter(c => c.commandId === commandId)
+    const program = errors.value.find(p => p.programNo === programNo)
+    const step = program?.steps.find(s => s.stepId === stepId)
+    return step?.commands.filter(c => c.commandId === commandId) ?? []
   }
 
   function addError(machineId: number, programNo: number, stepError: StepError[]) {
-    errors.value.push({
-      machineId,
-      programNo,
-      steps: stepError,
-    })
+    errors.value.push({ machineId, programNo, steps: stepError })
   }
 
   function clearErrors(programNumber?: number) {
