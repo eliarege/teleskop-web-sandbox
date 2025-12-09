@@ -164,7 +164,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const { notifyError } = useNotify()
 
     const programs = selectedRows.map(row => ({ programNo: row.programNo, programName: row.name }))
-    const response = await fetch<BulkDeletionResponse>(`/api/machine/${machineId}/programs/delete`, {
+    const response = await fetch<BulkDeletionResponse>(`/api/machine/${machineId}/program`, {
       method: 'DELETE',
       body: {
         programs,

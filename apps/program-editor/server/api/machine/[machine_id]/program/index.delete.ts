@@ -19,7 +19,6 @@ export default defineAuthEventHandler(async (event): Promise<BulkDeletionRespons
   if (!machine) {
     throw new PError('MACHINE_NOT_FOUND', { machineId })
   }
-
   const body = await readBody(event)
   const programs: { programNo: number, programName: string }[] = body.programs
   const source: ProgramDeletionSource = body.source || 'both'
