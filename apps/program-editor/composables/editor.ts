@@ -74,13 +74,7 @@ export const useEditorStore = defineStore('editor', () => {
     if (isLoading.value)
       return
 
-    selectedPrograms.value = []
-    selectedSteps.value = []
-
     const MACHINE_PATH_RE = /^\/machine\/\d+$/
-    if (machine.value.id !== id) {
-      machine.value = createMachine()
-    }
     // Replace only if navigating from /machine/:id
     const replace = MACHINE_PATH_RE.test(route.path)
 
@@ -88,8 +82,6 @@ export const useEditorStore = defineStore('editor', () => {
       path: `/machine/${id}`,
       replace,
     })
-
-    program.value = createEmptyProgram()
   }
 
   /**

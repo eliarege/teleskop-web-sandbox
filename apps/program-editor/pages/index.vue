@@ -9,16 +9,15 @@ import ContextBar from '~/components/ContextBar.vue'
 import { useEditorStore } from '~/composables/editor'
 import TopbarNotificationButton from '~/components/TopbarNotificationButton.vue'
 
-const { $commandManager } = useNuxtApp()
+const $q = useQuasar()
 const { t } = useI18n()
+const route = useRoute()
+const { $commandManager } = useNuxtApp()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
-const $q = useQuasar()
-const route = useRoute()
 
 const editor = useEditorStore()
 const { notifyError } = useNotify()
-editor.machine = editor.createMachine()
 
 editor.isLoading = true
 await editor.fetchTeleskopSettings()

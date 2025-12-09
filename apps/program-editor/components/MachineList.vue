@@ -4,12 +4,10 @@ import { withBase } from 'ufo'
 import type { MachineGroup } from '~/shared/types'
 import { useMachineStatusStore } from '~/composables/machine'
 
-const $q = useQuasar()
 const { t } = useI18n()
 const route = useRoute()
 const editor = useEditorStore()
 const { fetch } = useKeycloak()
-const { $commandManager } = useNuxtApp()
 const machineStatusStore = useMachineStatusStore()
 
 const machineGroups = await fetch<MachineGroup[]>('/api/machine-group')
@@ -26,11 +24,7 @@ watch(() => [machineGroups.length, route.path], () => {
 async function onUpdateSelected(selection: string) {
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])
-    const hasChanged = editor.hasProgramChanged()
-    if (hasChanged)
-      $commandManager.executeCommand('unsavedChanges', { $q }, id)
-    else
-      await editor.changeMachine(id)
+    await editor.changeMachine(id)
   } else {
     await navigateTo('/')
   }
