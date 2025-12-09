@@ -2,9 +2,9 @@ import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
-import { useErrorStore } from './utils'
-import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ProgramDetailPDFData, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import { areProgramsEqual, useErrorStore } from './utils'
 import { capitalize } from '~/shared/utils'
+import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ProgramDetailPDFData, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { CommandEligibility, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
@@ -459,7 +459,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Bu fonksiyon, mevcut program (`program.value`) ve orijinal program (`originalProgram.value`)
    * arasında bir karşılaştırma yaparak değişiklik olup olmadığını kontrol eder. Eğer `program_no`
    * route parametresi eksikse `false` döner.
-   * `compareProgram` fonksiyonu kullanılarak karşılaştırma yapılır.
+   * `areProgramsEqual` fonksiyonu kullanılarak karşılaştırma yapılır.
    */
   function hasProgramChanged(): boolean {
     const route = useRoute()
@@ -467,7 +467,7 @@ export const useEditorStore = defineStore('editor', () => {
     if (!isDef(route.params.program_no))
       return false
 
-    return !compareProgram(program.value, originalProgram.value, true)
+    return !areProgramsEqual(program.value, originalProgram.value)
   }
 
   /**

@@ -104,54 +104,17 @@ export function getMachineCommand(commandNo: number, parameterOrIoList?: 'parame
   return command
 }
 
-/**
- * Farklılıklar bir veya daha fazla değişiklik kaydı olarak raporlanır.
- * Değişiklik kayıtları aşağıdaki yapıya sahiptir:
- *  kind - Değişimin türünü belirtir; Aşağıdakilerden biri olacaktır:
- *    N - Yeni eklenen bir özelliği/öğeyi belirtir
- *    D - Bir özelliğin/öğenin silindiğini gösterir
- *    E - Bir özelliğin/öğenin düzenlendiğini gösterir
- *    A - Bir dizide meydana gelen bir değişikliği belirtir
- *  path - Özellik yolu (sol taraftaki kökten)
- *  prgA - karşılaştırmanın sol tarafındaki değer
- *  prgB - karşılaştırmanın sağ tarafındaki değer
- *  index - Değişikliğin meydana geldiği dizi indeksini gösterir
- *  item - Dizi indeksinde meydana gelen değişikliği gösteren kaydı içerir
- */
-export const diffs: any[] = []
-
-/**
- * Programın header bilgilerini karsılastırır
- * @param programA Program
- * @param programB Program
- * @returns {boolean} Aynı ise true döner
- */
-function compareHeader(programA: Program, programB: Program): boolean {
-  if (!isDef(programA) || !isDef(programB)) {
-    return false
-  }
-
-  const { duration, steps, ...programWithoutSteps } = programA
-
-  for (const key of Object.keys(programWithoutSteps) as (keyof ProgramHeader)[]) {
-    if (programA[key] !== programB[key]) {
-      return false
-    }
-  }
-  return true
-}
-
-export function compareCommand(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
+export function areCommandsEqual(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
   if (!isDef(stepA) || !isDef(stepB)) {
     return false
   }
   if (stepA.commandNo !== stepB.commandNo) {
     return false
   }
-  if (!compareIOLists(stepA.ioList, stepB.ioList)) {
+  if (!areIOListsEqual(stepA.ioList, stepB.ioList)) {
     return false
   }
-  if (!compareParameters(stepA.parameters, stepB.parameters)) {
+  if (!areParametersEqual(stepA.parameters, stepB.parameters)) {
     return false
   }
   return true
@@ -163,7 +126,7 @@ export function compareCommand(stepA: ProgramStepCommand, stepB: ProgramStepComm
  * @param ioListB IO Listesi
  * @returns {boolean} Aynı ise true döner
  */
-function compareIOLists(ioListA: ioListItem[], ioListB: ioListItem[]): boolean {
+function areIOListsEqual(ioListA: ioListItem[], ioListB: ioListItem[]): boolean {
   for (let index = 0; index < ioListA.length; index++) {
     const ioA = ioListA[index]
     const ioB = ioListB[index]
@@ -198,7 +161,7 @@ function compareIOLists(ioListA: ioListItem[], ioListB: ioListItem[]): boolean {
  * @param parametersB Parametre Listesi
  * @returns {boolean} Aynı ise true döner
  */
-function compareParameters(parametersA: ParameterItem[], parametersB: ParameterItem[]): boolean {
+function areParametersEqual(parametersA: ParameterItem[], parametersB: ParameterItem[]): boolean {
   for (let index = 0; index < parametersA.length; index++) {
     const parameterA = parametersA[index]
     const parameterB = parametersB[index]
@@ -211,23 +174,14 @@ function compareParameters(parametersA: ParameterItem[], parametersB: ParameterI
 }
 
 /**
- * İki programı karşılastırır ve farkları diffs dizisine aktarır.
+ * İki programı karşılaştırır ve aynı olup olmadığını döner.
  * @param programA Program
  * @param programB Program
- * @param noEmitOnDiff Fark bulunduğunda dursun mu?
- * @returns {boolean} Aynı ise true döner
+ * @returns {boolean} Aynı ise true döner. Değilse false döner.
  */
-export function compareProgram(programA: Program, programB: Program, noEmitOnDiff?: boolean): boolean {
-  // Header
-  if (!compareHeader(programA, programB)) {
-    if (noEmitOnDiff)
-      return false
-  }
-
+export function areProgramsEqual(programA: Program, programB: Program): boolean {
   if (programA.steps.length !== programB.steps.length) {
-    diffs.push({ kind: 'E', path: ['steps'], prgA: programA.steps, prgB: programB.steps })
-    if (noEmitOnDiff)
-      return false
+    return false
   }
 
   // Steps
@@ -236,26 +190,20 @@ export function compareProgram(programA: Program, programB: Program, noEmitOnDif
     const stepB = programB.steps[stepIndex]
 
     if (!isDef(stepA) || !isDef(stepB)) {
-      diffs.push({ kind: 'E', path: ['steps', stepIndex], prgA: stepA, prgB: stepB })
-      if (noEmitOnDiff)
-        return false
+      return false
     }
 
     // Main Command
-    if (!compareCommand(stepA.mainCommand, stepB.mainCommand)) {
-      diffs.push({ kind: 'E', path: ['steps', stepIndex, 'mainCommand'], prgA: stepA.mainCommand, prgB: stepB.mainCommand })
-      if (noEmitOnDiff)
-        return false
+    if (!areCommandsEqual(stepA.mainCommand, stepB.mainCommand)) {
+      return false
     }
     // Parallel Commands
     for (let parallelIndex = 0; parallelIndex < stepA.parallelCommands.length; parallelIndex++) {
       const parallelCommandA = stepA.parallelCommands[parallelIndex]
       const parallelCommandB = stepB.parallelCommands[parallelIndex]
 
-      if (!compareCommand(parallelCommandA, parallelCommandB)) {
-        diffs.push({ kind: 'E', path: ['steps', stepIndex, 'parallelCommands', parallelIndex], prgA: parallelCommandA, prgB: parallelCommandB })
-        if (noEmitOnDiff)
-          return false
+      if (!areCommandsEqual(parallelCommandA, parallelCommandB)) {
+        return false
       }
     }
   }
