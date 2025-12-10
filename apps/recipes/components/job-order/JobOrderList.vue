@@ -43,6 +43,7 @@ watch(() => dataStore.newJobOrders, (orders) => {
     getJobOrders()
   }
 })
+
 const columns = ref([
   {
     name: 'batchNo',
@@ -155,6 +156,17 @@ const columns = ref([
   },
   */
 ])
+
+// Filter columns based on jobOrderPrefs
+const filteredColumns = computed(() => {
+  const prefs = stateStore.jobOrderPrefs.show
+  return columns.value.filter((col) => {
+    if (col.field === 'ASNo' && !prefs.ASNo) return false
+    if (col.field === 'yarn' && !prefs.yarn) return false
+    if (col.field === 'workOrder' && !prefs.orderNo) return false
+    return true
+  })
+})
 
 const buttonProps = ref([
   { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science', batch: true, continue: true },
@@ -354,7 +366,7 @@ async function setStatus(status: string, order: JobOrder) {
     <FilterableTable
       v-model:pagination="pagination"
       :rows="jobOrders"
-      :columns
+      :columns="filteredColumns"
       class="h-160 custom-filterable-table"
       :is-virtual-scroll="false"
       @update-filter-slots="handleFilterSlotsUpdate"
