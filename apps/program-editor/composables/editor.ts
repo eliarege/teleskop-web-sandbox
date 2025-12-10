@@ -82,6 +82,9 @@ export const useEditorStore = defineStore('editor', () => {
       path: `/machine/${id}`,
       replace,
     })
+
+    // Makina değiştiğinde program da sıfırlanması gerekiyor
+    program.value = createEmptyProgram()
   }
 
   /**
