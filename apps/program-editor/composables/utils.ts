@@ -251,9 +251,9 @@ export const useErrorStore = defineStore('program-errors', () => {
   }
 
   function clearStepErrors(programNo: number, stepId: number) {
-    const program = errors.value.find(p => p.programNo === programNo)
-    if (program) {
-      program.steps = program.steps.filter(s => s.stepId !== stepId)
+    const programErrors = errors.value.find(p => p.programNo === programNo)
+    if (programErrors) {
+      programErrors.steps = programErrors.steps.filter(s => s.stepId !== stepId)
     }
   }
 
