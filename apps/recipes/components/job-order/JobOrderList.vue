@@ -161,9 +161,12 @@ const columns = ref([
 const filteredColumns = computed(() => {
   const prefs = stateStore.jobOrderPrefs.show
   return columns.value.filter((col) => {
-    if (col.field === 'ASNo' && !prefs.ASNo) return false
-    if (col.field === 'yarn' && !prefs.yarn) return false
-    if (col.field === 'workOrder' && !prefs.orderNo) return false
+    if (col.field === 'ASNo' && !prefs.ASNo)
+      return false
+    if (col.field === 'yarn' && !prefs.yarn)
+      return false
+    if (col.field === 'workOrder' && !prefs.orderNo)
+      return false
     return true
   })
 })
@@ -220,7 +223,8 @@ function onButtonClicked(link: string) {
   }
 }
 async function showJobOrderOverview() {
-  if (!selectedRow.value) return
+  if (!selectedRow.value)
+    return
 
   sessionStorage.setItem('jobOrderBatchNo', JSON.stringify(selectedRow.value.batchNo))
   const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
