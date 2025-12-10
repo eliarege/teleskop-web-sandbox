@@ -274,26 +274,17 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
         notifySuccess(t(`contextMenu.get.success`, { programNo: program.programNo }))
       } catch (error: any) {
-        const messageKey = 'fail'
+        let messageKey = 'fail'
 
-        for (const program of programs) {
-          try {
-            await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-            notification(true, t(`contextMenu.get.success`, { programNo: program.programNo }))
-          } catch (error: any) {
-            let messageKey = 'fail'
-
-            if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
-              messageKey = 'programNotFound'
-            }
-            notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
-          }
-          notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
+        if (isProgramError(error, 'PROGRAM_NOT_FOUND')) {
+          messageKey = 'programNotFound'
         }
-      } finally {
-        editor.isLoading = false
+
+        notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
       }
     }
+
+    editor.isLoading = false
   }
 
   async function sendProgramToMachines(programs: ProgramItem[], machines: MachineInfo[], machineId: number): Promise<void> {

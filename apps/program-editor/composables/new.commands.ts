@@ -572,10 +572,10 @@ registerCommand(() => {
         } else if (response === 'noToAll') {
           userChoice = 'noToAll'
         }
-
-        await editor.refreshAllPrograms()
-        return false
       }
+
+      await editor.refreshAllPrograms()
+      return true
     },
   }
 })
