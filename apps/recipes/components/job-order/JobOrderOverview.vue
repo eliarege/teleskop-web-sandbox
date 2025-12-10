@@ -120,7 +120,8 @@ function getAllMaterialsFromSteps(program: RecipeMasterStep) {
       ...material,
       calculated: computed(() => calculateAmount(material, program)),
       isIntermediateStep: true,
-      displayOrderNo: manualStep.nextStep, // For sorting: place before the nextStep
+      nextStep: manualStep.nextStep,
+      displayOrderNo: manualStep.nextStep, // For sorting: place before or after regular steps
     })),
   )
 
