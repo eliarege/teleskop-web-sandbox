@@ -80,7 +80,7 @@ export interface RegisteredCommands {
   newProgram: [ctx: any]
   saveAsProgram: [ctx: any]
   discardChanges: [ctx: any]
-  unsavedChanges: [ctx: any, machineId?: number]
+  unsavedChanges: [ctx: any, targetRoute: string]
   programVersionInfo: [ctx: any, program: { programNo: number, name: string }]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, commandNo: number]
@@ -794,31 +794,22 @@ registerCommand(() => {
 registerCommand(() => {
   return {
     name: 'unsavedChanges',
-    execute(ctx: any, machineId: number) {
+    execute(ctx: any, targetRoute: string) {
       ctx.$q.dialog({
         component: TBUnsavedChangesDialog,
-      }).onOk(async (type: string) => {
+      }).onOk(async (type: 'save' | 'discard') => {
         const editor = useEditorStore()
 
         if (type === 'save') {
           const saved = await editor.onSubmit()
-
-          if (saved)
-            if (machineId) {
-              await editor.changeMachine(machineId)
-            }
-        } else if (type === 'discard') {
-          editor.program = editor.createEmptyProgram()
-          await nextTick()
+          if (!saved)
+            return
+        } else {
           editor.program = klona(editor.originalProgram)
-          editor.selectedSteps = []
-
-          if (machineId) {
-            await editor.changeMachine(machineId)
-          }
         }
+
+        await navigateTo(targetRoute)
       })
-      return true
     },
   }
 })

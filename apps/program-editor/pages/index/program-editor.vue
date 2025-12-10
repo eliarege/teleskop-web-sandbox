@@ -287,10 +287,10 @@ if (editor.machine.id !== machineId) {
 await editor.loadProgram(machineId, programNo)
 editor.isLoading = false
 
-onBeforeRouteLeave(() => {
+onBeforeRouteLeave((to) => {
   const hasChanged = editor.hasProgramChanged()
   if (hasChanged) {
-    $commandManager.executeCommand('unsavedChanges', { $q })
+    $commandManager.executeCommand('unsavedChanges', { $q }, to.fullPath)
     return false
   } else {
     editor.errorIds.clear()
