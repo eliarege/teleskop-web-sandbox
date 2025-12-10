@@ -561,8 +561,8 @@
     "title": "Unsaved Changes",
     "message": "You have unsaved changes. What would you like to do?",
     "buttons": {
-      "discard": "Discard and Continue",
-      "save": "Save and Continue",
+      "discard": "Discard",
+      "save": "Save",
       "cancel": "Cancel"
     }
   },
