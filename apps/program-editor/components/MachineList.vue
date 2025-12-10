@@ -13,14 +13,13 @@ const route = useRoute()
 const editor = useEditorStore()
 const machineStatusStore = useMachineStatusStore()
 
-// İlk makineyi otomatik olarak seçer
-watch(() => [props.machineGroups.length, route.path], () => {
+onMounted(() => {
   if (route.path === '/') {
     const firstMachine = props.machineGroups.find(group => group.machines.length)?.machines[0]
     if (firstMachine)
       editor.changeMachine(firstMachine.id)
   }
-}, { immediate: true })
+})
 
 async function onUpdateSelected(selection: string) {
   if (selection) {

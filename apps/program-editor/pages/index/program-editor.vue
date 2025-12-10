@@ -22,6 +22,17 @@ definePageMeta({
   roles: ['program-view'],
 })
 
+onBeforeRouteLeave((to) => {
+  const hasChanged = editor.hasProgramChanged()
+  if (hasChanged) {
+    $commandManager.executeCommand('unsavedChanges', { $q }, to.fullPath)
+    return false
+  } else {
+    editor.errorIds.clear()
+    return true
+  }
+})
+
 const buttons = computed<ContextBarButtons[]>(() => [
   {
     label: t('menu.print'),
@@ -286,17 +297,6 @@ if (editor.machine.id !== machineId) {
 }
 await editor.loadProgram(machineId, programNo)
 editor.isLoading = false
-
-onBeforeRouteLeave((to) => {
-  const hasChanged = editor.hasProgramChanged()
-  if (hasChanged) {
-    $commandManager.executeCommand('unsavedChanges', { $q }, to.fullPath)
-    return false
-  } else {
-    editor.errorIds.clear()
-    return true
-  }
-})
 </script>
 
 <template>
