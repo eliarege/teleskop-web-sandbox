@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
       machineName: 'm.machine_name',
       machineId: 'm.machine_id',
       dispenserId: 'j.dispenser_id',
+      requestTime: 'j.request_time',
       tankNo: 'j.tank_no',
       programNo: 'j.program_no',
       programName: dmsDB.raw(`CASE WHEN j.type = 0 THEN '' ELSE p.program_name END`),

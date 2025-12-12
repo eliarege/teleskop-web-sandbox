@@ -14,7 +14,7 @@ import { useDataStore } from '~/store/DataStore'
 import { StatusCodes } from '~/shared/constants'
 import { useStateStore } from '~/store/State'
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 const { notifySuccess, notifyFail } = useNotify()
 const q = useQuasar()
 const route = useRoute()
@@ -121,6 +121,16 @@ const columns = ref([
     filterType: 'includes',
   },
   {
+    name: 'requestTime',
+    label: t('jobOrderParams.StartDate'),
+    field: 'requestTime',
+    align: 'left',
+    filterable: true,
+    filterType: 'date',
+    format: (val: any) => val ? d(new Date(val), 'datetime') : '',
+  },
+  /*
+  {
     name: 'recipeType',
     label: t('RecipeType'),
     field: 'recipeType',
@@ -134,6 +144,7 @@ const columns = ref([
     optionLabel: 'label',
     optionValue: 'recipeType',
   },
+  */
   /*
   {
     name: 'status',
@@ -400,7 +411,7 @@ async function setStatus(status: string, order: JobOrder) {
               {{ t(`jobOrderTypes.${props.row.type}`) }}
             </span>
             <span v-else>
-              {{ props.row[col.field] }}
+              {{ col.format ? col.format(props.row[col.field], props.row) : props.row[col.field] }}
             </span>
             <QMenu
               touch-position

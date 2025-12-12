@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
     batchCorrectionNo: 'j.batch_correction_no',
     machineName: 'm.machine_name',
     machineId: 'm.machine_id',
+    requestTime: 'j.request_time',
     colorName: 'b.color_name',
     customerName: 'b.customer_name',
     workOrder: 'b.order_no',
