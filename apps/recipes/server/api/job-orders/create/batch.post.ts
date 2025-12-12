@@ -83,7 +83,7 @@ async function insertRecipeMaterials(
     unit: material.unit,
     ...(connectedDispenser?.dispenserId && { dispenser_id: connectedDispenser.dispenserId }),
     real_amount: material.amount,
-    main_step: step.stepNo,
+    main_step: step.orderNo,
     parallel_step: materialIndex,
   })
   await dmExchangeDB('Dyelot_Recipe').insert({
