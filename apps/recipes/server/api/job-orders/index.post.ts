@@ -9,6 +9,12 @@ export default defineEventHandler(async (event) => {
     batchCorrectionNo: 'j.batch_correction_no',
     machineName: 'm.machine_name',
     machineId: 'm.machine_id',
+    recipeName: dmsDB.raw(`(
+      SELECT rm.recipe_name
+      FROM "RECIPE_MASTER" rm
+      WHERE rm.recipe_id = b.recipe_id AND rm.machine_id = j.machine_id
+      LIMIT 1
+    )`),
     programNos: dmsDB.raw(`(
       SELECT array_agg(DISTINCT j2.program_no)
       FROM "JOB_ORDER" j2

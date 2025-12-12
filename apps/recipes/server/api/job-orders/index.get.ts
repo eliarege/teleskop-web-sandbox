@@ -23,6 +23,12 @@ export default defineEventHandler(async (event) => {
       machineName: 'm.machine_name',
       machineId: 'm.machine_id',
       dispenserId: 'j.dispenser_id',
+      recipeName: dmsDB.raw(`(
+        SELECT rm.recipe_name
+        FROM "RECIPE_MASTER" rm
+        WHERE rm.recipe_id = b.recipe_id AND rm.machine_id = j.machine_id
+        LIMIT 1
+      )`),
       requestTime: 'j.request_time',
       tankNo: 'j.tank_no',
       programNos: dmsDB.raw(`(

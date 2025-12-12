@@ -260,6 +260,7 @@ export default defineEventHandler(async (event) => {
           planned_start_date: new Date(),
           color_code: recipeHeader.colorCode,
           color_name: recipeHeader.colorName,
+          recipe_id: recipeHeader.recipeId,
           order_no: params.orderNo,
           flotte: params.flotte,
           total_weight: params.totalWeight,

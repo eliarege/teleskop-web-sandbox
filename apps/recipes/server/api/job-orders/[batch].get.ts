@@ -153,7 +153,7 @@ export default defineEventHandler(async (event) => {
 
     // TODO: Recipe params
     const recipeParams: RecipeProgramMaster = {
-      recipeId: 0,
+      recipeId: batchPlan.recipe_id ?? 0,
       recipeName: '',
       recipeGroup: 0,
       recipeType: 0,
@@ -198,6 +198,7 @@ export default defineEventHandler(async (event) => {
       recipeParams,
       params,
       machines,
+      recipeId: batchPlan.recipe_id ?? 0,
     }
   } catch (error: any) {
     throw createError({

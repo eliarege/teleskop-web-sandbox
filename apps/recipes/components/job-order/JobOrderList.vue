@@ -87,6 +87,14 @@ const columns = ref([
     format: (val: any, row: any) => formatProgramNames(row?.programNames),
   },
   {
+    name: 'recipeName',
+    label: t('Recipe'),
+    field: 'recipeName',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
+  },
+  {
     name: 'colorName',
     label: t('jobOrderParams.ColorName'),
     field: 'colorName',
