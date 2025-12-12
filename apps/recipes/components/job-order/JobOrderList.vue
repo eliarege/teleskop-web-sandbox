@@ -333,9 +333,10 @@ async function setStatus(status: string, order: JobOrder) {
 
 <template>
   <div class="q-pa-md">
-    <div class="row q-gutter-md items-center q-justify-between m-5">
-      <div class="col-auto">
+    <div class="row q-gutter-md items-center justify-center m-5">
+      <div>
         <QSelect
+          v-if="false"
           v-model="selectedDispenser"
           borderless
           dense
@@ -358,7 +359,7 @@ async function setStatus(status: string, order: JobOrder) {
         @click="newBatchJobOrder"
       />
       <QBtn
-        v-show="false"
+        v-if="false"
         no-caps
         icon="note_add"
         color="primary"
