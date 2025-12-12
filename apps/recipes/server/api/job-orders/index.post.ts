@@ -9,6 +9,17 @@ export default defineEventHandler(async (event) => {
     batchCorrectionNo: 'j.batch_correction_no',
     machineName: 'm.machine_name',
     machineId: 'm.machine_id',
+    programNos: dmsDB.raw(`(
+      SELECT array_agg(DISTINCT j2.program_no)
+      FROM "JOB_ORDER" j2
+      WHERE j2.batch_no = j.batch_no
+    )`),
+    programNames: dmsDB.raw(`(
+      SELECT array_agg(DISTINCT ph.program_name)
+      FROM "JOB_ORDER" j2
+      JOIN "PROGRAM_HEADER" ph ON ph.program_no = j2.program_no AND ph.machine_id = j2.machine_id
+      WHERE j2.batch_no = j.batch_no
+    )`),
     requestTime: 'j.request_time',
     colorName: 'b.color_name',
     customerName: 'b.customer_name',
@@ -49,5 +60,6 @@ export default defineEventHandler(async (event) => {
   jobOrders = jobOrders.limit(1000)
   if (filters)
     filtersToKnex(filters, selectParams, jobOrders)
-  return await jobOrders
+  const rows = await jobOrders
+  return rows
 })

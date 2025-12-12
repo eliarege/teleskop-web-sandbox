@@ -28,6 +28,11 @@ const dispensers = await dataStore.getDispensers()
 const dispenserSelections = [{ dispenserId: -1, dispenserName: t('AllDispensers') }, ...dispensers]
 const selectedDispenser = ref(dataStore.selectedDispenser ? dataStore.selectedDispenser : dispenserSelections[0])
 const { data: machines } = await useFetch<Machine[]>('/api/machines')
+function formatProgramNames(programNames: string[] | null | undefined) {
+  if (!programNames || !Array.isArray(programNames) || programNames.length === 0)
+    return ''
+  return programNames.join(', ')
+}
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
   jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, {
@@ -71,6 +76,15 @@ const columns = ref([
     selectionOptions: machines.value,
     optionLabel: 'machineName',
     optionValue: 'machineId',
+  },
+  {
+    name: 'programNames',
+    label: t('Programs'),
+    field: 'programNames',
+    align: 'left',
+    filterable: false,
+    filterType: 'includes',
+    format: (val: any, row: any) => formatProgramNames(row?.programNames),
   },
   {
     name: 'colorName',
@@ -411,7 +425,16 @@ async function setStatus(status: string, order: JobOrder) {
               {{ t(`jobOrderTypes.${props.row.type}`) }}
             </span>
             <span v-else>
-              {{ col.format ? col.format(props.row[col.field], props.row) : props.row[col.field] }}
+              <span
+                v-if="col.name === 'programNames' && selectedRow !== props.row"
+                class="cell-truncate"
+                :title="col.format ? col.format(props.row[col.field], props.row) : props.row[col.field]"
+              >
+                {{ col.format ? col.format(props.row[col.field], props.row) : props.row[col.field] }}
+              </span>
+              <span v-else>
+                {{ col.format ? col.format(props.row[col.field], props.row) : props.row[col.field] }}
+              </span>
             </span>
             <QMenu
               touch-position
@@ -511,5 +534,12 @@ async function setStatus(status: string, order: JobOrder) {
   background-color: #f0f0f0;
   border: 1px solid #ccc;
   border-radius: 5px;
+}
+.cell-truncate {
+  display: inline-block;
+  max-width: 22rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
