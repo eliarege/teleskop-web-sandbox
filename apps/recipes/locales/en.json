@@ -52,6 +52,7 @@
   "ViewJobOrder": "View Job Order",
   "BatchNo": "Batch No",
   "NewBatchJobOrder": "New Batch Job Order",
+  "ReuseRequest": "Reuse Request",
   "CreateVariant": "Create a Recipe Variant",
   "SelectVariant": "Select a Recipe Variant",
   "RecipeVariant": "Recipe Variant",

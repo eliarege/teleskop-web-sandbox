@@ -210,6 +210,7 @@ const buttonProps = ref([
   { name: 'weighingInfo', label: t('weighingFields.Info'), link: 'weighing', icon: 'balance', batch: true, continue: false },
   { name: 'parameters', label: t('batchPlanParameterFields.Title'), link: 'parameters', icon: 'format_list_numbered', batch: true, continue: false },
   { name: 'info', label: t('Info'), link: 'info', icon: 'info', batch: false, continue: true },
+  { name: 'reuseRequest', label: t('ReuseRequest'), link: 'reuse', icon: 'restart_alt', batch: true, continue: true },
 ])
 const filteredButtonProps = computed(() => {
   return buttonProps.value.filter((button) => {
@@ -253,6 +254,8 @@ function onButtonClicked(link: string) {
       component: JobOrderContinueInfoDialog,
       componentProps: { jobOrder },
     })
+  } else if (link === 'reuse') {
+    openBatchCreateFromSelected()
   }
 }
 async function showJobOrderOverview() {
@@ -268,6 +271,44 @@ async function showJobOrderOverview() {
       target: '_blank',
     },
   })
+}
+async function openBatchCreateFromSelected() {
+  if (!selectedRow.value)
+    return
+
+  try {
+    const data = await $fetch(`/api/job-orders/${selectedRow.value.batchNo}`)
+    const variant = data?.recipeParams?.variantName ? { variantName: data.recipeParams.variantName } : undefined
+
+    q.dialog({
+      component: JobOrderBatchCreateDialog,
+      componentProps: {
+        recipeId: data?.recipeId ?? data?.recipeParams?.recipeId,
+        machineId: data?.machines?.[0]?.machineId,
+        variant,
+        initialParams: data?.params,
+      },
+    }).onOk(async (payload: any) => {
+      if (payload.print) {
+        sessionStorage.setItem('jobOrderMaterials', JSON.stringify(payload.materials))
+        sessionStorage.setItem('jobOrderParams', JSON.stringify(payload.params))
+        sessionStorage.setItem('jobOrderMachines', JSON.stringify(payload.machines))
+        sessionStorage.setItem('jobOrderRecipeParams', JSON.stringify(payload.recipeParams))
+        const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
+        await navigateTo({
+          path: correctPath,
+        }, {
+          open: {
+            target: '_blank',
+          },
+        })
+      }
+      notifySuccess(t('Success'))
+      getJobOrders()
+    })
+  } catch (e) {
+    notifyFail(t('Failed'))
+  }
 }
 const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
 watch(() => route.query.dispenserId, (val) => {
@@ -449,6 +490,13 @@ async function setStatus(status: string, order: JobOrder) {
               context-menu
             >
               <QList>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="openBatchCreateFromSelected"
+                >
+                  <QItemSection>{{ t('NewBatchJobOrder') }}</QItemSection>
+                </QItem>
                 <QItem
                   v-close-popup
                   clickable

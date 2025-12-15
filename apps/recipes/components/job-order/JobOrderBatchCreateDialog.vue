@@ -19,6 +19,10 @@ const props = defineProps({
     type: Object as PropType<RecipeVariant>,
     required: false,
   },
+  initialParams: {
+    type: Object as PropType<JobOrderParams>,
+    required: false,
+  },
 })
 const q = useQuasar()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
@@ -119,6 +123,29 @@ function onRecipeFocus() {
 getRecipes()
 getDefaultBatchNo()
 getAdditonalData()
+
+// Apply initial parameters if provided (when opened from an existing batch)
+function applyInitialFromProps() {
+  if (!props.initialParams)
+    return
+
+  const p = props.initialParams
+  // Do NOT override jobNo here; use default new batch number
+  jobOrderParams.value.numberOfJobs = p.numberOfJobs ?? jobOrderParams.value.numberOfJobs
+  jobOrderParams.value.totalWeight = p.totalWeight ?? jobOrderParams.value.totalWeight
+  jobOrderParams.value.flotteRatio = p.flotteRatio ?? jobOrderParams.value.flotteRatio
+  jobOrderParams.value.flotte = p.flotte ?? jobOrderParams.value.flotte
+  jobOrderParams.value.partyNo = p.partyNo ?? jobOrderParams.value.partyNo
+  jobOrderParams.value.orderNo = p.orderNo ?? jobOrderParams.value.orderNo
+  jobOrderParams.value.notes = p.notes ?? jobOrderParams.value.notes
+  jobOrderParams.value.customerName = p.customerName ?? jobOrderParams.value.customerName
+  jobOrderParams.value.fabricType = p.fabricType ?? jobOrderParams.value.fabricType
+  jobOrderParams.value.yarn = p.yarn ?? jobOrderParams.value.yarn
+  jobOrderParams.value.ASNo = p.ASNo ?? jobOrderParams.value.ASNo
+}
+
+applyInitialFromProps()
+watch(() => props.initialParams, () => applyInitialFromProps(), { deep: true })
 
 async function getRecipes() {
   recipes.value = await $fetch('/api/recipes/master',

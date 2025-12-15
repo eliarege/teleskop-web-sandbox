@@ -52,6 +52,7 @@
   "ViewJobOrder": "İş Emrini Görüntüle",
   "BatchNo": "Batch Numarası",
   "NewBatchJobOrder": "Yeni Batch İş Emri",
+  "ReuseRequest": "İsteği Yeniden Kullan",
   "CreateVariant": "Reçete Varyasyonu Oluştur",
   "SelectVariant": "Reçete Varyasyonu Seç",
   "RecipeVariant": "Reçete Varyasyonu",
