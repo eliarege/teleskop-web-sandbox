@@ -30,16 +30,32 @@ export default defaultConfig({
           `${name} cannot start with "${args[0]}".`,
       },
       ui: {
-        incomplete: 'Sorry, not all fields are filled out correctly.',
+        incomplete: 'All fields must be filled out correctly.',
       },
     },
     tr: {
       validation: {
+        max({ name, node: { value }, args }) {
+          // Shown when the length of the array of user-provided values is longer than the max supplied to the rule.
+          if (Array.isArray(value)) {
+            return `${name} en fazla ${args[0]} seçenek içerebilir.`
+          }
+          // Shown when the user-provided value is greater than (or equal to) the maximum number supplied to the rule
+          return `${name} en fazla ${args[0]} olabilir.`
+        },
+        min({ name, node: { value }, args }) {
+          // Shown when the length of the array of user-provided values is shorter than the min supplied to the rule.
+          if (Array.isArray(value)) {
+            return `${name} en az ${args[0]} seçenek içermelidir.`
+          }
+          // Shown when the user-provided value is less than (or equal to) the minimum number supplied to the rule
+          return `${name} en az ${args[0]} olabilir.`
+        },
         notStartsWith: ({ name, args }) =>
           `${name} "${args[0]}" ile başlayamaz.`,
       },
       ui: {
-        incomplete: 'Üzgünüz, tüm alanlar doğru şekilde doldurulmamış.',
+        incomplete: 'Tüm alanlar doğru şekilde doldurulmalıdır.',
       },
     },
   },
