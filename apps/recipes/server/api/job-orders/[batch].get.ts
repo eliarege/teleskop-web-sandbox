@@ -128,7 +128,7 @@ export default defineEventHandler(async (event) => {
         materialName: materialNameMap.get(step.material_code) || '',
         amount: materialRequest.real_amount,
         unit: materialRequest.unit,
-        orderNo: step.req_no_batch,
+        orderNo: step.req_no_batch + 1,
         programIndex: step.main_step,
         type: step.recipe_type,
         isManual: materialRequest.dispenser_id === null,
@@ -193,12 +193,21 @@ export default defineEventHandler(async (event) => {
       connectedDispensers: null,
     }]
 
+    // Determine request time from JOB_ORDERs (earliest request_time)
+    const requestTime: string | null = jobOrders.length > 0 && jobOrders[0].request_time
+      ? new Date(
+        jobOrders
+          .map(j => new Date(j.request_time as Date))
+          .sort((a, b) => a.getTime() - b.getTime())[0],
+      ).toISOString()
+      : null
     return {
       steps,
       recipeParams,
       params,
       machines,
       recipeId: batchPlan.recipe_id ?? 0,
+      requestTime,
     }
   } catch (error: any) {
     throw createError({

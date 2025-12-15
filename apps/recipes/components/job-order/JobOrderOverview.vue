@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RecipeType } from '~/shared/constants'
+import { useStateStore } from '~/store/State'
 import type { JobOrderParams, Machine, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
 
 const props = defineProps({
@@ -24,7 +25,9 @@ const props = defineProps({
     required: false,
   },
 })
-const { t } = useI18n()
+const { t, d } = useI18n()
+const route = useRoute()
+const stateStore = useStateStore()
 const companyInfo = ref(null)
 const currentUser = ref('Default User')
 const currentTime = ref(new Date().toLocaleString())
@@ -75,26 +78,32 @@ const barcodeUrl = computed(() => {
   return `https://barcode.tec-it.com/barcode.ashx?data=${jobNumbers.value}&code=Code128&translate-esc=false`
 })
 
-// Fetch data if batchNo is provided but other props are not
+const batchNoToUse = computed(() => props.batchNo || (route.query.batchNo as string | undefined))
+
+// Fetch data if batchNo is provided (via prop or query) but other props are not
 onMounted(async () => {
-  if (props.batchNo && !props.steps && !props.recipeParams && !props.params && !props.machines) {
+  if (batchNoToUse.value && !props.steps && !props.recipeParams && !props.params && !props.machines) {
     await fetchJobOrderData()
   }
 })
 
 async function fetchJobOrderData() {
-  if (!props.batchNo)
+  if (!batchNoToUse.value)
     return
 
   isLoading.value = true
   error.value = null
 
   try {
-    const data = await $fetch(`/api/job-orders/${props.batchNo}`)
+    const data = await $fetch(`/api/job-orders/${batchNoToUse.value}`)
     fetchedSteps.value = data.steps
     fetchedRecipeParams.value = data.recipeParams
     fetchedParams.value = data.params
     fetchedMachines.value = data.machines
+    // Prefer backend request time if provided
+    if (data.requestTime) {
+      currentTime.value = d(new Date(data.requestTime), 'datetime') as unknown as string
+    }
   } catch (err: any) {
     error.value = err.message || 'Failed to fetch job order data'
     console.error('Failed to fetch job order:', err)
@@ -250,19 +259,19 @@ function printPage() {
             <span>{{ t('FabricType') }}:</span>
             <strong>{{ actualParams.fabricType }}</strong>
           </div>
-          <div class="info-item">
+          <div v-if="stateStore.jobOrderPrefs.show.orderNo" class="info-item">
             <span>{{ t('jobOrderParams.OrderNo') }}:</span>
             <strong>{{ actualParams.orderNo }}</strong>
           </div>
-          <div class="info-item">
+          <div v-if="(stateStore.jobOrderPrefs.show.PartyNo === undefined || stateStore.jobOrderPrefs.show.PartyNo)" class="info-item">
             <span>{{ t('jobOrderParams.PartyNo') }}:</span>
             <strong>{{ actualParams.partyNo }}</strong>
           </div>
-          <div class="info-item">
+          <div v-if="stateStore.jobOrderPrefs.show.yarn" class="info-item">
             <span>{{ t('jobOrderParams.Yarn') }}:</span>
             <strong>{{ actualParams.yarn }}</strong>
           </div>
-          <div class="info-item">
+          <div v-if="stateStore.jobOrderPrefs.show.ASNo" class="info-item">
             <span>{{ t('jobOrderParams.ASNo') }}:</span>
             <strong>{{ actualParams.ASNo }}</strong>
           </div>
