@@ -188,6 +188,7 @@
   "stepChangeAuthority": "Step Change Authority",
   "changingMachineAuthority": "Changing Machine Authority",
   "authorityForOperatorInterventionFreePrograms": "Authority For Operator Intervention Free Programs",
+  "automaticMeasurementCommandsApprovalAuthority": "Automatic Measurement Commands Approval Authority",
   "save": "Save",
   "additionalTank1": "Additional Tank 1",
   "additionalTank2": "Additional Tank 2",

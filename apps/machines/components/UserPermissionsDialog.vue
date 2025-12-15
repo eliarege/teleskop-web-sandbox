@@ -38,7 +38,7 @@ const permissionsGroup1 = reactive<Permission[]>([
   { label: t('manualCommandStarting'), index: 4, value: false },
   { label: t('accessingToSystemMenu'), index: 5, value: menuAccessPermission },
   { label: t('modifyingProgramAtRunTime'), index: 6, value: false },
-  { label: t('test'), index: 7, value: false },
+  { label: t('testAuth'), index: 7, value: false },
   {
     label: t('accessingToDyeHouseParameters'),
     index: 8,
@@ -145,6 +145,7 @@ const permissionsGroup2 = reactive<Permission[]>(([
   { label: t('stepChangeAuthority'), index: 1, value: true },
   { label: t('changingMachineAuthority'), index: 2, value: false },
   { label: t('authorityForOperatorInterventionFreePrograms'), index: 3, value: false },
+  { label: t('automaticMeasurementCommandsApprovalAuthority'), index: 4, value: false },
 ]))
 
 const user = computed(() => props.user)
