@@ -16,9 +16,13 @@ export default defineAuthEventHandler(async (event) => {
         timeout: 1000,
       })
     }
-    uuid && sse.send(uuid, 'log', { message: 'connection-successful' })
-  } catch (error) {
-    uuid && sse.send(uuid, 'error', { message: 'NETWORK_CONN_FAILED' })
+    if (uuid) {
+      sse.send(uuid, 'log', { message: 'connection-successful' })
+    }
+  } catch {
+    if (uuid) {
+      sse.send(uuid, 'log', { message: 'connection-failed' })
+    }
     throw createError({
       statusMessage: 'NETWORK_CONN_FAILED',
       statusCode: 500,

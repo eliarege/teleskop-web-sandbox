@@ -237,20 +237,7 @@ function selectAll() {
             :key="col.name"
             :props="bodyProps"
           >
-            <div v-if="col.name === 'theoricalChargeDuration'" class="flex items-center gap-2">
-              <span>{{ col.value }}</span>
-              <q-icon
-                v-if="Number(bodyProps.row.theoricalCharge) * Number(bodyProps.row.theoricalChargeDuration) > 1440"
-                name="warning"
-                color="red"
-                size="20px"
-              >
-                <q-tooltip>
-                  {{ t('chargeExceeds1440Minutes') }}
-                </q-tooltip>
-              </q-icon>
-            </div>
-            <div v-else-if="typeof col.value === 'boolean'">
+            <div v-if="typeof col.value === 'boolean'">
               <TwIcon
                 :name="col.value ? 'i-mdi-check' : 'i-mdi-close'"
                 size="20px"
@@ -271,13 +258,13 @@ function selectAll() {
     <GetDyeHouseDefinitionsDialog
       v-if="showGetDyeHouseDefinitions && selected[0]"
       :show="showGetDyeHouseDefinitions"
-      :selected="selected[0] as Machine"
+      :selected="selected[0]!"
       @close="showGetDyeHouseDefinitions = false"
     />
     <SetDyeHouseDefinitionsDialog
       v-if="showSetDyeHouseDefinitions && selected[0]"
       :show="showSetDyeHouseDefinitions"
-      :selected="selected[0] as Machine"
+      :selected="selected[0]!"
       @close="showSetDyeHouseDefinitions = false"
     />
     <MachineParametersDialog

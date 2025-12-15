@@ -306,16 +306,18 @@ function showAddModal() {
     component: AddEditModal,
     componentProps: {
       title: t('addMachine'),
-      modelValue: {},
+      initialData: {},
       isEdit: false,
-      onSubmit: (e: Machine) => handleAdd(e),
       tbbModelOptions,
       steamUnitOptions,
       machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
       mtTempIoOptions: [],
       steamValveDoOptions: [],
+      machines: machines.value,
     },
     persistent: true,
+  }).onOk((formData: Machine) => {
+    handleAdd(formData)
   })
 }
 function showEditModal() {
@@ -324,9 +326,8 @@ function showEditModal() {
     component: AddEditModal,
     componentProps: {
       title: t('editMachine'),
-      modelValue: selectedMachine,
+      initialData: selectedMachine,
       isEdit: true,
-      onSubmit: (e: Machine) => handleEdit(e),
       tbbModelOptions,
       steamUnitOptions,
       machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
@@ -340,8 +341,11 @@ function showEditModal() {
         value: s.ioId,
         machineId: selectedMachine.machineId,
       })),
+      machines: machines.value,
     },
     persistent: true,
+  }).onOk((formData: Machine) => {
+    handleEdit(formData)
   })
 }
 

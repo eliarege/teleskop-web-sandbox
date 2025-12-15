@@ -22,7 +22,7 @@ export default defineAuthEventHandler(async (event) => {
       return { status: 'ok' }
     }
   } catch (e) {
-    console.error(e)
+    console.error(`MACHINE_CONN_FAILED to ${ip}:`, e)
     throw createError({ statusMessage: 'MACHINE_CONN_FAILED', statusCode: 500 })
   }
 })
