@@ -30,6 +30,8 @@
     "calendar": "Calendar"
   },
   "teleskop": {
+    "consumption-tooltip-last-week": "{lastWeekStart} and {lastWeekEnd} consumption",
+    "consumption-tooltip-this-week": "{thisWeekStart} and {thisWeekEnd} consumption",
     "consumption-electricity": "Last Week Electricity",
     "consumption-water": "Last Week Water",
     "consumption-salt": "Last Week Salt",

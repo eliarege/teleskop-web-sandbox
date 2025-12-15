@@ -14,8 +14,7 @@ const props = withDefaults(defineProps<{
   positiveTrendClass: 'text-green-500',
   negativeTrendClass: 'text-red-500',
 })
-const { n } = useI18n()
-
+const { n, t } = useI18n()
 function formatNumber(value: number) {
   return `${n(value || 0, {
     style: 'decimal',
@@ -24,6 +23,24 @@ function formatNumber(value: number) {
     ...props.formatOptions,
   })} ${props.unit}`
 }
+const lastWeek = computed(() => {
+  const start = new Date()
+  start.setDate(start.getDate() - start.getDay() - 7)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date()
+  end.setDate(end.getDate() - end.getDay() - 1)
+  end.setHours(23, 59, 59, 999)
+  return { start, end }
+})
+const thisWeek = computed(() => {
+  const start = new Date()
+  start.setDate(start.getDate() - start.getDay())
+  start.setHours(0, 0, 0, 0)
+  const end = new Date()
+  end.setDate(end.getDate() - end.getDay() + 6)
+  end.setHours(23, 59, 59, 999)
+  return { start, end }
+})
 </script>
 
 <template>
@@ -31,11 +48,11 @@ function formatNumber(value: number) {
     <!-- <div class="inline"> -->
     <QTooltip
       transition-show="scale"
-      class="text-black e-border bg-white"
+      class="text-black e-border bg-white flex-center flex-col"
       :offset="[3, 3]"
     >
-      {{ label }}
-      {{ formatNumber(previousValue) }}
+      <span>{{ t('teleskop.consumption-tooltip-last-week', { lastWeekStart: lastWeek.start.toLocaleDateString(), lastWeekEnd: lastWeek.end.toLocaleDateString() }) }}: {{ formatNumber(previousValue) }}</span>
+      <span>{{ t('teleskop.consumption-tooltip-this-week', { thisWeekStart: thisWeek.start.toLocaleDateString(), thisWeekEnd: thisWeek.end.toLocaleDateString() }) }}: {{ formatNumber(currentValue) }}</span>
     </QTooltip>
     <TwIcon
       :name="icon"
