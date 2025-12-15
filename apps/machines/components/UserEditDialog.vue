@@ -15,14 +15,12 @@ interface User {
 }
 
 const props = defineProps<{
-  modelValue: boolean
   user?: User
   existingUserIds: number[]
   userTypeOptions: { label: string, value: number }[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
   (e: 'saved', user: User): void
   (e: 'editPermissions', userId: number | undefined): void
 }>()
@@ -32,9 +30,7 @@ const { fetch } = useKeycloak()
 const { notifyError } = useNotify()
 
 const isEdit = computed(() => !!props.user)
-const localModelValue = ref(props.modelValue)
-watch(() => props.modelValue, val => localModelValue.value = val)
-watch(localModelValue, val => emit('update:modelValue', val))
+const visible = defineModel<boolean>()
 
 const form = ref<User>({
   userId: undefined,
@@ -50,7 +46,7 @@ const form = ref<User>({
 })
 
 watch(
-  () => props.modelValue,
+  () => visible.value,
   (val) => {
     if (val) {
       if (isEdit.value && props.user) {
@@ -108,7 +104,7 @@ async function saveUser() {
     }
 
     emit('saved', { ...form.value, userId: props.user?.userId })
-    localModelValue.value = false
+    visible.value = false
   } catch (err: any) {
     if (err?.statusCode === 400) {
       console.error('Bu ID zaten mevcut:', err.statusMessage)
@@ -119,10 +115,15 @@ async function saveUser() {
     }
   }
 }
+
+function uniqueUserId(val: number | string) {
+  const currentUserId = props.user?.userId
+  return Number(val) === currentUserId || !props.existingUserIds.includes(Number(val))
+}
 </script>
 
 <template>
-  <q-dialog v-model="localModelValue" persistent>
+  <q-dialog v-model="visible" persistent>
     <q-card style="min-width: 400px">
       <q-card-section>
         <div class="text-h6 flex items-center">
@@ -134,7 +135,7 @@ async function saveUser() {
             flat
             round
             dense
-            @click="localModelValue = false"
+            @click="visible = false"
           />
         </div>
       </q-card-section>
@@ -150,9 +151,7 @@ async function saveUser() {
             type="number"
             :rules="[val => !!val || t('userIdRequired'),
                      val => val > 0 || t('userIdMustBePositive'),
-                     val => (!isEdit && !props.existingUserIds.includes(Number(val)))
-                       || (isEdit && (Number(val) === props.user?.userId || !props.existingUserIds.includes(Number(val))))
-                       || t('userIdAlreadyExists'),
+                     val => uniqueUserId(val) || t('userIdAlreadyExists'),
             ]"
             dense
             autofocus
@@ -222,7 +221,7 @@ async function saveUser() {
           :label="t('cancel')"
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
-          @click="localModelValue = false"
+          @click="visible = false"
         />
         <q-btn
           :label="t('save')"
