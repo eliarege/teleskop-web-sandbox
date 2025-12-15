@@ -4,7 +4,7 @@ import { determineTextColor } from '@teleskop/utils'
 import type { MachineData } from '~/shared/types'
 import { Apps } from '~/shared/constants'
 
-interface MachineStautsProps {
+interface MachineStatusProps {
   colors: {
     backGround: string
     activeBackGround: string
@@ -14,7 +14,7 @@ interface MachineStautsProps {
   isScreenViable: boolean
   machine: MachineData
 }
-const props = defineProps<MachineStautsProps>()
+const props = defineProps<MachineStatusProps>()
 const config = useRuntimeConfig()
 const { t } = useI18n()
 const baseURL = config.app.baseURL
@@ -71,6 +71,7 @@ const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.ur
         />
         <div class="flex-center gap-3 ml-1">
           <NuxtLink
+            v-if="machine.hasVNC"
             :to="computedVncLink"
             :target="computedVncTarget"
             :class="isScreenViable ? '' : 'cursor-not-allowed'"
@@ -129,7 +130,7 @@ const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.ur
         src="/icons/auto.png"
       >
       <img
-        v-if="machine.autoManualStatus === 1"
+        v-if="machine.autoManualStatus === 1 && machine.runningBatchStatus !== 0"
         src="/icons/manual.png"
       >
       <img
