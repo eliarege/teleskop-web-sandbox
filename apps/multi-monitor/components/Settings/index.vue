@@ -67,7 +67,7 @@ function setDefaultSettings() {
         color="primary"
         outline
         class="!border-1 !border-primary md:text-base sm:text-sm"
-        label="Varsayılan Ayarlar"
+        :label="t('settings.default')"
         no-caps
         push
         @click="setDefaultSettings()"
