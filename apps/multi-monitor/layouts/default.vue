@@ -3,6 +3,7 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind, useWindowSize } from '@vueuse/core'
 import { matAlarm, matSettings } from '@quasar/extras/material-icons'
 import { format } from 'date-fns'
+import { toValue } from 'vue'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
@@ -39,7 +40,21 @@ const commonSettingsItems: TopbarMenuItem[] = [
     },
   },
 ]
-const formatter = ref('YYYY-MM-DD HH:mm:ss')
+
+const { locale } = useI18n()
+const formatter = computed(() => {
+  switch (locale.value) {
+    case 'tr':
+      return 'DD.MM.YYYY HH:mm:ss'
+    case 'en-GB':
+    case 'en':
+      return 'DD/MM/YYYY HH:mm:ss'
+    case 'en-US':
+      return 'MM/DD/YYYY hh:mm:ss A'
+    default:
+      return 'YYYY-MM-DD HH:mm:ss'
+  }
+})
 const formatted = useDateFormat(useNow(), formatter)
 const machineData = computed(() => {
   return store.machines.map((machine) => {
@@ -55,7 +70,7 @@ const machineData = computed(() => {
         : '-',
       loggedInOperatorName: machine.loggedInOperatorName
         ? machine.loggedInOperatorName
-        : tt('teleskop.machine-stop-notification'),
+        : '',
       runningJobOrder: machine.runningJobOrder ? machine.runningJobOrder : '',
       runningProgramName: machine.runningProgramName
         ? machine.runningProgramName
