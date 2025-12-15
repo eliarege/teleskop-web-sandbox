@@ -22,7 +22,6 @@ const props = withDefaults(defineProps<CardInfoProps>(), {
 })
 
 const { t } = useI18n()
-const { mt } = useProjectTranslations()
 const store = useDataStore()
 const erpKey = computed(() => store.erpKeys.find(e => e.id === props.machine.id)?.key || '')
 // The status of the last request. (0 new- 1 send to the dispenser - 2 Dispenser started - 3 Completed - 8 Cancelled)
@@ -63,9 +62,19 @@ const infoTextColor = computed(() => {
 
 <template>
   <div class="machine-commands">
+    <!-- BAĞLANTI YOK UYARISI - Bağlantı yoksa sadece bunu göster -->
+    <div v-if="machine.connectionStatus === 2" class="w-full h-full gap-2 flex-center text-red text-4xl">
+      <TwIcon
+        name="i-mdi:wifi-off"
+        size="36px"
+        color="#ef4444"
+      />
+      {{ t('teleskop.no-connection') }}
+    </div>
+
     <!-- ERP DROPDOWN -->
     <div
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === 2 && machine.connectionStatus !== 2"
       class="machine-commands_items justify-center"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -90,7 +99,7 @@ const infoTextColor = computed(() => {
     </div>
     <!-- PROG ID/NAME -->
     <MachineCardInfoProgressBar
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === 2 && machine.connectionStatus !== 2"
       :data="machine"
     >
       <div class="absolute w-full h-full flex items-center flex-nowrap whitespace-nowrap overflow-hidden top-0 left-0">
@@ -121,7 +130,7 @@ const infoTextColor = computed(() => {
     <!-- PHASE NO/NAME ONLY FOR WASHING -->
     <div
       v-if="washing"
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === 2 && machine.connectionStatus !== 2"
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -151,7 +160,7 @@ const infoTextColor = computed(() => {
     </div>
     <!-- STEP NO / COMMAND NO / COMMAND NAME -->
     <div
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === 2 && machine.connectionStatus !== 2"
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -186,8 +195,9 @@ const infoTextColor = computed(() => {
         {{ machine.runningCommandName }}
       </span>
     </div>
-    <!-- STOP REASON (IF THERES ANY) -->
+    <!-- STOP REASON (IF THERES ANY) - Gizle bağlantı yoksa -->
     <div
+      v-show="machine.connectionStatus !== 2"
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -200,10 +210,7 @@ const infoTextColor = computed(() => {
       </q-tooltip>
       <!-- machine.runningBatchStatus === 1 ise makine duruş -->
       <div class="explanation">
-        <span v-if="machine.runningBatchStatus === 1">
-          {{ t("teleskop.stop-reason") }}
-        </span>
-        <span v-else-if="machine.autoManualStatus">
+        <span v-if="machine.autoManualStatus">
           {{ t("teleskop.manual-reason") }}
         </span>
         <span v-else>
@@ -217,7 +224,7 @@ const infoTextColor = computed(() => {
         spaced
       />
       <!-- machine.autoManualStatus === 1 ise makine manuelde -->
-      <div v-if="machine.connectionStatus !== 2" class="flex-center w-full">
+      <div class="flex-center w-full">
         <div v-if="machine.autoManualStatus" class="flex-center gap-3">
           <span>{{ machine.manualReason }}</span>
           <span>
@@ -245,11 +252,10 @@ const infoTextColor = computed(() => {
           </span>
         </div>
       </div>
-      <div v-else class="text-red-700 flex-center w-full">
-        {{ t("teleskop.no-connection") }}
-      </div>
     </div>
+    <!-- ALARM - Gizle bağlantı yoksa -->
     <div
+      v-show="machine.connectionStatus !== 2"
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
       :class="
@@ -285,7 +291,7 @@ const infoTextColor = computed(() => {
       </div>
     </div>
     <div
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === 2 && machine.connectionStatus !== 2"
       class="machine-commands_items justify-center"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -323,4 +329,27 @@ const infoTextColor = computed(() => {
 </template>
 
 <style scoped lang="postcss">
+.info-item {
+  @apply flex items-center gap-1;
+}
+
+.info-divider {
+  @apply w-px h-3 bg-gray-300;
+}
+
+.status-dot {
+  @apply w-1.5 h-1.5 rounded-full;
+}
+
+.status-offline {
+  @apply bg-red-500;
+}
+
+.status-last {
+  @apply bg-gray-400;
+}
+
+.info-text {
+  @apply text-gray-700;
+}
 </style>
