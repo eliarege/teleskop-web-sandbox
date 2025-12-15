@@ -54,6 +54,7 @@ export interface MachineDataRaw {
   totalConsumedElectricity: number
   runningPrgElapsedTime?: number
   runningPrgTotalTheoreticDuration?: number
+  hasVNC: boolean
   erp: Record<string, any> | null
 }
 export interface MachineData extends MachineDataRaw {
