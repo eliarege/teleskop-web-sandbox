@@ -16,5 +16,22 @@
         "DB_TRUST_SERVER_CERT": "true"
       }
     },
+    "gitlab-merge-request": {
+      "command": "pnpm",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-w",
+        "exec",
+        "teleskop-mcp-gitlab-mr"
+      ],
+      "env": {
+        "GITLAB_HOST": "https://gitlab.com",
+        "GITLAB_PROJECT_ID": "50621216"
+      }
+    },
+    "nuxt": {
+      "type": "http",
+      "url": "https://nuxt.com/mcp"
+    }
   }
 }
