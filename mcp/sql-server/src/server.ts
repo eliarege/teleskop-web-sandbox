@@ -8,14 +8,10 @@
  */
 
 import process from 'node:process'
-import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js'
 import sql from 'mssql'
-import { z } from 'zod'
+import { z } from 'zod/v4'
 
 // Environment variable validation schema
 const envSchema = z.object({
@@ -137,274 +133,200 @@ function formatResults(result: sql.IResult<any>): string {
 }
 
 // Create and configure the MCP server
-const server = new Server(
-  {
-    name: 'teleskop-mcp-sqlserver',
-    version: '1.0.0',
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  },
-)
-
-// List available tools
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: 'query',
-        description: 'Execute a read-only SELECT query on the SQL Server database. Only SELECT statements are allowed.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            query: {
-              type: 'string',
-              description: 'The SQL SELECT query to execute',
-            },
-          },
-          required: ['query'],
-        },
-      },
-      {
-        name: 'list_tables',
-        description: 'List all tables in the current database with their schema and row counts',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            schema: {
-              type: 'string',
-              description: 'Optional: Filter tables by schema name (e.g., "dbo")',
-            },
-          },
-        },
-      },
-      {
-        name: 'describe_table',
-        description: 'Get detailed information about a table including columns, data types, and constraints',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            table: {
-              type: 'string',
-              description: 'The table name to describe',
-            },
-            schema: {
-              type: 'string',
-              description: 'Optional: The schema name (defaults to "dbo")',
-            },
-          },
-          required: ['table'],
-        },
-      },
-      {
-        name: 'list_schemas',
-        description: 'List all schemas in the database',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-        },
-      },
-      {
-        name: 'search_columns',
-        description: 'Search for columns across all tables by name pattern',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            pattern: {
-              type: 'string',
-              description: 'Column name pattern to search for (use % as wildcard)',
-            },
-          },
-          required: ['pattern'],
-        },
-      },
-    ],
-  }
+const mcpServer = new McpServer({
+  name: 'teleskop-mcp-sqlserver',
+  version: '1.0.0',
 })
 
-// Handle tool execution
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  try {
-    switch (request.params.name) {
-      case 'query': {
-        const { query } = request.params.arguments as { query: string }
+// Register query tool
+mcpServer.registerTool(
+  'query',
+  {
+    description: 'Execute a read-only SELECT query on the SQL Server database. Only SELECT statements are allowed.',
+    inputSchema: {
+      query: z.string().describe('The SQL SELECT query to execute'),
+    },
+  },
+  async ({ query }) => {
+    const result = await executeReadOnlyQuery(query)
 
-        if (!query || typeof query !== 'string') {
-          throw new Error('Query parameter is required and must be a string')
-        }
-
-        const result = await executeReadOnlyQuery(query)
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: formatResults(result),
-            },
-          ],
-        }
-      }
-
-      case 'list_tables': {
-        const { schema } = request.params.arguments as { schema?: string }
-
-        const query = `
-          SELECT
-            s.name AS SchemaName,
-            t.name AS TableName,
-            p.rows AS RowCount,
-            CAST(SUM(a.total_pages) * 8 AS BIGINT) AS TotalSpaceKB
-          FROM sys.tables t
-          INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
-          LEFT JOIN sys.indexes i ON t.object_id = i.object_id AND i.index_id < 2
-          INNER JOIN sys.partitions p ON i.object_id = p.object_id AND i.index_id = p.index_id
-          LEFT JOIN sys.allocation_units a ON p.partition_id = a.container_id
-          WHERE t.is_ms_shipped = 0
-            ${schema ? 'AND s.name = @schema' : ''}
-          GROUP BY s.name, t.name, p.rows
-          ORDER BY s.name, t.name
-        `
-
-        const result = await executeReadOnlyQuery(query, schema ? { schema } : undefined)
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: formatResults(result),
-            },
-          ],
-        }
-      }
-
-      case 'describe_table': {
-        const { table, schema = 'dbo' } = request.params.arguments as { table: string, schema?: string }
-
-        if (!table || typeof table !== 'string') {
-          throw new Error('Table parameter is required and must be a string')
-        }
-
-        const query = `
-          SELECT
-            c.name AS ColumnName,
-            t.name AS DataType,
-            c.max_length AS MaxLength,
-            c.precision AS Precision,
-            c.scale AS Scale,
-            c.is_nullable AS IsNullable,
-            c.is_identity AS IsIdentity,
-            ISNULL(i.is_primary_key, 0) AS IsPrimaryKey,
-            dc.definition AS DefaultValue
-          FROM sys.columns c
-          INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
-          INNER JOIN sys.tables tbl ON c.object_id = tbl.object_id
-          INNER JOIN sys.schemas s ON tbl.schema_id = s.schema_id
-          LEFT JOIN sys.index_columns ic ON c.object_id = ic.object_id AND c.column_id = ic.column_id
-          LEFT JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id AND i.is_primary_key = 1
-          LEFT JOIN sys.default_constraints dc ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id
-          WHERE tbl.name = @table
-            AND s.name = @schema
-          ORDER BY c.column_id
-        `
-
-        const result = await executeReadOnlyQuery(query, { table, schema })
-
-        if (result.recordset.length === 0) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `Table '${schema}.${table}' not found.`,
-              },
-            ],
-          }
-        }
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: formatResults(result),
-            },
-          ],
-        }
-      }
-
-      case 'list_schemas': {
-        const query = `
-          SELECT
-            name AS SchemaName,
-            schema_id AS SchemaId
-          FROM sys.schemas
-          WHERE name NOT IN ('sys', 'INFORMATION_SCHEMA')
-          ORDER BY name
-        `
-
-        const result = await executeReadOnlyQuery(query)
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: formatResults(result),
-            },
-          ],
-        }
-      }
-
-      case 'search_columns': {
-        const { pattern } = request.params.arguments as { pattern: string }
-
-        if (!pattern || typeof pattern !== 'string') {
-          throw new Error('Pattern parameter is required and must be a string')
-        }
-
-        const query = `
-          SELECT
-            s.name AS SchemaName,
-            t.name AS TableName,
-            c.name AS ColumnName,
-            ty.name AS DataType,
-            c.is_nullable AS IsNullable
-          FROM sys.columns c
-          INNER JOIN sys.tables t ON c.object_id = t.object_id
-          INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
-          INNER JOIN sys.types ty ON c.user_type_id = ty.user_type_id
-          WHERE c.name LIKE @pattern
-            AND t.is_ms_shipped = 0
-          ORDER BY s.name, t.name, c.name
-        `
-
-        const result = await executeReadOnlyQuery(query, { pattern })
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: formatResults(result),
-            },
-          ],
-        }
-      }
-
-      default:
-        throw new Error(`Unknown tool: ${request.params.name}`)
-    }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
     return {
       content: [
         {
           type: 'text',
-          text: `Error: ${errorMessage}`,
+          text: formatResults(result),
         },
       ],
-      isError: true,
     }
-  }
-})
+  },
+)
+
+// Register list_tables tool
+mcpServer.registerTool(
+  'list_tables',
+  {
+    description: 'List all tables in the current database with their schema and row counts',
+    inputSchema: {
+      schema: z.string().optional().describe('Optional: Filter tables by schema name (e.g., "dbo")'),
+    },
+  },
+  async ({ schema }) => {
+    const query = `
+      SELECT
+        s.name AS SchemaName,
+        t.name AS TableName,
+        p.rows AS RowCount,
+        CAST(SUM(a.total_pages) * 8 AS BIGINT) AS TotalSpaceKB
+      FROM sys.tables t
+      INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
+      LEFT JOIN sys.indexes i ON t.object_id = i.object_id AND i.index_id < 2
+      INNER JOIN sys.partitions p ON i.object_id = p.object_id AND i.index_id = p.index_id
+      LEFT JOIN sys.allocation_units a ON p.partition_id = a.container_id
+      WHERE t.is_ms_shipped = 0
+        ${schema ? 'AND s.name = @schema' : ''}
+      GROUP BY s.name, t.name, p.rows
+      ORDER BY s.name, t.name
+    `
+
+    const result = await executeReadOnlyQuery(query, schema ? { schema } : undefined)
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: formatResults(result),
+        },
+      ],
+    }
+  },
+)
+
+// Register describe_table tool
+mcpServer.registerTool(
+  'describe_table',
+  {
+    description: 'Get detailed information about a table including columns, data types, and constraints',
+    inputSchema: {
+      table: z.string().describe('The table name to describe'),
+      schema: z.string().optional().describe('Optional: The schema name (defaults to "dbo")'),
+    },
+  },
+  async ({ table, schema = 'dbo' }) => {
+    const query = `
+      SELECT
+        c.name AS ColumnName,
+        t.name AS DataType,
+        c.max_length AS MaxLength,
+        c.precision AS Precision,
+        c.scale AS Scale,
+        c.is_nullable AS IsNullable,
+        c.is_identity AS IsIdentity,
+        ISNULL(i.is_primary_key, 0) AS IsPrimaryKey,
+        dc.definition AS DefaultValue
+      FROM sys.columns c
+      INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
+      INNER JOIN sys.tables tbl ON c.object_id = tbl.object_id
+      INNER JOIN sys.schemas s ON tbl.schema_id = s.schema_id
+      LEFT JOIN sys.index_columns ic ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+      LEFT JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id AND i.is_primary_key = 1
+      LEFT JOIN sys.default_constraints dc ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id
+      WHERE tbl.name = @table
+        AND s.name = @schema
+      ORDER BY c.column_id
+    `
+
+    const result = await executeReadOnlyQuery(query, { table, schema })
+
+    if (result.recordset.length === 0) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Table '${schema}.${table}' not found.`,
+          },
+        ],
+      }
+    }
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: formatResults(result),
+        },
+      ],
+    }
+  },
+)
+
+// Register list_schemas tool
+mcpServer.registerTool(
+  'list_schemas',
+  {
+    description: 'List all schemas in the database',
+    inputSchema: {},
+  },
+  async () => {
+    const query = `
+      SELECT
+        name AS SchemaName,
+        schema_id AS SchemaId
+      FROM sys.schemas
+      WHERE name NOT IN ('sys', 'INFORMATION_SCHEMA')
+      ORDER BY name
+    `
+
+    const result = await executeReadOnlyQuery(query)
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: formatResults(result),
+        },
+      ],
+    }
+  },
+)
+
+// Register search_columns tool
+mcpServer.registerTool(
+  'search_columns',
+  {
+    description: 'Search for columns across all tables by name pattern',
+    inputSchema: {
+      pattern: z.string().describe('Column name pattern to search for (use % as wildcard)'),
+    },
+  },
+  async ({ pattern }) => {
+    const query = `
+      SELECT
+        s.name AS SchemaName,
+        t.name AS TableName,
+        c.name AS ColumnName,
+        ty.name AS DataType,
+        c.is_nullable AS IsNullable
+      FROM sys.columns c
+      INNER JOIN sys.tables t ON c.object_id = t.object_id
+      INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
+      INNER JOIN sys.types ty ON c.user_type_id = ty.user_type_id
+      WHERE c.name LIKE @pattern
+        AND t.is_ms_shipped = 0
+      ORDER BY s.name, t.name, c.name
+    `
+
+    const result = await executeReadOnlyQuery(query, { pattern })
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: formatResults(result),
+        },
+      ],
+    }
+  },
+)
 
 // Start the server
 async function main() {
@@ -414,7 +336,7 @@ async function main() {
     console.error('Successfully connected to SQL Server database')
 
     const transport = new StdioServerTransport()
-    await server.connect(transport)
+    await mcpServer.connect(transport)
 
     console.error('Teleskop SQL Server MCP server running on stdio')
   } catch (error) {
