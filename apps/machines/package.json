@@ -31,7 +31,7 @@
     "sortablejs-vue3": "1.2.11",
     "tedious": "18.6.1",
     "ufo": "1.5.4",
-    "zod": "3.23.8"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@iconify-json/carbon": "1.2.4",

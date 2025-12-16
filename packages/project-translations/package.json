@@ -16,7 +16,7 @@
     "@teleskop/nuxt-base": "workspace:*",
     "@teleskop/utils": "workspace:*",
     "hookable": "5.5.3",
-    "zod": "3.23.8"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@nuxt/kit": "3.14.159",
