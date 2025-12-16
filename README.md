@@ -40,17 +40,18 @@ The `scope` provides additional contextual information.
 
 #### Scopes used for apps
 
-| Scope | Application                     |
-| ----- | ------------------------------- |
-| AR    | `archive`                       |
-| DMS   | `dispensing-management-systems` |
-| DM    | `dispensing-manager-ui`         |
-| MS    | `machine-status`                |
-| MA    | `machines`                      |
-| MM    | `multi-monitor`                 |
-| PB    | `planning-board`                |
-| PBE   | `planning-board-engine`         |
-| PE    | `program-editor`                |
+| Scope      | Application                     |
+| ---------- | ------------------------------- |
+| AR         | `archive`                       |
+| DM         | `dispensing-manager-ui`         |
+| MS         | `machine-status`                |
+| MA         | `machines`                      |
+| MM         | `multi-monitor`                 |
+| PB         | `planning-board`                |
+| PB         | `planning-board-engine`         |
+| PE         | `program-editor`                |
+| RE         | `recipes`                       |
+| migrations | `migration-service`             |
 
 Other apps and packages should always use full name for scopes.
 
@@ -180,3 +181,32 @@ Create/edit `.vscode/mcp.json` file with following content:
     }
   }
 }
+```
+
+### GitLab Merge Request MCP Server
+
+Create/edit `.vscode/mcp.json` file with following content:
+
+> Create a GitLab Personal Access Token with `api` scope for authentication
+
+```json
+{
+  "servers": {
+    // ... other servers
+    "gitlab-merge-request": {
+      "command": "pnpm",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-w",
+        "exec",
+        "teleskop-mcp-gitlab-mr"
+      ],
+      "env": {
+        "GITLAB_HOST": "https://gitlab.com",
+        "GITLAB_TOKEN": "YOUR_GITLAB_PERSONAL_ACCESS_TOKEN",
+        "GITLAB_PROJECT_ID": "50621216"
+      }
+    }
+  }
+}
+```
