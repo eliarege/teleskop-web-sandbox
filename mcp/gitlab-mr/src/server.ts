@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import type { ExpandedMergeRequestDiffVersionsSchema } from '@gitbeaker/rest'
+import type { DiscussionNotePositionOptions, ExpandedMergeRequestDiffVersionsSchema, GitbeakerRequestError } from '@gitbeaker/rest'
 import { Gitlab } from '@gitbeaker/rest'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod/v4'
-import { createError, settle, sha1 } from './utils.ts'
+import parseDiff from 'parse-diff'
+import { appendAIReviewFooter, createError, getNearestNormalLineBeforeAddition, getNearestNormalLineBeforeDeletion, settle, sha1 } from './utils.ts'
 
 const host = process.env.GITLAB_HOST || 'https://gitlab.com'
 const token = process.env.GITLAB_TOKEN
@@ -23,6 +24,13 @@ const server = new McpServer({
   description: 'MCP for interacting with GitLab merge requests',
 })
 
+export async function getMergeRequestDiffs(id: number) {
+  const versions = await gitlab.MergeRequests.allDiffVersions(projectId, id)
+  const lastVersion = versions[0]
+  const diffVersion = await gitlab.MergeRequests.showDiffVersion(projectId, id, lastVersion.id)
+  return diffVersion.diffs
+}
+
 server.registerTool('get-merge-requests', {
   title: 'Get Open Merge Requests',
   description: 'Get open merge requests for the project.\nFormat: !IID - Title (by author) (branch: source_branch)',
@@ -34,7 +42,7 @@ server.registerTool('get-merge-requests', {
   }))
 
   if (mergeRequests.status === 'rejected') {
-    return createError(`Failed to fetch merge requests: ${mergeRequests.reason}`)
+    return createError(`Failed to fetch merge requests: ${(mergeRequests.reason as GitbeakerRequestError).message}`)
   }
 
   server.sendLoggingMessage({
@@ -65,7 +73,7 @@ server.registerTool('get-merge-request-commits', {
 }, async (input, extra) => {
   const commits = await settle(gitlab.MergeRequests.allCommits(projectId, input.iid))
   if (commits.status === 'rejected') {
-    return createError(`Failed to fetch commits for merge request !${input.iid}: ${commits.reason}`)
+    return createError(`Failed to fetch commits for merge request !${input.iid}: ${(commits.reason as GitbeakerRequestError).message}`)
   }
 
   server.sendLoggingMessage({
@@ -94,23 +102,18 @@ server.registerTool(`get-merge-request-diffs`, {
     iid: z.number().describe('The IID of the merge request'),
   }),
 }, async (input, extra) => {
-  let diffVersion: ExpandedMergeRequestDiffVersionsSchema
-  let lastVersion: { id: number }
-  try {
-    const versions = await gitlab.MergeRequests.allDiffVersions(projectId, input.iid)
-    lastVersion = versions[0]
-    diffVersion = await gitlab.MergeRequests.showDiffVersion(projectId, input.iid, lastVersion.id)
-  } catch (error) {
-    return createError(`Failed to fetch diffs for merge request !${input.iid}: ${error}`)
+  const diffs = await settle(getMergeRequestDiffs(input.iid))
+  if (diffs.status === 'rejected') {
+    return createError(`Failed to fetch diffs for merge request !${input.iid}: ${(diffs.reason as GitbeakerRequestError).message}`)
   }
 
   server.sendLoggingMessage({
     level: 'debug',
-    data: `Fetched diff version ${lastVersion.id} for merge request !${input.iid}.`,
+    data: `Fetched diffs for merge request !${input.iid}.`,
   }, extra.sessionId)
 
   let text = ''
-  for (const diff of diffVersion.diffs) {
+  for (const diff of diffs.value) {
     if (diff.deleted_file) {
       text += `File: ${diff.new_path}\n---\n(File deleted)\n\n`
     } else {
@@ -126,7 +129,7 @@ server.registerTool(`get-merge-request-diffs`, {
       },
     ],
     structuredContent: {
-      diffs: diffVersion.diffs,
+      diffs: diffs.value,
     },
   }
 })
@@ -140,7 +143,7 @@ server.registerTool('get-commit-details', {
 }, async (input, extra) => {
   const commit = await settle(gitlab.Commits.show(projectId, input.id))
   if (commit.status === 'rejected') {
-    return createError(`Failed to fetch details for commit ${input.id}: ${commit.reason}`)
+    return createError(`Failed to fetch details for commit ${input.id}: ${(commit.reason as GitbeakerRequestError).message}`)
   }
   server.sendLoggingMessage({
     level: 'debug',
@@ -176,9 +179,13 @@ server.registerTool('add-merge-request-note', {
     note: z.string().describe('The content of the note to add'),
   }),
 }, async (input, extra) => {
-  const note = await settle(gitlab.MergeRequestNotes.create(projectId, input.iid, input.note))
+  const note = await settle(gitlab.MergeRequestNotes.create(
+    projectId,
+    input.iid,
+    appendAIReviewFooter(input.note),
+  ))
   if (note.status === 'rejected') {
-    return createError(`Failed to add note to merge request !${input.iid}: ${note.reason}`)
+    return createError(`Failed to add note to merge request !${input.iid}: ${(note.reason as GitbeakerRequestError).message}`)
   }
 
   server.sendLoggingMessage({
@@ -213,43 +220,77 @@ server.registerTool('add-merge-request-note-for-code-range', {
 }, async (input, extra) => {
   const mergeRequest = await settle(gitlab.MergeRequests.show(projectId, input.iid))
   if (mergeRequest.status === 'rejected') {
-    return createError(`Failed to fetch merge request !${input.iid}: ${mergeRequest.reason}`)
+    return createError(`Failed to fetch merge request !${input.iid}: ${(mergeRequest.reason as GitbeakerRequestError).message}`)
   }
 
   const { diff_refs } = mergeRequest.value
   const filePathSha = sha1(input.filePath)
-  const note = await settle(gitlab.MergeRequestDiscussions.create(projectId, input.iid, input.note, {
-    position: {
-      positionType: 'text',
-      baseSha: diff_refs.base_sha,
-      headSha: diff_refs.head_sha,
-      startSha: diff_refs.start_sha,
-      newPath: input.filePath,
-      oldPath: input.filePath,
-      oldLine: input.added ? '' : String(input.position.end),
-      newLine: input.added ? String(input.position.end) : '',
-      lineRange: {
-        start: {
-          type: input.added ? 'new' : 'old',
-          lineCode: input.added
-            ? `${filePathSha}_0_${input.position.start}`
-            : `${filePathSha}_${input.position.start}_0`,
-          newLine: input.added ? input.position.start : undefined,
-          oldLine: input.added ? undefined : input.position.start,
-        },
-        end: {
-          type: input.added ? 'new' : 'old',
-          lineCode: input.added
-            ? `${filePathSha}_0_${input.position.end}`
-            : `${filePathSha}_${input.position.end}_0`,
-          newLine: input.added ? input.position.end : undefined,
-          oldLine: input.added ? undefined : input.position.end,
-        },
+  const position: DiscussionNotePositionOptions = {
+    positionType: 'text',
+    baseSha: diff_refs.base_sha,
+    headSha: diff_refs.head_sha,
+    startSha: diff_refs.start_sha,
+    newPath: input.filePath,
+    oldPath: input.filePath,
+  }
+
+  const diffs = await settle(getMergeRequestDiffs(input.iid))
+  if (diffs.status === 'rejected') {
+    return createError(`Failed to fetch diffs for merge request !${input.iid}: ${(diffs.reason as GitbeakerRequestError).message}`)
+  }
+
+  const targetDiff = diffs.value.find(d => d.new_path === input.filePath || d.old_path === input.filePath)
+  if (!targetDiff) {
+    return createError(`File ${input.filePath} not found in merge request !${input.iid}`)
+  }
+
+  const parsedDiff = parseDiff(targetDiff.diff)[0]
+  if (input.added) {
+    const nearestNormalStart = getNearestNormalLineBeforeAddition(parsedDiff, input.position.start)
+    position.newLine = String(input.position.end)
+    position.oldLine = ''
+    position.lineRange = {
+      start: {
+        type: 'new',
+        lineCode: `${filePathSha}_${nearestNormalStart}_${input.position.start}`,
+        newLine: input.position.start,
+        oldLine: undefined,
       },
-    },
-  }))
+      end: {
+        type: 'new',
+        lineCode: `${filePathSha}_${nearestNormalStart}_${input.position.end}`,
+        newLine: input.position.end,
+        oldLine: undefined,
+      },
+    }
+  } else {
+    const nearestNormalStart = getNearestNormalLineBeforeDeletion(parsedDiff, input.position.start)
+    position.oldLine = String(input.position.end)
+    position.newLine = ''
+    position.lineRange = {
+      start: {
+        type: 'old',
+        lineCode: `${filePathSha}_${input.position.start}_${nearestNormalStart}`,
+        newLine: undefined,
+        oldLine: input.position.start,
+      },
+      end: {
+        type: 'old',
+        lineCode: `${filePathSha}_${input.position.end}_${nearestNormalStart}`,
+        newLine: undefined,
+        oldLine: input.position.end,
+      },
+    }
+  }
+
+  const note = await settle(gitlab.MergeRequestDiscussions.create(
+    projectId,
+    input.iid,
+    appendAIReviewFooter(input.note),
+    { position },
+  ))
   if (note.status === 'rejected') {
-    return createError(`Failed to add note to merge request !${input.iid} for file ${input.filePath}: ${note.reason}`)
+    return createError(`Failed to add note to merge request !${input.iid} for file ${input.filePath}: ${(note.reason as GitbeakerRequestError).message}`)
   }
 
   server.sendLoggingMessage({
