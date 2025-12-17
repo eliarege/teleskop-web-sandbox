@@ -134,6 +134,36 @@ server.registerTool(`get-merge-request-diffs`, {
   }
 })
 
+server.registerTool('get-merge-request-notes', {
+  title: 'Get Merge Request Notes',
+  description: 'Get notes of a specific merge request by its IID',
+  inputSchema: z.object({
+    iid: z.number().describe('The IID of the merge request'),
+  }),
+}, async (input, extra) => {
+  const notes = await settle(gitlab.MergeRequestNotes.all(projectId, input.iid))
+  if (notes.status === 'rejected') {
+    return createError(`Failed to fetch notes for merge request !${input.iid}: ${(notes.reason as GitbeakerRequestError).message}`)
+  }
+
+  server.sendLoggingMessage({
+    level: 'debug',
+    data: `Fetched ${notes.value.length} notes for merge request !${input.iid}.`,
+  }, extra.sessionId)
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: notes.value.map(note => `- [${note.author.username}]: ${note.body}`).join('\n'),
+      },
+    ],
+    structuredContent: {
+      notes: notes.value,
+    },
+  }
+})
+
 server.registerTool('get-commit-details', {
   title: 'Get Commit Details',
   description: 'Get details of a specific commit by its ID',
