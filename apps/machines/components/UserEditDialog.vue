@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-interface User {
+interface UserForm {
   userId?: number
   userName: string
   userSurname: string
@@ -15,13 +15,13 @@ interface User {
 }
 
 const props = defineProps<{
-  user?: User
+  user?: UserForm
   existingUserIds: number[]
   userTypeOptions: { label: string, value: number }[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'saved', user: User): void
+  (e: 'saved', user: UserForm): void
   (e: 'editPermissions', userId: number | undefined): void
 }>()
 
@@ -32,7 +32,7 @@ const { notifyError } = useNotify()
 const isEdit = computed(() => !!props.user)
 const visible = defineModel<boolean>()
 
-const form = ref<User>({
+const form = ref<UserForm>({
   userId: undefined,
   userName: '',
   userSurname: '',

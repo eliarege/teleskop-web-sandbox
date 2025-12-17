@@ -3,19 +3,7 @@ import { onMounted, ref } from 'vue'
 import UserEditDialog from '~/components/UserEditDialog.vue'
 import UserPermissionsDialog from '~/components/UserPermissionsDialog.vue'
 import ConfirmDialog from '~/components/ConfirmDialog.vue'
-
-interface User {
-  userId: number
-  userName: string
-  userSurname: string
-  userPass: string
-  userMode: string
-  userInfo: string
-  userActive: boolean
-  userDeleted: boolean
-  userMode2: string
-  userType: number
-}
+import type { User } from '~/types'
 
 const { t } = useI18n()
 const { fetch } = useKeycloak()
