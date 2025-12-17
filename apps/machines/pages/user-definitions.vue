@@ -93,11 +93,10 @@ async function handleDeleteConfirmed() {
   const userIds = selected.value.map(u => u.userId)
 
   try {
-    for (const id of userIds) {
-      await fetch(`/api/user-definitions/${id}`, {
-        method: 'DELETE',
-      })
-    }
+    await fetch(`/api/user-definitions/bulk-delete`, {
+      method: 'DELETE',
+      body: { userIds },
+    })
 
     await loadUsers()
     selected.value = []
