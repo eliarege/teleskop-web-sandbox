@@ -149,35 +149,40 @@ function uniqueUserId(val: number | string) {
             v-model.number="form.userId"
             :label="t('userId')"
             type="number"
-            :rules="[val => !!val || t('userIdRequired'),
-                     val => val > 0 || t('userIdMustBePositive'),
-                     val => uniqueUserId(val) || t('userIdAlreadyExists'),
+            :rules="[
+              val => !!val || t('userIdRequired'),
+              val => val > 0 || t('userIdMustBePositive'),
+              val => uniqueUserId(val) || t('userIdAlreadyExists'),
             ]"
-            dense
             autofocus
             outlined
+            dense
           />
           <q-input
             v-model="form.userName"
             :label="t('userName')"
             :rules="[val => !!val || t('userNameRequired')]"
-            dense
-            outlined
             autofocus
+            outlined
+            dense
           />
           <q-input
             v-model="form.userSurname"
             :label="t('userSurname')"
             :rules="[val => !!val || t('userSurnameRequired')]"
-            dense
             outlined
+            dense
           />
           <q-input
             v-model="form.userPass"
             :label="t('userPassword')"
-            :rules="[val => isEdit || !!val || t('userPasswordRequired')]"
-            dense
+            :rules="[
+              val => isEdit || !!val || t('userPasswordRequired'),
+              val => val.length >= 4 || t('userPasswordMinLength', { length: 4 }),
+              val => val.length <= 9 || t('userPasswordMaxLength', { length: 9 }),
+            ]"
             outlined
+            dense
           />
           <q-select
             v-model="form.userType"

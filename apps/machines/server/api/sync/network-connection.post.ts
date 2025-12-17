@@ -19,7 +19,8 @@ export default defineAuthEventHandler(async (event) => {
     if (uuid) {
       sse.send(uuid, 'log', { message: 'connection-successful' })
     }
-  } catch {
+  } catch (error) {
+    console.error(`Network connection failed for ${ip}:`, error)
     if (uuid) {
       sse.send(uuid, 'log', { message: 'connection-failed' })
     }

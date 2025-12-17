@@ -711,6 +711,8 @@
   "userNameRequired": "Name is required",
   "userSurnameRequired": "Surname is required",
   "userPasswordRequired": "Password is required",
+  "userPasswordMinLength": "Password must be at least {length} characters long",
+  "userPasswordMaxLength": "Password must be at most {length} characters long",
   "normal": "Normal",
   "deleted": "Deleted",
   "confirm": "Confirm"

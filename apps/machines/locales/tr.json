@@ -714,6 +714,8 @@
   "userNameRequired": "Ad gerekli",
   "userSurnameRequired": "Soyad gerekli",
   "userPasswordRequired": "Şifre gerekli",
+  "userPasswordMinLength": "Şifre en az {length} karakter olmalıdır",
+  "userPasswordMaxLength": "Şifre en fazla {length} karakter olmalıdır",
   "normal": "Normal",
   "deleted": "Silindi",
   "confirm": "Onay"
