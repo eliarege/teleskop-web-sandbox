@@ -22,10 +22,12 @@ const materialSearchFilter = ref('')
 const type = ref<number>(RecipeType.MATERIALS)
 const isCollapsed = ref(false)
 const selectedStep = ref<{ step: any, type: number, stepIndex: number } | null>(null)
+const showManualOnly = ref(false)
 
 defineExpose({
   type,
   setSelectedStep,
+  showManualOnly,
 })
 
 getMaterials()
@@ -68,7 +70,8 @@ function materialFilter(rows: readonly Material[], terms: string): Material[] {
     const materialCodeMatches = row.materialCode.toLowerCase().includes(terms)
     const materialNameMatches = row.materialName.toLowerCase().includes(terms)
     const materialGroupMatches = type.value === RecipeType.MATERIALS ? true : type.value + 1 === row.materialGroupNo
-    return (materialCodeMatches || materialNameMatches) && materialGroupMatches
+    const manualMatches = showManualOnly.value ? row.isManual : true
+    return (materialCodeMatches || materialNameMatches) && materialGroupMatches && manualMatches
   })
 }
 
@@ -178,6 +181,13 @@ function addMaterialToStep(material: Material) {
               emit-value
               :label="t('SelectType')"
               class="material-type-select q-mr-md"
+            />
+
+            <QCheckbox
+              v-model="showManualOnly"
+              :label="t('ManualOnly')"
+              class="q-mr-md"
+              dense
             />
 
             <QInput

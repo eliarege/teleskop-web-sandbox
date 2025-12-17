@@ -14,7 +14,7 @@ import { useDataStore } from '~/store/DataStore'
 import { StatusCodes } from '~/shared/constants'
 import { useStateStore } from '~/store/State'
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 const { notifySuccess, notifyFail } = useNotify()
 const q = useQuasar()
 const route = useRoute()
@@ -28,6 +28,11 @@ const dispensers = await dataStore.getDispensers()
 const dispenserSelections = [{ dispenserId: -1, dispenserName: t('AllDispensers') }, ...dispensers]
 const selectedDispenser = ref(dataStore.selectedDispenser ? dataStore.selectedDispenser : dispenserSelections[0])
 const { data: machines } = await useFetch<Machine[]>('/api/machines')
+function formatProgramNames(programNames: string[] | null | undefined) {
+  if (!programNames || !Array.isArray(programNames) || programNames.length === 0)
+    return ''
+  return programNames.join(', ')
+}
 async function getJobOrders() {
   const dispenserId = route.query.dispenserId?.toString()
   jobOrders.value = await $fetch<JobOrder[]>(`/api/job-orders`, {
@@ -43,6 +48,7 @@ watch(() => dataStore.newJobOrders, (orders) => {
     getJobOrders()
   }
 })
+
 const columns = ref([
   {
     name: 'batchNo',
@@ -70,6 +76,23 @@ const columns = ref([
     selectionOptions: machines.value,
     optionLabel: 'machineName',
     optionValue: 'machineId',
+  },
+  {
+    name: 'programNames',
+    label: t('Programs'),
+    field: 'programNames',
+    align: 'left',
+    filterable: false,
+    filterType: 'includes',
+    format: (val: any, row: any) => formatProgramNames(row?.programNames),
+  },
+  {
+    name: 'recipeName',
+    label: t('Recipe'),
+    field: 'recipeName',
+    align: 'left',
+    filterable: true,
+    filterType: 'includes',
   },
   {
     name: 'colorName',
@@ -120,6 +143,16 @@ const columns = ref([
     filterType: 'includes',
   },
   {
+    name: 'requestTime',
+    label: t('jobOrderParams.StartDate'),
+    field: 'requestTime',
+    align: 'left',
+    filterable: true,
+    filterType: 'date',
+    format: (val: any) => val ? d(new Date(val), 'datetime') : '',
+  },
+  /*
+  {
     name: 'recipeType',
     label: t('RecipeType'),
     field: 'recipeType',
@@ -133,6 +166,7 @@ const columns = ref([
     optionLabel: 'label',
     optionValue: 'recipeType',
   },
+  */
   /*
   {
     name: 'status',
@@ -156,12 +190,27 @@ const columns = ref([
   */
 ])
 
+// Filter columns based on jobOrderPrefs
+const filteredColumns = computed(() => {
+  const prefs = stateStore.jobOrderPrefs.show
+  return columns.value.filter((col) => {
+    if (col.field === 'ASNo' && !prefs.ASNo)
+      return false
+    if (col.field === 'yarn' && !prefs.yarn)
+      return false
+    if (col.field === 'workOrder' && !prefs.orderNo)
+      return false
+    return true
+  })
+})
+
 const buttonProps = ref([
   { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science', batch: true, continue: true },
   { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description', batch: true, continue: true },
   { name: 'weighingInfo', label: t('weighingFields.Info'), link: 'weighing', icon: 'balance', batch: true, continue: false },
   { name: 'parameters', label: t('batchPlanParameterFields.Title'), link: 'parameters', icon: 'format_list_numbered', batch: true, continue: false },
   { name: 'info', label: t('Info'), link: 'info', icon: 'info', batch: false, continue: true },
+  { name: 'reuseRequest', label: t('ReuseRequest'), link: 'reuse', icon: 'restart_alt', batch: true, continue: true },
 ])
 const filteredButtonProps = computed(() => {
   return buttonProps.value.filter((button) => {
@@ -205,10 +254,13 @@ function onButtonClicked(link: string) {
       component: JobOrderContinueInfoDialog,
       componentProps: { jobOrder },
     })
+  } else if (link === 'reuse') {
+    openBatchCreateFromSelected()
   }
 }
 async function showJobOrderOverview() {
-  if (!selectedRow.value) return
+  if (!selectedRow.value)
+    return
 
   sessionStorage.setItem('jobOrderBatchNo', JSON.stringify(selectedRow.value.batchNo))
   const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
@@ -219,6 +271,44 @@ async function showJobOrderOverview() {
       target: '_blank',
     },
   })
+}
+async function openBatchCreateFromSelected() {
+  if (!selectedRow.value)
+    return
+
+  try {
+    const data = await $fetch(`/api/job-orders/${selectedRow.value.batchNo}`)
+    const variant = data?.recipeParams?.variantName ? { variantName: data.recipeParams.variantName } : undefined
+
+    q.dialog({
+      component: JobOrderBatchCreateDialog,
+      componentProps: {
+        recipeId: data?.recipeId ?? data?.recipeParams?.recipeId,
+        machineId: data?.machines?.[0]?.machineId,
+        variant,
+        initialParams: data?.params,
+      },
+    }).onOk(async (payload: any) => {
+      if (payload.print) {
+        sessionStorage.setItem('jobOrderMaterials', JSON.stringify(payload.materials))
+        sessionStorage.setItem('jobOrderParams', JSON.stringify(payload.params))
+        sessionStorage.setItem('jobOrderMachines', JSON.stringify(payload.machines))
+        sessionStorage.setItem('jobOrderRecipeParams', JSON.stringify(payload.recipeParams))
+        const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
+        await navigateTo({
+          path: correctPath,
+        }, {
+          open: {
+            target: '_blank',
+          },
+        })
+      }
+      notifySuccess(t('Success'))
+      getJobOrders()
+    })
+  } catch (e) {
+    notifyFail(t('Failed'))
+  }
 }
 const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
 watch(() => route.query.dispenserId, (val) => {
@@ -317,9 +407,10 @@ async function setStatus(status: string, order: JobOrder) {
 
 <template>
   <div class="q-pa-md">
-    <div class="row q-gutter-md items-center q-justify-between m-5">
-      <div class="col-auto">
+    <div class="row q-gutter-md items-center justify-center m-5">
+      <div>
         <QSelect
+          v-if="false"
           v-model="selectedDispenser"
           borderless
           dense
@@ -342,7 +433,7 @@ async function setStatus(status: string, order: JobOrder) {
         @click="newBatchJobOrder"
       />
       <QBtn
-        v-show="false"
+        v-if="false"
         no-caps
         icon="note_add"
         color="primary"
@@ -354,7 +445,7 @@ async function setStatus(status: string, order: JobOrder) {
     <FilterableTable
       v-model:pagination="pagination"
       :rows="jobOrders"
-      :columns
+      :columns="filteredColumns"
       class="h-160 custom-filterable-table"
       :is-virtual-scroll="false"
       @update-filter-slots="handleFilterSlotsUpdate"
@@ -383,13 +474,29 @@ async function setStatus(status: string, order: JobOrder) {
               {{ t(`jobOrderTypes.${props.row.type}`) }}
             </span>
             <span v-else>
-              {{ props.row[col.field] }}
+              <span
+                v-if="col.name === 'programNames' && selectedRow !== props.row"
+                class="cell-truncate"
+                :title="col.format ? col.format(props.row[col.field], props.row) : props.row[col.field]"
+              >
+                {{ col.format ? col.format(props.row[col.field], props.row) : props.row[col.field] }}
+              </span>
+              <span v-else>
+                {{ col.format ? col.format(props.row[col.field], props.row) : props.row[col.field] }}
+              </span>
             </span>
             <QMenu
               touch-position
               context-menu
             >
               <QList>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="openBatchCreateFromSelected"
+                >
+                  <QItemSection>{{ t('NewBatchJobOrder') }}</QItemSection>
+                </QItem>
                 <QItem
                   v-close-popup
                   clickable
@@ -483,5 +590,12 @@ async function setStatus(status: string, order: JobOrder) {
   background-color: #f0f0f0;
   border: 1px solid #ccc;
   border-radius: 5px;
+}
+.cell-truncate {
+  display: inline-block;
+  max-width: 22rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

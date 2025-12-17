@@ -23,9 +23,25 @@ export default defineEventHandler(async (event) => {
       machineName: 'm.machine_name',
       machineId: 'm.machine_id',
       dispenserId: 'j.dispenser_id',
+      recipeName: dmsDB.raw(`(
+        SELECT rm.recipe_name
+        FROM "RECIPE_MASTER" rm
+        WHERE rm.recipe_id = b.recipe_id AND rm.machine_id = j.machine_id
+        LIMIT 1
+      )`),
+      requestTime: 'j.request_time',
       tankNo: 'j.tank_no',
-      programNo: 'j.program_no',
-      programName: dmsDB.raw(`CASE WHEN j.type = 0 THEN '' ELSE p.program_name END`),
+      programNos: dmsDB.raw(`(
+        SELECT array_agg(DISTINCT j2.program_no)
+        FROM JOB_ORDER j2
+        WHERE j2.batch_no = j.batch_no
+      )`),
+      programNames: dmsDB.raw(`(
+        SELECT array_agg(DISTINCT ph.program_name)
+        FROM "JOB_ORDER" j2
+        JOIN "PROGRAM_HEADER" ph ON ph.program_no = j2.program_no AND ph.machine_id = j2.machine_id
+        WHERE j2.batch_no = j.batch_no
+      )`),
       type: 'j.type',
       recipeType: 'j.recipe_type',
       recipeProcessNo: 'j.recipe_process_no',
@@ -42,5 +58,6 @@ export default defineEventHandler(async (event) => {
   }
 
   jobOrders = jobOrders.limit(1000)
-  return await jobOrders
+  const rows = await jobOrders
+  return rows
 })

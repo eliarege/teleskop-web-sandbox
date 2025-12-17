@@ -3,9 +3,9 @@ import { dmsDB } from '~/server/connectionPool'
 import type { JobOrderParams, Machine, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
-  const batchNo = Number(getRouterParam(event, 'batch'))
+  const batchNo = getRouterParam(event, 'batch')
 
-  if (!batchNo || isNaN(batchNo)) {
+  if (!batchNo) {
     throw createError({
       statusCode: 400,
       message: 'Invalid batch number',
@@ -82,33 +82,35 @@ export default defineEventHandler(async (event) => {
     for (const step of recipeSteps) {
       // Find the corresponding job order for this recipe step
       // Match by recipe_type, main_step, and material through material_request
-      const jobOrder = jobOrders.find(j => {
+      const jobOrder = jobOrders.find((j) => {
         if (j.step_no !== step.main_step || j.recipe_type !== step.recipe_type) {
           return false
         }
 
         // Check if this job order's material request matches the step
         const matReq = materialRequests.find(m =>
-          m.req_no === j.job_id &&
-          m.material_code === step.material_code &&
-          m.main_step === step.main_step &&
-          m.parallel_step === step.parallel_step
+          m.req_no === j.job_id
+          && m.material_code === step.material_code
+          && m.main_step === step.main_step
+          && m.parallel_step === step.parallel_step,
         )
 
         return !!matReq
       })
 
-      if (!jobOrder) continue
+      if (!jobOrder)
+        continue
 
       // Find the material request for this job order
       const materialRequest = materialRequests.find(m =>
-        m.req_no === jobOrder.job_id &&
-        m.material_code === step.material_code &&
-        m.main_step === step.main_step &&
-        m.parallel_step === step.parallel_step
+        m.req_no === jobOrder.job_id
+        && m.material_code === step.material_code
+        && m.main_step === step.main_step
+        && m.parallel_step === step.parallel_step,
       )
 
-      if (!materialRequest) continue
+      if (!materialRequest)
+        continue
 
       const stepKey = `${jobOrder.program_no}-${step.main_step}-${step.recipe_type}`
 
@@ -126,7 +128,7 @@ export default defineEventHandler(async (event) => {
         materialName: materialNameMap.get(step.material_code) || '',
         amount: materialRequest.real_amount,
         unit: materialRequest.unit,
-        orderNo: step.req_no_batch,
+        orderNo: step.req_no_batch + 1,
         programIndex: step.main_step,
         type: step.recipe_type,
         isManual: materialRequest.dispenser_id === null,
@@ -151,7 +153,7 @@ export default defineEventHandler(async (event) => {
 
     // TODO: Recipe params
     const recipeParams: RecipeProgramMaster = {
-      recipeId: 0,
+      recipeId: batchPlan.recipe_id ?? 0,
       recipeName: '',
       recipeGroup: 0,
       recipeType: 0,
@@ -191,11 +193,21 @@ export default defineEventHandler(async (event) => {
       connectedDispensers: null,
     }]
 
+    // Determine request time from JOB_ORDERs (earliest request_time)
+    const requestTime: string | null = jobOrders.length > 0 && jobOrders[0].request_time
+      ? new Date(
+        jobOrders
+          .map(j => new Date(j.request_time as Date))
+          .sort((a, b) => a.getTime() - b.getTime())[0],
+      ).toISOString()
+      : null
     return {
       steps,
       recipeParams,
       params,
       machines,
+      recipeId: batchPlan.recipe_id ?? 0,
+      requestTime,
     }
   } catch (error: any) {
     throw createError({

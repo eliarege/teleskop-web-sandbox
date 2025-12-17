@@ -19,6 +19,10 @@ const props = defineProps({
     type: Object as PropType<RecipeVariant>,
     required: false,
   },
+  initialParams: {
+    type: Object as PropType<JobOrderParams>,
+    required: false,
+  },
 })
 const q = useQuasar()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
@@ -28,7 +32,7 @@ const selectedRecipe = ref<RecipeMasterStep[]>([])
 const selectedMachines = ref<Machine[]>([])
 const recipeHeader = ref<RecipeProgramMaster>()
 const jobOrderParams = ref<JobOrderParams>({
-  jobNo: 1,
+  jobNo: '1',
   numberOfJobs: 1,
   totalWeight: 20,
   flotteRatio: 1,
@@ -119,6 +123,29 @@ function onRecipeFocus() {
 getRecipes()
 getDefaultBatchNo()
 getAdditonalData()
+
+// Apply initial parameters if provided (when opened from an existing batch)
+function applyInitialFromProps() {
+  if (!props.initialParams)
+    return
+
+  const p = props.initialParams
+  // Do NOT override jobNo here; use default new batch number
+  jobOrderParams.value.numberOfJobs = p.numberOfJobs ?? jobOrderParams.value.numberOfJobs
+  jobOrderParams.value.totalWeight = p.totalWeight ?? jobOrderParams.value.totalWeight
+  jobOrderParams.value.flotteRatio = p.flotteRatio ?? jobOrderParams.value.flotteRatio
+  jobOrderParams.value.flotte = p.flotte ?? jobOrderParams.value.flotte
+  jobOrderParams.value.partyNo = p.partyNo ?? jobOrderParams.value.partyNo
+  jobOrderParams.value.orderNo = p.orderNo ?? jobOrderParams.value.orderNo
+  jobOrderParams.value.notes = p.notes ?? jobOrderParams.value.notes
+  jobOrderParams.value.customerName = p.customerName ?? jobOrderParams.value.customerName
+  jobOrderParams.value.fabricType = p.fabricType ?? jobOrderParams.value.fabricType
+  jobOrderParams.value.yarn = p.yarn ?? jobOrderParams.value.yarn
+  jobOrderParams.value.ASNo = p.ASNo ?? jobOrderParams.value.ASNo
+}
+
+applyInitialFromProps()
+watch(() => props.initialParams, () => applyInitialFromProps(), { deep: true })
 
 async function getRecipes() {
   recipes.value = await $fetch('/api/recipes/master',
@@ -231,23 +258,64 @@ function getRecipeLabel(header: RecipeProgramMaster) {
   return `${header.recipeId} - ${header.recipeName} (${header.machineId})`
 }
 function getAllMaterialsFromSteps(program: RecipeMasterStep) {
-  const materials = program.steps.flatMap(step =>
+  // Get regular step materials
+  const regularMaterials = program.steps.flatMap(step =>
     step.materials.map(material => ({
       ...material,
       calculated: computed(() => calculateAmount(material, program)),
+      isIntermediateStep: false,
     })),
   )
-  return materials.sort((a, b) => a.orderNo - b.orderNo)
+
+  // Get manual step materials (intermediate steps)
+  const manualMaterials = (program.manualSteps || []).flatMap(manualStep =>
+    manualStep.materials.map(material => ({
+      ...material,
+      calculated: computed(() => calculateAmount(material, program)),
+      isIntermediateStep: true,
+      nextStep: manualStep.nextStep,
+      displayOrderNo: manualStep.nextStep, // For sorting: place before or after regular steps
+    })),
+  )
+
+  // Combine and sort: regular materials by orderNo, manual materials placed before their nextStep
+  const allMaterials = [...regularMaterials, ...manualMaterials]
+  return allMaterials.sort((a, b) => {
+    const aOrder = a.isIntermediateStep ? a.displayOrderNo - 0.5 : a.orderNo
+    const bOrder = b.isIntermediateStep ? b.displayOrderNo - 0.5 : b.orderNo
+    return aOrder - bOrder
+  })
+}
+
+function getIntermediateStepStyle(isDarkMode: boolean) {
+  // Amber styling for intermediate/manual steps
+  return isDarkMode
+    ? 'background-color: #78350f; color: #fef3c7;'
+    : 'background-color: #fef3c7; color: #78350f;'
 }
 
 function updateRecipe(val: RecipeProgramMaster | undefined) {
   recipeHeader.value = { ...val, ...(props.variant || {}) }
   getRecipeSteps()
 }
-function updateAmount(programIndex: number, row: RecipeMasterMaterial) {
+function updateAmount(programIndex: number, row: any) {
+  // For intermediate steps, update in manualSteps
+  if (row.isIntermediateStep) {
+    const program = selectedRecipe.value[programIndex]
+    const manualStep = program.manualSteps?.find(ms => ms.nextStep === row.nextStep && ms.type === row.type)
+    const material = manualStep?.materials.find(m => m.materialCode === row.materialCode)
+    if (material) {
+      material.amount = row.amount
+    }
+    return
+  }
+
+  // For regular steps
   const step = selectedRecipe.value[programIndex].steps.find(step => step.stepNo === row.programIndex && step.type === row.type)
-  const material = step!.materials.find(material => material.materialCode === row.materialCode && material.orderNo === row.orderNo)
-  material!.amount = row.amount
+  const material = step?.materials.find(material => material.materialCode === row.materialCode && material.orderNo === row.orderNo)
+  if (material) {
+    material.amount = row.amount
+  }
 }
 function calculateAmount(row: any, program: any) {
   const weightSource = programWeightsEnabled.value ? program.totalWeight : jobOrderParams.value.totalWeight
@@ -374,11 +442,20 @@ async function onSave() {
       selectedValue: p.selectedValue,
     }))
   selectedRecipe.value.forEach((program) => {
+    // Calculate amounts for regular step materials
     program.steps.forEach((step) => {
       step.materials.forEach((material) => {
         material.calculated = calculateAmountVal(material, program)
       })
     })
+    // Calculate amounts for manual step materials
+    if (program.manualSteps) {
+      program.manualSteps.forEach((manualStep) => {
+        manualStep.materials.forEach((material) => {
+          material.calculated = calculateAmountVal(material, program)
+        })
+      })
+    }
   })
 
   // Check capacity for each selected machine
@@ -489,6 +566,7 @@ async function onSave() {
             optimizationParams,
           },
         })
+
         dataStore.newJobOrders = true
         stateStore.isLoading = false
         onDialogOK({
@@ -513,6 +591,7 @@ async function onSave() {
         optimizationParams,
       },
     })
+
     dataStore.newJobOrders = true
     onDialogOK({
       print: printWhenDone.value,
@@ -598,6 +677,7 @@ async function onCancel() {
           <QMenu
             v-model="showRecipeOptions"
             no-parent-event
+            no-focus
             max-height="300px"
             fit
           >
@@ -674,14 +754,26 @@ async function onCancel() {
         </div>
         <div class="row-item">
           <span class="item-label">{{ t('jobOrderParams.ID') }}</span>
-          <QInput
-            v-model="jobOrderParams.jobNo"
-            class="item-input"
-            dense
-            type="number"
-            min="0"
-            filled
-          />
+          <div class="flex-row" style="display: flex; align-items: flex-start;">
+            <QInput
+              v-model="jobOrderParams.jobNo"
+              borderless
+              dense
+              type="text"
+              filled
+              :rules="[val => /^[a-zA-Z0-9_]+$/.test(val) || t('jobOrderParams.BatchNoValidation')]"
+              class="flex-grow-1"
+            />
+            <QBtn
+              dense
+              flat
+              icon="autorenew"
+              color="primary"
+              size="sm"
+              style="height: 40px;"
+              @click="getDefaultBatchNo"
+            />
+          </div>
         </div>
         <div class="row-item">
           <span class="item-label">{{ t('jobOrderParams.TotalWeight') }}</span>
@@ -754,7 +846,7 @@ async function onCancel() {
             filled
           />
         </div>
-        <div class="row-item">
+        <div v-if="stateStore.jobOrderPrefs.show?.yarn" class="row-item">
           <span class="item-label">{{ t('jobOrderParams.Yarn') }}</span>
           <QInput
             v-model="jobOrderParams.yarn"
@@ -764,7 +856,7 @@ async function onCancel() {
             filled
           />
         </div>
-        <div class="row-item">
+        <div v-if="stateStore.jobOrderPrefs.show?.ASNo" class="row-item">
           <span class="item-label">{{ t('jobOrderParams.ASNo') }}</span>
           <QInput
             v-model="jobOrderParams.ASNo"
@@ -774,7 +866,7 @@ async function onCancel() {
             filled
           />
         </div>
-        <div class="row-item">
+        <div v-if="stateStore.jobOrderPrefs.show?.orderNo" class="row-item">
           <span class="item-label">{{ t('jobOrderParams.OrderNo') }}</span>
           <QInput
             v-model="jobOrderParams.orderNo"
@@ -907,16 +999,17 @@ async function onCancel() {
                       :columns
                     >
                       <template #body="props">
-                        <QTr>
+                        <QTr :class="{ 'intermediate-step-row': props.row.isIntermediateStep }">
                           <QTd
                             v-for="col in props.cols"
                             :key="col.name"
                             :props="props"
-                            :style="cellStyle(col, props.row, props.row.orderNo, false, q.dark.isActive, colorStore.colors)"
+                            :style="props.row.isIntermediateStep ? getIntermediateStepStyle(q.dark.isActive) : cellStyle(col, props.row, props.row.orderNo, false, q.dark.isActive, colorStore.colors)"
                           >
                             <span v-if="col.field === 'unit'">{{ t(`units.${props.row.unit}`) }}</span>
                             <span v-else-if="col.field === 'type'">{{ t(`materialTypes.${props.row.type + 1}`) }}</span>
-                            <span v-else-if="col.field === 'isManual'">{{ props.row.isManual ? t('Man') : t('Auto') }}</span>
+                            <span v-else-if="col.field === 'isManual'">{{ props.row.isIntermediateStep ? t('Man') : (props.row.isManual ? t('Man') : t('Auto')) }}</span>
+                            <span v-else-if="col.field === 'orderNo'">{{ props.row.isIntermediateStep ? t('Man') : props.row.orderNo }}</span>
                             <span v-else-if="col.field === 'amount'">
                               <QInput
                                 v-model.number="props.row.amount"
@@ -1135,5 +1228,9 @@ async function onCancel() {
 }
 .toggle-border {
   border: 1px solid var(--q-primary);
+}
+
+.intermediate-step-row {
+  font-weight: 600;
 }
 </style>

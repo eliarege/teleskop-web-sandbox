@@ -4,7 +4,7 @@ export interface OptionMap {
 }
 export interface JobOrder {
   jobId: number
-  batchNo: number
+  batchNo: string
   batchCorrectionNo: number
   machineName: string
   machineId: number
@@ -199,6 +199,11 @@ export interface RecipeMaster {
   recipeId: number
   recipeName: string
 }
+export interface RecipeStep {
+  orderNo: number
+  materials: RecipeMasterMaterial[]
+}
+
 export interface RecipeMasterStep {
   recipeId: number
   machineId: number
@@ -209,12 +214,19 @@ export interface RecipeMasterStep {
   chemRequests: number
   dyeRequests: number
   saltRequests: number
-  chemSteps: RecipeMasterMaterial[]
-  dyeSteps: RecipeMasterMaterial[]
-  saltSteps: RecipeMasterMaterial[]
-  flotte: number | undefined
-  flotteRatio: number | undefined
-  totalWeight: number | undefined
+  chemSteps: RecipeStep[]
+  dyeSteps: RecipeStep[]
+  saltSteps: RecipeStep[]
+  manualSteps?: ManualStep[]
+  flotte?: number | undefined
+  flotteRatio?: number | undefined
+  totalWeight?: number | undefined
+}
+
+export interface ManualStep {
+  nextStep: number // The step number this manual step appears before
+  type: number // The recipe type (CHEM, DYE, SALT)
+  materials: RecipeMasterMaterial[]
 }
 export interface RecipeMasterMaterial {
   materialCode: string
@@ -226,6 +238,7 @@ export interface RecipeMasterMaterial {
   orderNo: number
   programIndex: number
   calculated: number | undefined
+  nextStep?: number // For intermediate steps: -1 means regular step, positive number indicates which step this appears before
 }
 export interface RecipeProgramMaster {
   recipeId: number
@@ -260,7 +273,7 @@ export interface RecipeVariant {
   colorName: string
 }
 export interface JobOrderParams {
-  jobNo: number
+  jobNo: string
   numberOfJobs: number
   totalWeight: number
   partyNo: number
@@ -274,7 +287,7 @@ export interface JobOrderParams {
   ASNo: string | undefined
 }
 export interface ContinueJobOrderParams {
-  jobNo: number
+  jobNo: string
   fabricSize: number
   fabricWeight: number
   grammage: number

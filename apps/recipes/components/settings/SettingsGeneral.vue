@@ -140,6 +140,29 @@ function onReset() {
         v-model="jobOrderPrefs.allowOverrideStartedJobOrders"
         :label="t('AllowOverrideStartedJobOrders')"
       />
+
+      <div class="q-mt-md q-pa-sm bordered-section">
+        <div class="text-subtitle2 q-mb-sm">
+          {{ t('OptionalFields') }}
+        </div>
+        <div class="q-gutter-sm">
+          <QCheckbox
+            v-model="jobOrderPrefs.show.ASNo"
+            :label="t('jobOrderParams.ASNo')"
+            dense
+          />
+          <QCheckbox
+            v-model="jobOrderPrefs.show.yarn"
+            :label="t('jobOrderParams.Yarn')"
+            dense
+          />
+          <QCheckbox
+            v-model="jobOrderPrefs.show.orderNo"
+            :label="t('jobOrderParams.OrderNo')"
+            dense
+          />
+        </div>
+      </div>
     </QCardSection>
 
     <QCardSection class="q-gutter-sm row flex-center">
@@ -165,5 +188,14 @@ function onReset() {
   border: 1px solid #ddd;
   border-radius: 10px;
   padding: 5px;
+}
+
+.bordered-section {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+
+.body--dark .bordered-section {
+  border-color: rgba(255, 255, 255, 0.28);
 }
 </style>

@@ -7,7 +7,7 @@ async function insertRecipeMaterials(
   material: RecipeMasterMaterial,
   context: {
     planKey: number
-    batchNo: number
+    batchNo: string
     correctionNo: number
     machineId: number
     program: any
@@ -16,6 +16,8 @@ async function insertRecipeMaterials(
     materialIndex: number
     counter: number
     callOff: number
+    callOffManual: number
+    isIntermediateStep: boolean
     tankNo: number
     priority: number
     dmExchangeDB: Knex<any, never[]>
@@ -32,6 +34,8 @@ async function insertRecipeMaterials(
     processIndex,
     counter,
     callOff,
+    callOffManual,
+    isIntermediateStep,
     tankNo,
     priority,
     dmExchangeDB,
@@ -79,7 +83,7 @@ async function insertRecipeMaterials(
     unit: material.unit,
     ...(connectedDispenser?.dispenserId && { dispenser_id: connectedDispenser.dispenserId }),
     real_amount: material.amount,
-    main_step: step.stepNo,
+    main_step: step.orderNo,
     parallel_step: materialIndex,
   })
   await dmExchangeDB('Dyelot_Recipe').insert({
@@ -89,14 +93,15 @@ async function insertRecipeMaterials(
     ProductName: material.materialName,
     Amount: material.calculated,
     RecipeAmount: material.amount,
-    KindOfProduct: material.type === RecipeType.DYE? 1 : 2,
-    KindOfStation: material.isManual ? 1 : 2,
+    KindOfProduct: material.type === RecipeType.DYE ? 1 : 2,
+    KindOfStation: material.isManual ? 5 : 2,
     TreatmentNo: program.programNo,
     Program_order: program.stepNo + 1,
-    Preparation_counter: material.orderNo,
+    Preparation_counter: isIntermediateStep ? callOff : material.orderNo,
     CallOff: callOff,
     Counter: counter,
     Unit: 'gr',
+    ...(isIntermediateStep && { CallOffManuel: callOffManual }),
   })
 }
 
@@ -105,13 +110,13 @@ async function processProgramSteps(
   index: number,
   context: {
     planKey: number
-    batchNo: number
+    batchNo: string
     correctionNo: number
     machineId: number
     tankNo: number
     priority: number
     dmExchangeDB: any
-    counterState: { counter: number, callOff: number }
+    counterState: { counter: number, callOff: number, callOffManual: number }
   },
 ) {
   const { planKey, batchNo, dmExchangeDB, counterState } = context
@@ -148,23 +153,53 @@ async function processProgramSteps(
     })
   }
 
-  const allMaterials = program.steps
+  const regularMaterials = program.steps
     .flatMap((step, stepIndex) =>
       step.materials.map((material, materialIndex) => ({
         ...material,
         step,
         materialIndex,
         stepIndex,
+        isIntermediateStep: false,
       })),
     )
-    .sort((a: RecipeMasterMaterial, b: RecipeMasterMaterial) => a.orderNo - b.orderNo)
+
+  const manualMaterials = (program.manualSteps || [])
+    .flatMap((manualStep, stepIndex) =>
+      manualStep.materials.map((material, materialIndex) => ({
+        ...material,
+        step: { stepNo: manualStep.nextStep, type: manualStep.type },
+        materialIndex,
+        stepIndex,
+        isIntermediateStep: true,
+        displayOrderNo: manualStep.nextStep,
+      })),
+    )
+
+  const allMaterials = [...regularMaterials, ...manualMaterials]
+    .sort((a: any, b: any) => {
+      const aOrder = a.isIntermediateStep ? a.displayOrderNo - 0.5 : a.orderNo
+      const bOrder = b.isIntermediateStep ? b.displayOrderNo - 0.5 : b.orderNo
+      return aOrder - bOrder
+    })
+
+  counterState.callOffManual = 0
 
   for (let i = 0; i < allMaterials.length; i++) {
     const material = allMaterials[i]
     counterState.counter++
-    if (i === 0 || allMaterials[i - 1].orderNo < material.orderNo) {
-      counterState.callOff++
+
+    let currentCallOff: number
+    if (material.isIntermediateStep) {
+      currentCallOff = material.displayOrderNo
+      counterState.callOffManual++
+    } else {
+      if (i === 0 || allMaterials[i - 1].orderNo < material.orderNo || allMaterials[i - 1].isIntermediateStep) {
+        counterState.callOff = material.orderNo
+      }
+      currentCallOff = counterState.callOff
     }
+
     await insertRecipeMaterials(material, {
       ...context,
       program,
@@ -172,7 +207,9 @@ async function processProgramSteps(
       materialIndex: material.materialIndex,
       processIndex: material.stepIndex,
       counter: counterState.counter,
-      callOff: counterState.callOff,
+      callOff: currentCallOff,
+      callOffManual: counterState.callOffManual,
+      isIntermediateStep: material.isIntermediateStep,
     })
   }
 }
@@ -182,7 +219,7 @@ export default defineEventHandler(async (event) => {
     recipe: RecipeMasterStep[]
     recipeHeader: RecipeProgramMaster
     machines: number[]
-    params: JobOrderParams,
+    params: JobOrderParams
     optimizationParams: CommandParameter[]
   }>(event)
   const dmExchangeDB = await getDmExchangeDB()
@@ -191,87 +228,97 @@ export default defineEventHandler(async (event) => {
   for (let i = 0; i < params.numberOfJobs; i++) {
     try {
       const machineId = machines[i]
-      const batchNo = Number(params.jobNo) + i
+      const batchNo = params.numberOfJobs > 1 ? `${params.jobNo}_${i + 1}` : params.jobNo
 
-      // Delete all existing Dyelot records for this batch before creating new ones
-      await dmExchangeDB('Dyelots').where('Dyelot', batchNo).del()
-      await dmExchangeDB('Dyelot_Recipe').where('Dyelot', batchNo).del()
-      await dmExchangeDB('Dyelot_Procedure').where('Dyelot', batchNo).del()
-      await dmExchangeDB('Dyelot_Parameter').where('Dyelot', batchNo).del()
+      await dmExchangeDB.transaction(async (trx) => {
+        await trx('Dyelots').where('Dyelot', batchNo).del()
+        await trx('Dyelot_Recipe').where('Dyelot', batchNo).del()
+        await trx('Dyelot_Procedure').where('Dyelot', batchNo).del()
+        await trx('Dyelot_Parameter').where('Dyelot', batchNo).del()
 
-      const counterState = {
-        counter: 0,
-        callOff: 0,
-      }
-      const correctionNoQuery = await dmsDB('BATCH_PLAN')
-        .where('batch', batchNo)
-        .max('batch_correction_no as maxCorrectionNo')
-        .first()
-      const correctionNo = correctionNoQuery?.maxCorrectionNo ? correctionNoQuery.maxCorrectionNo + 1 : 1
-
-      const planKeyQuery = await dmsDB('BATCH_PLAN')
-        .max('plan_key as maxPlanKey')
-        .first()
-      const planKey = planKeyQuery?.maxPlanKey ? planKeyQuery?.maxPlanKey + 1 : 1
-
-      await dmsDB('BATCH_PLAN').insert({
-        plan_key: planKey,
-        batch: batchNo,
-        batch_correction_no: correctionNo,
-        planned_machine: machineId,
-        planned_start_date: new Date(),
-        color_code: recipeHeader.colorCode,
-        color_name: recipeHeader.colorName,
-        order_no: params.orderNo,
-        flotte: params.flotte,
-        total_weight: params.totalWeight,
-        notes: params.notes,
-        customer_name: params.customerName,
-        fabric_type: params.fabricType,
-        as_no: params.ASNo,
-        yarn: params.yarn
-      })
-
-      for (let index = 0; index < recipe.length; index++) {
-        const program = recipe[index]
-        await processProgramSteps(program, index, {
-          planKey,
-          batchNo,
-          correctionNo,
-          machineId,
-          tankNo,
-          priority,
-          dmExchangeDB,
-          counterState,
-        })
-        const opParams = optimizationParams.filter(
-          p => p.programNo === program.programNo
-        )
-
-        if (opParams.length > 0) {
-          await dmExchangeDB('Dyelot_Parameter').insert(opParams.map(p => ({
-            Dyelot: batchNo,
-            TreatmentCnt: index + 1,
-            TreatmentParaCnt: p.paramId,
-            TreatmentParaNo:  p.paramIndex,
-            TreatmentParaValue: p.selectedValue
-          })))
+        const counterState = {
+          counter: 0,
+          callOff: 0,
+          callOffManual: 0,
         }
-      }
-      await dmExchangeDB('Dyelots').insert({
-        Dyelot: batchNo,
-        ExternalDyelot: batchNo,
-        ReDye: 0,
-        Machine: machineId,
-        Color: recipeHeader.colorCode,
-        OrderNo: params.orderNo,
-        Customer: params.customerName,
-        RecipeNo: recipeHeader.recipeId,
-        Weight: params.totalWeight,
-        LiquorRatio: params.flotteRatio,
-        LiquorQuantity: params.flotte,
-        ImportState: 1,
-        State: 1,
+        const correctionNoQuery = await dmsDB('BATCH_PLAN')
+          .where('batch', batchNo)
+          .max('batch_correction_no as maxCorrectionNo')
+          .first()
+        const correctionNo = correctionNoQuery?.maxCorrectionNo ? correctionNoQuery.maxCorrectionNo + 1 : 1
+
+        const planKeyQuery = await dmsDB('BATCH_PLAN')
+          .max('plan_key as maxPlanKey')
+          .first()
+        const planKey = planKeyQuery?.maxPlanKey ? planKeyQuery?.maxPlanKey + 1 : 1
+
+        await dmsDB('BATCH_PLAN').insert({
+          plan_key: planKey,
+          batch: batchNo,
+          batch_correction_no: correctionNo,
+          planned_machine: machineId,
+          planned_start_date: new Date(),
+          color_code: recipeHeader.colorCode,
+          color_name: recipeHeader.colorName,
+          recipe_id: recipeHeader.recipeId,
+          order_no: params.orderNo,
+          flotte: params.flotte,
+          total_weight: params.totalWeight,
+          notes: params.notes,
+          customer_name: params.customerName,
+          fabric_type: params.fabricType,
+          as_no: params.ASNo,
+          yarn: params.yarn,
+        })
+
+        const dyelotParamRows: Array<{ Dyelot: string, TreatmentCnt: number, TreatmentParaCnt: number, TreatmentParaNo: number, TreatmentParaValue: number }> = []
+
+        for (let index = 0; index < recipe.length; index++) {
+          const program = recipe[index]
+          await processProgramSteps(program, index, {
+            planKey,
+            batchNo,
+            correctionNo,
+            machineId,
+            tankNo,
+            priority,
+            dmExchangeDB: trx,
+            counterState,
+          })
+          const opParams = optimizationParams.filter(
+            p => p.programNo === program.programNo,
+          )
+
+          if (opParams.length > 0) {
+            dyelotParamRows.push(
+              ...opParams.map(p => ({
+                Dyelot: batchNo,
+                TreatmentCnt: index + 1,
+                TreatmentParaCnt: p.paramId,
+                TreatmentParaNo: p.paramIndex,
+                TreatmentParaValue: p.selectedValue,
+              })),
+            )
+          }
+        }
+        if (dyelotParamRows.length > 0) {
+          await trx('Dyelot_Parameter').insert(dyelotParamRows)
+        }
+        await trx('Dyelots').insert({
+          Dyelot: batchNo,
+          ExternalDyelot: batchNo,
+          ReDye: 0,
+          Machine: machineId,
+          Color: recipeHeader.colorCode,
+          OrderNo: params.orderNo,
+          Customer: params.customerName,
+          RecipeNo: recipeHeader.recipeId,
+          Weight: params.totalWeight,
+          LiquorRatio: params.flotteRatio,
+          LiquorQuantity: params.flotte,
+          ImportState: 1,
+          State: 1,
+        })
       })
     } catch (error: any) {
       setResponseStatus(event, 400, error.message)

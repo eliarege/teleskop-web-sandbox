@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { RecipeType } from '~/shared/constants'
+import { useStateStore } from '~/store/State'
 import type { JobOrderParams, Machine, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
 
 const props = defineProps({
   batchNo: {
-    type: Number,
+    type: String,
     required: false,
   },
   steps: {
@@ -24,8 +25,9 @@ const props = defineProps({
     required: false,
   },
 })
-
-const { t } = useI18n()
+const { t, d } = useI18n()
+const route = useRoute()
+const stateStore = useStateStore()
 const companyInfo = ref(null)
 const currentUser = ref('Default User')
 const currentTime = ref(new Date().toLocaleString())
@@ -45,7 +47,8 @@ const actualParams = computed(() => props.params || fetchedParams.value)
 const actualMachines = computed(() => props.machines || fetchedMachines.value)
 
 const jobNumbers = computed(() => {
-  if (!actualParams.value) return ''
+  if (!actualParams.value)
+    return ''
 
   const result = []
   const baseJobNo = actualParams.value.jobNo
@@ -58,12 +61,14 @@ const jobNumbers = computed(() => {
 })
 
 const hasManyJobs = computed(() => {
-  if (!actualParams.value) return false
+  if (!actualParams.value)
+    return false
   return (actualParams.value.numberOfJobs || 1) > 3
 })
 
 const barcodeUrl = computed(() => {
-  if (!actualParams.value) return ''
+  if (!actualParams.value)
+    return ''
 
   if (hasManyJobs.value) {
     const baseJobNo = actualParams.value.jobNo
@@ -73,25 +78,32 @@ const barcodeUrl = computed(() => {
   return `https://barcode.tec-it.com/barcode.ashx?data=${jobNumbers.value}&code=Code128&translate-esc=false`
 })
 
-// Fetch data if batchNo is provided but other props are not
+const batchNoToUse = computed(() => props.batchNo || (route.query.batchNo as string | undefined))
+
+// Fetch data if batchNo is provided (via prop or query) but other props are not
 onMounted(async () => {
-  if (props.batchNo && !props.steps && !props.recipeParams && !props.params && !props.machines) {
+  if (batchNoToUse.value && !props.steps && !props.recipeParams && !props.params && !props.machines) {
     await fetchJobOrderData()
   }
 })
 
 async function fetchJobOrderData() {
-  if (!props.batchNo) return
+  if (!batchNoToUse.value)
+    return
 
   isLoading.value = true
   error.value = null
 
   try {
-    const data = await $fetch(`/api/job-orders/${props.batchNo}`)
+    const data = await $fetch(`/api/job-orders/${batchNoToUse.value}`)
     fetchedSteps.value = data.steps
     fetchedRecipeParams.value = data.recipeParams
     fetchedParams.value = data.params
     fetchedMachines.value = data.machines
+    // Prefer backend request time if provided
+    if (data.requestTime) {
+      currentTime.value = d(new Date(data.requestTime), 'datetime') as unknown as string
+    }
   } catch (err: any) {
     error.value = err.message || 'Failed to fetch job order data'
     console.error('Failed to fetch job order:', err)
@@ -102,16 +114,37 @@ async function fetchJobOrderData() {
 
 fetchCompanyInfo()
 function getAllMaterialsFromSteps(program: RecipeMasterStep) {
-  const materials = program.steps.flatMap(step =>
+  // Get regular step materials
+  const regularMaterials = program.steps.flatMap(step =>
     step.materials.map(material => ({
       ...material,
       calculated: computed(() => calculateAmount(material, program)),
+      isIntermediateStep: false,
     })),
   )
-  return materials.sort((a, b) => a.orderNo - b.orderNo)
+
+  // Get manual step materials (intermediate steps)
+  const manualMaterials = (program.manualSteps || []).flatMap(manualStep =>
+    manualStep.materials.map(material => ({
+      ...material,
+      calculated: computed(() => calculateAmount(material, program)),
+      isIntermediateStep: true,
+      nextStep: manualStep.nextStep,
+      displayOrderNo: manualStep.nextStep, // For sorting: place before or after regular steps
+    })),
+  )
+
+  // Combine and sort: regular materials by orderNo, manual materials placed before their nextStep
+  const allMaterials = [...regularMaterials, ...manualMaterials]
+  return allMaterials.sort((a, b) => {
+    const aOrder = a.isIntermediateStep ? a.displayOrderNo - 0.5 : a.orderNo
+    const bOrder = b.isIntermediateStep ? b.displayOrderNo - 0.5 : b.orderNo
+    return aOrder - bOrder
+  })
 }
 function calculateAmount(row: any, program: any) {
-  if (!actualParams.value) return '0'
+  if (!actualParams.value)
+    return '0'
 
   if (row.type === RecipeType.DYE) {
     if (row.unit === 0) {
@@ -226,19 +259,19 @@ function printPage() {
             <span>{{ t('FabricType') }}:</span>
             <strong>{{ actualParams.fabricType }}</strong>
           </div>
-          <div class="info-item">
+          <div v-if="stateStore.jobOrderPrefs.show.orderNo" class="info-item">
             <span>{{ t('jobOrderParams.OrderNo') }}:</span>
             <strong>{{ actualParams.orderNo }}</strong>
           </div>
-          <div class="info-item">
+          <div v-if="(stateStore.jobOrderPrefs.show.PartyNo === undefined || stateStore.jobOrderPrefs.show.PartyNo)" class="info-item">
             <span>{{ t('jobOrderParams.PartyNo') }}:</span>
             <strong>{{ actualParams.partyNo }}</strong>
           </div>
-          <div class="info-item">
+          <div v-if="stateStore.jobOrderPrefs.show.yarn" class="info-item">
             <span>{{ t('jobOrderParams.Yarn') }}:</span>
             <strong>{{ actualParams.yarn }}</strong>
           </div>
-          <div class="info-item">
+          <div v-if="stateStore.jobOrderPrefs.show.ASNo" class="info-item">
             <span>{{ t('jobOrderParams.ASNo') }}:</span>
             <strong>{{ actualParams.ASNo }}</strong>
           </div>
@@ -313,17 +346,21 @@ function printPage() {
                 mb-5
               >
                 <template #body="props">
-                  <QTr :class="{ 'font-bold': props.row.type === 1 }">
+                  <QTr :class="{ 'font-bold': props.row.type === 1, 'intermediate-step-row': props.row.isIntermediateStep }">
                     <QTd
                       v-for="col in props.cols"
                       :key="col.name"
                       :props="props"
+                      :style="props.row.isIntermediateStep ? 'background-color: #fef3c7; color: #78350f;' : ''"
                     >
                       <span v-if="col.field === 'unit'">
                         {{ t(`units.${props.row.unit}`) }}
                       </span>
                       <span v-else-if="col.field === 'isManual'">
-                        {{ props.row.isManual ? t('Man') : t('Auto') }}
+                        {{ props.row.isIntermediateStep ? t('Man') : (props.row.isManual ? t('Man') : t('Auto')) }}
+                      </span>
+                      <span v-else-if="col.field === 'orderNo'">
+                        {{ props.row.isIntermediateStep ? t('Man') : props.row.orderNo }}
                       </span>
                       <span v-else>
                         {{ props.row[col.field] }}
@@ -453,6 +490,10 @@ td {
 
 .font-bold {
   font-weight: bold;
+}
+
+.intermediate-step-row {
+  font-weight: 600;
 }
 
 @media print {

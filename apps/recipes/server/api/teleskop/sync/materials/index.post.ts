@@ -11,6 +11,7 @@ const materialParams = {
   unit_cost: 'BIRIMMALIYET',
   re_requestable: 'ReRequestable',
   direct_transfer: 'DirectTransfer',
+  is_manual: 'MANUALMATERIAL'
 }
 
 export default defineEventHandler(async () => {

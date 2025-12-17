@@ -143,6 +143,7 @@ function openNewContinueJobOrderDialog() {
 <template>
   <div>
     <QBtn
+      v-show="false"
       :label="t('Dispensers')"
       size="20px"
       w-full
