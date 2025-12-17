@@ -567,11 +567,6 @@ async function onSave() {
           },
         })
 
-        await $fetch('/api/job-orders/batch-no', {
-          method: 'POST',
-          body: { batchNo: jobOrderParams.value.jobNo },
-        })
-
         dataStore.newJobOrders = true
         stateStore.isLoading = false
         onDialogOK({
@@ -595,11 +590,6 @@ async function onSave() {
         params: { ...jobOrderParams.value, flotte: flotte.value },
         optimizationParams,
       },
-    })
-
-    await $fetch('/api/job-orders/batch-no', {
-      method: 'POST',
-      body: { batchNo: jobOrderParams.value.jobNo },
     })
 
     dataStore.newJobOrders = true
