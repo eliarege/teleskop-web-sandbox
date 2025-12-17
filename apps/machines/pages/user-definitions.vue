@@ -55,7 +55,7 @@ const columns = computed(() => [
 async function loadUsers() {
   loading.value = true
   try {
-    const res = await fetch<User[]>('/api/user-definitions/route')
+    const res = await fetch<User[]>('/api/user-definitions')
     rows.value = Array.isArray(res) ? res : []
   } catch (err) {
     console.error(err)

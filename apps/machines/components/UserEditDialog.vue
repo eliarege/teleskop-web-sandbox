@@ -95,7 +95,7 @@ async function saveUser() {
         }),
       })
     } else {
-      await fetch(`/api/user-definitions/route`, {
+      await fetch(`/api/user-definitions`, {
         method: 'POST',
         body: JSON.stringify({
           ...form.value,
