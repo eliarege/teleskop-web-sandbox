@@ -224,14 +224,16 @@ server.registerTool('add-merge-request-note-for-code-range', {
   }
 
   const { diff_refs } = mergeRequest.value
-  const filePathSha = sha1(input.filePath)
+  // Remove leading ./ or / from file path
+  const filePath = input.filePath.replace(/^(\.\/|\/)/, '')
+  const filePathSha = sha1(filePath)
   const position: DiscussionNotePositionOptions = {
     positionType: 'text',
     baseSha: diff_refs.base_sha,
     headSha: diff_refs.head_sha,
     startSha: diff_refs.start_sha,
-    newPath: input.filePath,
-    oldPath: input.filePath,
+    newPath: filePath,
+    oldPath: filePath,
   }
 
   const diffs = await settle(getMergeRequestDiffs(input.iid))
@@ -239,9 +241,9 @@ server.registerTool('add-merge-request-note-for-code-range', {
     return createError(`Failed to fetch diffs for merge request !${input.iid}: ${(diffs.reason as GitbeakerRequestError).message}`)
   }
 
-  const targetDiff = diffs.value.find(d => d.new_path === input.filePath || d.old_path === input.filePath)
+  const targetDiff = diffs.value.find(d => d.new_path === filePath || d.old_path === filePath)
   if (!targetDiff) {
-    return createError(`File ${input.filePath} not found in merge request !${input.iid}`)
+    return createError(`File ${filePath} not found in merge request !${input.iid}`)
   }
 
   const parsedDiff = parseDiff(targetDiff.diff)[0]
@@ -290,19 +292,19 @@ server.registerTool('add-merge-request-note-for-code-range', {
     { position },
   ))
   if (note.status === 'rejected') {
-    return createError(`Failed to add note to merge request !${input.iid} for file ${input.filePath}: ${(note.reason as GitbeakerRequestError).message}`)
+    return createError(`Failed to add note to merge request !${input.iid} for file ${filePath}: ${(note.reason as GitbeakerRequestError).message}`)
   }
 
   server.sendLoggingMessage({
     level: 'debug',
-    data: `Added note to merge request !${input.iid} for file ${input.filePath} with ID ${note.value.id}.`,
+    data: `Added note to merge request !${input.iid} for file ${filePath} with ID ${note.value.id}.`,
   }, extra.sessionId)
 
   return {
     content: [
       {
         type: 'text',
-        text: `Note added to merge request !${input.iid} for file ${input.filePath}: ${note.value.body}`,
+        text: `Note added to merge request !${input.iid} for file ${filePath}: ${note.value.body}`,
       },
     ],
     structuredContent: { note: note.value },
