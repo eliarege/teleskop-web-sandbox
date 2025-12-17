@@ -8,14 +8,14 @@ export default defineAuthEventHandler(async (event) => {
   if (!machines?.length) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'No machines selected',
+      message: 'No machines selected',
     })
   }
 
   if (!settings?.length) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'No settings selected',
+      message: 'No settings selected',
     })
   }
 

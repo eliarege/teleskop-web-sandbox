@@ -25,7 +25,7 @@ export default defineAuthEventHandler(async (event) => {
     if (!user) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'User not found',
+        statusMessage: 'USER_NOT_FOUND',
       })
     }
 
@@ -39,7 +39,7 @@ export default defineAuthEventHandler(async (event) => {
     if (!parsed.success) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Validation error',
+        statusMessage: 'VALIDATION_ERROR',
         data: parsed.error.format(),
       })
     }
@@ -59,5 +59,5 @@ export default defineAuthEventHandler(async (event) => {
     return { success: true }
   }
 
-  throw createError({ statusCode: 405, statusMessage: 'Method Not Allowed' })
+  throw createError({ statusCode: 405, statusMessage: 'METHOD_NOT_ALLOWED' })
 })
