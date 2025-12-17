@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const userUpdateSchema = z.object({
-  userId: z.number().positive(),
+  userId: z.number().int().positive(),
   userName: z.string().min(1).max(50),
   userSurname: z.string().min(1).max(50),
   userPass: z.string().min(4).max(9),
