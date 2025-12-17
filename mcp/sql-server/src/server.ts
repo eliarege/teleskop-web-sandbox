@@ -6,12 +6,23 @@
  * This server provides read-only access to SQL Server databases through the Model Context Protocol.
  * It supports querying data, inspecting schema, and discovering database structure.
  */
-
 import process from 'node:process'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import { configDotenv } from 'dotenv'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import sql from 'mssql'
 import { z } from 'zod/v4'
+
+const argv = yargs(hideBin(process.argv)).parseSync()
+
+if (argv.envFile) {
+  if (typeof argv.envFile !== 'string') {
+    throw new TypeError('envFile argument must be a string')
+  }
+  configDotenv({ path: argv.envFile })
+}
 
 // Environment variable validation schema
 const envSchema = z.object({

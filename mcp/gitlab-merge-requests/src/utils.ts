@@ -39,7 +39,6 @@ export function createError(message: string): z.infer<typeof CallToolResultSchem
 export function appendAIReviewFooter(string: string): string {
   return `${string}
 
----
 > **Not**: Bu inceleme yorumu AI tarafından otomatik olarak üretilmiştir.`
 }
 

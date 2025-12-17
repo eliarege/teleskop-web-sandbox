@@ -1,12 +1,24 @@
 #!/usr/bin/env node
 import process from 'node:process'
-import type { DiscussionNotePositionOptions, ExpandedMergeRequestDiffVersionsSchema, GitbeakerRequestError } from '@gitbeaker/rest'
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
+import type { DiscussionNotePositionOptions, GitbeakerRequestError } from '@gitbeaker/rest'
 import { Gitlab } from '@gitbeaker/rest'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod/v4'
 import parseDiff from 'parse-diff'
+import { configDotenv } from 'dotenv'
 import { appendAIReviewFooter, createError, getNearestNormalLineBeforeAddition, getNearestNormalLineBeforeDeletion, settle, sha1 } from './utils.ts'
+
+const argv = yargs(hideBin(process.argv)).parseSync()
+
+if (argv.envFile) {
+  if (typeof argv.envFile !== 'string') {
+    throw new TypeError('envFile argument must be a string')
+  }
+  configDotenv({ path: argv.envFile })
+}
 
 const host = process.env.GITLAB_HOST || 'https://gitlab.com'
 const token = process.env.GITLAB_TOKEN
