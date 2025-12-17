@@ -40,7 +40,7 @@ export function appendAIReviewFooter(string: string): string {
   return `${string}
 
 ---
-**Not**: Bu inceleme yorumu AI tarafından otomatik olarak üretilmiştir.`
+> **Not**: Bu inceleme yorumu AI tarafından otomatik olarak üretilmiştir.`
 }
 
 export function between(value: number, min: number, max: number): boolean {
