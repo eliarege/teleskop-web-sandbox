@@ -1,3 +1,4 @@
+import { userUpdateSchema } from '~/schemas/user.schema'
 import { knex } from '~/server/connectionPool'
 import type { User } from '~/types'
 
@@ -34,18 +35,17 @@ export default defineAuthEventHandler(async (event) => {
   if (event.method === 'PUT') {
     const body: User = await readBody(event)
 
-    await knex('BFUSERS')
-      .update({
-        userId: body.userId,
-        userName: body.userName,
-        userSurname: body.userSurname,
-        userPass: body.userPass,
-        userMode: body.userMode,
-        userInfo: body.userInfo,
-        userActive: body.userActive,
-        userMode2: body.userMode2,
-        userType: body.userType,
+    const parsed = userUpdateSchema.safeParse(body)
+    if (!parsed.success) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Validation error',
+        data: parsed.error.format(),
       })
+    }
+
+    await knex('BFUSERS')
+      .update(parsed.data)
       .where('userID', user_id)
 
     return { success: true }

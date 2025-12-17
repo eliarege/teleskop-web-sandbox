@@ -146,7 +146,7 @@ function uniqueUserId(val: number | string) {
           @submit.prevent="saveUser"
         >
           <q-input
-            v-model="form.userId"
+            v-model.number="form.userId"
             :label="t('userId')"
             type="number"
             :rules="[val => !!val || t('userIdRequired'),
