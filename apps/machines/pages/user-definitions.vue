@@ -81,7 +81,7 @@ async function handleDeleteConfirmed() {
   const userIds = selected.value.map(u => u.userId)
 
   try {
-    await fetch(`/api/user-definitions/bulk-delete`, {
+    await fetch(`/api/user-definitions`, {
       method: 'DELETE',
       body: { userIds },
     })

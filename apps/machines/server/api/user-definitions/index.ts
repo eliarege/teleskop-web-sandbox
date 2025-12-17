@@ -19,10 +19,9 @@ export default defineAuthEventHandler(async (event) => {
         })
         .orderBy('userID')
     } catch (error) {
+      console.error('Error fetching users:', error)
       throw createError({
         statusCode: 500,
-        statusMessage: 'Error fetching users',
-        data: error,
       })
     }
   }
@@ -38,7 +37,7 @@ export default defineAuthEventHandler(async (event) => {
       if (exists) {
         throw createError({
           statusCode: 400,
-          statusMessage: `UserID ${body.userId} already exists!`,
+          statusMessage: `USER_ALREADY_EXISTS`,
         })
       }
 
@@ -57,13 +56,30 @@ export default defineAuthEventHandler(async (event) => {
 
       return { userId: body.userId }
     } catch (error) {
+      console.error('Error creating user:', error)
       throw createError({
         statusCode: 500,
-        statusMessage: 'Error creating user',
-        data: error,
       })
     }
   }
 
-  throw createError({ statusCode: 405, statusMessage: 'Method Not Allowed' })
+  if (event.method === 'DELETE') {
+    const body: { userIds: number[] } = await readBody(event)
+    const { userIds } = body
+
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      throw createError({
+        statusCode: 400,
+        message: 'No user IDs provided for deletion.',
+      })
+    }
+
+    await knex('BFUSERS')
+      .whereIn('userID', userIds)
+      .del()
+
+    return { deletedUserIds: userIds }
+  }
+
+  throw createError({ statusCode: 405, statusMessage: 'METHOD_NOT_ALLOWED' })
 })
