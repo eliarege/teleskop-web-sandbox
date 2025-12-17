@@ -271,6 +271,8 @@ export default defineEventHandler(async (event) => {
           yarn: params.yarn,
         })
 
+        const dyelotParamRows: Array<{ Dyelot: string, TreatmentCnt: number, TreatmentParaCnt: number, TreatmentParaNo: number, TreatmentParaValue: number }> = []
+
         for (let index = 0; index < recipe.length; index++) {
           const program = recipe[index]
           await processProgramSteps(program, index, {
@@ -288,14 +290,19 @@ export default defineEventHandler(async (event) => {
           )
 
           if (opParams.length > 0) {
-            await trx('Dyelot_Parameter').insert(opParams.map(p => ({
-              Dyelot: batchNo,
-              TreatmentCnt: index + 1,
-              TreatmentParaCnt: p.paramId,
-              TreatmentParaNo: p.paramIndex,
-              TreatmentParaValue: p.selectedValue,
-            })))
+            dyelotParamRows.push(
+              ...opParams.map(p => ({
+                Dyelot: batchNo,
+                TreatmentCnt: index + 1,
+                TreatmentParaCnt: p.paramId,
+                TreatmentParaNo: p.paramIndex,
+                TreatmentParaValue: p.selectedValue,
+              })),
+            )
           }
+        }
+        if (dyelotParamRows.length > 0) {
+          await trx('Dyelot_Parameter').insert(dyelotParamRows)
         }
         await trx('Dyelots').insert({
           Dyelot: batchNo,
