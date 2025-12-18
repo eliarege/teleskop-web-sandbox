@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { determineTextColor } from '@teleskop/utils'
 import type { MachineData } from '~/shared/types'
+import { BatchStatus } from '~/shared/enums'
 
 interface CardTitleProps {
   colors: {
@@ -17,7 +18,7 @@ const props = defineProps<CardTitleProps>()
 const router = useRouter()
 
 function handleRouting(batchStatus: number, id: number) {
-  if (batchStatus !== 0) {
+  if (batchStatus !== BatchStatus.IDLE) {
     navigateTo(`/details/${id}`)
   }
 }

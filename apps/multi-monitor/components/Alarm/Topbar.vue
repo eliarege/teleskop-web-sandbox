@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useAlarmStore } from '~/store/Alarm'
+import { AlarmStatus } from '~/shared/enums'
 
 const alarmStore = useAlarmStore()
 const { t } = useI18n()
 
 const machinesWithAlarmCount = computed(() => alarmStore.alarmList.map(e => e.machineId).length)
-const confirmedAlarms = computed(() => alarmStore.alarmList.flatMap(m => m.alarmList).filter(a => a.alarmStatus === 1).length)
-const nonConfirmedAlarms = computed(() => alarmStore.alarmList.flatMap(m => m.alarmList).filter(a => a.alarmStatus === 0).length)
+const confirmedAlarms = computed(() => alarmStore.alarmList.flatMap(m => m.alarmList).filter(a => a.alarmStatus === AlarmStatus.CONFIRMED).length)
+const nonConfirmedAlarms = computed(() => alarmStore.alarmList.flatMap(m => m.alarmList).filter(a => a.alarmStatus === AlarmStatus.NEW).length)
 
 const breakpoints = useBreakpoints({
   lg: '1200px',

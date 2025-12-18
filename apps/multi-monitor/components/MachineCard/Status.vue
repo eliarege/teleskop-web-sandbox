@@ -3,6 +3,7 @@ import { withBase } from 'ufo'
 import { determineTextColor } from '@teleskop/utils'
 import type { MachineData } from '~/shared/types'
 import { Apps } from '~/shared/constants'
+import { AutoManualStatus, BatchStatus, ConnectionStatus } from '~/shared/enums'
 
 interface MachineStatusProps {
   colors: {
@@ -22,11 +23,11 @@ const withBaseURL = (input: string) => withBase(input, baseURL)
 const appList = useAppList()
 
 function connectionStatus(params: number) {
-  if (params === 1) {
+  if (params === ConnectionStatus.CONNECTED) {
     return withBaseURL('/icons/baglanti-var.png')
-  } else if (params === 2) {
+  } else if (params === ConnectionStatus.NOTCONNECTED) {
     return withBaseURL('/icons/baglanti-yok.png')
-  } else if (params === 5) {
+  } else if (params === ConnectionStatus.BATTERY_LOW) {
     return withBaseURL('/icons/batarya.png')
   } else {
     return withBaseURL('/icons/baglantı-sorunlu.png')
@@ -46,7 +47,7 @@ const computedVncTarget = computed(() => {
 })
 
 function handleRouting(batchStatus: number, id: number) {
-  if (batchStatus !== 0) {
+  if (batchStatus !== BatchStatus.IDLE) {
     return `/details/${id}`
   }
 }
@@ -92,7 +93,7 @@ const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.ur
             <QTooltip>{{ t('details._') }}</QTooltip>
           </NuxtLink>
           <NuxtLink
-            v-if="archiveUrl !== null && machine.runningBatchStatus !== 0"
+            v-if="archiveUrl !== null && machine.runningBatchStatus !== BatchStatus.IDLE"
             external
             target="_blank"
             :to="`${archiveUrl}/${machine.runningBatchKey}`"
@@ -121,16 +122,16 @@ const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.ur
     </div>
     <div v-else class="machine-icons">
       <img
-        v-if="machine.runningBatchStatus !== 0"
-        :src="withBaseURL(machine.runningBatchStatus === 1 ? '/icons/is-emri-off.png' : '/icons/is-emri-on.png')"
+        v-if="machine.runningBatchStatus !== BatchStatus.IDLE"
+        :src="withBaseURL(machine.runningBatchStatus === BatchStatus.STOPPED ? '/icons/is-emri-off.png' : '/icons/is-emri-on.png')"
       >
       <img :src="connectionStatus(machine.connectionStatus)">
       <img
-        v-if="machine.autoManualStatus === 0"
+        v-if="machine.autoManualStatus === AutoManualStatus.AUTO"
         src="/icons/auto.png"
       >
       <img
-        v-if="machine.autoManualStatus === 1 && machine.runningBatchStatus !== 0"
+        v-if="machine.autoManualStatus === AutoManualStatus.MANUAL && machine.runningBatchStatus !== BatchStatus.IDLE"
         src="/icons/manual.png"
       >
       <img

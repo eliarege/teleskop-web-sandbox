@@ -2,6 +2,7 @@
 import { differenceInMilliseconds } from 'date-fns'
 import Alarm from '~/pages/alarm.vue'
 import type { MachineAlarmList } from '~/shared/types'
+import { AlarmStatus } from '~/shared/enums'
 
 defineProps<{ machine: MachineAlarmList }>()
 const { d, t } = useI18n()
@@ -27,12 +28,12 @@ function getTimeDifferenceInMinutesSeconds(alarmStartTime: string): string {
         v-show="alarm.showOnScreen !== false"
         :key="alarm.alarmNo"
         class="w-full h-full border-1 border-l-3 rounded px-3 py-2 mb-3"
-        :class="alarm.alarmStatus === 0 ? 'border-red-600 bg-red-300/20' : 'border-yellow-500 bg-yellow-300/20'"
+        :class="alarm.alarmStatus === AlarmStatus.NEW ? 'border-red-600 bg-red-300/20' : 'border-yellow-500 bg-yellow-300/20'"
       >
         <div class="flex items-center gap-3 whitespace-nowrap">
           <TwIcon
-            :name="alarm.alarmStatus === 0 ? 'i-mingcute:alert-fill' : 'i-fluent:alert-12-filled'"
-            :color="alarm.alarmStatus === 0 ? 'red' : 'orange'"
+            :name="alarm.alarmStatus === AlarmStatus.NEW ? 'i-mingcute:alert-fill' : 'i-fluent:alert-12-filled'"
+            :color="alarm.alarmStatus === AlarmStatus.NEW ? 'red' : 'orange'"
             size="30px"
           />
           <span class="font-extrabold text-lg">

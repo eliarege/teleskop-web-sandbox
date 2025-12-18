@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MachineData } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
+import { BatchStatus } from '~/shared/enums'
 
 const props = defineProps<{ machineData: MachineData[] }>()
 const { t } = useI18n()
@@ -17,7 +18,7 @@ const pieOptions = {
 }
 
 const passiveMachines = computed(
-  () => props.machineData.filter(item => item.runningBatchStatus === 0).length,
+  () => props.machineData.filter(item => item.runningBatchStatus === BatchStatus.IDLE).length,
 )
 
 const activeMachines = computed(
