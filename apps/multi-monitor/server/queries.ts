@@ -155,6 +155,12 @@ export async function getCurrentRunningIndex(batchKey: number) {
 }
 
 export async function getTrendData(): Promise<Trends> {
+  // Calculate date ranges
+  const currentWeekStart = knex.raw('dateadd(day, (2 - datepart(weekday, getdate())), cast(getdate() as date))')
+  const currentWeekEnd = knex.raw('dateadd(day,(2 - datepart(weekday, getdate())), cast(getdate()+7 AS date))')
+  const lastWeekStart = knex.raw('dateadd(day,(2 - datepart(weekday, dateadd(week, -1, getdate()))),cast(dateadd(week, -1, getdate()) AS date))')
+  const lastWeekEnd = knex.raw('dateadd(day,(2 - datepart(weekday, getdate())), cast(getdate() as date))')
+
   const currentWeekData = await knex('BACONSUMPTION AS c')
     .leftJoin('BADATA as r', 'r.BATCHKEY', 'c.BATCHKEY')
     .select({
@@ -165,10 +171,7 @@ export async function getTrendData(): Promise<Trends> {
       currentWeekSteam: knex.raw('COALESCE(SUM(c.STEAM), 0)'),
       currentWeekProduction: knex.raw('COALESCE(SUM(r.FABRIC_WEIGHT), 0)'),
     })
-    .whereBetween('r.STARTTIME', [
-      knex.raw('dateadd(day, (2 - datepart(weekday, getdate())), cast(getdate() as date))'),
-      knex.raw('dateadd(day,(2 - datepart(weekday, getdate())), cast(getdate()+7 AS date))'),
-    ])
+    .whereBetween('r.STARTTIME', [currentWeekStart, currentWeekEnd])
 
   const lastWeekData = await knex('BACONSUMPTION AS c')
     .leftJoin('BADATA as r', 'r.BATCHKEY', 'c.BATCHKEY')
@@ -180,14 +183,21 @@ export async function getTrendData(): Promise<Trends> {
       lastWeekSteam: knex.raw('COALESCE(SUM(c.STEAM), 0)'),
       lastWeekProduction: knex.raw('COALESCE(SUM(r.FABRIC_WEIGHT), 0)'),
     })
-    .whereBetween('r.STARTTIME', [
-      knex.raw('dateadd(day,(2 - datepart(weekday, dateadd(week, -1, getdate()))),cast(dateadd(week, -1, getdate()) AS date))'),
-      knex.raw('dateadd(day,(2 - datepart(weekday, getdate())), cast(getdate() as date))'),
-    ])
+    .whereBetween('r.STARTTIME', [lastWeekStart, lastWeekEnd])
+
+  // Get the actual date ranges to return to frontend
+  const dateRanges = await knex.raw(`
+    SELECT
+      CONVERT(varchar, dateadd(day, (2 - datepart(weekday, getdate())), cast(getdate() as date)), 23) as currentPeriodStart,
+      CONVERT(varchar, dateadd(day,(2 - datepart(weekday, getdate())), cast(getdate()+7 AS date)), 23) as currentPeriodEnd,
+      CONVERT(varchar, dateadd(day,(2 - datepart(weekday, dateadd(week, -1, getdate()))),cast(dateadd(week, -1, getdate()) AS date)), 23) as previousPeriodStart,
+      CONVERT(varchar, dateadd(day,(2 - datepart(weekday, getdate())), cast(getdate() as date)), 23) as previousPeriodEnd
+  `)
 
   return {
     ...currentWeekData[0],
     ...lastWeekData[0],
+    ...dateRanges[0],
   }
 }
 

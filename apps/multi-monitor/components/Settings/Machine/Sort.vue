@@ -4,6 +4,7 @@ import { Sortable } from 'sortablejs-vue3'
 import { MachineSort } from '~/shared/constants'
 import type { MachineDataRaw } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
+import { BatchStatus } from '~/shared/enums'
 
 const props = defineProps<{
   machines: MachineDataRaw[]
@@ -19,8 +20,8 @@ const compareById = (a: { id: number }, b: { id: number }) => a.id - b.id
 
 const sortedMachines = computed(() => {
   const machines = props.machines
-  const activeMachines = machines.filter(machine => machine.runningBatchStatus !== 0)
-  const inactiveMachines = machines.filter(machine => machine.runningBatchStatus === 0)
+  const activeMachines = machines.filter(machine => machine.runningBatchStatus !== BatchStatus.IDLE)
+  const inactiveMachines = machines.filter(machine => machine.runningBatchStatus === BatchStatus.IDLE)
   const customSort = store.customSort
   const order = new Map(customSort.map((id, i) => [id, i]))
 

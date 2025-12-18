@@ -3,6 +3,7 @@ import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { breakpointsTailwind, useWindowSize } from '@vueuse/core'
 import { matAlarm, matSettings } from '@quasar/extras/material-icons'
 import { format } from 'date-fns'
+import { toValue } from 'vue'
 import { useDataStore } from '~/store/Datas'
 import type { MachineData } from '~/shared/types'
 
@@ -39,8 +40,12 @@ const commonSettingsItems: TopbarMenuItem[] = [
     },
   },
 ]
-const formatter = ref('YYYY-MM-DD HH:mm:ss')
-const formatted = useDateFormat(useNow(), formatter)
+
+const { d } = useI18n()
+const now = useNow()
+const formatted = computed(() => {
+  return d(now.value, 'datetime')
+})
 const machineData = computed(() => {
   return store.machines.map((machine) => {
     return {
@@ -55,7 +60,7 @@ const machineData = computed(() => {
         : '-',
       loggedInOperatorName: machine.loggedInOperatorName
         ? machine.loggedInOperatorName
-        : tt('teleskop.machine-stop-notification'),
+        : '',
       runningJobOrder: machine.runningJobOrder ? machine.runningJobOrder : '',
       runningProgramName: machine.runningProgramName
         ? machine.runningProgramName
@@ -106,7 +111,6 @@ const machineData = computed(() => {
             />
           </TopbarButton>
         </template>
-
         <NavBar
           v-if="!isMobile"
           :formatted

@@ -5,6 +5,7 @@ import type { MachineData } from '~/shared/types'
 import { useColorStore } from '~/store/Colors'
 import { useDataStore } from '~/store/Datas'
 import { MachineSort } from '~/shared/constants'
+import { AlarmStatus, BatchStatus, ConnectionStatus, RequestStatus } from '~/shared/enums'
 
 const props = defineProps({
   machineData: {
@@ -25,8 +26,8 @@ const compareById = (a: { id: number }, b: { id: number }) => a.id - b.id
 const sortedMachines = computed(() => {
   const filteredGroups = props.machineData.filter(group => !store.filteredGroups.has(group.groupName))
   const filteredMachines = filteredGroups.filter(item => !store.filteredMachines.has(item.id))
-  const activeMachines = filteredMachines.filter(machine => machine.runningBatchStatus !== 0)
-  const inactiveMachines = filteredMachines.filter(machine => machine.runningBatchStatus === 0)
+  const activeMachines = filteredMachines.filter(machine => machine.runningBatchStatus !== BatchStatus.IDLE)
+  const inactiveMachines = filteredMachines.filter(machine => machine.runningBatchStatus === BatchStatus.IDLE)
   const customSort = store.customSort
   const order = new Map(customSort.map((id, i) => [id, i]))
 
@@ -55,24 +56,24 @@ const sortedMachines = computed(() => {
 })
 // #region FUNCTIONS
 function connectionStatus(params: number) {
-  if (params === 1) {
+  if (params === ConnectionStatus.CONNECTED) {
     return withBaseURL('/icons/baglanti-var.png')
-  } else if (params === 2) {
+  } else if (params === ConnectionStatus.NOTCONNECTED) {
     return withBaseURL('/icons/baglanti-yok.png')
-  } else if (params === 5) {
+  } else if (params === ConnectionStatus.BATTERY_LOW) {
     return withBaseURL('/icons/batarya.png')
   } else {
     return withBaseURL('/icons/baglanti-sorunlu.png')
   }
 }
 function reqStatus(params: number) {
-  if (params === 0) {
+  if (params === RequestStatus.NEW) {
     return t('teleskop.status-new')
-  } else if (params === 1) {
+  } else if (params === RequestStatus.SENT) {
     return t('teleskop.status-sent')
-  } else if (params === 2) {
+  } else if (params === RequestStatus.STARTED) {
     return t('teleskop.status-finished')
-  } else if (params === 4) {
+  } else if (params === RequestStatus.PRIO_CHANGED) {
     return t('teleskop.status-prio')
   } else return t('teleskop.status-cancelled')
 }
@@ -80,10 +81,10 @@ function reqStatus(params: number) {
 const { width: screenWidth } = useWindowSize()
 
 function cardBackgroundColor(runningAlarmNo: number, currentAlarmStatus: number, runningBatchStatus: number) {
-  if (runningAlarmNo > 0 && currentAlarmStatus === 0) {
+  if (runningAlarmNo > 0 && currentAlarmStatus === AlarmStatus.NEW) {
     return '#a30000'
   }
-  if (runningBatchStatus !== 2) {
+  if (runningBatchStatus !== BatchStatus.RUNNING) {
     return colors.cardIdleBg
   } else return colors.cardActiveBg
 }

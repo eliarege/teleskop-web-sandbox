@@ -54,6 +54,7 @@ export interface MachineDataRaw {
   totalConsumedElectricity: number
   runningPrgElapsedTime?: number
   runningPrgTotalTheoreticDuration?: number
+  hasVNC: boolean
   erp: Record<string, any> | null
 }
 export interface MachineData extends MachineDataRaw {
@@ -84,6 +85,10 @@ export interface Trends {
   lastWeekSalt: number
   lastWeekSteam: number
   lastWeekProduction: number
+  currentPeriodStart: string
+  currentPeriodEnd: string
+  previousPeriodStart: string
+  previousPeriodEnd: string
 }
 export interface Interventions {
   interventKey: number

@@ -14,6 +14,7 @@ interface MachineStatus {
   runningFabricWeight: number | null
   runningPlankey: number | null
   erp: Record<string, unknown> | null
+  hasVNC: boolean
   [key: string]: any
 }
 const erpParameterCache = new LRUCache<string, Record<string, any>>({
@@ -56,6 +57,14 @@ const fetchMachineStatus = pMemoize(async (teleskop: Kysely<TeleskopDatabase>): 
       'm.MACHINECAPACITY as machineCapacity',
       'm.IP as machineIpAddress',
       'g.GROUPNAME as groupName',
+      sql<boolean>`
+        CAST(
+          CASE
+            WHEN m.TBBMODEL LIKE '%T6500%' THEN 0
+            ELSE 1
+          END
+        AS BIT)
+      `.as('hasVNC'),
       sql<number>`coalesce(datediff(second, DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, s.RUNNING_JOBORDERSTARTTIME), GETUTCDATE()), 0)`.as('elapsedTime'),
       's.RUNNING_THEOTIME as theoreticalDuration',
       's.RUNNING_AUTOMANSTATUS as autoManualStatus',

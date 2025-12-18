@@ -45,7 +45,7 @@ const machineData = computed(() => {
         : '-',
       loggedInOperatorName: machine.loggedInOperatorName
         ? machine.loggedInOperatorName
-        : t('teleskop.machine-stop-notification'),
+        : '',
       runningJobOrder: machine.runningJobOrder ? machine.runningJobOrder : '',
       runningProgramName: machine.runningProgramName
         ? machine.runningProgramName

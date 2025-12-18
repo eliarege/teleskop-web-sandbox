@@ -2,6 +2,7 @@
 import { determineTextColor } from '@teleskop/utils'
 import { useStorage } from '@vueuse/core'
 import { format } from 'date-fns'
+import { AlarmStatus, AutoManualStatus, BatchStatus, ConnectionStatus, RequestStatus } from '~/shared/enums'
 import type { MachineData } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
 
@@ -22,20 +23,19 @@ const props = withDefaults(defineProps<CardInfoProps>(), {
 })
 
 const { t } = useI18n()
-const { mt } = useProjectTranslations()
 const store = useDataStore()
 const erpKey = computed(() => store.erpKeys.find(e => e.id === props.machine.id)?.key || '')
 // The status of the last request. (0 new- 1 send to the dispenser - 2 Dispenser started - 3 Completed - 8 Cancelled)
 function reqStatus(params: number) {
-  if (params === 0) {
+  if (params === RequestStatus.NEW) {
     return t('teleskop.status-new')
-  } else if (params === 1) {
+  } else if (params === RequestStatus.SENT) {
     return t('teleskop.status-sent')
-  } else if (params === 2) {
+  } else if (params === RequestStatus.STARTED) {
     return t('teleskop.status-started')
-  } else if (params === 3) {
+  } else if (params === RequestStatus.FINISHED) {
     return t('teleskop.status-finished')
-  } else if (params === 4) {
+  } else if (params === RequestStatus.PRIO_CHANGED) {
     return t('teleskop.status-prio')
   } else return t('teleskop.status-cancelled')
 }
@@ -53,9 +53,9 @@ const manualReasonElapsedTime = computed(() => {
 })
 
 const infoTextColor = computed(() => {
-  if (props.machine.reqStatus === 3)
+  if (props.machine.reqStatus === RequestStatus.FINISHED)
     return 'text-green-500'
-  if (props.machine.reqStatus === 8)
+  if (props.machine.reqStatus === RequestStatus.CANCELLED)
     return 'text-red-500'
   return ''
 })
@@ -63,9 +63,19 @@ const infoTextColor = computed(() => {
 
 <template>
   <div class="machine-commands">
+    <!-- BAĞLANTI YOK UYARISI - Bağlantı yoksa sadece bunu göster -->
+    <div v-if="machine.connectionStatus === ConnectionStatus.NOTCONNECTED" class="w-full h-full gap-2 flex-center text-red text-4xl">
+      <TwIcon
+        name="i-mdi:wifi-off"
+        size="36px"
+        color="#ef4444"
+      />
+      {{ t('teleskop.no-connection') }}
+    </div>
+
     <!-- ERP DROPDOWN -->
     <div
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === BatchStatus.RUNNING && machine.connectionStatus !== ConnectionStatus.NOTCONNECTED"
       class="machine-commands_items justify-center"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -90,7 +100,7 @@ const infoTextColor = computed(() => {
     </div>
     <!-- PROG ID/NAME -->
     <MachineCardInfoProgressBar
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === BatchStatus.RUNNING && machine.connectionStatus !== ConnectionStatus.NOTCONNECTED"
       :data="machine"
     >
       <div class="absolute w-full h-full flex items-center flex-nowrap whitespace-nowrap overflow-hidden top-0 left-0">
@@ -121,7 +131,7 @@ const infoTextColor = computed(() => {
     <!-- PHASE NO/NAME ONLY FOR WASHING -->
     <div
       v-if="washing"
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === BatchStatus.RUNNING && machine.connectionStatus !== ConnectionStatus.NOTCONNECTED"
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -151,7 +161,7 @@ const infoTextColor = computed(() => {
     </div>
     <!-- STEP NO / COMMAND NO / COMMAND NAME -->
     <div
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === BatchStatus.RUNNING && machine.connectionStatus !== ConnectionStatus.NOTCONNECTED"
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -186,8 +196,9 @@ const infoTextColor = computed(() => {
         {{ machine.runningCommandName }}
       </span>
     </div>
-    <!-- STOP REASON (IF THERES ANY) -->
+    <!-- STOP REASON (IF THERES ANY) - Gizle bağlantı yoksa -->
     <div
+      v-show="machine.connectionStatus !== ConnectionStatus.NOTCONNECTED"
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -200,10 +211,7 @@ const infoTextColor = computed(() => {
       </q-tooltip>
       <!-- machine.runningBatchStatus === 1 ise makine duruş -->
       <div class="explanation">
-        <span v-if="machine.runningBatchStatus === 1">
-          {{ t("teleskop.stop-reason") }}
-        </span>
-        <span v-else-if="machine.autoManualStatus">
+        <span v-if="machine.autoManualStatus">
           {{ t("teleskop.manual-reason") }}
         </span>
         <span v-else>
@@ -217,7 +225,7 @@ const infoTextColor = computed(() => {
         spaced
       />
       <!-- machine.autoManualStatus === 1 ise makine manuelde -->
-      <div v-if="machine.connectionStatus !== 2" class="flex-center w-full">
+      <div class="flex-center w-full">
         <div v-if="machine.autoManualStatus" class="flex-center gap-3">
           <span>{{ machine.manualReason }}</span>
           <span>
@@ -232,7 +240,7 @@ const infoTextColor = computed(() => {
           </span>
         </div>
         <br>
-        <div v-if="machine.runningBatchStatus !== 2" class="flex-center gap-3">
+        <div v-if="machine.runningBatchStatus !== BatchStatus.RUNNING" class="flex-center gap-3">
           <span>{{ machine.stopReason }}</span>
           <span> {{ stopReasonElapsedTime }} &nbsp;
             <q-tooltip
@@ -245,19 +253,18 @@ const infoTextColor = computed(() => {
           </span>
         </div>
       </div>
-      <div v-else class="text-red-700 flex-center w-full">
-        {{ t("teleskop.no-connection") }}
-      </div>
     </div>
+    <!-- ALARM - Gizle bağlantı yoksa -->
     <div
+      v-show="machine.connectionStatus !== ConnectionStatus.NOTCONNECTED"
       class="machine-commands_items"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
       :class="
         machine.runningAlarmName === ''
           ? 'text-white'
-          : machine.currentAlarmStatus === 0
+          : machine.currentAlarmStatus === AlarmStatus.NEW
             ? 'alarm'
-            : machine.currentAlarmStatus === 1
+            : machine.currentAlarmStatus === AlarmStatus.CONFIRMED
               ? 'text-green-400'
               : 'text-white'
       "
@@ -285,7 +292,7 @@ const infoTextColor = computed(() => {
       </div>
     </div>
     <div
-      v-show="machine.runningBatchStatus === 2"
+      v-show="machine.runningBatchStatus === BatchStatus.RUNNING && machine.connectionStatus !== ConnectionStatus.NOTCONNECTED"
       class="machine-commands_items justify-center"
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
@@ -323,4 +330,27 @@ const infoTextColor = computed(() => {
 </template>
 
 <style scoped lang="postcss">
+.info-item {
+  @apply flex items-center gap-1;
+}
+
+.info-divider {
+  @apply w-px h-3 bg-gray-300;
+}
+
+.status-dot {
+  @apply w-1.5 h-1.5 rounded-full;
+}
+
+.status-offline {
+  @apply bg-red-500;
+}
+
+.status-last {
+  @apply bg-gray-400;
+}
+
+.info-text {
+  @apply text-gray-700;
+}
 </style>

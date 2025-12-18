@@ -28,7 +28,7 @@ function setDefaultSettings() {
 </script>
 
 <template>
-  <div class="max-w-full min-w-full w-full h-full bg-white">
+  <div class="max-w-full min-w-full w-full bg-white">
     <div class="rounded">
       <div class="flex border-b-1">
         <span class="settings-title text-center ml-3 md:ml-3 sm:ml-2">
@@ -46,7 +46,7 @@ function setDefaultSettings() {
         />
       </div>
 
-      <div class="px-45 md:px-45 sm:px-2 w-full h-full overflow-auto max-h-[calc(100vh-134px)]">
+      <div class="px-45 md:px-45 sm:px-2 w-full h-full overflow-auto max-h-80vh">
         <div class="h-full w-auto flex flex-col w-full">
           <!-- Makine Ayarları -->
           <SettingsMachine class="px-11 md:px-11 sm:px-2" />
@@ -62,12 +62,12 @@ function setDefaultSettings() {
         </div>
       </div>
     </div>
-    <div class="flex justify-end md:justify-end sm:justify-center sm:mb-5 sm:mt-2 px-3 py-1 border-t-1">
+    <div class="flex justify-end md:justify-end sm:justify-center sm:mb-5 md:mb-0 sm:mt-2 px-3 py-1 border-t-1">
       <q-btn
         color="primary"
         outline
         class="!border-1 !border-primary md:text-base sm:text-sm"
-        label="Varsayılan Ayarlar"
+        :label="t('settings.default')"
         no-caps
         push
         @click="setDefaultSettings()"

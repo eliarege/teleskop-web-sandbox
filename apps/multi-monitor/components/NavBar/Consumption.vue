@@ -15,6 +15,10 @@ const { data: trends } = useFetch('/api/trends', {
     lastWeekTotalWater: 0,
     lastWeekSteam: 0,
     lastWeekProduction: 0,
+    currentPeriodStart: '',
+    currentPeriodEnd: '',
+    previousPeriodStart: '',
+    previousPeriodEnd: '',
   }),
 })
 
@@ -30,6 +34,10 @@ const items = computed(() => [
     visible: store.electricity,
     current: trends.value.currentWeekElectricity,
     previous: trends.value.lastWeekElectricity,
+    currentPeriodStart: trends.value.currentPeriodStart,
+    currentPeriodEnd: trends.value.currentPeriodEnd,
+    previousPeriodStart: trends.value.previousPeriodStart,
+    previousPeriodEnd: trends.value.previousPeriodEnd,
   },
   {
     key: 'water',
@@ -39,6 +47,10 @@ const items = computed(() => [
     visible: store.water,
     current: trends.value.currentWeekTotalWater,
     previous: trends.value.lastWeekTotalWater,
+    currentPeriodStart: trends.value.currentPeriodStart,
+    currentPeriodEnd: trends.value.currentPeriodEnd,
+    previousPeriodStart: trends.value.previousPeriodStart,
+    previousPeriodEnd: trends.value.previousPeriodEnd,
   },
   {
     key: 'salt',
@@ -48,6 +60,10 @@ const items = computed(() => [
     visible: store.salt,
     current: trends.value.currentWeekSalt,
     previous: trends.value.lastWeekSalt,
+    currentPeriodStart: trends.value.currentPeriodStart,
+    currentPeriodEnd: trends.value.currentPeriodEnd,
+    previousPeriodStart: trends.value.previousPeriodStart,
+    previousPeriodEnd: trends.value.previousPeriodEnd,
   },
   {
     key: 'steam',
@@ -57,6 +73,10 @@ const items = computed(() => [
     visible: store.steam,
     current: trends.value.currentWeekSteam,
     previous: trends.value.lastWeekSteam,
+    currentPeriodStart: trends.value.currentPeriodStart,
+    currentPeriodEnd: trends.value.currentPeriodEnd,
+    previousPeriodStart: trends.value.previousPeriodStart,
+    previousPeriodEnd: trends.value.previousPeriodEnd,
   },
   {
     key: 'production',
@@ -66,6 +86,10 @@ const items = computed(() => [
     visible: store.production,
     current: trends.value.currentWeekProduction,
     previous: trends.value.lastWeekProduction,
+    currentPeriodStart: trends.value.currentPeriodStart,
+    currentPeriodEnd: trends.value.currentPeriodEnd,
+    previousPeriodStart: trends.value.previousPeriodStart,
+    previousPeriodEnd: trends.value.previousPeriodEnd,
   },
 ])
 const visibleItems = computed(() =>
@@ -83,6 +107,10 @@ const visibleItems = computed(() =>
       :unit="item.unit"
       :previous-value="item.previous"
       :current-value="item.current"
+      :current-period-start="item.currentPeriodStart"
+      :current-period-end="item.currentPeriodEnd"
+      :previous-period-start="item.previousPeriodStart"
+      :previous-period-end="item.previousPeriodEnd"
     />
   </div>
 </template>

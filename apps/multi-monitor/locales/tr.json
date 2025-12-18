@@ -30,6 +30,8 @@
     "calendar": "Takvim"
   },
   "teleskop": {
+    "consumption-tooltip-last-week": "{lastWeekStart} ve {lastWeekEnd} arasındaki tüketim",
+    "consumption-tooltip-this-week": "{thisWeekStart} ve {thisWeekEnd} arasındaki tüketim",
     "consumption-electricity": "Geçen Hafta Elektrik",
     "consumption-water": "Geçen Hafta Su",
     "consumption-salt": "Geçen Hafta Tuz",
