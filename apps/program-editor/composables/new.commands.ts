@@ -1,31 +1,30 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { klona } from 'klona'
+import hooks from '~/utils/hooks'
+import { contextMenuStore } from '~/utils/context-menu'
+import { useMachineStatusStore } from '~/composables/machine'
+import { ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
+import type { BulkDeletionResponse, CopyItem, Machine, MachineCommand, MachineInfo, ParameterItem, PasteOptions, Program, ProgramDeletionSource, ProgramHeader, ProgramItem, ProgramTableRow } from '~/shared/types'
 import CMDeleteProgramDialog from '~/components/CMDeleteProgramDialog.vue'
 import CMChangeProgramNoOnPasteDialog from '~/components/CMChangeProgramNoOnPasteDialog.vue'
 import CMMachineListDialog from '~/components/CMMachineListDialog.vue'
 import CMProgramOrdersOnConcatenationDialog from '~/components/CMProgramOrdersOnConcatenationDialog.vue'
-import { contextMenuStore } from '~/utils/context-menu'
-import type { BulkDeletionResponse, CopyItem, Machine, MachineCommand, MachineInfo, ParameterItem, PasteOptions, Program, ProgramDeletionSource, ProgramHeader, ProgramItem, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 import TBPrintProgramDialog from '~/components/TBPrintProgramDialog.vue'
 import TBPrintProgramListDialog from '~/components/TBPrintProgramListDialog.vue'
 import TBEditProgramTypes from '~/components/TBEditProgramTypes.vue'
 import TBApplicationSettingsDialog from '~/components/TBApplicationSettingsDialog.vue'
 import TBExportExcelDialog from '~/components/TBExportExcelDialog.vue'
-import hooks from '~/utils/hooks'
 import CMTempTimeGraphDialog from '~/components/CMTempTimeGraphDialog.vue'
 import CMStepCommandGraphDialog from '~/components/CMStepCommandGraphDialog.vue'
-import { ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
 import CMNewProgramDialog from '~/components/CMNewProgramDialog.vue'
 import TBDiscardChangesDialog from '~/components/TBDiscardChangesDialog.vue'
 import TBAllCommandsDialog from '~/components/TBAllCommandsDialog.vue'
 import TBCommandDetailDialog from '~/components/TBCommandDetailDialog.vue'
 import CMMoveParallelStepDialog from '~/components/CMMoveParallelStepDialog.vue'
-import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
 import TBMachineConstantsDialog from '~/components/TBMachineConstantsDialog.vue'
 import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDialog.vue'
 import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
-import { useMachineStatusStore } from '~/composables/machine'
 import CMVersionDialog from '~/components/CMVersionDialog.vue'
 import CMMachineListCopyAndSendDialog from '~/components/CMMachineListCopyAndSendDialog.vue'
 import CopyAndSendResultsDialog from '~/components/CopyAndSendResultsDialog.vue'
@@ -787,29 +786,6 @@ registerCommand(() => {
         editor.selectedSteps = []
       })
       return true
-    },
-  }
-})
-
-registerCommand(() => {
-  return {
-    name: 'unsavedChanges',
-    execute(ctx: any, targetRoute: string) {
-      ctx.$q.dialog({
-        component: TBUnsavedChangesDialog,
-      }).onOk(async (type: 'save' | 'discard') => {
-        const editor = useEditorStore()
-
-        if (type === 'save') {
-          const saved = await editor.onSubmit()
-          if (!saved)
-            return
-        } else {
-          editor.program = klona(editor.originalProgram)
-        }
-
-        await navigateTo(targetRoute)
-      })
     },
   }
 })
