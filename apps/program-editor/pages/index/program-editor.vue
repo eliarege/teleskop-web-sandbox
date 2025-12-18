@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { QForm } from 'quasar'
 import ProgramEditor from '~/components/ProgramEditor.vue'
+import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
 import type { ContextBarButtons, Machine, ProcessType, Program } from '~/shared/types'
@@ -20,6 +21,26 @@ const ctrl = useKeyModifier('Control')
 definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
   roles: ['program-view'],
+})
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!editor.hasProgramChanged()) {
+    next()
+    return
+  }
+
+  $q.dialog({
+    component: TBUnsavedChangesDialog,
+  }).onOk(async (type: 'save' | 'discard') => {
+    if (type === 'save') {
+      const saved = await editor.onSubmit()
+
+      if (!saved) {
+        return
+      }
+    }
+    next()
+  })
 })
 
 const buttons = computed<ContextBarButtons[]>(() => [
@@ -286,17 +307,6 @@ if (editor.machine.id !== machineId) {
 }
 await editor.loadProgram(machineId, programNo)
 editor.isLoading = false
-
-onBeforeRouteLeave(() => {
-  const hasChanged = editor.hasProgramChanged()
-  if (hasChanged) {
-    $commandManager.executeCommand('unsavedChanges', { $q })
-    return false
-  } else {
-    editor.errorIds.clear()
-    return true
-  }
-})
 </script>
 
 <template>

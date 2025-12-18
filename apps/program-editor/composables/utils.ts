@@ -75,83 +75,17 @@ export function assertIndex(index: number, max: number): void {
   }
 }
 
-/**
- * Belirtilen komut numarasına sahip komutun bilgilerini getirir
- * @param commandNo - Komut numarası
- * @param parameterOrIoList - 'parameters' veya 'ioList'
- * @param index - Parametre veya IO index
- * @param selectionIndex - Parametre veya IO selection index
- * @returns - Komut bilgileri
- */
-export function getMachineCommand(commandNo: number, parameterOrIoList?: 'parameters' | 'ioList', index?: number, selectionIndex?: number):
-  MachineCommand | CommandParameter | CommandIO | ParameterSelections | CommandIOSelection | MachineCommand[] | CommandParameter[] | CommandIO[] | ParameterSelections[] | CommandIOSelection[] | undefined {
-  const editor = useEditorStore()
-
-  const command: MachineCommand | undefined = editor.machine.commands.get(commandNo)
-
-  if (!command)
-    return undefined
-
-  if (parameterOrIoList) {
-    if (index) {
-      if (selectionIndex)
-        return command[parameterOrIoList][index].selections[selectionIndex]
-      else
-        return command[parameterOrIoList][index]
-    }
-    return command[parameterOrIoList]
-  }
-  return command
-}
-
-/**
- * Farklılıklar bir veya daha fazla değişiklik kaydı olarak raporlanır.
- * Değişiklik kayıtları aşağıdaki yapıya sahiptir:
- *  kind - Değişimin türünü belirtir; Aşağıdakilerden biri olacaktır:
- *    N - Yeni eklenen bir özelliği/öğeyi belirtir
- *    D - Bir özelliğin/öğenin silindiğini gösterir
- *    E - Bir özelliğin/öğenin düzenlendiğini gösterir
- *    A - Bir dizide meydana gelen bir değişikliği belirtir
- *  path - Özellik yolu (sol taraftaki kökten)
- *  prgA - karşılaştırmanın sol tarafındaki değer
- *  prgB - karşılaştırmanın sağ tarafındaki değer
- *  index - Değişikliğin meydana geldiği dizi indeksini gösterir
- *  item - Dizi indeksinde meydana gelen değişikliği gösteren kaydı içerir
- */
-export const diffs: any[] = []
-
-/**
- * Programın header bilgilerini karsılastırır
- * @param programA Program
- * @param programB Program
- * @returns {boolean} Aynı ise true döner
- */
-function compareHeader(programA: Program, programB: Program): boolean {
-  if (!isDef(programA) || !isDef(programB)) {
-    return false
-  }
-
-  const { duration, steps, ...programWithoutSteps } = programA
-
-  for (const key of Object.keys(programWithoutSteps) as (keyof ProgramHeader)[]) {
-    if (programA[key] !== programB[key]) {
-      return false
-    }
-  }
-  return true
-}
-
-export function compareCommand(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
+export function areCommandsEqual(stepA: ProgramStepCommand, stepB: ProgramStepCommand): boolean {
   if (!isDef(stepA) || !isDef(stepB)) {
     return false
   }
   if (stepA.commandNo !== stepB.commandNo) {
     return false
   }
-  if (!compareIOLists(stepA.ioList, stepB.ioList)) {
+  if (!areIOListsEqual(stepA.ioList, stepB.ioList)) {
     return false
   }
-  if (!compareParameters(stepA.parameters, stepB.parameters)) {
+  if (!areParametersEqual(stepA.parameters, stepB.parameters)) {
     return false
   }
   return true
@@ -163,7 +97,7 @@ export function compareCommand(stepA: ProgramStepCommand, stepB: ProgramStepComm
  * @param ioListB IO Listesi
  * @returns {boolean} Aynı ise true döner
  */
-function compareIOLists(ioListA: ioListItem[], ioListB: ioListItem[]): boolean {
+function areIOListsEqual(ioListA: ioListItem[], ioListB: ioListItem[]): boolean {
   for (let index = 0; index < ioListA.length; index++) {
     const ioA = ioListA[index]
     const ioB = ioListB[index]
@@ -198,7 +132,7 @@ function compareIOLists(ioListA: ioListItem[], ioListB: ioListItem[]): boolean {
  * @param parametersB Parametre Listesi
  * @returns {boolean} Aynı ise true döner
  */
-function compareParameters(parametersA: ParameterItem[], parametersB: ParameterItem[]): boolean {
+function areParametersEqual(parametersA: ParameterItem[], parametersB: ParameterItem[]): boolean {
   for (let index = 0; index < parametersA.length; index++) {
     const parameterA = parametersA[index]
     const parameterB = parametersB[index]
@@ -211,23 +145,14 @@ function compareParameters(parametersA: ParameterItem[], parametersB: ParameterI
 }
 
 /**
- * İki programı karşılastırır ve farkları diffs dizisine aktarır.
+ * İki programı karşılaştırır ve aynı olup olmadığını döner.
  * @param programA Program
  * @param programB Program
- * @param noEmitOnDiff Fark bulunduğunda dursun mu?
- * @returns {boolean} Aynı ise true döner
+ * @returns {boolean} Aynı ise true döner. Değilse false döner.
  */
-export function compareProgram(programA: Program, programB: Program, noEmitOnDiff?: boolean): boolean {
-  // Header
-  if (!compareHeader(programA, programB)) {
-    if (noEmitOnDiff)
-      return false
-  }
-
+export function areProgramsEqual(programA: Program, programB: Program): boolean {
   if (programA.steps.length !== programB.steps.length) {
-    diffs.push({ kind: 'E', path: ['steps'], prgA: programA.steps, prgB: programB.steps })
-    if (noEmitOnDiff)
-      return false
+    return false
   }
 
   // Steps
@@ -236,26 +161,20 @@ export function compareProgram(programA: Program, programB: Program, noEmitOnDif
     const stepB = programB.steps[stepIndex]
 
     if (!isDef(stepA) || !isDef(stepB)) {
-      diffs.push({ kind: 'E', path: ['steps', stepIndex], prgA: stepA, prgB: stepB })
-      if (noEmitOnDiff)
-        return false
+      return false
     }
 
     // Main Command
-    if (!compareCommand(stepA.mainCommand, stepB.mainCommand)) {
-      diffs.push({ kind: 'E', path: ['steps', stepIndex, 'mainCommand'], prgA: stepA.mainCommand, prgB: stepB.mainCommand })
-      if (noEmitOnDiff)
-        return false
+    if (!areCommandsEqual(stepA.mainCommand, stepB.mainCommand)) {
+      return false
     }
     // Parallel Commands
     for (let parallelIndex = 0; parallelIndex < stepA.parallelCommands.length; parallelIndex++) {
       const parallelCommandA = stepA.parallelCommands[parallelIndex]
       const parallelCommandB = stepB.parallelCommands[parallelIndex]
 
-      if (!compareCommand(parallelCommandA, parallelCommandB)) {
-        diffs.push({ kind: 'E', path: ['steps', stepIndex, 'parallelCommands', parallelIndex], prgA: parallelCommandA, prgB: parallelCommandB })
-        if (noEmitOnDiff)
-          return false
+      if (!areCommandsEqual(parallelCommandA, parallelCommandB)) {
+        return false
       }
     }
   }
@@ -318,7 +237,6 @@ export const useErrorStore = defineStore('program-errors', () => {
     const index = errors.value.findIndex(p => p.programNo === programNo)
 
     if (stepErrors.length === 0) {
-    // eğer daha önce kayıtlı varsa sil
       if (index !== -1) {
         errors.value.splice(index, 1)
       }
@@ -328,61 +246,44 @@ export const useErrorStore = defineStore('program-errors', () => {
     if (index !== -1) {
       errors.value[index].steps = stepErrors
     } else {
-      errors.value.push({
-        machineId,
-        programNo,
-        steps: stepErrors,
-      })
+      errors.value.push({ machineId, programNo, steps: stepErrors })
     }
   }
 
   function clearStepErrors(programNo: number, stepId: number) {
-    const index = errors.value.findIndex(p => p.programNo === programNo)
-    if (index !== -1) {
-      errors.value[index].steps = errors.value[index].steps.filter(s => s.stepId !== stepId)
+    const programErrors = errors.value.find(p => p.programNo === programNo)
+    if (programErrors) {
+      programErrors.steps = programErrors.steps.filter(s => s.stepId !== stepId)
     }
   }
 
   function clearCommandErrors(programNo: number, stepId: number, commandId: number) {
-    const index = errors.value.findIndex(p => p.programNo === programNo)
-    if (index !== -1) {
-      errors.value[index].steps = errors.value[index].steps
+    const program = errors.value.find(p => p.programNo === programNo)
+    if (program) {
+      program.steps = program.steps
         .map((step) => {
           if (step.stepId === stepId) {
             step.commands = step.commands.filter(c => c.commandId !== commandId)
           }
           return step
         })
-        .filter(step => step.commands && step.commands.length > 0)
+        .filter(step => step.commands?.length > 0)
     }
   }
 
   function getStepErrors(machineId: number, programNo: number, stepId: number): StepError[] {
-    return errors.value
-      .filter(p => p.machineId === machineId)
-      .filter(p => p.programNo === programNo)
-      .map(p => p.steps)
-      .flat()
-      .filter(s => s.stepId === stepId)
+    const program = errors.value.find(p => p.machineId === machineId && p.programNo === programNo)
+    return program?.steps.filter(s => s.stepId === stepId) ?? []
   }
 
   function getCommandErrors(programNo: number, stepId: number, commandId: number): CommandError[] {
-    return errors.value
-      .filter(p => p.programNo === programNo)
-      .map(p => p.steps)
-      .flat()
-      .filter(s => s.stepId === stepId)
-      .map(s => s.commands)
-      .flat()
-      .filter(c => c.commandId === commandId)
+    const program = errors.value.find(p => p.programNo === programNo)
+    const step = program?.steps.find(s => s.stepId === stepId)
+    return step?.commands.filter(c => c.commandId === commandId) ?? []
   }
 
   function addError(machineId: number, programNo: number, stepError: StepError[]) {
-    errors.value.push({
-      machineId,
-      programNo,
-      steps: stepError,
-    })
+    errors.value.push({ machineId, programNo, steps: stepError })
   }
 
   function clearErrors(programNumber?: number) {

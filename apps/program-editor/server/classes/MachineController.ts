@@ -1652,29 +1652,6 @@ export class MachineController {
   }
 
   /**
-   * İki metin programını (ProgramA ve ProgramB) satır bazında karşılaştırır.
-   * @param ProgramA - Karşılaştırılacak ilk metin programı
-   * @param ProgramB - Karşılaştırılacak ikinci metin programı
-   * @returns {boolean} - Metin programlarının satır bazında eşit olup olmadığını belirtir
-   */
-  compareProgramString(ProgramA: string, ProgramB: string): boolean {
-    const text1Lines: string[] = ProgramA.split('\n')
-    const text2Lines: string[] = ProgramB.split('\n')
-
-    const maxLength = Math.max(text1Lines.length, text2Lines.length)
-
-    for (let i = 0; i < maxLength; i++) {
-      const line1 = text1Lines[i] || ''
-      const line2 = text2Lines[i] || ''
-
-      if (line1 !== line2) {
-        return false
-      }
-    }
-    return true
-  }
-
-  /**
    * Makine sabitlerini getirir.
    * @returns {Promise<MachineConstant[]>} - Makinenin sabitlerinin listesi
    */

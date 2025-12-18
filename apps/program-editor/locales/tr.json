@@ -578,9 +578,8 @@
     "title": "Kaydedilmemiş Değişiklikler",
     "message": "Kaydedilmemiş değişiklikleriniz var. Ne yapmak istersiniz?",
     "buttons": {
-      "revert": "Geri Al",
-      "discard": "Yoksay ve Devam Et",
-      "save": "Kaydet ve Devam Et",
+      "discard": "Yoksay",
+      "save": "Kaydet",
       "cancel": "İptal"
     }
   },

@@ -4,33 +4,27 @@ import { withBase } from 'ufo'
 import type { MachineGroup } from '~/shared/types'
 import { useMachineStatusStore } from '~/composables/machine'
 
-const $q = useQuasar()
+const props = defineProps<{
+  machineGroups: MachineGroup[]
+}>()
+
 const { t } = useI18n()
 const route = useRoute()
 const editor = useEditorStore()
-const { fetch } = useKeycloak()
-const { $commandManager } = useNuxtApp()
 const machineStatusStore = useMachineStatusStore()
 
-const machineGroups = await fetch<MachineGroup[]>('/api/machine-group')
-
-// İlk makineyi otomatik olarak seçer
-watch(() => [machineGroups.length, route.path], () => {
+onMounted(() => {
   if (route.path === '/') {
-    const firstMachine = machineGroups.find(group => group.machines.length)?.machines[0]
+    const firstMachine = props.machineGroups.find(group => group.machines.length)?.machines[0]
     if (firstMachine)
       editor.changeMachine(firstMachine.id)
   }
-}, { immediate: true })
+})
 
 async function onUpdateSelected(selection: string) {
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])
-    const hasChanged = editor.hasProgramChanged()
-    if (hasChanged)
-      $commandManager.executeCommand('unsavedChanges', { $q }, id)
-    else
-      await editor.changeMachine(id)
+    await editor.changeMachine(id)
   } else {
     await navigateTo('/')
   }
