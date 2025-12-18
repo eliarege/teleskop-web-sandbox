@@ -37,6 +37,6 @@ export default defineAuthEventHandler(async (event) => {
     return res
   } catch (err) {
     console.error('Error updating machine:', err)
-    throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' })
+    throw createError({ statusCode: 500 })
   }
 })

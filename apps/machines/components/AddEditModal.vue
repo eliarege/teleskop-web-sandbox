@@ -1,144 +1,86 @@
 <script setup lang="ts">
+import { klona } from 'klona'
 import { changeLocale } from '@formkit/i18n'
-import type { Machine, MachineGroup } from '~/types'
+import type { Machine } from '~/types'
 
-const { isEdit } = defineProps<{
+const props = defineProps<{
   title: string
   isEdit: boolean
+  initialData?: Machine
   formClass?: string
   steamUnitOptions: string[]
   machineGroups: { label: string, value: number | string }[]
   tbbModelOptions: string[]
   mtTempIoOptions: { machineId: number, label: string, value: number | string }[]
   steamValveDoOptions: { machineId: number, label: string, value: number | string }[]
+  machines: Machine[]
 }>()
-const emit = defineEmits([...useDialogPluginComponent.emits, 'submit'])
+
+defineEmits([...useDialogPluginComponent.emits])
+
 const kc = useKeycloak()
-const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent()
-const formData = defineModel({
-  type: Object,
-  required: true,
-})
+const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginComponent()
+const formData = ref(klona(props.initialData) as Machine)
 
 const { t, locale } = useI18n()
 const { notifyError } = useNotify()
 
 const IPV4_RE = /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
 
-const validationError = ref('')
-const duplicateIpError = ref('')
-const duplicateIdError = ref('')
-
-function validateTheoreticalCharge(formData: any): boolean {
-  const theoricalCharge = Number(formData.theoricalCharge)
-  const theoricalChargeDuration = Number(formData.theoricalChargeDuration)
-
-  if (!theoricalCharge || !theoricalChargeDuration || Number.isNaN(theoricalCharge) || Number.isNaN(theoricalChargeDuration)) {
-    return true
-  }
-
-  if (theoricalCharge < 1 || theoricalCharge > 25) {
-    return false
-  }
-
-  if (theoricalCharge !== Math.floor(theoricalCharge)) {
-    return false
-  }
-
-  const minDuration = 45
-  const maxDuration = 1440
-
-  if (theoricalChargeDuration < minDuration || theoricalChargeDuration > maxDuration) {
-    return false
-  }
-
-  return true
-}
-
-async function checkDuplicateIp(ip: string, currentMachineId?: number): Promise<boolean> {
-  try {
-    const response = await kc.fetch('/api/machines/check-duplicate-ip', {
-      method: 'POST',
-      body: { ip, currentMachineId },
-    })
-    return response.isDuplicate
-  } catch (error) {
-    console.error('Error checking duplicate IP:', error)
-    return false
-  }
-}
-
-async function checkDuplicateId(machineId: number, currentMachineId?: number): Promise<boolean> {
-  try {
-    const response = await kc.fetch('/api/machines/check-duplicate-id', {
-      method: 'POST',
-      body: { machineId, currentMachineId },
-    })
-    return response.isDuplicate
-  } catch (error) {
-    console.error('Error checking duplicate ID:', error)
-    return false
-  }
-}
-
 watch(locale, (newLocale) => {
   changeLocale(newLocale)
 })
 
-watch([() => formData.value.theoricalCharge, () => formData.value.theoricalChargeDuration], () => {
-  if (formData.value.theoricalCharge && formData.value.theoricalChargeDuration) {
-    if (!validateTheoreticalCharge(formData.value)) {
-      validationError.value = t('theoricalChargeValidationError')
-    } else {
-      validationError.value = ''
-    }
-  } else {
-    validationError.value = ''
+/**
+ * FormKit validation rule to check if IP is duplicate
+ */
+const uniqueIp = function (node: FormKitNode) {
+  const ip = node.value
+  if (!ip)
+    return true
+  if (props.isEdit) {
+    const currentMachineIp = props.initialData?.ip
+    if (ip === currentMachineIp)
+      return true
   }
-}, { deep: true })
+  return props.machines.every(m => m.ip !== ip)
+}
 
-watch(() => formData.value.ip, async (newIp) => {
-  if (newIp && newIp.match(IPV4_RE)) {
-    const isDuplicate = await checkDuplicateIp(newIp, isEdit ? formData.value.machineId : undefined)
-    if (isDuplicate) {
-      duplicateIpError.value = t('duplicateIpError')
-    } else {
-      duplicateIpError.value = ''
-    }
-  } else {
-    duplicateIpError.value = ''
+/**
+ * FormKit validation rule to check if machine ID is duplicate
+ */
+const uniqueMachineId = function (node: FormKitNode) {
+  const machineId = Number(node.value)
+  if (!machineId)
+    return true
+  if (props.isEdit) {
+    const currentMachineId = props.initialData?.machineId
+    if (machineId === currentMachineId)
+      return true
   }
-})
+  return props.machines.every(m => m.machineId !== machineId)
+}
 
-watch(() => formData.value.machineId, async (newMachineId) => {
-  if (newMachineId && !isEdit) { // Sadece yeni makine eklerken kontrol et
-    const isDuplicate = await checkDuplicateId(Number(newMachineId), isEdit ? formData.value.machineId : undefined)
-    if (isDuplicate) {
-      duplicateIdError.value = t('duplicateIdError')
-    } else {
-      duplicateIdError.value = ''
-    }
-  } else {
-    duplicateIdError.value = ''
-  }
-})
+/**
+ * FormKit validation rule to check if Theoritical Charge * Theoritical Charge Duration <= 1440
+ */
+const theoriticalChargeRule = function (node: FormKitNode) {
+  const parent = node.at('$parent')
+  if (!parent)
+    return true
+
+  const theo = (parent.value as Machine).theoricalCharge
+  const theoDur = (parent.value as Machine).theoricalChargeDuration
+  if (!theo || !theoDur)
+    return true
+
+  return (Number(theo) * Number(theoDur)) <= 1440
+}
 
 async function onSubmitForm() {
-  if (!validateTheoreticalCharge(formData.value)) {
-    validationError.value = t('theoricalChargeValidationError')
-    return
-  }
-
-  if (duplicateIpError.value || duplicateIdError.value || validationError.value) {
-    return
-  }
-
-  validationError.value = ''
-  duplicateIpError.value = ''
-  duplicateIdError.value = ''
-  emit('submit', formData.value)
-  onDialogHide()
+  onDialogOK(klona(formData.value))
 }
+
 const teleskopConnectionMessage = ref({
   message: '',
   color: '',
@@ -213,7 +155,7 @@ async function getVersionInfo(formData: Machine) {
     versionInfoMessage.value.message = t('receivingVersionInfo')
     versionInfoMessage.value.color = ''
 
-    const response = await kc.fetch('/api/sync/get-machine-version', {
+    const response = await kc.fetch<{ version: string }>('/api/sync/get-machine-version', {
       method: 'POST',
       retry: false,
       body: {
@@ -235,7 +177,7 @@ async function getVersionInfo(formData: Machine) {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
     <q-card class="max-w-[90vw] min-w-[90vw]">
       <q-card-section class="flex">
         <div class="flex-center font-extrabold text-h6">
@@ -263,10 +205,12 @@ async function getVersionInfo(formData: Machine) {
               type="text"
               name="machineId"
               label="ID"
-              validation="required|number"
+              validation="required|number|uniqueMachineId"
+              :validation-rules="{ uniqueMachineId }"
+              :validation-messages="{
+                uniqueMachineId: t('duplicateIdError'),
+              }"
               validation-label="ID"
-              :help="duplicateIdError || undefined"
-              :validation-visibility="duplicateIdError ? 'live' : 'blur'"
             />
             <FormKit
               type="text"
@@ -316,28 +260,35 @@ async function getVersionInfo(formData: Machine) {
               type="text"
               name="ip"
               label="IP"
-              :validation="[['required'], ['matches', IPV4_RE]]"
+              :validation="[['required'], ['matches', IPV4_RE], ['uniqueIp']]"
+              :validation-rules="{ uniqueIp }"
+              :validation-messages="{
+                uniqueIp: t('duplicateIpError'),
+              }"
               validation-label="IP"
-              :help="duplicateIpError || undefined"
-              :validation-visibility="duplicateIpError ? 'live' : 'blur'"
             />
             <FormKit
-              type="text"
+              type="number"
               name="theoricalCharge"
               :label="t('theoricalCharge')"
-              :validation="[['required'], ['number'], ['min', 1], ['max', 25]]"
+              number="integer"
+              :validation="[['required'], ['min', 1], ['max', 25], ['theoriticalChargeRule']]"
               :validation-label="t('theoricalCharge')"
-              :help="validationError || undefined"
-              :validation-visibility="validationError ? 'live' : 'blur'"
+              :validation-rules="{ theoriticalChargeRule }"
+              :validation-messages="{
+                theoriticalChargeRule: t('chargeExceeds1Day'),
+              }"
             />
             <FormKit
-              type="text"
+              type="number"
               name="theoricalChargeDuration"
               :label="t('theoricalChargeDuration')"
-              :validation="[['required'], ['number'], ['min', 45], ['max', 1440]]"
+              :validation="[['required'], ['min', 45], ['max', 1440], ['theoriticalChargeRule']]"
               :validation-label="t('theoricalChargeDuration')"
-              :help="validationError || undefined"
-              :validation-visibility="validationError ? 'live' : 'blur'"
+              :validation-rules="{ theoriticalChargeRule }"
+              :validation-messages="{
+                theoriticalChargeRule: t('chargeExceeds1Day'),
+              }"
             />
             <FormKit
               type="select"
@@ -428,9 +379,14 @@ async function getVersionInfo(formData: Machine) {
               <div flex-center flex-col>
                 <FormKit
                   type="button"
-                  :label="t('checkTeleskopConnection')"
+                  :disabled="!formData.ip"
                   @click="checkTeleskopConnection(formData)"
-                />
+                >
+                  {{ t('checkTeleskopConnection') }}
+                  <QTooltip v-if="!formData.ip">
+                    {{ t('enterIpToCheckConnection') }}
+                  </QTooltip>
+                </FormKit>
                 <span :class="teleskopConnectionMessage.color" class="row-start-7">
                   {{ teleskopConnectionMessage.message || '&nbsp;' }}
                 </span>
@@ -438,9 +394,14 @@ async function getVersionInfo(formData: Machine) {
               <div flex-center flex-col>
                 <FormKit
                   type="button"
-                  :label="t('checkNetworkConnection')"
+                  :disabled="!formData.ip"
                   @click="checkNetworkConnection(formData)"
-                />
+                >
+                  {{ t('checkNetworkConnection') }}
+                  <QTooltip v-if="!formData.ip">
+                    {{ t('enterIpToCheckConnection') }}
+                  </QTooltip>
+                </FormKit>
                 <span :class="networkConnectionMessage.color" class="row-start-7">
                   {{ networkConnectionMessage.message || '&nbsp;' }}
                 </span>
@@ -448,10 +409,19 @@ async function getVersionInfo(formData: Machine) {
               <div flex-center flex-col>
                 <FormKit
                   type="button"
-                  :label="t('receiveVersionInfo')"
-                  :disabled="!formData.tbbModel || formData.tbbModel === 'Tonello'"
+                  :disabled="!formData.tbbModel || formData.tbbModel === 'Tonello' || !formData.ip"
                   @click="getVersionInfo(formData)"
-                />
+                >
+                  {{ t('receiveVersionInfo') }}
+                  <QTooltip v-if="!formData.tbbModel || formData.tbbModel === 'Tonello' || !formData.ip">
+                    <template v-if="!formData.ip">
+                      {{ t('enterIpToReceiveVersionInfo') }}
+                    </template>
+                    <template v-else>
+                      {{ t('versionInfoNotAvailableForTonello') }}
+                    </template>
+                  </QTooltip>
+                </FormKit>
                 <span :class="versionInfoMessage.color" class="row-start-7">
                   {{ versionInfoMessage.message || '&nbsp;' }}
                 </span>
@@ -461,7 +431,6 @@ async function getVersionInfo(formData: Machine) {
               <FormKit
                 type="submit"
                 :label="t('submit')"
-                :disabled="!!(duplicateIpError || duplicateIdError || validationError)"
                 @submit="onSubmitForm"
               />
             </div>

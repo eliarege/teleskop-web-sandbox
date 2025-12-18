@@ -33,8 +33,8 @@ export default defineAuthEventHandler(async (event) => {
   } catch (error: any) {
     if (isSQLError(error, MSSQL_ERROR.PRIMARY_KEY_VIOLATION)) {
       throw createError({
-        statusCode: 409,
-        statusMessage: 'Duplicate entry',
+        statusCode: 400,
+        statusMessage: 'DUPLICATE_ENTRY',
       })
     }
 
@@ -45,7 +45,6 @@ export default defineAuthEventHandler(async (event) => {
     console.error('Database error in stop-reason PUT:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal Server Error',
     })
   }
 })

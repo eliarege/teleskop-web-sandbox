@@ -258,13 +258,13 @@ function selectAll() {
     <GetDyeHouseDefinitionsDialog
       v-if="showGetDyeHouseDefinitions && selected[0]"
       :show="showGetDyeHouseDefinitions"
-      :selected="selected[0] as Machine"
+      :selected="selected[0]!"
       @close="showGetDyeHouseDefinitions = false"
     />
     <SetDyeHouseDefinitionsDialog
       v-if="showSetDyeHouseDefinitions && selected[0]"
       :show="showSetDyeHouseDefinitions"
-      :selected="selected[0] as Machine"
+      :selected="selected[0]!"
       @close="showSetDyeHouseDefinitions = false"
     />
     <MachineParametersDialog

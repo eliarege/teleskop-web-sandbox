@@ -23,6 +23,7 @@ export default defineAuthEventHandler(async (event) => {
     STEAMKGPERHOUR: machine.steamKgPerHour,
     STEAMVALVEDO: machine.steamValveDo,
     PORT: 8080,
+    theoricSteam: machine.theoreticalSteam,
   })
   return res
 })

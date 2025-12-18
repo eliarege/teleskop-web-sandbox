@@ -1,222 +1,215 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import UserEditDialog from '~/components/UserEditDialog.vue'
+import UserPermissionsDialog from '~/components/UserPermissionsDialog.vue'
+import ConfirmDialog from '~/components/ConfirmDialog.vue'
 import type { User } from '~/types'
 
 const { t } = useI18n()
-const kc = useKeycloak()
-const userTypeOptions = [{ label: t('Operator'), value: 1 }, { label: t('other'), value: 2 }]
+const { fetch } = useKeycloak()
+const { notifyError, notifySuccess } = useNotify()
 
-const { notifySuccess, notifyError } = useNotify()
+const editUser = ref<User | undefined>(undefined)
+const editDialog = ref(false)
+const permissionsDialog = ref(false)
+const confirmDialog = ref(false)
 
-const selected = ref<Partial<User>>({
-  userId: -1,
-  userName: '',
-  userSurname: '',
-  userPass: '',
-  userInfo: '',
-  userActive: 0,
-  userType: -1,
-  userMode: '',
-  userMode2: '',
-})
+const rows = ref<User[]>([])
+const loading = ref(false)
+const selected = ref<User[]>([])
 
-const columns = computed(() => ({
-  userId: {
-    label: t('userId'),
-    field: 'userId',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    unique: true,
-    type: 'number',
-    visible: true,
-    editable: true,
-    schema: {
-      filled: true,
-      validation: 'required|min:0',
-    },
-  },
-  userName: {
-    name: 'userName',
-    label: t('userName'),
-    field: 'userName',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'text',
-    visible: true,
-    editable: true,
-    schema: {
-      filled: true,
-      validation: 'required|length:3',
-    },
-  },
-  userSurname: {
-    label: t('userSurname'),
-    field: 'userSurname',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'text',
-    visible: true,
-    editable: true,
-    schema: {
-      filled: true,
-      validation: 'required|length:3',
-    },
-  },
-  userPass: {
-    label: t('userPassword'),
-    field: 'userPass',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'text',
-    visible: true,
-    editable: true,
-    schema: {
-      filled: true,
-      validation: 'required|length:4,12|notStartsWith:0',
-    },
-  },
-  userActive: {
-    label: t('active'),
-    field: 'userActive',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'checkbox',
-    visible: true,
-    editable: true,
-    format: (val: boolean) => val ? t('yes') : t('no'),
-    schema: {
-      filled: true,
-      validation: 'required',
-      disabled: selected.value?.userId === 0,
-    },
-  },
-  userInfo: {
-    label: t('userInfo'),
-    field: 'userInfo',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'textarea',
-    visible: false,
-    editable: true,
-    schema: {
-      filled: true,
-    },
-  },
-  userType: {
+const userTypeOptions = [
+  { label: t('operator'), value: 1 },
+  { label: t('other'), value: 2 },
+]
+
+const columns = computed(() => [
+  { name: 'userId', label: t('userId'), field: 'userId', align: 'left' as const, sortable: true },
+  { name: 'userName', label: t('userName'), field: 'userName', align: 'left' as const, sortable: true },
+  { name: 'userSurname', label: t('userSurname'), field: 'userSurname', align: 'left' as const, sortable: true },
+  { name: 'userPass', label: t('userPassword'), field: 'userPass', align: 'left' as const },
+  {
+    name: 'userType',
     label: t('userType'),
-    field: 'userType',
-    align: 'left',
-    filterable: true,
-    filterType: 'includes',
-    type: 'select',
-    visible: true,
-    editable: true,
-    format: (val: number) => userTypeOptions.find(d => d.value === val) ? userTypeOptions.find(d => d.value === val)?.label : val,
-    schema: {
-      validation: 'required',
-      options: userTypeOptions,
+    field: (row: User) => {
+      const option = userTypeOptions.find(opt => opt.value === row.userType)
+      return option ? option.label : row.userType
     },
+    align: 'left' as const,
   },
-}))
+  { name: 'userActive', label: t('active'), field: 'userActive', align: 'left' as const },
+])
 
-const { data: users, refresh } = useAuthFetch('/api/user-definitions/user-definitions', {
-  default: () => [],
-  method: 'POST',
-  body: {},
-})
-
-const showPermissionsDialog = ref(false)
-
-async function handleAdd(formData: Partial<User>) {
+async function loadUsers() {
+  loading.value = true
   try {
-    formData.userMode = selected.value.userMode
-    formData.userMode2 = selected.value.userMode2
-    await kc.fetch('/api/user-definitions/user-definition', {
-      method: 'POST',
-      body: formData,
-    })
-    await refresh()
-    notifySuccess(t('userAddedSuccessfully'))
-  } catch (error: any) {
-    if (error.statusCode === 409) {
-      if (error.statusMessage === 'ID_INUSE') {
-        notifyError(t('duplicateUserIdError'))
-      } else {
-        notifyError(error.statusMessage || t('duplicateUserIdError'))
-      }
-    } else {
-      notifyError(t('errorAddingUser'))
-    }
+    const res = await fetch<User[]>('/api/user-definitions')
+    rows.value = Array.isArray(res) ? res : []
+  } catch (err) {
+    console.error(err)
+    rows.value = []
+  } finally {
+    loading.value = false
   }
 }
 
-async function handleEdit(formData: Partial<User>) {
-  console.log('formData', formData)
-  try {
-    formData.userMode = selected.value.userMode
-    formData.userMode2 = selected.value.userMode2
-    await kc.fetch('/api/user-definitions/user-definition', {
-      method: 'PUT',
-      body:
-        formData,
-    })
-    await refresh()
-    notifySuccess(t('userUpdatedSuccessfully'))
-  } catch (error: any) {
-    notifyError(error.statusMessage || t('errorUpdatingUser'))
-  }
+function openAddDialog() {
+  editUser.value = undefined
+  editDialog.value = true
 }
 
-async function handleDelete(formData: Partial<User>[]) {
+function openEditDialog() {
+  if (selected.value.length !== 1)
+    return
+  editUser.value = selected.value[0]
+  editDialog.value = true
+}
+
+function onUserSaved() {
+  loadUsers()
+  selected.value = []
+}
+
+async function onDeleteUser() {
+  if (selected.value.length === 0)
+    return
+
+  confirmDialog.value = true
+}
+
+async function handleDeleteConfirmed() {
+  const userIds = selected.value.map(u => u.userId)
+
   try {
-    await kc.fetch('/api/user-definitions/user-definition', {
+    await fetch(`/api/user-definitions`, {
       method: 'DELETE',
-      body: {
-        userIds: formData.map(d => d.userId),
-      },
+      body: { userIds },
     })
-    await refresh()
-    notifySuccess(t('userDeletedSuccessfully'))
-  } catch (error: any) {
-    notifyError(error.statusMessage || t('errorDeletingUser'))
+
+    await loadUsers()
+    selected.value = []
+
+    notifySuccess(t('usersDeletedSuccessfully'))
+  } catch (err) {
+    console.error('Kullanıcı silme işlemi başarısız oldu', err)
+    notifyError(t('errorDeletingUsers'))
   }
 }
 
-async function handleSelect(formData: Partial<User>[]) {
-  selected.value = formData[0]
+function openPermissions() {
+  if (selected.value.length !== 1)
+    return
+
+  editUser.value = selected.value[0]
+  permissionsDialog.value = true
 }
+
+function handleRowClick(_e: any, row: User) {
+  selected.value = [row]
+}
+
+onMounted(loadUsers)
 </script>
 
 <template>
-  <div class="dark:(text-white)">
-    <FormTableKit
-      :rows="users"
-      :columns="columns"
-      form-class="grid grid-cols-2 grid-rows-4 gap-4 items-center w-120 h-160"
-      @add="handleAdd"
-      @edit="handleEdit"
-      @delete="handleDelete"
-      @select="handleSelect"
-    >
-      <template #form-content>
-        <q-btn
-          :label="t('permissions')"
-          color="primary"
-          no-caps
-          class="row-start-5"
-          @click="showPermissionsDialog = true"
-        />
-      </template>
-    </FormTableKit>
-    <UserPermissionsDialog
-      :show="showPermissionsDialog"
-      :selected="selected"
-      @close="showPermissionsDialog = false"
-    />
-  </div>
+  <q-page padding>
+    <q-card class="q-pa-md">
+      <div class="q-mb-md flex justify-between items-center">
+        <div class="text-h6">
+          {{ t('controllerOperators') }}
+        </div>
+
+        <div class="q-gutter-sm">
+          <q-btn
+            color="primary"
+            :label="t('add')"
+            icon="add"
+            @click="openAddDialog"
+          />
+          <q-btn
+            color="primary"
+            :label="t('edit')"
+            icon="edit"
+            :disable="selected.length !== 1"
+            @click="openEditDialog"
+          />
+          <q-btn
+            color="negative"
+            :label="t('delete')"
+            icon="delete"
+            :disable="selected.length === 0"
+            @click="onDeleteUser"
+          />
+          <q-btn
+            color="primary"
+            :label="t('permissions')"
+            icon="security"
+            :disable="selected.length !== 1"
+            @click="openPermissions"
+          />
+        </div>
+      </div>
+
+      <!-- QTable -->
+      <q-table
+        v-model:selected="selected"
+        :rows="rows"
+        :columns="columns"
+        row-key="userId"
+        selection="multiple"
+        :loading="loading"
+        class="max-h-150 select-none"
+        :rows-per-page-options="[0]"
+        table-header-style="position: sticky; top: 0; z-index: 1; height: 50px;"
+        table-header-class="bg-gray-1 dark:bg-dark-4"
+        flat
+        bordered
+        @row-click="handleRowClick"
+        @row-dblclick="openEditDialog"
+      >
+        <template #loading>
+          <q-inner-loading showing>
+            <q-spinner color="primary" />
+          </q-inner-loading>
+        </template>
+
+        <!-- Aktif / Pasif Badge -->
+        <template #body-cell-userActive="props">
+          <q-td :props="props">
+            <q-badge :color="props.row.userActive ? 'green' : 'red'" class="text-white">
+              {{ props.row.userActive ? t('active') : t('passive') }}
+            </q-badge>
+          </q-td>
+        </template>
+      </q-table>
+
+      <!-- User Edit / Add Dialog -->
+      <UserEditDialog
+        v-model="editDialog"
+        :user="editUser"
+        :existing-user-ids="rows.map(r => r.userId)"
+        :user-type-options="userTypeOptions"
+        @saved="onUserSaved"
+        @edit-permissions="openPermissions"
+      />
+
+      <!-- User Permissions Dialog -->
+      <UserPermissionsDialog
+        v-model="permissionsDialog"
+        :user="editUser"
+      />
+
+      <ConfirmDialog
+        v-model="confirmDialog"
+        :title="t('confirmDelete')"
+        :message="selected.length === 1
+          ? t('confirmDeleteUser', { name: `${selected[0].userName} ${selected[0].userSurname}` })
+          : t('confirmDeleteUsers', { count: selected.length })"
+        :confirm-label="t('delete')"
+        :cancel-label="t('cancel')"
+        confirm-color="negative"
+        @confirm="handleDeleteConfirmed"
+      />
+    </q-card>
+  </q-page>
 </template>

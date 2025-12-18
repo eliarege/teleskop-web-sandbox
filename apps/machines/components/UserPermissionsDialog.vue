@@ -1,26 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import type { User } from '~/types'
 
 interface Permission {
   label: string
   index: number
-  value: MaybeRef<boolean>
-  disabled?: MaybeRef<boolean>
+  value: boolean | Ref<boolean>
   _value?: boolean
+  disabled?: boolean | ComputedRef<boolean>
 }
 
 const props = defineProps<{
-  show: boolean
-  selected: Partial<User>
+  user?: User
 }>()
-
-const emit = defineEmits(['close'])
 
 const { t } = useI18n()
 const kc = useKeycloak()
-const { notifyError } = useNotify()
+const { notifyError, notifySuccess } = useNotify()
+const visible = defineModel<boolean>()
 
+const selectAll = ref(false)
 const controllerPermission = ref(false)
 const menuAccessPermission = ref(false)
 
@@ -32,7 +30,7 @@ const permissionsGroup1 = reactive<Permission[]>([
   { label: t('manualCommandStarting'), index: 4, value: false },
   { label: t('accessingToSystemMenu'), index: 5, value: menuAccessPermission },
   { label: t('modifyingProgramAtRunTime'), index: 6, value: false },
-  { label: t('test'), index: 7, value: false },
+  { label: t('testAuth'), index: 7, value: false },
   {
     label: t('accessingToDyeHouseParameters'),
     index: 8,
@@ -139,12 +137,13 @@ const permissionsGroup2 = reactive<Permission[]>(([
   { label: t('stepChangeAuthority'), index: 1, value: true },
   { label: t('changingMachineAuthority'), index: 2, value: false },
   { label: t('authorityForOperatorInterventionFreePrograms'), index: 3, value: false },
+  { label: t('automaticMeasurementCommandsApprovalAuthority'), index: 4, value: false },
 ]))
 
-const user = computed(() => props.selected)
+const user = computed(() => props.user)
 watch(user, (_newValue, _oldValue) => {
-  if (props.selected.userMode && props.selected.userMode2)
-    updatePermissionsFromHex(props.selected.userMode, props.selected.userMode2)
+  if (props.user?.userMode && props.user?.userMode2)
+    updatePermissionsFromHex(props.user?.userMode, props.user?.userMode2)
 })
 
 function updatePermissionsFromHex(hexStringGroup1: string, hexStringGroup2: string) {
@@ -186,68 +185,107 @@ async function savePermissions() {
   const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
 
   try {
-    await kc.fetch('/api/user-definitions/user-definition', {
+    await kc.fetch(`/api/user-definitions/${props.user?.userId}`, {
       method: 'PUT',
       body: {
-        userId: user.value.userId,
+        ...props.user,
         userMode: hexadecimalValueGroup1,
         userMode2: hexadecimalValueGroup2,
       },
     })
-    emit('close')
+    notifySuccess(t('userUpdatedSuccessfully'))
+    visible.value = false
   } catch (err) {
     console.error(`Failed to update user permissions`, err)
     notifyError(t('user-permission-update-failed'))
   }
 }
+
+function toggleSelectAll(newValue: boolean) {
+  permissionsGroup1.forEach((p) => {
+    if (!isDisabled(p))
+      p.value = newValue
+  })
+  permissionsGroup2.forEach((p) => {
+    if (!isDisabled(p))
+      p.value = newValue
+  })
+}
+
+function isDisabled(permission: Permission): boolean {
+  if ([8, 9, 13, 14, 15].includes(permission.index)) {
+    return !menuAccessPermission.value
+  }
+  if ([12, 17].includes(permission.index)) {
+    return !controllerPermission.value
+  }
+  return false
+}
 </script>
 
 <template>
-  <div>
-    <q-dialog
-      :model-value="show"
-      @hide="emit('close')"
-    >
-      <q-card class="min-w-[1000px]">
-        <q-card-section>
-          <q-icon
-            name="close"
-            class="flex justify-end w-full mb-4 cursor-pointer"
-            size="1.5em"
-            @click="emit('close')"
-          />
-        </q-card-section>
-        <q-card-section class="grid grid-cols-3">
-          <!-- Group 1 -->
-          <div v-for="(permission, key) in permissionsGroup1" :key="key">
-            <q-checkbox
-              v-model="permission.value"
-              :label="permission.label"
-              :disable="permission.disabled"
-            />
-          </div>
-        </q-card-section>
-        <q-separator />
-        <q-card-section class="grid grid-cols-3">
-          <!-- Group 2 -->
-          <div v-for="(permission, key) in permissionsGroup2" :key="key">
-            <q-checkbox
-              v-model="permission.value"
-              :label="permission.label"
-            />
-          </div>
-        </q-card-section>
-        <q-card-actions align="right">
+  <q-dialog v-model="visible" persistent>
+    <q-card style="min-width: 400px">
+      <q-card-section>
+        <div class="text-h6 flex">
+          {{ t('user-permissions') }}
+          <q-space />
           <q-btn
-            :label="t('save')"
-            no-caps
-            color="primary"
-            filled
-            class="m-4"
-            @click="savePermissions"
+            class="text-gray-4 dark:text-gray-6"
+            icon="close"
+            flat
+            round
+            dense
+            @click="visible = false"
           />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-  </div>
+        </div>
+        <div v-if="user" class="text-h8 text-gray-6 dark:text-gray-4">
+          {{ user.userId }} - {{ user.userName }} {{ user.userSurname }}
+        </div>
+      </q-card-section>
+
+      <q-card-section>
+        <div class="h-140 overflow-auto">
+          <q-list>
+            <q-item
+              v-for="permission in [...permissionsGroup1, ...permissionsGroup2]"
+              :key="permission.index"
+              dense
+            >
+              <q-checkbox
+                v-model="permission.value"
+                :label="permission.label"
+                :disable="isDisabled(permission)"
+                dense
+              />
+            </q-item>
+          </q-list>
+        </div>
+
+        <div>
+          <q-checkbox
+            v-model="selectAll"
+            :label="selectAll ? t('deselectAll') : t('selectAll')"
+            @update:model-value="toggleSelectAll"
+          />
+        </div>
+      </q-card-section>
+
+      <q-card-actions align="right" class="q-pa-md bg-gray-1 dark:bg-dark-4">
+        <q-btn
+          :label="t('cancel')"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
+          flat
+          @click="visible = false"
+        />
+        <q-btn
+          :label="t('save')"
+          class="q-mr-sm bg-primary text-white"
+          color="primary"
+          flat
+          @click="savePermissions"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>

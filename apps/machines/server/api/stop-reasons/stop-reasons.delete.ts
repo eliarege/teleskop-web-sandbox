@@ -37,7 +37,6 @@ export default defineAuthEventHandler(async (event) => {
     console.error('Database error in stop-reasons DELETE:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal Server Error',
     })
   }
 })
