@@ -85,6 +85,10 @@ export interface Trends {
   lastWeekSalt: number
   lastWeekSteam: number
   lastWeekProduction: number
+  currentPeriodStart: string
+  currentPeriodEnd: string
+  previousPeriodStart: string
+  previousPeriodEnd: string
 }
 export interface Interventions {
   interventKey: number
