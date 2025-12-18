@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
-  modelValue: boolean
+withDefaults(defineProps<{
   title?: string
   message: string
   confirmLabel?: string
@@ -16,30 +15,26 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
   (e: 'confirm'): void
   (e: 'cancel'): void
 }>()
 
-const localModelValue = computed({
-  get: () => props.modelValue,
-  set: val => emit('update:modelValue', val),
-})
+const visible = defineModel<boolean>()
 
 function onConfirm() {
   emit('confirm')
-  localModelValue.value = false
+  visible.value = false
 }
 
 function onCancel() {
   emit('cancel')
-  localModelValue.value = false
+  visible.value = false
 }
 </script>
 
 <template>
   <q-dialog
-    v-model="localModelValue"
+    v-model="visible"
     :persistent="persistent"
     class="select-none"
   >

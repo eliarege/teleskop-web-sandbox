@@ -10,25 +10,17 @@ interface Permission {
 }
 
 const props = defineProps<{
-  modelValue: boolean
   user?: User
-}>()
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
 }>()
 
 const { t } = useI18n()
 const kc = useKeycloak()
 const { notifyError, notifySuccess } = useNotify()
+const visible = defineModel<boolean>()
 
-const localModelValue = ref(props.modelValue)
 const selectAll = ref(false)
 const controllerPermission = ref(false)
 const menuAccessPermission = ref(false)
-
-watch(() => props.modelValue, val => localModelValue.value = val)
-watch(localModelValue, val => emit('update:modelValue', val))
 
 const permissionsGroup1 = reactive<Permission[]>([
   { label: t('createProgram'), index: 0, value: false },
@@ -202,7 +194,7 @@ async function savePermissions() {
       },
     })
     notifySuccess(t('userUpdatedSuccessfully'))
-    localModelValue.value = false
+    visible.value = false
   } catch (err) {
     console.error(`Failed to update user permissions`, err)
     notifyError(t('user-permission-update-failed'))
@@ -232,7 +224,7 @@ function isDisabled(permission: Permission): boolean {
 </script>
 
 <template>
-  <q-dialog v-model="localModelValue" persistent>
+  <q-dialog v-model="visible" persistent>
     <q-card style="min-width: 400px">
       <q-card-section>
         <div class="text-h6 flex">
@@ -244,7 +236,7 @@ function isDisabled(permission: Permission): boolean {
             flat
             round
             dense
-            @click="localModelValue = false"
+            @click="visible = false"
           />
         </div>
         <div v-if="user" class="text-h8 text-gray-6 dark:text-gray-4">
@@ -284,7 +276,7 @@ function isDisabled(permission: Permission): boolean {
           :label="t('cancel')"
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
-          @click="localModelValue = false"
+          @click="visible = false"
         />
         <q-btn
           :label="t('save')"
