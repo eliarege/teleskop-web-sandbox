@@ -10,3 +10,7 @@ onlyBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
   - vue-demi
+shamefullyHoist: true
+ignoreScripts: true
+strictPeerDependencies: false
+saveExact: true
