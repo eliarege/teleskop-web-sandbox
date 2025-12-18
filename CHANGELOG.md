@@ -1,8 +1,122 @@
 # Changelog
 
+## 0.61.0 - 2025-12-18
+
+[Compare Changes](d04c0bd47f7609d19446a4207abac8a2e53ce5f7...b7ccb22f5b1242aa48839d1e26dd06473d3c3ac2)
+
+### 🚀 Features
+
+- **mcp**: Add tool to fetch notes for a specific merge request by IID ([4b8d412](4b8d412358046ea62267a1602c363a0bd293499b))
+- **recipes**: Batch no type changed to alphanumerical ([a8663f3](a8663f39f16c611c1e57f3d99613e221cefd8e69))
+- **recipes**: Transactions added to recipe and job order create endpoints ([b03c233](b03c2338a67f4554f5768f6f1103e4ab30801944))
+- **recipes**: Optional fields added to jobOrderPrefs ([a79a265](a79a265d19bbf450688078a66b96c560988e020c))
+- **recipes**: IsManual teleskop sync added ([32fd103](32fd1034296e62bc442737073f43e360a4efa66e))
+- **recipes**: Manual material steps added ([d0d1a71](d0d1a71278d251603a015f4169ecae6685bd512a))
+- **recipes**: Manual material DMExchange changes ([e1778de](e1778de571d021635cde44cf409d62b556463fd7))
+- **recipes**: Manual material implementation cont ([0ad2270](0ad2270d5bb6f0a787368a6d51eb810f18706862))
+- **recipes**: Filter JobOrderList columns based on jobOrderPrefs ([01630d8](01630d87a6b316f94a53d516c32deb5da02ab67f))
+- **recipes**: JobOrderList column filter based on jobOrderPrefs ([797cfa7](797cfa79b8a2d28481b92bfd988e16d9fec7bd82))
+- **recipes**: Dispensers removed from SideMenu and main page ([2917b8a](2917b8a5a951c130d9d26d8809797495fda1bb97))
+- **recipes**: Date filter for JobOrderList ([713288b](713288b8d63f91bde7a28366b940565bd9aefc5b))
+- **recipes**: Program display on JobOrderList ([a0e6de4](a0e6de471dd94258fa9af4f28f6b342b6217e56c))
+- **recipes**: Recipe added to job order records ([3605059](3605059d70a5818c2d64954b019020fc782d8e69))
+- **recipes**: Batch no update logic change ([0f16eb3](0f16eb3016e835a04a8faab3cdc5ca7410eef001))
+- **recipes**: Reuse request from previous JobOrder ([dd7ec83](dd7ec83da39f8cad7e99c0f0e41c7b28d2194d38))
+-  **MA**: Add warning for theorical charge duration exceeding 1440 minutes and update translations ([65a8fc2](65a8fc2acbe14aee38adecf23c334a3d9160b91e))
+-  **MA**: Update permission labels and enhance dialog layout ([970a1f7](970a1f73f18eb2303ebe4f28daff1552f6caa8bc))
+-  **MA**: Update user permissions dialog to require full User object and add select all functionality ([1330468](1330468e91780b47518804c4a832626e4acf9cbb))
+-  **MA**: Implement user management API with GET, PUT, and DELETE methods ([7119c94](7119c94a5e424c72117fd79b2211c27e8c4df4ed))
+-  **MA**: Add UserEditDialog component for user management with form validation ([f2bb547](f2bb54709b2ad3060afbb81b80a81b74990a8879))
+-  **MA**: Integrate UserPermissionsDialog and update permissions handling in UserEditDialog ([77901ba](77901baa5665693c075f82120c85f053d8c6ec7e))
+-  **MA**: Add ConfirmDialog component for user deletion confirmation in user-definitions page ([7d8d0be](7d8d0be96bbdbd256e050c35ec26bb4c2d349077))
+-  **MA**: Pass userTypeOptions prop to UserEditDialog in user-definitions page ([3da1a63](3da1a63114f815afd95df5582df0bf5f116c404f))
+-  **MA**: Enhance user edit dialog with internationalization for labels and error messages ([fd23b9d](fd23b9da443ce3fa15635e42c6586bab1c3b289f))
+-  **MA**: Include userId in the update operation for user details ([07c8220](07c822018b4fee3b7343f7186cd1dd3d6ab55828))
+-  **MA**: Update title in user definitions page to 'controllerOperators' ([ed84d4b](ed84d4ba09ef7ba589c12b0342d45f1093cbce83))
+-  **MA**: Add new permission for automatic measurement commands approval ([f48432b](f48432b7d1d5327a5f1496eef0c587d5a731733f))
+-  **MA**: Implement bulk user deletion API endpoint ([1cd68c3](1cd68c3a1793ee32fff4574d54c6bea75c25199e))
+-  **MA**: Add user update validation schema and improve PUT endpoint handling ([838330d](838330da9598d91b277146a29db87600cc133eb4))
+-  **MA**: Enhance user password validation with length requirements and update localization ([2582955](2582955aea4c16bacd2cb318e2086e35d0045ffe))
+-  **PE**: Print program improvements ([2baa0de](2baa0ded8b30214ecc72fcc7ebc2239a59eb6f68))
+-  **MM**: Enhance consumption tooltip with last and this week data ([1d23e09](1d23e0941ba970c545f7a8af6b940ed4fa4aaf71))
+-  **MM**: Add date range properties to trends and update related components ([77fe07f](77fe07f10ab04074f767b30744eed8c3383d0b57))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Save as program and update endpoint ([ec7bfc4](ec7bfc48bbaf6e5a5647e560014e31606c2c85e8))
+- **mcp**: Normalize file path handling in add-merge-request-note-for-code-range tool ([ea835dd](ea835dd4b532641d065198ffe76d0d2740bb3be4))
+- **recipes**: Prev commit ([0ccab65](0ccab658b1d29d155c889173c48c23938811faf1))
+- **recipes**: PROGRAM_TEMPLATE cascade delete added ([78492d6](78492d683c89499da48b1e47a341180dcc25f17c))
+- **recipes**: MATERIAL_REQUEST step_no entry ([1febab2](1febab24d67cbcd67854e60dcfcd0d7c02a12a90))
+- **recipes**: JobOrderOverview time and optional fields display ([892e7f4](892e7f420d1dfc0be6ab104c54635adee2479fbe))
+-  **MA**: Ensure boolean fields default to false in form submission ([f6ac653](f6ac653e26e4cdff4fc9421f21b46e633f373a36))
+-  **MA**: Ensure row selection emits event correctly on row click ([ef29061](ef29061786e60e683c000c0f2a1a1b554c5f552f))
+-  **MA**: Update userId label and add validation messages in English and Turkish locales ([fcf2106](fcf21062d342b3993524b6f4a4da74307d4ab450))
+-  **MA**: Change userActive type from number to boolean for accurate user status representation ([b2ed174](b2ed1743accd4cee6962b43c42ce055ba2c59d2c))
+-  **MA**: Override default validation messages for formkits `min` and `max` ([5047352](5047352e65e476ad4c50cc86a8b75e7e99705f77))
+-  **MA**: Multiple machine add/edit form fixes ([6bde3c2](6bde3c24d5c721097a5919047edf6ceb30c1a56f))
+-  **MA**: Update API endpoint for user definitions ([d5c76fd](d5c76fdf79a0fa77bb8d6a3fb1e8e777e8eae98a))
+-  **MA**: Improve error handling in user creation and fetching logic ([9a7c22f](9a7c22fa6e7ad4cbe476d45a16a9ffd5a487c85b))
+-  **MA**: Consolidate bulk delete functionality into user definitions endpoint and improve error handling ([3560ac1](3560ac19872e0e96fdef74ec0c9baa71d9466c96))
+-  **MA**: Enforce integer validation for userId in userUpdateSchema ([3186243](3186243248c6923cd32ad7d9c7fc0d893e3ed8c1))
+-  **MA**: Use `defineModel` in `ConfirmDialog` and `UserPermissionsDialog` ([d1b9fd4](d1b9fd46d0430a6a4c491b00027cc6d9cecf78ec))
+-  **MA**: Refactor IP and machine ID duplicate validation logic in AddEditModal ([c4d3449](c4d3449c0c53f6a73a5a64b4fcc911587f2f95bb))
+-  **PE**: Update API endpoint for bulk program deletion ([509d764](509d764127a296a8c410d79e1f9133b787ef0895))
+-  **PE**: Refactor program comparison functions and renamed ([e19bb16](e19bb166b70f53041c4631c893afe6f20eb66378))
+-  **PE**: Machine selection logic ([3b59cbe](3b59cbefe7d586145c0e9ed18891f985d65d29bb))
+-  **PE**: Update MachineList component to use props for machine groups ([8f7e1f0](8f7e1f0b417d40303a848dd0082bd9265fec3c14))
+-  **PE**: Remove unused functions ([34287b5](34287b52d9587443199fb1a65d768296ffd06d8a))
+-  **PE**: Simplify error handling logic in useErrorStore ([200dfd0](200dfd0407c74abd8434e5bda7669b3c5c4ac092))
+-  **PE**: Update unsavedChanges command to use targetRoute instead of machineId ([91e657e](91e657e0a7ca32196e781bded90ae06f01e5fdb0))
+-  **PE**: Simplify unsaved changes dialog ([897d267](897d267f28981ffae90779247bbacb978002440b))
+-  **PE**: Rename variable ([4ebbe20](4ebbe201bd03531177ac1387728cbb63ca0aa92b))
+-  **PE**: Reset program when machine changes ([6832c2c](6832c2c414689ec216a3ea1dc6f3753f141ede73))
+-  **PE**: Refactor route handling for machine selection and unsaved changes logic ([ce3983d](ce3983d4a98a1469cc89dbb5b43a5f825a5ea813))
+-  **PE**: Streamline error handling in program download process ([0c05cc0](0c05cc0052e335e0b6a93950ac95ea47ad43ae99))
+-  **PE**: Remove unsaved changes command and streamline route leave handling ([17daf54](17daf54a8b8e316d3d6d95c97bdb6cba24cae114))
+-  **PE**: Improve context bar button visibility and layout ([5275fd9](5275fd981027532a711f65430a23c553c0a85a63))
+-  **MM**: Correct interface name and add hasVNC property to machine status ([db1a6d8](db1a6d86766795c78fc4373a5922cf7375ad0105))
+-  **MM**: Update connection status handling and improve UI feedback for machine commands ([e314073](e3140736bb0d9c512c2e061f9ee5217fdfec6da5))
+-  **MM**: Update date formatting logic based on locale and clean up machine status display ([b89d80d](b89d80db017663ca67cc27ee8fad3e76b1c72683))
+-  **MM**: Update loggedInOperatorName fallback to empty string and add hasVNC property to MachineData ([af6df3f](af6df3f7be57cf5dead99e1f793f7e1068c19fe2))
+-  **MM**: Adjust layout properties for better responsiveness in settings component ([d487966](d487966552bf8f15991f2a41ced396bc2e511038))
+-  **MM**: Update default settings button label to use translation function ([5fb0c24](5fb0c24d95a36d7bdcf33f483be327f1dfe54582))
+
+### 📖 Documentation
+
+- Add initial repository details and structure information for copilot ([cc297fc](cc297fc240acebd9cc3ff2e6d4bda15beaca6327))
+- **agents**: Clarify schema change guidelines for migration-service and recipes app ([e42d331](e42d331b8d841a89039fae763c3df63af2129865))
+- **agents**: Enhance review guidelines for Merge Request Reviewer Agent ([30d64ae](30d64aece25efd26039c2241b7f9c183db251d62))
+
+### ♻️ Refactor
+
+- **mcp**: Bump mcp sdk to latest version and update mcp server code accordingly ([0240a5d](0240a5d1ec576dbbb9587a04c383eb59e4deb761))
+-  **MA**: Streamline user management component and enhance user interface ([255430c](255430ccffa636ddb7ffb0b1a35d59a547c575ea))
+-  **MA**: Update UserPermissionsDialog to improve permission handling and user data management ([fc764c9](fc764c943b40f9f02b876f02695cbda6d3443787))
+-  **MA**: Remove unused userDeleted badge template from user-definitions page ([5c37803](5c37803b5e79b163a878cc484191f4e9c7f616ca))
+-  **MA**: Use `defineModel` in `UserEditDialog` instead of reinventing the wheel ([4cadf78](4cadf78ff362bdc1546fd7fc1a1e30403ede266d))
+-  **MA**: Rename User interface to UserForm ([ae7fe4a](ae7fe4a95e56542d74ffcedabd4a8df640aa1328))
+-  **MM**: Replace magic numbers with enums for alarm and machine statuses ([1fcac1b](1fcac1bfdb34978925cce2da474efd56f0c7125c))
+-  **MM**: Simplify date formatting logic by using useI18n and removing locale-based formatter ([2a47c09](2a47c0928fe52d4f5bff44c8774521595ab73f4c))
+
+### 🔧 Miscellaneous Tasks
+
+- Bump `zod` to version 3.25.76 ([4de4814](4de4814f0a2896d03ac22720cdb99dd849f12af3))
+- Add MCP server for GitLab Merge Request operations ([a50b9fb](a50b9fb6ca466475a51991e62ddffd70ee57c790))
+- Add Merge Request Reviewer Agent with guidelines and toolset for GitLab reviews ([64e22c0](64e22c011abb1e1a297eebe4f1ab722691d2d098))
+- Add gitlab-merge-request configuration to mcp.json ([73ddff7](73ddff7ff911cd4c97091bbb5d2ffd70bf3a113a))
+- **mcp**: Gitlab-mr mcp fixes and enhancements ([24a97de](24a97deca7a61ba685c6cfb3271ac490b77ae5b7))
+- **mcp**: Minor formatting change to ai footer ([af559e1](af559e142d7b2ccdd67f43e50a24101bed16a11b))
+- **mcp**: Rename `gitlab-mr` to `gitlab-merge-requests`, support `--env-file` argument to pass env file to load ([7881bb4](7881bb401b26469b06c44751e3899691b621bb3f))
+- **recipes**: Batch_no_seq and its post endpoint removed ([70ba71a](70ba71a0bfc73e7aea5ab3aaf74fbfc9b9673253))
+- **recipes**: Dyelot_Parameter INSERT moved to single transaction ([65eaa11](65eaa119447f06c435c43e667c26830709cd8ace))
+- Update lockfile ([fe40a12](fe40a120e24e283d7865832b320e809a83276f61))
+-  **MA**: Standardize error messages and status codes across API endpoints ([d3adafe](d3adafe2d2c0d98446363f345525e8d121b528de))
+- Move `.npmrc` settings to `pnpm-workspace.yaml` ([b7ccb22](b7ccb22f5b1242aa48839d1e26dd06473d3c3ac2))
+
 ## 0.60.0 - 2025-12-08
 
-[Compare Changes](3cb79bd1242ae2c5d2f1478c18f46aac4972dca7...38453f9d4276388cc17fa8c7a75844d7c494c586)
+[Compare Changes](3cb79bd1242ae2c5d2f1478c18f46aac4972dca7...d04c0bd47f7609d19446a4207abac8a2e53ce5f7)
 
 ### 🚀 Features
 
