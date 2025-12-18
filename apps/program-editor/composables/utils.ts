@@ -3,7 +3,7 @@ import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { klona } from 'klona'
 import { useEditorStore } from './editor'
-import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, ParameterSelections, Program, ProgramError, ProgramFilter, ProgramHeader, ProgramStep, ProgramStepCommand, StepError, ioListItem } from '~/shared/types'
+import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, MachineInfo, ParameterItem, ParameterSelections, Program, ProgramDetailPDFData, ProgramError, ProgramFilter, ProgramHeader, ProgramPDFPayloadMap, ProgramStep, ProgramStepCommand, ProgramTableRow, StepError, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -580,4 +580,83 @@ function filterValidIOCombinations(
       selection.index === id1 || selection.index === id2,
     )
   })
+}
+
+/**
+ * Program PDF'i oluşturur
+ * @param type PDF türü
+ * @param payload PDF verisi
+ * @returns  {Promise<Blob>} PDF Blob nesnesi
+ */
+export async function generateProgramPDF<T extends keyof ProgramPDFPayloadMap>(type: T, payload: ProgramPDFPayloadMap[T]): Promise<Blob> {
+  const { default: PdfWorker } = await import('~/workers/pdf-generator.worker.ts?worker')
+  const worker = new PdfWorker()
+
+  try {
+    const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+      worker.onmessage = (e) => {
+        e.data.success ? resolve(e.data.data) : reject(new Error(e.data.error))
+        worker.terminate()
+      }
+
+      worker.onerror = (error) => {
+        reject(error)
+        worker.terminate()
+      }
+
+      try {
+        worker.postMessage({ type, payload: klona(payload) })
+      } catch (error) {
+        reject(error)
+        worker.terminate()
+      }
+    })
+
+    return new Blob([buffer], { type: 'application/pdf' })
+  } catch (error) {
+    worker.terminate()
+    throw error
+  }
+}
+
+export function downloadPDF(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export function printPDF(blob: Blob) {
+  const url = URL.createObjectURL(blob)
+  const printWindow = window.open(url, '_blank')
+  if (printWindow) {
+    printWindow.focus()
+    printWindow.print()
+  }
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * Belirtilen namespace için çevirileri oluşturur
+ * @param messages - Tüm mesajlar
+ * @param locale - Geçerli dil
+ * @param t - Çeviri fonksiyonu
+ * @param namespace - Çeviri namespace'i
+ * @returns Belirtilen namespace için çeviriler
+ */
+export function buildTranslations(
+  messages: Record<string, any>,
+  locale: string,
+  t: (key: string) => string,
+  namespace: string,
+): Record<string, string> {
+  return Object.keys(messages[locale][namespace]).reduce(
+    (acc, key) => {
+      acc[key] = t(`${namespace}.${key}`)
+      return acc
+    },
+    {} as Record<string, string>,
+  )
 }

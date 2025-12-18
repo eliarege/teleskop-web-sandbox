@@ -3,7 +3,7 @@ import { QForm } from 'quasar'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
-import type { ContextBarButtons } from '~/shared/types'
+import type { ContextBarButtons, Machine, ProcessType, Program } from '~/shared/types'
 
 const editor = useEditorStore()
 const form = ref<QForm>()
@@ -23,17 +23,17 @@ definePageMeta({
 })
 
 const buttons = computed<ContextBarButtons[]>(() => [
-  // {
-  //   label: t('menu.print'),
-  //   originalLabel: t('menu.print'),
-  //   tooltip: t('menu.print'),
-  //   shortcut: 'Ctrl+P',
-  //   icon: 'print',
-  //   disable: editor.isLoading,
-  //   onClick() {
-  //     $commandManager.executeCommand('printProgram', { $q })
-  //   },
-  // },
+  {
+    label: t('menu.print'),
+    originalLabel: t('menu.print'),
+    tooltip: t('menu.print'),
+    shortcut: 'Ctrl+P',
+    icon: 'print',
+    disable: editor.isLoading,
+    onClick: async () => {
+      await editor.printProgram()
+    },
+  },
   {
     label: t('menu.save'),
     originalLabel: t('menu.save'),

@@ -339,7 +339,7 @@ const columns = computed<ProgramTableColumn[]>(() =>
     {
       name: 'type',
       label: t('program.type'),
-      field: (row: ProgramTableRow) => getProcessTypeName(row.type),
+      field: (row: ProgramTableRow) => getProcessTypeName(row.typeId),
       sortable: true,
       align: 'center',
       hidden: editor.isTonello,
@@ -348,8 +348,8 @@ const columns = computed<ProgramTableColumn[]>(() =>
       name: 'additionalType',
       label: t('program.additionalType'),
       field: (row: ProgramTableRow) => {
-        if (row.type === ADDITIONAL_PROCESS_CODE_ILAVE && row.additionalType) {
-          return getProcessTypeName(row.additionalType)
+        if (row.typeId === ADDITIONAL_PROCESS_CODE_ILAVE && row.additionalTypeId) {
+          return getProcessTypeName(row.additionalTypeId)
         }
         return ''
       },

@@ -2,8 +2,8 @@
 import { ADDITIONAL_PROCESS_CODE_ILAVE } from '~/shared/constants'
 
 const props = defineProps<{
-  programType: number
-  additionalType?: number
+  typeId: number
+  additionalTypeId?: number
   options: { label: string, value: number }[]
 }>()
 
@@ -13,10 +13,10 @@ const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const selectedOption = ref(
-  props.programType || props.options[0]?.value || 0,
+  props.typeId || props.options[0]?.value || 0,
 )
 const selectedAdditionalOption = ref(
-  props.additionalType || props.options[0]?.value || 0,
+  props.additionalTypeId || props.options[0]?.value || 0,
 )
 const isIlaveSelected = computed(() => selectedOption.value === ADDITIONAL_PROCESS_CODE_ILAVE)
 const additionalOptions = computed(() => props.options.filter(option => option.value !== ADDITIONAL_PROCESS_CODE_ILAVE))

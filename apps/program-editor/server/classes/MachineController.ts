@@ -256,7 +256,7 @@ export class MachineController {
   async fetchAllProgramHeaders(query?: any): Promise<ProgramTableRow[]> {
     const config = useRuntimeConfig()
 
-    const headers = await this.trx
+    return await this.trx
       .select({
         programNo: 'H.PROGNO',
         name: 'H.NAME',
@@ -265,8 +265,9 @@ export class MachineController {
         type: 'H.PROCESSCODE',
         additionalType: 'H.ADDITIONALPROCESSCODE',
         operator: 'H.TBBPRGCHANGEDEVENT',
-        updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.CHANGEDATE)`),
-        updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , H.TBBCHANGEDATE)`),
+        updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CHANGEDATE)`),
+        createdAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CREATIONDATE)`),
+        updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.TBBCHANGEDATE)`),
         prgState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
         totalChemReq: 'H.TotalChemReq',
@@ -278,8 +279,18 @@ export class MachineController {
         saltReq: 'H.TOTALSALTREQ',
         genericMat1Req: 'H.TOTALGM1REQ',
         genericMat2Req: 'H.TOTALGM2REQ',
+        versionNo: 'AH.MACHINEPRGVERSIONNO',
       })
       .from('BFMASTERPRGHEADER AS H')
+      .joinRaw(`
+          OUTER APPLY (
+            SELECT TOP 1 MACHINEPRGVERSIONNO
+            FROM BAMASTERPRGHEADER
+            WHERE MACHINEID = H.MACHINEID
+              AND PROGNO = H.PROGNO
+            ORDER BY MACHINEPRGVERSIONNO DESC
+          ) AS AH
+      `)
       .where('H.MACHINEID', this.id)
       .andWhere((builder) => {
         if (query?.programNo)
@@ -289,8 +300,6 @@ export class MachineController {
         if (query?.processType)
           builder.where('H.PROCESSCODE', Number(query.processType))
       })
-
-    return headers
   }
 
   /**
@@ -698,7 +707,7 @@ export class MachineController {
   @withTransaction
   async getMachineInfo(_editable?: boolean): Promise<Omit<Machine, 'commands'> & { commands: MachineCommand[] }> {
     const machine = await this.trx
-      .first('MACHINECODE as name', 'TBBMODEL as tbbModel')
+      .first('MACHINECODE as name', 'GRUPNO as groupId', 'TBBMODEL as tbbModel')
       .from('BFMACHINES')
       .where('MACHINEID', this.id)
       .andWhere('USEINTELESKOP', 1)
@@ -707,7 +716,7 @@ export class MachineController {
       throw new PError('MACHINE_NOT_FOUND', { machineId: this.id })
     }
 
-    const { name, tbbModel } = machine
+    const { name, groupId, tbbModel } = machine
     const commands = await this.fetchCommands()
     const batchParameters = await this.fetchBatchParameters()
     const constants = await this.fetchMachineConstants()
@@ -717,6 +726,7 @@ export class MachineController {
     return {
       id: this.id,
       name,
+      groupId,
       tbbModel,
       commands,
       constants,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { QTableColumn } from 'quasar'
-import type { CopyAndSendResult } from '~/shared/types'
+import type { CopyAndSendResult } from '~/server/utils/JobManager'
 
 const props = defineProps<{
   machine: { id: number, name: string }

@@ -2,8 +2,9 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
 import { isProgramError } from './utils'
 import { useCopyAndSendStore } from './copyAndSend'
-import type { BulkDeletionResponse, CopyAndSendResult, CopyItem, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
+import type { BulkDeletionResponse, CopyItem, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
 import { notification } from '~/shared/functions'
+import type { CopyAndSendResult } from '~/server/utils/JobManager'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -16,7 +17,7 @@ export interface ContextMenuStore {
   getProgram: (programNo: number, machineId: number) => Promise<ProgramWithErrors>
   updateProgramHeader: (machineId: number, programNo: number, program: ProgramHeaderUpdate) => Promise<boolean>
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
-  changeProcessType: (machineId: number, programs: ProgramTableRow[], typeData: { type: number, additionalType: number | null }) => Promise<void>
+  changeProcessType: (machineId: number, programs: ProgramTableRow[], typeData: { typeId: number, additionalTypeId: number | null }) => Promise<void>
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
@@ -202,7 +203,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     return !!check
   }
 
-  async function changeProcessType(machineId: number, programs: ProgramTableRow[], typeData: { type: number, additionalType: number | null }) {
+  async function changeProcessType(machineId: number, programs: ProgramTableRow[], typeData: { typeId: number, additionalTypeId: number | null }) {
     const editor = useEditorStore()
     const { notifyError } = useNotify()
     editor.isLoading = true
@@ -211,8 +212,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       try {
         await updateProgramHeader(machineId, program.programNo, {
           programNo: program.programNo,
-          typeId: typeData.type,
-          additionalTypeId: typeData.additionalType,
+          typeId: typeData.typeId,
+          additionalTypeId: typeData.additionalTypeId,
         })
       } catch (e) {
         notifyError(t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
