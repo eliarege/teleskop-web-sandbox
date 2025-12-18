@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { changeLocale } from '@formkit/i18n'
 import { klona } from 'klona'
+import { changeLocale } from '@formkit/i18n'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
@@ -18,8 +18,6 @@ const props = defineProps<{
 
 defineEmits([...useDialogPluginComponent.emits])
 
-const { isEdit } = props
-
 const kc = useKeycloak()
 const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginComponent()
 const formData = ref(klona(props.initialData) as Machine)
@@ -29,6 +27,10 @@ const { notifyError } = useNotify()
 
 const IPV4_RE = /^((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)$/
 
+watch(locale, (newLocale) => {
+  changeLocale(newLocale)
+})
+
 /**
  * FormKit validation rule to check if IP is duplicate
  */
@@ -36,9 +38,12 @@ const uniqueIp = function (node: FormKitNode) {
   const ip = node.value
   if (!ip)
     return true
-  const currentMachineId = isEdit ? formData.value.machineId : undefined
-  const isDuplicate = props.machines.some(m => m.ip === ip && m.machineId !== currentMachineId)
-  return !isDuplicate
+  if (props.isEdit) {
+    const currentMachineIp = props.initialData?.ip
+    if (ip === currentMachineIp)
+      return true
+  }
+  return props.machines.every(m => m.ip !== ip)
 }
 
 /**
@@ -46,15 +51,15 @@ const uniqueIp = function (node: FormKitNode) {
  */
 const uniqueMachineId = function (node: FormKitNode) {
   const machineId = Number(node.value)
-  if (!machineId || isEdit)
+  if (!machineId)
     return true
-  const currentMachineId = isEdit ? formData.value.machineId : undefined
-  const isDuplicate = props.machines.some(m => m.machineId === machineId && m.machineId !== currentMachineId)
-  return !isDuplicate
+  if (props.isEdit) {
+    const currentMachineId = props.initialData?.machineId
+    if (machineId === currentMachineId)
+      return true
+  }
+  return props.machines.every(m => m.machineId !== machineId)
 }
-watch(locale, (newLocale) => {
-  changeLocale(newLocale)
-})
 
 /**
  * FormKit validation rule to check if Theoritical Charge * Theoritical Charge Duration <= 1440
@@ -64,8 +69,8 @@ const theoriticalChargeRule = function (node: FormKitNode) {
   if (!parent)
     return true
 
-  const theo = parent.value.theoricalCharge
-  const theoDur = parent.value.theoricalChargeDuration
+  const theo = (parent.value as Machine).theoricalCharge
+  const theoDur = (parent.value as Machine).theoricalChargeDuration
   if (!theo || !theoDur)
     return true
 
