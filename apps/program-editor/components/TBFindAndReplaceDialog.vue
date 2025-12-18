@@ -333,8 +333,6 @@ async function performSearch() {
       body: { searchParams },
     })
 
-    console.log('Search response:', response)
-
     const searchResponse = response as {
       success: boolean
       operation: string

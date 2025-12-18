@@ -31,6 +31,7 @@ import CMMachineListCopyAndSendDialog from '~/components/CMMachineListCopyAndSen
 import CopyAndSendResultsDialog from '~/components/CopyAndSendResultsDialog.vue'
 import DeleteResultsDialog from '~/components/DeleteResultsDialog.vue'
 import TBFindAndReplaceDialog from '~/components/TBFindAndReplaceDialog.vue'
+import type { CopyAndSendResult } from '~/server/utils/JobManager'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -428,11 +429,11 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: CMChangeProcessTypeDialog,
         componentProps: {
-          programType: selectedRows[0].type,
-          additionalType: selectedRows[0].additionalType,
+          typeId: selectedRows[0].typeId,
+          additionalTypeId: selectedRows[0].additionalTypeId,
           options: editor.allProcessTypes,
         },
-      }).onOk(async (result: { type: number, additionalType: number | null }) => {
+      }).onOk(async (result: { typeId: number, additionalTypeId: number | null }) => {
         await contextMenuStore.changeProcessType(machineId, selectedRows, result)
         await editor.refreshAllPrograms()
         return true

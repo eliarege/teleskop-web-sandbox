@@ -24,10 +24,12 @@ export interface ProgramTableRow {
   errorCount?: number
   duration: number
   stepCount: number
-  type: number
-  additionalType: number
+  typeId: number
+  additionalTypeId: number
   operator: boolean
+  versionNo: number
   updatedAt: Date
+  createdAt: Date
   prgState: number
   isChanged: boolean
   totalChemReq: number
@@ -317,6 +319,7 @@ export interface SelectionArchiveList {
 export interface Machine {
   id: number
   name: string
+  groupId: number
   tbbModel: MachineTbbModel
   commands: Map<number, MachineCommand>
   commandFormulas: CommandFormula[]
@@ -522,18 +525,6 @@ export interface ProgramItem {
   name: string
 }
 
-export interface CopyAndSendResult {
-  success: boolean
-  machineId: number
-  programNo: number
-  programName: string
-  machineName: string
-  copyToMachine: boolean
-  sentToDevice: boolean
-  timestamp: string
-  error?: string
-}
-
 export type PasteOptions = 'overwrite' | 'skip'
 
 export type MachineOption = 'current' | 'selected'
@@ -589,3 +580,44 @@ interface IOCriteria {
 
 type ComparisonOperator = 'EQUALS' | 'GREATER_THAN' | 'LESS_THAN' | 'BETWEEN'
 // #endregion
+
+type ProgramListMessage = {
+  type: 'PROGRAM_LIST'
+  payload: ProgramListPDFData
+}
+
+type ProgramDetailMessage = {
+  type: 'PROGRAM_DETAIL'
+  payload: ProgramDetailPDFData
+}
+
+export type ProgramPDFMessage = ProgramListMessage | ProgramDetailMessage
+
+export interface ProgramPDFPayloadMap {
+  PROGRAM_LIST: ProgramListPDFData
+  PROGRAM_DETAIL: ProgramDetailPDFData
+}
+
+export interface ProgramListPDFData {
+  machines: {
+    id: number
+    name: string
+    programs: ProgramTableRow[]
+  }[]
+  translations: Record<string, string>
+  locale: string
+  processTypes: ProcessType[]
+}
+
+export interface ProgramDetailPDFData {
+  machine: {
+    id: number
+    name: string
+  }
+  programs: Program[]
+  selectedCommandNos: number[]
+  commandList: MachineCommand[]
+  translations: Record<string, string>
+  locale: string
+  processTypes: ProcessType[]
+}

@@ -9,12 +9,8 @@ export default defineAuthEventHandler({
     const machineId = Number(machine_id)
     const programNo = Number(program_no)
 
-    if (!Number.isInteger(machineId)) {
-      throw new PError('INVALID_MACHINE_NUMBER', { machineId })
-    }
-
-    if (!Number.isInteger(programNo)) {
-      throw new PError('INVALID_PROGRAM_NUMBER', { programNo })
+    if (!Number.isInteger(machineId) || !Number.isInteger(programNo)) {
+      throw new PError('INVALID_MACHINE_OR_PROGRAM_NUMBER', { machineId, programNo })
     }
 
     const body = await readBody(event)

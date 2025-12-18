@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { jsPDF } from 'jspdf'
-import { autoTable } from 'jspdf-autotable'
-import type { MachineOption } from '~/shared/types'
+import type { MachineInfo, MachineOption, ProgramListPDFData } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
@@ -9,106 +7,90 @@ const props = defineProps<{
 
 defineEmits([...useDialogPluginComponent.emits])
 
-const { t, d } = useI18n()
+const { t, messages, locale } = useI18n()
 const editor = useEditorStore()
 const { notifyError } = useNotify()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const machineOption = ref<MachineOption>('current')
+const isPrinting = ref(false)
+const isDownloading = ref(false)
 
-const selectedMachines = computed(() =>
-  machineOption.value === 'current' ? [editor.machine] : editor.selectedMachines,
+const selectedMachines = computed<MachineInfo[]>(() =>
+  machineOption.value === 'current'
+    ? [editor.machine]
+    : editor.selectedMachines,
 )
 
 const isDisabled = computed(() =>
-  machineOption.value === 'selected' && editor.selectedMachines.length === 0,
+  machineOption.value === 'selected' && editor.selectedMachines.length === 0
+  || isPrinting.value
+  || isDownloading.value,
 )
 
-function getProcessTypeName(typeValue: number) {
-  return editor.allProcessTypes.find(pt => pt.value === typeValue)?.label || ''
-}
-
-function formatDate(date: string | Date) {
-  return d(new Date(date), 'datetime')
-}
-
-async function generatePDF() {
-  // eslint-disable-next-line new-cap
-  const doc = new jsPDF()
-  let startY = 10
-
-  for (const machine of selectedMachines.value) {
-    const programs = await editor.fetchAllPrograms(machine.id)
-    if (!programs.length)
-      continue
-
-    doc.setFontSize(12)
-    doc.text(`${t('printProgramListDialog.machineNo')}`, 14, startY + 8)
-    doc.text(`: ${machine.id}`, 40, startY + 8)
-    doc.text(`${t('printProgramListDialog.machineName')}`, 80, startY + 8)
-    doc.text(`: ${machine.name}`, 115, startY + 8)
-
-    autoTable(doc, {
-      startY: startY + 12,
-      head: [[
-        t('printProgramListDialog.programNo'),
-        t('printProgramListDialog.programName'),
-        t('printProgramListDialog.duration'),
-        t('printProgramListDialog.stepCount'),
-        t('printProgramListDialog.type'),
-        t('printProgramListDialog.updatedAt'),
-      ]],
-      body: programs.map(p => [
-        p.programNo,
-        p.name,
-        formatDuration(p.duration),
-        p.stepCount,
-        getProcessTypeName(p.type),
-        formatDate(p.updatedAt),
-      ]),
-      margin: { top: 15, right: 14, bottom: 20, left: 14 },
-    })
-
-    startY = (doc as any).lastAutoTable.finalY + 15
-
-    if (startY > 250 && machine !== selectedMachines.value[selectedMachines.value.length - 1]) {
-      doc.addPage()
-      startY = 15
-    }
-  }
-
-  const pageCount = (doc as any).internal.getNumberOfPages()
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i)
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`${t('printProgramListDialog.page')} ${i} / ${pageCount}`, 105, 287, { align: 'center' })
-  }
-
-  return doc
-}
+// Prepare translations for the PDF
+const processed = buildTranslations(messages.value, locale.value, t, 'printProgramListDialog')
 
 async function printProgramList() {
+  if (isPrinting.value)
+    return
+
+  isPrinting.value = true
+
   try {
-    const doc = await generatePDF()
-    doc.autoPrint()
-    window.open(doc.output('bloburl'), '_blank')
-    onDialogCancel()
+    const payload = {
+      machines: await Promise.all(
+        selectedMachines.value.map(async machine => ({
+          id: machine.id,
+          name: machine.name,
+          programs: await editor.fetchAllPrograms(machine.id),
+        })),
+      ),
+      translations: processed,
+      locale: locale.value,
+      processTypes: editor.allProcessTypes,
+    }
+
+    const programListPDF = await generateProgramPDF('PROGRAM_LIST', payload)
+
+    printPDF(programListPDF)
   } catch (error) {
     notifyError(t('printProgramListDialog.printError'))
+  } finally {
+    isPrinting.value = false
   }
 }
 
 async function downloadProgramList() {
+  if (isDownloading.value)
+    return
+
+  isDownloading.value = true
+
   try {
-    const doc = await generatePDF()
+    const payload = {
+      machines: await Promise.all(
+        selectedMachines.value.map(async machine => ({
+          id: machine.id,
+          name: machine.name,
+          programs: await editor.fetchAllPrograms(machine.id),
+        })),
+      ),
+      translations: processed,
+      locale: locale.value,
+      processTypes: editor.allProcessTypes,
+    }
+
+    const programListPDF = await generateProgramPDF('PROGRAM_LIST', payload)
     const fileName = machineOption.value === 'current'
-      ? `${editor.machine.name}_${t('printProgramListDialog.programList')}.pdf`
-      : `${t('printProgramListDialog.programList')}.pdf`
-    doc.save(fileName)
-    onDialogCancel()
+      ? `${editor.machine.name}_${t('printProgramListDialog.output.programList')}.pdf`
+      : `${t('printProgramListDialog.output.programList')}.pdf`
+
+    downloadPDF(programListPDF, fileName)
   } catch (error) {
     notifyError(t('printProgramListDialog.downloadError'))
+  } finally {
+    isDownloading.value = false
   }
 }
 </script>
@@ -150,15 +132,19 @@ async function downloadProgramList() {
           @click="onDialogCancel"
         />
         <q-btn
+          v-close-popup
           :label="t('download')"
           :disable="isDisabled"
+          :loading="isDownloading"
           class="bg-primary text-white"
           flat
           @click="downloadProgramList()"
         />
         <q-btn
+          v-close-popup
           :label="t('print')"
           :disable="isDisabled"
+          :loading="isPrinting"
           class="bg-primary text-white"
           flat
           @click="printProgramList()"

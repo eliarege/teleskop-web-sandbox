@@ -1,4 +1,4 @@
-import type { CopyAndSendResult } from '~/shared/types'
+import type { CopyAndSendResult } from '~/server/utils/JobManager'
 
 export const useCopyAndSendStore = defineStore('copy-and-send', () => {
   const { $commandManager } = useNuxtApp()

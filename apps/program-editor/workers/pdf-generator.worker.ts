@@ -1,24 +1,8 @@
 import { jsPDF } from 'jspdf'
-import type { ProcessType } from '~/shared/types'
-
-interface PDFGenerationData {
-  machineName: string
-  machineId: number
-  programs: any[]
-  selectedCommandNos: number[]
-  commandList: any[]
-  translations: Record<string, string>
-}
-
-interface StepData {
-  stepNumber: number
-  commandNo: number
-  commandName: string
-  parameters: any[]
-  ioList: any[]
-  commandInfo: any
-  isParallel: boolean
-}
+import { autoTable } from 'jspdf-autotable'
+import RobotoBold from '~/assets/fonts/Roboto-Bold.ttf?base64'
+import RobotoRegular from '~/assets/fonts/Roboto-Regular.ttf?base64'
+import type { CommandIOSelection, MachineCommand, ProcessType, Program, ProgramDetailPDFData, ProgramPDFMessage, ProgramStep, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 
 function formatDuration(duration: number): string {
   const hours = Math.floor(duration / 3600)
@@ -27,55 +11,71 @@ function formatDuration(duration: number): string {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-function getProcessTypeName(typeValue: number, processTypes: any[]): string {
-  return processTypes.find(pt => pt.value === typeValue)?.label || ''
+function getProcessTypeName(typeId: number, processTypes: ProcessType[]): string {
+  return processTypes.find(pt => pt.value === typeId)?.label || ''
 }
 
-function filterSteps(program: any, selectedCommandNos: number[], commandList: any[]): StepData[] {
-  const filteredSteps: StepData[] = []
-  let stepNumber = 1
-
-  program.steps.forEach((step: any) => {
-    if (selectedCommandNos.includes(step.mainCommand.commandNo)) {
-      const mainCommandInfo = commandList.find(cmd => cmd.commandNo === step.mainCommand.commandNo)
-
-      if (mainCommandInfo) {
-        filteredSteps.push({
-          stepNumber,
-          commandNo: step.mainCommand.commandNo,
-          commandName: mainCommandInfo.name,
-          parameters: step.mainCommand.parameters,
-          ioList: step.mainCommand.ioList,
-          commandInfo: mainCommandInfo,
-          isParallel: false,
-        })
-
-        step.parallelCommands.forEach((parallelCmd: any) => {
-          const parallelCommandInfo = commandList.find(cmd => cmd.commandNo === parallelCmd.commandNo)
-          if (parallelCommandInfo) {
-            filteredSteps.push({
-              stepNumber,
-              commandNo: parallelCmd.commandNo,
-              commandName: parallelCommandInfo.name,
-              parameters: parallelCmd.parameters,
-              ioList: parallelCmd.ioList,
-              commandInfo: parallelCommandInfo,
-              isParallel: true,
-            })
-          }
-        })
-
-        stepNumber++
-      }
-    }
-  })
-
-  return filteredSteps
+function filterSteps(program: Program, selectedCommandNos: number[]): ProgramStep[] {
+  return program.steps.filter(step => selectedCommandNos.includes(step.mainCommand.commandNo))
 }
 
-function generatePDFDocument(data: PDFGenerationData, processTypes: ProcessType[]): any {
-  const doc = new jsPDF() as any // eslint-disable-line new-cap
-  const { programs, selectedCommandNos, commandList, translations: t, machineName, machineId } = data
+function getCommandName(commandList: MachineCommand[], commandNo: number): string {
+  return commandList.find(cmd => cmd.commandNo === commandNo)?.name || ''
+}
+
+function getParameterName(commandList: MachineCommand[], commandNo: number, paramIndex: number): string {
+  const command = commandList.find(cmd => cmd.commandNo === commandNo)
+  return command?.parameters.find(param => param.index === paramIndex)?.name || ''
+}
+
+function getIOName(commandList: MachineCommand[], commandNo: number, ioIndex: number): string {
+  const command = commandList.find(cmd => cmd.commandNo === commandNo)
+  return command?.ioList.find(io => io.index === ioIndex)?.name || ''
+}
+
+function getIOSelections(commandList: MachineCommand[], commandNo: number, ioIndex: number): CommandIOSelection[] {
+  const command = commandList.find(cmd => cmd.commandNo === commandNo)
+  const io = command?.ioList.find(io => io.index === ioIndex)
+  return io?.selections || []
+}
+
+function formatDate(date: string | Date | null, locale: string): string {
+  return date ? new Date(date).toLocaleString(locale) : '-'
+}
+
+function createDocument(): jsPDF {
+  const doc = new jsPDF() // eslint-disable-line new-cap
+  doc.addFileToVFS('Roboto-Regular.ttf', RobotoRegular)
+  doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal')
+  doc.addFileToVFS('Roboto-Bold.ttf', RobotoBold)
+  doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold')
+  doc.setFont('Roboto', 'normal')
+
+  return doc
+}
+
+function getParameterValue(commandList: MachineCommand[], commandNo: number, paramIndex: number, value: string | number): string {
+  const command = commandList.find(cmd => cmd.commandNo === commandNo)
+  const parameter = command?.parameters.find(param => param.index === paramIndex)
+
+  if (!parameter) {
+    return String(value)
+  }
+
+  if (parameter.type === 'SELECT') {
+    const selection = parameter.selections.find(sel => sel.value === value)
+    return selection ? selection.name : String(value)
+  } else if (parameter.type === 'NUMBER' && parameter.format === 'DURATION') {
+    return formatDuration(Number(value))
+  }
+
+  return String(value)
+}
+
+function generateProgramDetailPDF(data: ProgramDetailPDFData): jsPDF {
+  const doc = createDocument()
+
+  const { machine, programs, selectedCommandNos, commandList, translations, locale, processTypes } = data
 
   programs.forEach((program, programIndex) => {
     if (programIndex > 0) {
@@ -86,67 +86,64 @@ function generatePDFDocument(data: PDFGenerationData, processTypes: ProcessType[
     // Makine ve Program Başlık Kutusu
     doc.setDrawColor(0)
     doc.setLineWidth(0.5)
-    doc.rect(14, startY, 182, 23)
+    doc.rect(14, startY, 182, 28)
 
     // Başlık içeriği
     doc.setFontSize(10)
-    doc.setFont('helvetica', 'bold')
+    doc.setFont('Roboto', 'bold')
 
     // İlk satır: Makine No ve Makine Adı
-    doc.text(`${t.machineNo}`, 20, startY + 5)
-    doc.text(`: ${machineId}`, 50, startY + 5)
-    doc.text(`${t.machineName}`, 80, startY + 5)
-    doc.text(`: ${machineName}`, 105, startY + 5)
+    doc.text(`${translations.machineNo || 'Machine No'}`, 20, startY + 5)
+    doc.text(`: ${machine.id}`, 50, startY + 5)
+    doc.text(`${translations.machineName || 'Machine Name'}`, 80, startY + 5)
+    doc.text(`: ${machine.name?.slice(0, 30)}`, 110, startY + 5)
 
     // İkinci satır: Program No ve Program Adı
-    doc.text(`${t.programNo}`, 20, startY + 10)
+    doc.text(`${translations.programNo || 'Program No'}`, 20, startY + 10)
     doc.text(`: ${program.programNo}`, 50, startY + 10)
-    doc.text(`${t.programName}`, 80, startY + 10)
-    doc.text(`: ${program.name}`, 105, startY + 10)
+    doc.text(`${translations.programName || 'Program Name'}`, 80, startY + 10)
+    doc.text(`: ${program.name?.slice(0, 30)}`, 110, startY + 10)
 
-    // Üçüncü satır: Adım Sayısı, Süre, Proses Kodu
-    doc.text(`${t.stepCount}`, 20, startY + 15)
+    // Üçüncü satır: Adım Sayısı, Oluşturma Tarihi
+    doc.text(`${translations.stepCount || 'Step Count'}`, 20, startY + 15)
     doc.text(`: ${program.steps.length}`, 50, startY + 15)
-    doc.text(`${t.duration}`, 80, startY + 15)
-    doc.text(`: ${formatDuration(program.duration)}`, 100, startY + 15)
-    doc.text(`${t.processCode}`, 130, startY + 15)
-    doc.text(`: ${getProcessTypeName(program.typeId, processTypes)}`, 160, startY + 15)
+    doc.text(`${translations.createdAt || 'Created At'}`, 80, startY + 15)
+    doc.text(`: ${formatDate(program.createdAt, locale)}`, 110, startY + 15)
 
-    // Dördüncü satır: Oluşturma ve Değiştirme Tarihleri
-    doc.setFontSize(9)
-    doc.text(`${t.createdAt}`, 20, startY + 20)
-    doc.text(`: ${program.createdAt ? new Date(program.createdAt).toLocaleString('tr-TR') : '-'}`, 50, startY + 20)
-    doc.text(`${t.updatedAt}`, 110, startY + 20)
-    doc.text(`: ${program.updatedAt ? new Date(program.updatedAt).toLocaleString('tr-TR') : '-'}`, 145, startY + 20)
+    // Dördüncü satır: Süre, Güncellenme Tarihi
+    doc.text(`${translations.duration || 'Duration'}`, 20, startY + 20)
+    doc.text(`: ${formatDuration(program.duration)}`, 50, startY + 20)
+    doc.text(`${translations.updatedAt || 'Updated At'}`, 80, startY + 20)
+    doc.text(`: ${formatDate(program.updatedAt, locale)}`, 110, startY + 20)
 
-    startY += 30
+    // Beşinci satır: Proses Kodu
+    doc.text(`${translations.processCode || 'Process Code'}`, 20, startY + 25)
+    doc.text(`: ${getProcessTypeName(program.typeId, processTypes)}`, 50, startY + 25)
 
-    const filteredSteps = filterSteps(program, selectedCommandNos, commandList)
+    startY += 35
+
+    const filteredSteps = filterSteps(program, selectedCommandNos)
 
     if (filteredSteps.length > 0) {
-      filteredSteps.forEach((step) => {
+      filteredSteps.forEach((step, index) => {
         // Sayfa kontrolü
         if (startY > 250) {
           doc.addPage()
           startY = 15
         }
 
-        // Adım ve Komut Başlığı
+        // Ana Komut
         doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
-        const stepText = step.isParallel ? '' : `${step.stepNumber}    `
-        const leftMargin = step.isParallel ? 60 : 14
-        doc.text(`${stepText}    ${step.commandNo}  ${step.commandName}`, leftMargin, startY)
-
-        startY += step.parameters.length > 0 || step.ioList.length > 0 ? 4 : 1
-
+        doc.setFont('Roboto', 'bold')
+        doc.text(`${index + 1}    ${step.mainCommand.commandNo}  ${getCommandName(commandList, step.mainCommand.commandNo)}`, 14, startY)
+        startY += 4
         // Parametreler
-        if (step.parameters && step.parameters.length > 0) {
+        if (step.mainCommand.parameters && step.mainCommand.parameters.length > 0) {
           doc.setFontSize(9)
-          doc.setFont('helvetica', 'bold')
-          doc.text(t.parameter, 80, startY)
-          doc.text(t.name, 110, startY)
-          doc.text(t.value, 150, startY)
+          doc.setFont('Roboto', 'bold')
+          doc.text((translations.parameter || 'Parameter'), 80, startY)
+          doc.text((translations.name || 'Name'), 110, startY)
+          doc.text((translations.value || 'Value'), 150, startY)
           startY += 1
 
           doc.setDrawColor(200)
@@ -154,12 +151,12 @@ function generatePDFDocument(data: PDFGenerationData, processTypes: ProcessType[
           doc.line(80, startY, 196, startY)
           startY += 4
 
-          doc.setFont('helvetica', 'normal')
-          step.parameters.forEach((param: any) => {
-            const paramInfo = step.commandInfo.parameters.find((p: any) => p.index === param.index)
-            if (paramInfo && startY < 280) {
-              doc.text(paramInfo.name || '-', 110, startY)
-              doc.text(String(param.value || '0'), 150, startY)
+          doc.setFont('Roboto', 'normal')
+          step.mainCommand.parameters.forEach((param) => {
+            const paramName = getParameterName(commandList, step.mainCommand.commandNo, param.index)
+            if (paramName && startY < 280) {
+              doc.text(paramName || '-', 110, startY)
+              doc.text(getParameterValue(commandList, step.mainCommand.commandNo, param.index, param.value), 150, startY)
               startY += 4
             }
           })
@@ -167,17 +164,18 @@ function generatePDFDocument(data: PDFGenerationData, processTypes: ProcessType[
         }
 
         // IO Listesi
-        if (step.ioList && step.ioList.length > 0) {
+        if (step.mainCommand.ioList && step.mainCommand.ioList.length > 0) {
           if (startY > 250) {
             doc.addPage()
             startY = 15
           }
 
+          startY += 4
           doc.setFontSize(9)
-          doc.setFont('helvetica', 'bold')
+          doc.setFont('Roboto', 'bold')
           doc.text('IO', 80, startY)
-          doc.text(t.name, 110, startY)
-          doc.text(t.value, 150, startY)
+          doc.text((translations.name || 'Name'), 110, startY)
+          doc.text((translations.value || 'Value'), 150, startY)
           startY += 1
 
           doc.setDrawColor(200)
@@ -185,59 +183,286 @@ function generatePDFDocument(data: PDFGenerationData, processTypes: ProcessType[
           doc.line(80, startY, 196, startY)
           startY += 4
 
-          doc.setFont('helvetica', 'normal')
-          step.ioList.forEach((io: any) => {
-            const ioInfo = step.commandInfo.ioList.find((i: any) => i.index === io.ioIndex)
-            if (ioInfo && startY < 280) {
-              doc.text(ioInfo.name || '-', 110, startY)
-              // IO value formatı: [[index, value]]
-              const ioValue = io.value && io.value.length > 0
-                ? io.value.map((v: any) => ioInfo.selections.find((s: any) => s.index === v[0])?.name || v[1]).join(', ')
-                : '-'
-              doc.text(ioValue, 150, startY)
+          doc.setFont('Roboto', 'normal')
+          step.mainCommand.ioList.forEach((io) => {
+            const ioName = getIOName(commandList, step.mainCommand.commandNo, io.ioIndex)
+            if (ioName && startY < 280) {
+              doc.text(ioName || '-', 110, startY)
+              const selections = getIOSelections(commandList, step.mainCommand.commandNo, io.ioIndex)
+              if (io.value && io.value.length > 0) {
+                io.value.forEach((v, index) => {
+                  // v[1] is physicalId
+                  const selectionItem = selections.find(s => s.physicalId === v[1])
+                  const valueText = selectionItem ? selectionItem.name : String(v[1])
+                  doc.text(valueText, 150, startY)
+                  if (index < io.value.length - 1) {
+                    startY += 4
+                  }
+                })
+              } else {
+                doc.text('-', 150, startY)
+              }
               startY += 4
             }
           })
           startY -= 2
         }
 
-        // Ayırıcı çizgi
-        if (startY < 280) {
+        // Paralel Komutlar
+        if (step.parallelCommands && step.parallelCommands.length > 0) {
+          // Çizgi
           doc.setDrawColor(200)
           doc.setLineWidth(0.1)
-          const lineStartX = step.isParallel ? 60 : 14
-          doc.line(lineStartX, startY, 196, startY)
+          doc.line(60, startY, 196, startY)
+          startY += 4
+
+          step.parallelCommands.forEach((pCmd: ProgramStepCommand) => {
+            if (startY > 250) {
+              doc.addPage()
+              startY = 15
+            }
+
+            doc.setFontSize(10)
+            doc.setFont('Roboto', 'bold')
+            doc.text(`${pCmd.commandNo}  ${getCommandName(commandList, pCmd.commandNo)}`, 60, startY)
+            startY += 4
+
+            // Parametreler
+            if (pCmd.parameters && pCmd.parameters.length > 0) {
+              doc.setFontSize(9)
+              doc.setFont('Roboto', 'bold')
+              doc.text((translations.parameter || 'Parameter'), 80, startY)
+              doc.text((translations.name || 'Name'), 110, startY)
+              doc.text((translations.value || 'Value'), 150, startY)
+              startY += 1
+
+              doc.setDrawColor(200)
+              doc.setLineWidth(0.1)
+              doc.line(80, startY, 196, startY)
+              startY += 4
+
+              doc.setFont('Roboto', 'normal')
+              pCmd.parameters.forEach((param) => {
+                const paramName = getParameterName(commandList, pCmd.commandNo, param.index)
+                if (paramName && startY < 280) {
+                  doc.text(paramName || '-', 110, startY)
+                  doc.text(getParameterValue(commandList, pCmd.commandNo, param.index, param.value), 150, startY)
+                  startY += 4
+                }
+              })
+            }
+
+            // IO Listesi
+            if (pCmd.ioList && pCmd.ioList.length > 0) {
+              if (startY > 250) {
+                doc.addPage()
+                startY = 15
+              }
+
+              startY += 4
+              doc.setFontSize(9)
+              doc.setFont('Roboto', 'bold')
+              doc.text('IO', 80, startY)
+              doc.text((translations.name || 'Name'), 110, startY)
+              doc.text((translations.value || 'Value'), 150, startY)
+              startY += 1
+
+              doc.setDrawColor(200)
+              doc.setLineWidth(0.1)
+              doc.line(80, startY, 196, startY)
+              startY += 4
+
+              doc.setFont('Roboto', 'normal')
+              pCmd.ioList.forEach((io) => {
+                const ioName = getIOName(commandList, pCmd.commandNo, io.ioIndex)
+                if (ioName && startY < 280) {
+                  doc.text(ioName || '-', 110, startY)
+                  const selections = getIOSelections(commandList, pCmd.commandNo, io.ioIndex)
+                  if (io.value && io.value.length > 0) {
+                    io.value.forEach((v, index) => {
+                      // v[1] is physicalId
+                      const selectionItem = selections.find(s => s.physicalId === v[1])
+                      const valueText = selectionItem ? selectionItem.name : String(v[1])
+                      doc.text(valueText, 150, startY)
+                      if (index < io.value.length - 1) {
+                        startY += 4
+                      }
+                    })
+                  } else {
+                    doc.text('-', 150, startY)
+                  }
+                  startY += 4
+                }
+              })
+            }
+            startY -= 2
+
+            // çizgi
+            if (startY < 280 && pCmd !== step.parallelCommands[step.parallelCommands.length - 1]) {
+              doc.setDrawColor(200)
+              doc.setLineWidth(0.1)
+              doc.line(60, startY, 196, startY)
+              startY += 4
+            }
+          })
+        }
+
+        // Adım sonu çizgi
+        if (startY < 280) {
+          doc.setDrawColor(0)
+          doc.setLineWidth(0.5)
+          doc.line(14, startY, 196, startY)
           startY += 4
         }
       })
     } else {
       // Seçili komut yoksa bilgi mesajı
       doc.setFontSize(10)
-      doc.setFont('helvetica', 'italic')
-      doc.text(t.noSelectedCommands, 14, startY)
+      doc.setFont('Roboto', 'normal')
+      doc.text((translations.noSelectedCommands || 'No selected commands'), 14, startY)
     }
   })
 
   // Tüm sayfalara sayfa numarası ekle
-  const pageCount = doc.internal.getNumberOfPages()
+  const pageCount = doc.internal.pages.length - 1
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i)
     doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`${t.page} ${i} / ${pageCount}`, 105, 287, { align: 'center' })
+    doc.setFont('Roboto', 'normal')
+    doc.text(`${(translations.page || 'Page')} ${i} / ${pageCount}`, 105, 287, { align: 'center' })
   }
 
-  return doc.output('arraybuffer')
+  return doc
 }
 
-// Web Worker message handler
-globalThis.onmessage = (e: MessageEvent) => {
-  const { data, processTypes }: { data: PDFGenerationData, processTypes: ProcessType[] } = e.data
+interface ProgramListPDFData {
+  machines: {
+    id: number
+    name: string
+    programs: ProgramTableRow[]
+  }[]
+  translations: Record<string, string>
+  locale: string
+  processTypes: ProcessType[]
+}
 
+function generateProgramListPDF(data: ProgramListPDFData): jsPDF {
+  // eslint-disable-next-line new-cap
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4',
+  })
+
+  const { machines, translations, locale, processTypes } = data
+
+  doc.addFileToVFS('Roboto-Regular.ttf', RobotoRegular)
+  doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal')
+  doc.addFileToVFS('Roboto-Bold.ttf', RobotoBold)
+  doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold')
+
+  doc.setFont('Roboto', 'normal')
+
+  let startY = 10
+
+  for (const machine of machines) {
+    if (!machine.programs.length)
+      continue
+
+    const machineHeader = `${(translations.machineNo || 'Machine No')}: ${machine.id}  |  ${(translations.machineName || 'Machine Name')}: ${machine.name}`
+
+    autoTable(doc, {
+      startY: startY + 12,
+      head: [
+        [{
+          content: machineHeader,
+          colSpan: 8,
+          styles: {
+            halign: 'left',
+            fillColor: [240, 240, 240],
+            textColor: [0, 0, 0],
+            font: 'Roboto',
+            fontStyle: 'bold',
+          },
+        }],
+        [
+          (translations.programNo || 'Program No'),
+          (translations.programName || 'Program Name'),
+          (translations.duration || 'Duration'),
+          (translations.stepCount || 'Step Count'),
+          (translations.type || 'Type'),
+          (translations.versionNo || 'Version No'),
+          (translations.updatedAt || 'Updated At'),
+          (translations.createdAt || 'Created At'),
+        ],
+      ],
+      body: machine.programs.map(p => [
+        p.programNo,
+        p.name,
+        formatDuration(p.duration),
+        p.stepCount,
+        getProcessTypeName(p.typeId, processTypes),
+        p.versionNo,
+        formatDate(p.updatedAt, locale),
+        formatDate(p.createdAt, locale),
+      ]),
+      margin: { top: 15, right: 14, bottom: 20, left: 14 },
+      styles: {
+        font: 'Roboto',
+        fontStyle: 'normal',
+      },
+      headStyles: {
+        font: 'Roboto',
+        fontStyle: 'bold',
+      },
+    })
+
+    startY = (doc as any).lastAutoTable.finalY + 15
+
+    const lastMachine = machines[machines.length - 1]
+    const isLastMachine = machine.id === lastMachine.id
+
+    if (startY > 200 && !isLastMachine) {
+      doc.addPage()
+      startY = 15
+    }
+  }
+
+  const pageCount = doc.internal.pages.length - 1
+  doc.setFontSize(9)
+  doc.setFont('Roboto', 'normal')
+
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i)
+    doc.text(
+      `${(translations.page || 'Page')} ${i} / ${pageCount}`,
+      148,
+      200,
+      { align: 'center' },
+    )
+  }
+
+  return doc
+}
+
+globalThis.onmessage = (e: MessageEvent<ProgramPDFMessage>) => {
   try {
-    const pdfArrayBuffer = generatePDFDocument(data, processTypes)
-    globalThis.postMessage({ success: true, data: pdfArrayBuffer }, [pdfArrayBuffer])
-  } catch (error) {
-    globalThis.postMessage({ success: false, error: error instanceof Error ? error.message : 'Unknown error' })
+    let pdf: jsPDF
+
+    if (e.data.type === 'PROGRAM_LIST') {
+      pdf = generateProgramListPDF(e.data.payload)
+    } else if (e.data.type === 'PROGRAM_DETAIL') {
+      pdf = generateProgramDetailPDF(e.data.payload)
+    } else {
+      throw new Error('Invalid PDF type')
+    }
+
+    const buffer = pdf.output('arraybuffer')
+    globalThis.postMessage({ success: true, data: buffer }, [buffer])
+  } catch (err) {
+    globalThis.postMessage({
+      success: false,
+      error: err instanceof Error ? err.message : 'Unknown error',
+    })
   }
 }

@@ -642,6 +642,7 @@
     "stepCount": "Step Count",
     "type": "Type",
     "processCode": "Process Code",
+    "versionNo": "Version No",
     "createdAt": "Created At",
     "updatedAt": "Updated At",
     "step": "Step",
@@ -661,8 +662,11 @@
     "noSelectedCommands": "No selected commands in this program",
     "printError": "An error occurred while printing",
     "downloadError": "An error occurred while downloading",
-    "programList": "program_list",
-    "printProgram": "Print Program"
+    "printProgram": "Print Program",
+    "output": {
+      "programList": "program_list",
+      "programs": "programs"
+    }
   },
   "deleteResultsDialog": {
     "title": "Delete Results",

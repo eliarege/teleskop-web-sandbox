@@ -10,9 +10,9 @@ const props = defineProps<{
 
 defineEmits([...useDialogPluginComponent.emits])
 
-const { t } = useI18n()
 const editor = useEditorStore()
 const { notifyError } = useNotify()
+const { t, locale, messages } = useI18n()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const machineOption = ref<MachineOption>('current')
@@ -48,51 +48,47 @@ const isDisabled = computed(() =>
 async function loadData() {
   selectedPrograms.value = []
   selectedCommands.value = []
-
   await Promise.all([loadProgramList(), loadCommandList()])
 }
 
 async function loadProgramList() {
+  if (!selectedMachine.value)
+    return
+
   isLoadingPrograms.value = true
   selectedPrograms.value = []
 
   try {
-    if (selectedMachine.value) {
-      programList.value = await editor.fetchAllPrograms(selectedMachine.value.id)
-    }
+    programList.value = await editor.fetchAllPrograms(selectedMachine.value.id)
   } finally {
     isLoadingPrograms.value = false
   }
 }
 
 async function loadCommandList() {
+  if (!selectedMachine.value)
+    return
+
   isLoadingCommands.value = true
   selectedCommands.value = []
 
   try {
-    if (selectedMachine.value) {
-      const machine = await editor.fetchMachine(selectedMachine.value.id)
-      commandList.value = Array.from(machine.commands.values())
-    }
+    const machine = await editor.fetchMachine(selectedMachine.value.id)
+    commandList.value = Array.from(machine.commands.values())
   } finally {
     isLoadingCommands.value = false
   }
 }
 
 async function getPrograms(machineId: number, programNos: number[]): Promise<Program[]> {
-  isLoadingPrograms.value = true
-  const programs = ref<Program[]>([])
+  const programs: Program[] = []
 
-  try {
-    for (const programNo of programNos) {
-      const program = await editor.fetchProgram(machineId, programNo)
-      programs.value.push(program)
-    }
-
-    return programs.value
-  } finally {
-    isLoadingPrograms.value = false
+  for (const programNo of programNos) {
+    const program = await editor.fetchProgram(machineId, programNo)
+    programs.push(program)
   }
+
+  return programs
 }
 
 watch([machineOption, () => editor.selectedMachines], loadData)
@@ -113,108 +109,54 @@ function getProcessTypeName(typeValue: number) {
   return editor.allProcessTypes.find(pt => pt.value === typeValue)?.label || ''
 }
 
-async function generatePDF() {
-  if (!selectedMachine.value) {
-    throw new Error('No machine selected')
-  }
+// Prepare translations for the PDF
+const processed = buildTranslations(messages.value, locale.value, t, 'printProgramListDialog')
 
-  const machineId = selectedMachine.value.id
-  const machineName = selectedMachine.value.name
-  const programNos = selectedPrograms.value.map(p => p.programNo)
-  const programs = await getPrograms(machineId, programNos)
-  const selectedCommandNos = selectedCommands.value.map(c => c.commandNo)
-
-  const translations = {
-    machineNo: t('printProgramListDialog.machineNo'),
-    machineName: t('printProgramListDialog.machineName'),
-    programNo: t('printProgramListDialog.programNo'),
-    programName: t('printProgramListDialog.programName'),
-    stepCount: t('printProgramListDialog.stepCount'),
-    duration: t('printProgramListDialog.duration'),
-    processCode: t('printProgramListDialog.processCode'),
-    createdAt: t('printProgramListDialog.createdAt'),
-    updatedAt: t('printProgramListDialog.updatedAt'),
-    parameter: t('printProgramListDialog.parameter'),
-    name: t('printProgramListDialog.name'),
-    value: t('printProgramListDialog.value'),
-    page: t('printProgramListDialog.page'),
-    noSelectedCommands: t('printProgramListDialog.noSelectedCommands'),
-  }
-
-  const worker = new Worker(new URL('~/workers/pdf-generator.worker.ts', import.meta.url), { type: 'module' })
-
-  const pdfArrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-    worker.onmessage = (e: MessageEvent) => {
-      if (e.data.success) {
-        resolve(e.data.data)
-      } else {
-        reject(new Error(e.data.error))
-      }
-      worker.terminate()
-    }
-
-    worker.onerror = (error) => {
-      reject(error)
-      worker.terminate()
-    }
-
-    worker.postMessage({
-      data: {
-        machineName,
-        machineId,
-        // Deep copy: Vue reactive proxy'leri ve circular reference'ları temizleyerek plain object'e çevirir
-        programs: JSON.parse(JSON.stringify(programs)),
-        selectedCommandNos,
-        commandList: JSON.parse(JSON.stringify(commandList.value)),
-        translations,
-      },
-      processTypes: JSON.parse(JSON.stringify(editor.allProcessTypes)),
-    })
-  })
-
-  const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
-  return blob
-}
-
-async function printProgramList() {
-  if (isPrinting.value)
-    return
-
-  isPrinting.value = true
-
-  try {
-    const pdfBlob = await generatePDF()
-    const url = URL.createObjectURL(pdfBlob)
-
-    // Yeni pencerede aç ve print
-    const printWindow = window.open(url, '_blank')
-
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.print()
-        setTimeout(() => {
-          URL.revokeObjectURL(url)
-        }, 1000)
-      }
-    } else {
-      notifyError(t('printProgramListDialog.popupBlocked'))
-      URL.revokeObjectURL(url)
-    }
-
-    onDialogCancel()
-  } catch (error) {
-    console.error('Print error:', error)
-    notifyError(t('printProgramListDialog.printError'))
-  } finally {
-    isPrinting.value = false
-  }
-}
-
-async function downloadProgramList() {
+async function downloadProgram() {
   if (isDownloading.value)
     return
 
   isDownloading.value = true
+  try {
+    if (!selectedMachine.value) {
+      notifyError(t('printProgramListDialog.noMachineSelected'))
+      return
+    }
+
+    const machine = selectedMachine.value
+    const programNos = selectedPrograms.value.map(p => p.programNo)
+    const programs = await getPrograms(machine.id, programNos)
+    const selectedCommandNos = selectedCommands.value.map(c => c.commandNo)
+
+    const payload = {
+      machine,
+      programs,
+      selectedCommandNos,
+      commandList: commandList.value,
+      translations: processed,
+      locale: locale.value,
+      processTypes: editor.allProcessTypes,
+    }
+
+    const programDetailPDF = await generateProgramPDF('PROGRAM_DETAIL', payload)
+    const fileName = programs.length === 1
+      ? `${selectedMachine.value.name}_${programs[0].name}.pdf`
+      : `${selectedMachine.value.name}_${t('printProgramListDialog.output.programs')}.pdf`
+
+    downloadPDF(programDetailPDF, fileName)
+  } catch (error) {
+    console.error('Download error:', error)
+    notifyError(t('printProgramListDialog.downloadError'))
+  } finally {
+    isDownloading.value = false
+  }
+}
+
+async function printProgram() {
+  if (isPrinting.value)
+    return
+
+  isPrinting.value = true
 
   try {
     if (!selectedMachine.value) {
@@ -222,22 +164,29 @@ async function downloadProgramList() {
       return
     }
 
-    const pdfBlob = await generatePDF()
-    const fileName = `${selectedMachine.value.name}_program_listesi.pdf`
+    const machine = selectedMachine.value
+    const programNos = selectedPrograms.value.map(p => p.programNo)
+    const programs = await getPrograms(machine.id, programNos)
+    const selectedCommandNos = selectedCommands.value.map(c => c.commandNo)
 
-    const url = URL.createObjectURL(pdfBlob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = fileName
-    a.click()
-    URL.revokeObjectURL(url)
+    const payload = {
+      machine,
+      programs,
+      selectedCommandNos,
+      commandList: commandList.value,
+      translations: processed,
+      locale: locale.value,
+      processTypes: editor.allProcessTypes,
+    }
 
-    onDialogCancel()
+    const programDetailPdf = await generateProgramPDF('PROGRAM_DETAIL', payload)
+
+    printPDF(programDetailPdf)
   } catch (error) {
-    console.error('Download error:', error)
-    notifyError(t('printProgramListDialog.downloadError'))
+    console.error('Print error:', error)
+    notifyError(t('printProgramListDialog.printError'))
   } finally {
-    isDownloading.value = false
+    isPrinting.value = false
   }
 }
 </script>
@@ -338,7 +287,7 @@ async function downloadProgramList() {
           :loading="isDownloading"
           class="bg-primary text-white"
           flat
-          @click="downloadProgramList()"
+          @click="downloadProgram()"
         />
         <q-btn
           :label="t('print')"
@@ -346,7 +295,7 @@ async function downloadProgramList() {
           :loading="isPrinting"
           class="bg-primary text-white"
           flat
-          @click="printProgramList()"
+          @click="printProgram()"
         />
       </q-card-actions>
     </q-card>

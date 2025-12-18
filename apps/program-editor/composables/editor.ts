@@ -3,7 +3,7 @@ import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
 import { useErrorStore } from './utils'
-import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ProgramDetailPDFData, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
 import { capitalize } from '~/shared/utils'
 import { CommandEligibility, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
@@ -28,7 +28,7 @@ export const useEditorStore = defineStore('editor', () => {
   const allStepExpanded = ref<boolean>(false)
 
   const { $i18n } = useNuxtApp()
-  const { t } = $i18n
+  const { t, locale, messages } = $i18n
   const route = useRoute()
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError, notifyWarning } = useNotify()
@@ -750,6 +750,7 @@ export const useEditorStore = defineStore('editor', () => {
     return {
       id: 0,
       name: '',
+      groupId: 0,
       tbbModel: 'T7700',
       commands: new Map<number, MachineCommand>(),
       batchParameters: [],
@@ -1052,6 +1053,44 @@ export const useEditorStore = defineStore('editor', () => {
     return { name: commandType.icon, label: commandType.title, color: commandType.color }
   }
 
+  /**
+   * Mevcut programı yazdırır.
+   *
+   * @returns {Promise<void>} Yazdırma işlemi tamamlandığında çözümlenen bir promise döner.
+   *
+   * @description Bu fonksiyon, mevcut programın detaylarını içeren bir PDF dosyası oluşturur ve yazdırma işlemini başlatır.
+   * Yazdırma işlemi sırasında yükleme durumu güncellenir ve hata durumunda kullanıcıya bildirim gösterilir.
+   */
+  async function printProgram(): Promise<void> {
+    isLoading.value = true
+
+    try {
+      const commandList = Array.from(machine.value.commands.values())
+
+      // Prepare translations for the PDF
+      const processed = buildTranslations(messages.value, locale.value, t, 'printProgramListDialog')
+
+      const payload = {
+        machine: { id: machine.value.id, name: machine.value.name },
+        programs: [program.value],
+        selectedCommandNos: Array.from(commandList.keys()),
+        commandList,
+        translations: processed,
+        locale: locale.value,
+        processTypes: allProcessTypes.value,
+      }
+
+      const programDetailPdf = await generateProgramPDF('PROGRAM_DETAIL', payload)
+
+      printPDF(programDetailPdf)
+    } catch (error) {
+      console.error('Print error:', error)
+      notifyError(t('printProgramListDialog.printError'))
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     program,
     originalProgram,
@@ -1111,5 +1150,6 @@ export const useEditorStore = defineStore('editor', () => {
     hasProgramChanged,
     isStepSelected,
     getStepIndex,
+    printProgram,
   }
 })
