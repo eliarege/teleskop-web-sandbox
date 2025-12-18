@@ -41,21 +41,11 @@ const commonSettingsItems: TopbarMenuItem[] = [
   },
 ]
 
-const { locale } = useI18n()
-const formatter = computed(() => {
-  switch (locale.value) {
-    case 'tr':
-      return 'DD.MM.YYYY HH:mm:ss'
-    case 'en-GB':
-    case 'en':
-      return 'DD/MM/YYYY HH:mm:ss'
-    case 'en-US':
-      return 'MM/DD/YYYY hh:mm:ss A'
-    default:
-      return 'YYYY-MM-DD HH:mm:ss'
-  }
+const { d } = useI18n()
+const now = useNow()
+const formatted = computed(() => {
+  return d(now.value, 'datetime')
 })
-const formatted = useDateFormat(useNow(), formatter)
 const machineData = computed(() => {
   return store.machines.map((machine) => {
     return {
@@ -121,7 +111,6 @@ const machineData = computed(() => {
             />
           </TopbarButton>
         </template>
-
         <NavBar
           v-if="!isMobile"
           :formatted
