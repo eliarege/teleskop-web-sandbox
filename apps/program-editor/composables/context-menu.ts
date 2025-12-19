@@ -1,5 +1,6 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
+import { klona } from 'klona'
 import { isProgramError } from './utils'
 import { useCopyAndSendStore } from './copyAndSend'
 import type { BulkDeletionResponse, CopyItem, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
@@ -65,7 +66,7 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     sourceMachineId.value = editor.machine.id
     sourceMachineCommands.value = new Map(editor.machine.commands)
     editor.selectedSteps.forEach((step) => {
-      copiedStepValues.value.push(step)
+      copiedStepValues.value.push(klona(step))
     })
   }
 

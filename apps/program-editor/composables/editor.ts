@@ -20,19 +20,19 @@ export const useEditorStore = defineStore('editor', () => {
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTableRow[]>([])
   const selectedSteps = ref<ProgramStep[]>([])
+  const allStepExpanded = ref<boolean>(false)
   const isLoading = ref<boolean>(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
   let lastStepId = 0
   let lastCommandId = 0
-  const allStepExpanded = ref<boolean>(false)
 
   const { $i18n } = useNuxtApp()
   const { t, locale, messages } = $i18n
   const route = useRoute()
+  const kc = useKeycloak()
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError, notifyWarning } = useNotify()
-  const kc = useKeycloak()
 
   const isTonello = computed(() => machine.value.tbbModel === 'Tonello')
 
@@ -121,7 +121,7 @@ export const useEditorStore = defineStore('editor', () => {
    */
   function createEmptyCommand(): ProgramStepCommand {
     return {
-      commandId: lastCommandId++,
+      commandId: lastCommandId,
       commandNo: null!,
       parameters: [] as ParameterItem[],
       ioList: [] as ioListItem[],
@@ -200,7 +200,8 @@ export const useEditorStore = defineStore('editor', () => {
     program.value.steps.splice(stepIndex, 0, newStep)
 
     // Seçim ve kaydırma işlemleri
-    selectedSteps.value = [program.value.steps[stepIndex]]
+    const step = program.value.steps[stepIndex]
+    selectedSteps.value = [step]
     nextTick(() => {
       scrollPage(step.stepId, true)
     })
@@ -459,7 +460,7 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Belirtilen adım indeksine göre adımı siler.
+   * Belirtilen adım id'ye göre adımı siler.
    * Eğer indeks belirtilmezse, seçili adımlar üzerinden silme işlemi yapılır.
    *
    * @param {number} [stepId] - (İsteğe bağlı) Silinecek adımın ID'sidir.

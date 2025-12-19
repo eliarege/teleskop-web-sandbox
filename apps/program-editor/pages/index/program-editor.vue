@@ -4,7 +4,8 @@ import ProgramEditor from '~/components/ProgramEditor.vue'
 import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
-import type { ContextBarButtons, Machine, ProcessType, Program } from '~/shared/types'
+import type { ContextBarButtons } from '~/shared/types'
+import { contextMenuStore } from '~/utils/context-menu'
 
 const editor = useEditorStore()
 const form = ref<QForm>()
