@@ -1,19 +1,19 @@
-import { pino, type LoggerOptions } from 'pino'
+import { type LoggerOptions, pino } from 'pino'
 import type { PrettyOptions } from 'pino-pretty'
 import type { H3Event } from 'h3'
 
 const config = useRuntimeConfig()
 
 const loggerOptions: LoggerOptions = {
-  level: config.logLevel || 'info'
+  level: config.logLevel || 'info',
 }
 
 if (import.meta.dev) {
-  loggerOptions.transport =  {
+  loggerOptions.transport = {
     target: 'pino-pretty',
     options: {
       ignore: 'pid,hostname',
-    } as PrettyOptions
+    } as PrettyOptions,
   }
 }
 

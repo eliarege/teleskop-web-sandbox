@@ -81,5 +81,10 @@
     "retry": "Yeniden dene",
     "reconnect": "Yeniden bağlan",
     "disconnected": "Bağlantı kesildi."
+  },
+  "operation": {
+    "completedSuccessfully": "İşlem başarıyla tamamlandı",
+    "abortedByUser": "İşlem kullanıcı tarafından iptal edildi",
+    "connectionError": "Bağlantı hatası: {message}"
   }
 }

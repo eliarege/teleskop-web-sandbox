@@ -81,5 +81,10 @@
     "retry": "Retry",
     "reconnect": "Reconnect",
     "disconnected": "Disconnected"
+  },
+  "operation": {
+    "completedSuccessfully": "Operation completed successfully",
+    "abortedByUser": "Operation aborted by user",
+    "connectionError": "Connection error: {message}"
   }
 }
