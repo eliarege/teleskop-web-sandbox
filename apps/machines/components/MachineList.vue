@@ -13,6 +13,7 @@ const selected = defineModel('selected', {
   default: () => [],
   required: true,
 })
+const emit = defineEmits(['dblClick'])
 
 const { t } = useI18n()
 const kc = useKeycloak()
@@ -176,7 +177,7 @@ function onRowClick(row: Machine, isContextMenu = false) {
 }
 function onDblClick(row: Machine) {
   selected.value = [row]
-  showMimic.value = true
+  emit('dblClick', row)
 }
 function selectAll() {
   if (selected.value.length === props.rows.length) {
