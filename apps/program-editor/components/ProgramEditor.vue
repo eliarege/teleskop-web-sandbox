@@ -47,21 +47,21 @@ function onDragEnd(event: SortableEvent) {
     @end="onDragEnd"
     @click="editor.selectedSteps = []"
   >
-    <template #item="{ index, element }: { index: number; element: ProgramStep }">
+    <template #item="{ index, element: step }: { index: number; element: ProgramStep }">
       <QItem
         dense
         class="program-step"
-        :class="{ __selected: editor.isStepSelected(element.stepId) }"
+        :class="{ __selected: editor.isStepSelected(step.stepId) }"
         @click.stop
       >
-        <QItemSection side @click.stop="editor.selectStep($event.ctrlKey, index)">
+        <QItemSection side @click.stop="editor.selectStep($event.ctrlKey, step.stepId)">
           <QItemLabel class="w-5">
             {{ index + 1 }}
           </QItemLabel>
         </QItemSection>
 
-        <QItemSection class="pl-2" @click.stop="editor.selectStep($event.ctrlKey, index)">
-          <div :id="`step-${index}`">
+        <QItemSection class="pl-2" @click.stop="editor.selectStep($event.ctrlKey, step.stepId)">
+          <div :id="`step-${step.stepId}`">
             <ProgramStepForm :path="`steps.${index}`" />
           </div>
         </QItemSection>

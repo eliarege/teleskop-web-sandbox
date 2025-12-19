@@ -891,18 +891,16 @@ export const useEditorStore = defineStore('editor', () => {
    * Eğer `ctrl` tuşu basılı değilse, yalnızca bir adım seçilir.
    *
    * @param {boolean} ctrlKey - `ctrl` tuşu basılmış mı?.
-   * @param {number} stepIndex - Seçilen adımın indexi.
+   * @param {number} stepId - Seçilen adımın id'si.
    *
    * @returns {void} Fonksiyon herhangi bir değer döndürmez.
    *
    * @description Bu fonksiyon, verilen adım indeksine göre ilgili adımı seçer veya seçimden çıkarır. Seçilen adımlar `selectedSteps` dizisinde saklanır ve sıralanır.
    */
-  function selectStep(ctrlKey: boolean, stepIndex: number): void {
-    const step = program.value.steps[stepIndex]
+  function selectStep(ctrlKey: boolean, stepId: number): void {
+    const step = program.value.steps.find(step => step.stepId === stepId)
     if (!step)
       return
-
-    const stepId = step.stepId
 
     if (ctrlKey && !isStepSelected(stepId)) {
       selectedSteps.value.push(step)
@@ -914,8 +912,9 @@ export const useEditorStore = defineStore('editor', () => {
       })
     } else if (ctrlKey && isStepSelected(stepId))
       selectedSteps.value = selectedSteps.value.filter(step => step.stepId !== stepId)
-    else
-      selectedSteps.value = [program.value.steps.find(step => step.stepId === stepId)!]
+    else {
+      selectedSteps.value = [step]
+    }
 
     focusCommandSelector(stepId)
   }
