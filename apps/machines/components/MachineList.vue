@@ -174,6 +174,10 @@ function onRowClick(row: Machine, isContextMenu = false) {
     // }
   }
 }
+function onDblClick(row: Machine) {
+  selected.value = [row]
+  showMimic.value = true
+}
 function selectAll() {
   if (selected.value.length === props.rows.length) {
     selected.value = []
@@ -236,6 +240,7 @@ function selectAll() {
             v-for="col in bodyProps.cols"
             :key="col.name"
             :props="bodyProps"
+            @dblclick="onDblClick(bodyProps.row)"
           >
             <div v-if="typeof col.value === 'boolean'">
               <TwIcon
