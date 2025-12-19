@@ -228,10 +228,9 @@ onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
-  if (!isActiveElementEditable()) {
-    event.preventDefault()
-    editor.deleteStep()
-  }
+  event.preventDefault()
+
+  editor.deleteStep()
 })
 
 onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
@@ -239,9 +238,20 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
     event.preventDefault()
   }
 
-  const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
-  if (currentIndex > 0)
-    editor.selectStep(false, currentIndex - 1)
+  const selectedStep = editor.selectedSteps[0]
+  if (!selectedStep)
+    return
+
+  const steps = editor.program.steps
+  const currentIndex = steps.findIndex(s => s.stepId === selectedStep.stepId)
+  if (currentIndex <= 0)
+    return
+
+  const previousStep = steps[currentIndex - 1]
+  if (!previousStep)
+    return
+
+  editor.selectStep(false, previousStep.stepId)
 })
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
@@ -249,9 +259,20 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
     event.preventDefault()
   }
 
-  const currentIndex = editor.program.steps.findIndex(x => x.stepId === editor.selectedSteps[0]?.stepId)
-  if (currentIndex < editor.program.steps.length - 1)
-    editor.selectStep(false, currentIndex + 1)
+  const selectedStep = editor.selectedSteps[0]
+  if (!selectedStep)
+    return
+
+  const steps = editor.program.steps
+  const currentIndex = steps.findIndex(s => s.stepId === selectedStep.stepId)
+  if (currentIndex === -1 || currentIndex >= steps.length - 1)
+    return
+
+  const nextStep = steps[currentIndex + 1]
+  if (!nextStep)
+    return
+
+  editor.selectStep(false, nextStep.stepId)
 })
 
 onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
@@ -265,21 +286,21 @@ onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
 })
 
 onKeyStroke(['A', 'a'], (event: KeyboardEvent) => {
-  if (ctrl.value && !isActiveElementEditable()) {
+  if (ctrl.value) {
     event.preventDefault()
     editor.selectedSteps = editor.program.steps
   }
 })
 
 onKeyStroke(['C', 'c'], (event: KeyboardEvent) => {
-  if (ctrl.value && !isActiveElementEditable()) {
+  if (ctrl.value) {
     event.preventDefault()
     contextMenuStore.copyStep()
   }
 })
 
 onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
-  if (ctrl.value && !isActiveElementEditable()) {
+  if (ctrl.value) {
     event.preventDefault()
     contextMenuStore.pasteStep()
   }
