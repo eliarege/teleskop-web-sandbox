@@ -202,7 +202,7 @@ export const useEditorStore = defineStore('editor', () => {
     // Seçim ve kaydırma işlemleri
     selectedSteps.value = [program.value.steps[stepIndex]]
     nextTick(() => {
-      scrollPage(stepIndex, true)
+      scrollPage(step.stepId, true)
     })
   }
 
@@ -248,7 +248,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Bu fonksiyon, belirtilen `stepIndex` ile adımın sayfadaki doğru konumda görünür olmasını sağlamak için
    * sayfayı kaydırır. Ayrıca, adımın genişletilmesi gerekiyorsa, genişleme butonuna tıklayarak adımın içeriğini açar.
    *
-   * @param {number} stepIndex - Görünür yapmak istenen adımın indeksini belirtir.
+   * @param {number} stepId - Görünür yapmak istenen adımın idsini belirtir.
    * @param {boolean} [isExpanded] - Eğer adımın genişletilmesi isteniyorsa `true` olmalıdır. Varsayılan değer `undefined` olup, genişletme işlemi yapılmaz.
    *
    * @returns {void}
@@ -256,8 +256,8 @@ export const useEditorStore = defineStore('editor', () => {
    * @description Bu fonksiyon, belirtilen adımın sayfadaki görünür olmasını sağlar ve gerektiğinde o adımın
    * genişletilmesini sağlar. Genişletilmek istenen adımda expand butonunu bulunur ve butona tıklanır.
    */
-  function scrollPage(stepIndex: number, isExpanded?: boolean): void {
-    const el = document.getElementById(`step-${stepIndex}`)
+  function scrollPage(stepId: number, isExpanded?: boolean): void {
+    const el = document.getElementById(`step-${stepId}`)
     if (!el)
       return
 
@@ -303,7 +303,7 @@ export const useEditorStore = defineStore('editor', () => {
     parallelCommands.push(emptyCommand)
 
     nextTick(() => {
-      scrollPage(targetIndex, true)
+      scrollPage(program.value.steps[stepIndex].stepId, true)
     })
   }
 
@@ -408,10 +408,9 @@ export const useEditorStore = defineStore('editor', () => {
   async function onSubmit(newProgram?: Program, isNewVersion?: boolean): Promise<boolean> {
     const firstId = errorIds.value.values().next().value
     if (firstId) {
-      const stepId = firstId.split('-')[0]
-      const stepIndex = getStepIndex(Number(stepId))
+      const stepId = Number(firstId.split('-')[0])
 
-      scrollPage(Number(stepIndex), true)
+      scrollPage(stepId, true)
       notifyError(t('saveProgram.incorrect'))
       return false
     } else {
