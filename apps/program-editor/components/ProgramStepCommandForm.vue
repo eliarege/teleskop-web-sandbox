@@ -7,6 +7,7 @@ import type { CommandError, CommandIO, CommandParameter, ProgramStepCommand } fr
 
 const props = defineProps<{
   path: string
+  stepId: number
   expanded?: boolean
   commandError?: CommandError
 }>()
@@ -20,9 +21,11 @@ const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
 const machineCommand = computed(() => {
   if (!isDef(programCommand.commandNo))
     return { editableParameters: [], selectableIOs: [] }
-  const command = editor.machine?.commands.get(programCommand.commandNo)
+
+  const command = editor.machine.commands.get(programCommand.commandNo)
   const editableParameters = command?.parameters.filter((parameter: CommandParameter) => parameter.editable || parameter.useFormula) || []
   const selectableIOs = command?.ioList.filter((io: CommandIO) => io.selectable) || []
+
   return { editableParameters, selectableIOs }
 })
 
@@ -45,7 +48,7 @@ const groupedParameters = computed(() => {
 })
 
 const isParallelCommand = computed(() => props.path.includes('.parallelCommands.'))
-const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const stepIndex = computed(() => editor.program.steps.findIndex(s => s.stepId === props.stepId))
 const isLastStep = computed(() => stepIndex.value === editor.program.steps.length - 1)
 
 function handleParameterBlur(parameterIndex: number, oldValue: number | string, _newValue: number | string) {
@@ -121,7 +124,7 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
         <!-- Command -->
         <div class="flex">
           <div class="pb-1 pr-2">
-            <CommandSelector :path="props.path" />
+            <CommandSelector :path="props.path" :step-id="stepId" />
           </div>
 
           <!-- Parameters & IOs -->
@@ -136,6 +139,7 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
                 v-for="item in group"
                 :key="`pr-${programCommand.commandNo}-${item.originalIndex}`"
                 :path="`${props.path}.parameters.${item.originalIndex}`"
+                :step-id="stepId"
                 :parameter="item.param"
                 :command-no="programCommand.commandNo!"
                 class="parameter-input"
@@ -147,6 +151,7 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
               v-for="(io, index) in machineCommand.selectableIOs"
               :key="`io-${programCommand.commandNo}-${index}`"
               :path="`${props.path}.ioList.${index}`"
+              :step-id="stepId"
               :io="io"
               :command-no="programCommand.commandNo!"
               :io-error="props.commandError?.messages.find(m => m.ioIndex === io.index)"

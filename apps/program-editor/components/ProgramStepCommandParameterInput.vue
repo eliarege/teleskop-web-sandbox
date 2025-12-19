@@ -5,6 +5,7 @@ import type { CommandFormula, CommandParameter, ParameterItem, ParameterSelectio
 
 const props = defineProps<{
   path: string
+  stepId: number
   parameter: CommandParameter
   commandNo: number
   parameterError?: { type: string, parameterIndex?: number, parameterName?: string }
@@ -83,7 +84,7 @@ const isValueInRange = computed(() => {
   return value >= props.parameter.minValue && value <= props.parameter.maxValue
 })
 
-const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const stepIndex = computed(() => editor.program.steps.findIndex(s => s.stepId === props.stepId))
 
 function handleFocus() {
   const step = editor.program.steps[stepIndex.value]

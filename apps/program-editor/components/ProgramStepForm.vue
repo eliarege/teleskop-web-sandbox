@@ -24,9 +24,8 @@ const stepIcons = computed(() => {
 
   return [mainIcon, ...parallelIcons].filter(icon => isDef(icon))
 })
-function isLastStep(index: number): boolean {
-  return editor.program.steps.length - 1 === index
-}
+
+const isLastStep = computed(() => editor.program.steps.length - 1 === stepIndex.value)
 
 const expanded = ref<boolean>(
   errorStore.getStepErrors(editor.machine.id, editor.program.programNo, step.stepId).length > 0
@@ -51,7 +50,7 @@ const sortableOptions: SortableOptions = {
 function deleteParallelStep(stepIndex: number, index: number): void {
   editor.selectedSteps = [editor.program.steps[stepIndex]]
   const settings = useProgramWriteSettings()
-  if (!isLastStep(stepIndex) && settings.value.removeParallelCommandFromOtherSteps) {
+  if (!isLastStep.value && settings.value.removeParallelCommandFromOtherSteps) {
     const parallelStep = editor.program.steps[stepIndex].parallelCommands[index]
     $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', parallelStep.commandNo)
   }
@@ -102,6 +101,7 @@ function removeError(commandId: number) {
       <ProgramStepCommandForm
         class="flex-1"
         :path="`${props.path}.mainCommand`"
+        :step-id="step.stepId"
         :expanded
         :command-error="getCommandError(step.mainCommand.commandId)"
       />
@@ -113,10 +113,10 @@ function removeError(commandId: number) {
       class="e-border-color border-(t x-0) pl-16"
     >
       <Sortable
-        :list="step.parallelCommands"
-        item-key="commandId"
-        :options="sortableOptions"
         class="parallel-commands"
+        item-key="commandId"
+        :list="step.parallelCommands"
+        :options="sortableOptions"
         :data-index="stepIndex"
       >
         <template #header>
@@ -133,6 +133,7 @@ function removeError(commandId: number) {
             <div>
               <ProgramStepCommandForm
                 :path="`${props.path}.parallelCommands.${index}`"
+                :step-id="step.stepId"
                 :expanded
                 :command-error="getCommandError(step.parallelCommands[index].commandId)"
               />

@@ -70,7 +70,7 @@ function onDragEnd(event: SortableEvent) {
           <QIcon
             class="icon absolute top-2 cursor-pointer"
             name="close"
-            @click.stop="editor.deleteStep(element.stepId)"
+            @click.stop="editor.deleteStep(step.stepId)"
           />
           <QIcon class="icon command-drag-handle mt-7 cursor-move" name="drag_handle" />
         </QItemSection>

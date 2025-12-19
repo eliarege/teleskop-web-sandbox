@@ -3,6 +3,7 @@ import type { CommandIO, CommandIOSelection, ioListItem } from '~/shared/types'
 
 const props = defineProps<{
   path: string
+  stepId: number
   io: CommandIO
   commandNo: number
   ioError?: { type: string, ioIndex?: number, ioName?: string }
@@ -43,7 +44,7 @@ const selectedOptionsText = computed(() => {
   return selected.length > 0 ? selected.join(', ').slice(0, 24) : t('noSelection')
 })
 
-const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const stepIndex = computed(() => editor.program.steps.findIndex(s => s.stepId === props.stepId))
 
 function handleFocus() {
   const step = editor.program.steps[stepIndex.value]
