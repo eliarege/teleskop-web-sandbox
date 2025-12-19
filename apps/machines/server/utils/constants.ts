@@ -1,7 +1,19 @@
-export const tbbModelOptions = ['TBB6500', 'TBB7000', 'T7000/T710-PLC', 'T712', 'T7500', 'T7700', 'T7701ex', 'T711ex', 'Tonello']
+export const tbbModelOptions = [
+  'TBB6500',
+  'TBB7000',
+  'T7000/T710-PLC',
+  'T712',
+  'T7500',
+  'T7700',
+  'T7701ex',
+  'T711ex',
+  'Tonello',
+  'T915',
+  'T910',
+  'T907',
+]
 export const steamUnitOptions = [
   '---',
-
   'Kg',
   'm/dk',
   'bar',
