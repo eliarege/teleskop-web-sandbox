@@ -13,7 +13,6 @@ export const tbbModelOptions = [
   'T907',
 ]
 export const steamUnitOptions = [
-  '---',
   'Kg',
   'm/dk',
   'bar',
@@ -50,4 +49,5 @@ export const steamUnitOptions = [
   'pH',
   'mbar',
   'lt/dk',
+  '---',
 ]
