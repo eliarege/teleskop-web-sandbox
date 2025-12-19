@@ -17,7 +17,7 @@ const errorStore = useErrorStore()
 const { $commandManager } = useNuxtApp()
 
 const step: ProgramStep = editor.getPathElement(props.path)
-const stepIndex = computed(() => Number(props.path.split('.').pop()))
+const stepIndex = computed(() => editor.getStepIndex(step.stepId))
 const stepIcons = computed(() => {
   const mainIcon = editor.getCommandIcon(step.mainCommand.commandNo)
   const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getCommandIcon(commandNo))

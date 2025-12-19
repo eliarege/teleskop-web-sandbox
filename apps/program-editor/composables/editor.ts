@@ -217,29 +217,21 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function addStepBeforeSelection(commandNo: number | null): void {
-    if (selectedSteps.value.length === 0) {
-      addStep(commandNo, program.value.steps.length)
-    } else {
-      addStep(commandNo, getStepIndex())
-    }
+    const stepIndex = selectedSteps.value.length
+      ? getStepIndex(selectedSteps.value[0].stepId)
+      : program.value.steps.length
+
+    addStep(commandNo, stepIndex)
   }
 
   /**
    * Belirtilen veya seçilen adımın indeksini döndürür.
    *
-   * Bu fonksiyon, opsiyonel olarak verilen bir `stepId` değerine göre programın adımlarında arama yapar
-   * ve eşleşen adımın indeksini döndürür. Eğer `stepId` verilmemişse, seçilen adım (`selectedSteps`) kullanılır.
-   * Hiçbir adım bulunamazsa, programdaki son adımın indeksini döndürür.
-   *
-   * @param {number} [stepId] - İsteğe bağlı olarak kontrol edilecek adım kimliği.
-   * @returns {number} Adımın indeksini veya programdaki son adımın indeksini döndürür.
+   * @param {number} stepId - Aranacak adımın IDsini belirtir.
+   * @returns {number} Adımın indeksini döndürür.
    */
-  function getStepIndex(stepId?: number): number {
-    const selectedStepId = stepId ?? selectedSteps.value[0]?.stepId
-    const mainIndex = program.value.steps.findIndex(step => step.stepId === selectedStepId)
-    const targetIndex = mainIndex >= 0 ? mainIndex : program.value.steps.length
-
-    return targetIndex
+  function getStepIndex(stepId: number): number {
+    return program.value.steps.findIndex(step => step.stepId === stepId)
   }
 
   /**
@@ -290,16 +282,18 @@ export const useEditorStore = defineStore('editor', () => {
    * Eğer seçilen adım yoksa, paralel komut programın sonuna eklenir.
    */
   function newParallelStep(): void {
-    const targetIndex = getStepIndex()
+    const stepIndex = selectedSteps.value.length
+      ? getStepIndex(selectedSteps.value[0].stepId)
+      : program.value.steps.length
 
-    const parallelCommands = program.value.steps[targetIndex]?.parallelCommands
+    const parallelCommands = program.value.steps[stepIndex].parallelCommands
     if (!parallelCommands) {
       notifyWarning(t('warning.mainStepNotFound'))
       return
     }
 
     const emptyCommand = createEmptyCommand()
-    emptyCommand.commandId = generateParallelStepId(targetIndex)
+    emptyCommand.commandId = generateParallelStepId(stepIndex)
     parallelCommands.push(emptyCommand)
 
     nextTick(() => {
