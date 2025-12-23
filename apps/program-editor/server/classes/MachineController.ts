@@ -1736,9 +1736,12 @@ export class MachineController {
     if (!config.dmexchangeEnabled)
       return
 
-    await ensureTreatmentGroups()
-
     const settings = await fetchTeleskopSettings()
+
+    if (!settings.treatmentSettings.optimizedEnable)
+      return
+
+    await ensureTreatmentGroups()
 
     const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
       return {
