@@ -32,21 +32,29 @@ const rules = [
   (value: number | string) => (Number(value) >= props.parameter.minValue && Number(value) <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
 ]
 
-const options = computed(() => {
-  const selections = props.parameter.selections ?? []
-  return selections.map((selection: ParameterSelections) => ({
-    name: mt(selection.name, editor.machine.id),
-    value: selection.value,
-  }))
-})
+interface Option {
+  label: string
+  value: number | string
+  formula?: string
+}
 
-const formulaOptions = computed(() =>
-  editor.machine.commandFormulas.filter((f: CommandFormula) => f.commandNo === props.commandNo).map((f: CommandFormula) => ({
-    label: f.formulaName,
-    value: f.formulaId,
-    formula: f.formula,
-  })),
-)
+const options = computed<Option[]>(() => {
+  const selections = props.parameter.selections ?? []
+  if (props.parameter.type === 'SELECTABLE_FORMULA') {
+    return editor.machine.commandFormulas
+      .filter((f: CommandFormula) => f.commandNo === props.commandNo)
+      .map((f: CommandFormula) => ({
+        label: f.formulaName,
+        value: f.formulaId,
+        formula: f.formula,
+      }))
+  } else {
+    return selections.map((selection: ParameterSelections) => ({
+      label: mt(selection.name, editor.machine.id),
+      value: selection.value,
+    }))
+  }
+})
 
 const isOptimizable = computed(() => {
   return editor.teleskopSettings.treatmentSettings.optimizedEnable && editor.machine.treatmentParameters.find((tp) => {
@@ -56,6 +64,18 @@ const isOptimizable = computed(() => {
 
 const labelLength = computed(() => {
   return props.parameter.name ? mt(props.parameter.name, editor.machine.id).length : 0
+})
+
+const selectTypes = ['SELECT', 'SELECT_ADDITIVE', 'SELECTABLE_FORMULA']
+
+const valueLength = computed(() => {
+  const isSelect = selectTypes.includes(props.parameter.type)
+  if (isSelect) {
+    const currentOption = options.value.find(opt => opt.value === model.value)
+    return currentOption ? currentOption.label.length : 0
+  } else {
+    return String(model.value).length
+  }
 })
 
 const isValueInRange = computed(() => {
@@ -124,8 +144,8 @@ function handleBlur() {
         :format="parameter.format"
         outlined
         dense
-        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
-        class="text-3 dynamic-min-width"
+        :style="{ '--q-label-length': labelLength }"
+        class="text-3 dynamic-width"
         @input-blur="handleBlur"
         @focus="handleFocus"
       >
@@ -146,15 +166,14 @@ function handleBlur() {
         v-model="model"
         :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
         :options="options"
-        option-label="name"
         option-value="value"
         options-dense
         map-options
         emit-value
         outlined
         dense
-        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
-        class="text-3 q-select-nowrap dynamic-min-width"
+        :style="{ '--q-label-length': labelLength, '--q-value-length': valueLength }"
+        class="text-3 q-select-nowrap dynamic-width"
         @focus="handleFocus"
       />
     </template>
@@ -163,7 +182,7 @@ function handleBlur() {
       <QSelect
         v-model="model"
         :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
-        :options="formulaOptions"
+        :options="options"
         :option-label="(f) => f.label?.trim().slice(0, 15)"
         option-value="value"
         options-dense
@@ -171,8 +190,8 @@ function handleBlur() {
         emit-value
         outlined
         dense
-        :style="{ 'maxWidth': '150px', '--q-label-length': labelLength }"
-        class="text-3 q-select-nowrap dynamic-min-width"
+        :style="{ '--q-label-length': labelLength, '--q-value-length': valueLength }"
+        class="text-3 q-select-nowrap dynamic-width"
         @focus="handleFocus"
       >
         <template #option="scope">
@@ -193,7 +212,7 @@ function handleBlur() {
         </template>
       </QSelect>
       <QTooltip>
-        {{ formulaOptions.find((f) => f.value === model)?.formula }}
+        {{ options.find((f) => f.value === model)?.formula }}
       </QTooltip>
     </template>
 
@@ -213,8 +232,9 @@ function handleBlur() {
   white-space: nowrap;
 }
 
-.dynamic-min-width {
-  min-width: calc(var(--q-label-length) * 0.6em + 3rem);
+.dynamic-width {
+  min-width: calc(var(--q-label-length, 1) * 0.6em + 3rem);
+  max-width: max(150px, calc(var(--q-value-length, 0) * 1em + 3rem));
 }
 </style>
 
