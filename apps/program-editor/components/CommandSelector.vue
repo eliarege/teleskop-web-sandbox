@@ -142,7 +142,7 @@ function handleFocus() {
       auto-close
       outlined
       filled
-      prevent-down-when-closed
+      disable-down-open-menu
       @update:model-value="updateStepCommand"
       @focus="handleFocus"
     >
