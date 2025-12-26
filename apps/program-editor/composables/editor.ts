@@ -285,7 +285,7 @@ export const useEditorStore = defineStore('editor', () => {
   function newParallelStep(): void {
     const stepIndex = selectedSteps.value.length
       ? getStepIndex(selectedSteps.value[0].stepId)
-      : program.value.steps.length
+      : program.value.steps.length - 1
 
     const parallelCommands = program.value.steps[stepIndex].parallelCommands
     if (!parallelCommands) {

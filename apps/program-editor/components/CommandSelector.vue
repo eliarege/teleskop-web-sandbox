@@ -141,6 +141,7 @@ function handleFocus() {
       auto-close
       outlined
       filled
+      dense
       disable-down-open-menu
       @update:model-value="updateStepCommand"
       @focus="handleFocus"
