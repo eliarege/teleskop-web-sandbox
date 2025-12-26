@@ -9,7 +9,22 @@ const emit = defineEmits(['close', 'addBatchParams'])
 
 const { t } = useI18n()
 
-const selectedMachine = ref<Machine>()
+const selectedMachine = ref<Machine | undefined>()
+
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => ({ selectedMachine: selectedMachine.value }),
+  setState: (state) => {
+    selectedMachine.value = state?.selectedMachine
+  },
+  isOpen: () => props.show,
+})
 
 const { data: machines } = useAuthFetch('/api/machines/machines', {
   default: () => [],
@@ -28,13 +43,19 @@ const { data: batchParameters } = useAuthFetch('/api/starting-parameter-types/st
 async function importAllParameters() {
   if (selectedMachine.value && batchParameters.value.length > 0) {
     emit('addBatchParams', batchParameters.value)
+    markSaved()
   }
+}
+
+function handleCancel() {
+  requestClose(() => emit('close'))
 }
 </script>
 
 <template>
   <q-dialog
     :model-value="props.show"
+    :persistent="hasChanges"
     @hide="emit('close')"
   >
     <q-card
@@ -45,17 +66,16 @@ async function importAllParameters() {
           name="close"
           class="flex justify-end w-full mb-4 cursor-pointer"
           size="1.5em"
-          @click="$emit('close')"
+          @click="handleCancel"
         />
       </q-card-section>
       <q-card-section class="flex flex-col gap-8">
         <q-select
-          :model-value="selectedMachine"
+          v-model="selectedMachine"
           :options="machines"
           option-label="machineCode"
           :label="t('machine')"
           filled
-          @update:model-value="(machine) => selectedMachine = machine"
         />
 
         <div v-if="selectedMachine">
@@ -85,7 +105,7 @@ async function importAllParameters() {
       <q-card-actions align="right" class="m-4">
         <q-btn
           :label="t('cancel')"
-          @click="emit('close')"
+          @click="handleCancel"
         />
         <q-btn
           :label="t('importAllParameters')"
@@ -96,6 +116,17 @@ async function importAllParameters() {
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>
 
 <style scoped>

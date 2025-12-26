@@ -231,6 +231,12 @@
   "tank3Dosage1": "Tank 3 Dozaj 1 Komutları",
   "tank3Dosage2": "Tank 3 Dozaj 2 Komutları",
   "cancel": "İptal",
+  "unsavedChanges": {
+    "title": "Kaydedilmemiş Değişiklikler",
+    "message": "Kaydedilmemiş değişiklikleriniz var. Kaydetmeden çıkmak istediğinize emin misiniz?",
+    "discard": "Değişiklikleri At",
+    "continue": "Düzenlemeye Devam Et"
+  },
   "addNewReason": "Yeni sebep Ekle",
   "editNewReason": "Sebep Düzenle",
   "reasons": "Sebepler",

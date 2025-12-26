@@ -13,12 +13,35 @@ const kc = useKeycloak()
 
 const { t } = useI18n()
 
-const selected = ref<Partial<TreatmentMachineGroup>>({
-  id: -1,
-  groupName: '',
-})
+function createEmptyGroup() {
+  return {
+    id: -1,
+    groupName: '',
+  }
+}
+
+const selected = ref<Partial<TreatmentMachineGroup>>(createEmptyGroup())
 
 const selectedGroupId = ref(-1)
+
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => ({
+    selected: selected.value,
+    selectedGroupId: selectedGroupId.value,
+  }),
+  setState: (state) => {
+    selected.value = state?.selected ? { ...state.selected } : createEmptyGroup()
+    selectedGroupId.value = state?.selectedGroupId ?? -1
+  },
+  isOpen: () => props.show,
+})
 
 const { data: machineGroups, refresh: refreshGroups } = useAuthFetch('/api/treatment-parameters/machine-groups', {
   default: () => [],
@@ -81,11 +104,10 @@ async function handleAdd() {
       body: selected.value,
     })
     await refreshGroups()
-    selected.value = {
-      id: -1,
-      groupName: '',
-    }
+    selected.value = createEmptyGroup()
+    selectedGroupId.value = -1
     notifySuccess(t('GROUP_CREATED_SUCCESSFULLY'))
+    markSaved()
   } catch (error: any) {
     if (error.statusCode === 409) {
       notifyError(t('GROUP_ALREADY_EXISTS'))
@@ -102,6 +124,7 @@ async function handleEdit() {
     })
     await refreshGroups()
     notifySuccess(t('GROUP_UPDATED_SUCCESSFULLY'))
+    markSaved()
   } catch (error: any) {
     if (error.statusCode === 409) {
       notifyError(t('GROUP_ALREADY_EXISTS'))
@@ -117,11 +140,10 @@ async function handleDelete() {
       body: selected.value,
     })
     await refreshGroups()
-    selected.value = {
-      id: -1,
-      groupName: '',
-    }
+    selected.value = createEmptyGroup()
+    selectedGroupId.value = -1
     notifySuccess(t('GROUP_DELETED_SUCCESSFULLY'))
+    markSaved()
   } catch (error: any) {
     if (error.statusCode === 404) {
       notifyError(t('GROUP_NOT_FOUND'))
@@ -133,12 +155,18 @@ async function handleDelete() {
 async function handleGroupClick(obj: TreatmentMachineGroup) {
   selected.value = obj
   selectedGroupId.value = obj.id
+  markSaved()
+}
+
+function handleCancel() {
+  requestClose(() => emit('close'))
 }
 </script>
 
 <template>
   <q-dialog
     :model-value="props.show"
+    :persistent="hasChanges"
     @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
@@ -167,6 +195,13 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
               :label="t('delete')"
               :disable="selected.id === -1"
               @click="handleDelete"
+            />
+            <q-btn
+              no-caps
+              :label="t('cancel')"
+              outline
+              color="secondary"
+              @click="handleCancel"
             />
           </div>
         </div>
@@ -239,6 +274,17 @@ async function handleGroupClick(obj: TreatmentMachineGroup) {
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>
 
 <style scoped>

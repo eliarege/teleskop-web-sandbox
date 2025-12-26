@@ -72,15 +72,44 @@ async function handleSubmit() {
 const showAddReasonDialog = ref(false)
 const showEditReasonDialog = ref(false)
 
-const newReasonText = ref('')
+const addReasonText = ref('')
+const editReasonText = ref('')
+
+const {
+  hasChanges: addHasChanges,
+  confirmVisible: addConfirmVisible,
+  requestClose: requestAddClose,
+  confirmDiscard: confirmAddDiscard,
+  keepEditing: keepAddEditing,
+} = useUnsavedDialogGuard({
+  getState: () => addReasonText.value,
+  setState: (state) => {
+    addReasonText.value = state || ''
+  },
+  isOpen: () => showAddReasonDialog.value,
+})
+
+const {
+  hasChanges: editHasChanges,
+  confirmVisible: editConfirmVisible,
+  requestClose: requestEditClose,
+  confirmDiscard: confirmEditDiscard,
+  keepEditing: keepEditEditing,
+} = useUnsavedDialogGuard({
+  getState: () => editReasonText.value,
+  setState: (state) => {
+    editReasonText.value = state || ''
+  },
+  isOpen: () => showEditReasonDialog.value,
+})
 async function handleAddReason() {
   try {
     await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
       method: 'POST',
-      body: { reasonText: newReasonText.value },
+      body: { reasonText: addReasonText.value },
     })
     showAddReasonDialog.value = false
-    newReasonText.value = ''
+    addReasonText.value = ''
     await refreshTimeoutReasons()
     notifySuccess(t('addedSuccessfully'))
   } catch (error: any) {
@@ -92,7 +121,7 @@ function handleEditButton() {
   if (timeoutReasons.value && timeoutReasons.value.length) {
     const reasonText = timeoutReasons.value.find(d => d.id === selectedReasonId.value)?.reasonText
     if (reasonText) {
-      newReasonText.value = reasonText
+      editReasonText.value = reasonText
       showEditReasonDialog.value = true
     }
   }
@@ -102,16 +131,28 @@ async function handleEditReason() {
   try {
     await kc.fetch('/api/command-timeout-reasons/command-timeout-reason', {
       method: 'PUT',
-      body: { reasonText: newReasonText.value, id: selectedReasonId.value },
+      body: { reasonText: editReasonText.value, id: selectedReasonId.value },
     })
     showEditReasonDialog.value = false
-    newReasonText.value = ''
+    editReasonText.value = ''
     await refreshTimeoutReasons()
     notifySuccess(t('editedSuccessfully'))
   } catch (error: any) {
     const errorMessage = error?.data?.statusMessage || 'UPDATE_OPERATION_FAILED'
     notifyError(t(errorMessage))
   }
+}
+
+function handleAddCancel() {
+  requestAddClose(() => {
+    showAddReasonDialog.value = false
+  })
+}
+
+function handleEditCancel() {
+  requestEditClose(() => {
+    showEditReasonDialog.value = false
+  })
 }
 
 async function handleDeleteReason() {
@@ -170,11 +211,15 @@ const contextMenuOptions = computed(() => [
       target=".q-list"
       @click="(option) => option.onClick(selectedMachineId)"
     />
-    <q-dialog :model-value="showAddReasonDialog" @hide="showAddReasonDialog = false">
+    <q-dialog
+      :model-value="showAddReasonDialog"
+      :persistent="addHasChanges"
+      @hide="showAddReasonDialog = false"
+    >
       <q-card>
         <q-card-section class="flex flex-col items-center">
           <q-input
-            v-model="newReasonText"
+            v-model="addReasonText"
             :label="t('addNewReason')"
             class="mb-4"
           />
@@ -184,17 +229,21 @@ const contextMenuOptions = computed(() => [
               class="mr-4"
               @click="handleAddReason()"
             />
-            <q-btn :label="t('cancel')" @click="showAddReasonDialog = false" />
+            <q-btn :label="t('cancel')" @click="handleAddCancel" />
           </div>
         </q-card-section>
       </q-card>
     </q-dialog>
 
-    <q-dialog :model-value="showEditReasonDialog" @hide="showEditReasonDialog = false">
+    <q-dialog
+      :model-value="showEditReasonDialog"
+      :persistent="editHasChanges"
+      @hide="showEditReasonDialog = false"
+    >
       <q-card>
         <q-card-section class="flex flex-col items-center">
           <q-input
-            v-model="newReasonText"
+            v-model="editReasonText"
             :label="t('editReason')"
             class="mb-4"
           />
@@ -204,11 +253,32 @@ const contextMenuOptions = computed(() => [
               class="mr-4"
               @click="handleEditReason()"
             />
-            <q-btn :label="t('cancel')" @click="showEditReasonDialog = false" />
+            <q-btn :label="t('cancel')" @click="handleEditCancel" />
           </div>
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <ConfirmDialog
+      v-model="addConfirmVisible"
+      :title="t('unsavedChanges.title')"
+      :message="t('unsavedChanges.message')"
+      :cancel-label="t('unsavedChanges.continue')"
+      :confirm-label="t('unsavedChanges.discard')"
+      confirm-color="negative"
+      @confirm="confirmAddDiscard"
+      @cancel="keepAddEditing"
+    />
+    <ConfirmDialog
+      v-model="editConfirmVisible"
+      :title="t('unsavedChanges.title')"
+      :message="t('unsavedChanges.message')"
+      :cancel-label="t('unsavedChanges.continue')"
+      :confirm-label="t('unsavedChanges.discard')"
+      confirm-color="negative"
+      @confirm="confirmEditDiscard"
+      @cancel="keepEditEditing"
+    />
 
     <div class="flex justify-end my-4 mr-4">
       <q-btn-group push>

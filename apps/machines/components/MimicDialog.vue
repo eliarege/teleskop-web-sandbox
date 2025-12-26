@@ -18,6 +18,21 @@ const tab = ref('inputs')
 const machineId = computed(() => props.selected.machineId)
 const maxReelSpeed = ref(0)
 
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => maxReelSpeed.value,
+  setState: (state) => {
+    maxReelSpeed.value = typeof state === 'number' ? state : 0
+  },
+  isOpen: () => props.show,
+})
+
 const { data: inputs } = useAuthFetch('/api/io/analog-input', {
   body: { machineId: machineId.value },
   method: 'POST',
@@ -96,12 +111,18 @@ async function handleSubmit() {
       maxReelSpeed: maxReelSpeed.value,
     },
   })
+  markSaved()
+}
+
+function handleCancel() {
+  requestClose(() => emit('close'))
 }
 </script>
 
 <template>
   <q-dialog
     :model-value="show"
+    :persistent="hasChanges"
     @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
@@ -110,7 +131,7 @@ async function handleSubmit() {
           name="close"
           class="flex justify-end w-full mb-4 cursor-pointer"
           size="1.5em"
-          @click="$emit('close')"
+          @click="handleCancel"
         />
         <q-card-section>
           <q-tabs
@@ -151,12 +172,20 @@ async function handleSubmit() {
             <q-tab-panel name="other">
               <div class="h-160 flex flex-col gap-4">
                 <q-input v-model="maxReelSpeed" :label="t('maxReelSpeed')" />
-                <q-btn
-                  :label="t('submit')"
-                  color="primary"
-                  class="w-32 self-end"
-                  @click="handleSubmit"
-                />
+                <div class="flex gap-2 self-end">
+                  <q-btn
+                    :label="t('cancel')"
+                    flat
+                    class="w-32"
+                    @click="handleCancel"
+                  />
+                  <q-btn
+                    :label="t('submit')"
+                    color="primary"
+                    class="w-32"
+                    @click="handleSubmit"
+                  />
+                </div>
               </div>
             </q-tab-panel>
           </q-tab-panels>
@@ -164,6 +193,17 @@ async function handleSubmit() {
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>
 
 <style scoped>

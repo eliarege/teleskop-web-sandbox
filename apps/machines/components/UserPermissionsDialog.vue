@@ -144,6 +144,31 @@ const user = computed(() => props.user)
 watch(user, (_newValue, _oldValue) => {
   if (props.user?.userMode && props.user?.userMode2)
     updatePermissionsFromHex(props.user?.userMode, props.user?.userMode2)
+  markSaved()
+})
+
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => ({
+    ...computePermissionHexValues(),
+    selectAll: selectAll.value,
+    controllerPermission: controllerPermission.value,
+    menuAccessPermission: menuAccessPermission.value,
+  }),
+  setState: (state) => {
+    if (state?.group1 && state?.group2)
+      updatePermissionsFromHex(state.group1, state.group2)
+    selectAll.value = state?.selectAll ?? false
+    controllerPermission.value = state?.controllerPermission ?? false
+    menuAccessPermission.value = state?.menuAccessPermission ?? false
+  },
+  isOpen: () => !!visible.value,
 })
 
 function updatePermissionsFromHex(hexStringGroup1: string, hexStringGroup2: string) {
@@ -163,26 +188,28 @@ function updatePermissionsFromHex(hexStringGroup1: string, hexStringGroup2: stri
   })
 }
 
-async function savePermissions() {
+function computePermissionHexValues() {
   let combinedPermissionValueGroup1 = 0
   let combinedPermissionValueGroup2 = 0
 
-  // Group 1
   permissionsGroup1.forEach((permission: Permission) => {
-    if (permission.value) {
+    if (permission.value)
       combinedPermissionValueGroup1 |= 1 << (permission.index)
-    }
   })
 
-  // Group 2
   permissionsGroup2.forEach((permission: Permission) => {
-    if (permission.value) {
+    if (permission.value)
       combinedPermissionValueGroup2 |= 1 << (permission.index)
-    }
   })
 
-  const hexadecimalValueGroup1 = `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`
-  const hexadecimalValueGroup2 = `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`
+  return {
+    group1: `0x${combinedPermissionValueGroup1.toString(16).padStart(8, '0')}`,
+    group2: `0x${combinedPermissionValueGroup2.toString(16).padStart(8, '0')}`,
+  }
+}
+
+async function savePermissions() {
+  const { group1: hexadecimalValueGroup1, group2: hexadecimalValueGroup2 } = computePermissionHexValues()
 
   try {
     await kc.fetch(`/api/user-definitions/${props.user?.userId}`, {
@@ -195,6 +222,7 @@ async function savePermissions() {
     })
     notifySuccess(t('userUpdatedSuccessfully'))
     visible.value = false
+    markSaved()
   } catch (err) {
     console.error(`Failed to update user permissions`, err)
     notifyError(t('user-permission-update-failed'))
@@ -221,10 +249,16 @@ function isDisabled(permission: Permission): boolean {
   }
   return false
 }
+
+function handleCancel() {
+  requestClose(() => {
+    visible.value = false
+  })
+}
 </script>
 
 <template>
-  <q-dialog v-model="visible" persistent>
+  <q-dialog v-model="visible" :persistent="hasChanges">
     <q-card style="min-width: 400px">
       <q-card-section>
         <div class="text-h6 flex">
@@ -236,7 +270,7 @@ function isDisabled(permission: Permission): boolean {
             flat
             round
             dense
-            @click="visible = false"
+            @click="handleCancel"
           />
         </div>
         <div v-if="user" class="text-h8 text-gray-6 dark:text-gray-4">
@@ -276,7 +310,7 @@ function isDisabled(permission: Permission): boolean {
           :label="t('cancel')"
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
-          @click="visible = false"
+          @click="handleCancel"
         />
         <q-btn
           :label="t('save')"
@@ -288,4 +322,15 @@ function isDisabled(permission: Permission): boolean {
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>

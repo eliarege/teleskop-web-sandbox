@@ -235,6 +235,12 @@
   "tank3Dosage1": "Tank 3 Dosage 1 Commands",
   "tank3Dosage2": "Tank 3 Dosage 2 Commands",
   "cancel": "Cancel",
+  "unsavedChanges": {
+    "title": "Unsaved Changes",
+    "message": "You have unsaved changes. Are you sure you want to discard them?",
+    "discard": "Discard Changes",
+    "continue": "Continue Editing"
+  },
   "addNewReason": "Add New Reason",
   "editNewReason": "Edit New Reason",
   "reasons": "Reasons",

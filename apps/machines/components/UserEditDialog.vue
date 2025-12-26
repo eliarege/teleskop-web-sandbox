@@ -32,17 +32,37 @@ const { notifyError } = useNotify()
 const isEdit = computed(() => !!props.user)
 const visible = defineModel<boolean>()
 
-const form = ref<UserForm>({
-  userId: undefined,
-  userName: '',
-  userSurname: '',
-  userPass: '',
-  userMode: '0x00000000',
-  userInfo: '',
-  userActive: true,
-  userDeleted: false,
-  userMode2: '0x00000000',
-  userType: 1,
+function createEmptyForm(): UserForm {
+  return {
+    userId: undefined,
+    userName: '',
+    userSurname: '',
+    userPass: '',
+    userMode: '0x00000000',
+    userInfo: '',
+    userActive: true,
+    userDeleted: false,
+    userMode2: '0x00000000',
+    userType: 1,
+  }
+}
+
+const form = ref<UserForm>(createEmptyForm())
+
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+  resetToBaseline,
+} = useUnsavedDialogGuard({
+  getState: () => form.value,
+  setState: (state) => {
+    form.value = { ...createEmptyForm(), ...(state ?? {}) }
+  },
+  isOpen: () => !!visible.value,
 })
 
 watch(
@@ -62,19 +82,10 @@ watch(
           userMode2: props.user.userMode2,
           userType: props.user.userType,
         }
+        markSaved()
       } else {
-        form.value = {
-          userId: undefined,
-          userName: '',
-          userSurname: '',
-          userPass: '',
-          userMode: '0x00000000',
-          userInfo: '',
-          userActive: true,
-          userDeleted: false,
-          userMode2: '0x00000000',
-          userType: 1,
-        }
+        form.value = createEmptyForm()
+        markSaved()
       }
     }
   },
@@ -120,10 +131,16 @@ function uniqueUserId(val: number | string) {
   const currentUserId = props.user?.userId
   return Number(val) === currentUserId || !props.existingUserIds.includes(Number(val))
 }
+
+function handleCancel() {
+  requestClose(() => {
+    visible.value = false
+  })
+}
 </script>
 
 <template>
-  <q-dialog v-model="visible" persistent>
+  <q-dialog v-model="visible" :persistent="hasChanges">
     <q-card style="min-width: 400px">
       <q-card-section>
         <div class="text-h6 flex items-center">
@@ -135,7 +152,7 @@ function uniqueUserId(val: number | string) {
             flat
             round
             dense
-            @click="visible = false"
+            @click="handleCancel"
           />
         </div>
       </q-card-section>
@@ -222,11 +239,10 @@ function uniqueUserId(val: number | string) {
 
       <q-card-actions align="right" class="q-pa-md bg-gray-1 dark:bg-dark-4">
         <q-btn
-          v-close-popup
           :label="t('cancel')"
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
-          @click="visible = false"
+          @click="handleCancel"
         />
         <q-btn
           :label="t('save')"
@@ -238,4 +254,15 @@ function uniqueUserId(val: number | string) {
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>

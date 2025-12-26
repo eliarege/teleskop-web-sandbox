@@ -37,6 +37,20 @@ const { data: commandParameters } = useAuthFetch('/api/formulas/command-paramete
 })
 
 const expression = ref('')
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => expression.value,
+  setState: (state) => {
+    expression.value = state || ''
+  },
+  isOpen: () => props.show,
+})
 const isValidExpression = ref(true)
 const result = ref(0)
 
@@ -100,6 +114,7 @@ async function handleSubmit() {
     })
     emit('refresh')
     emit('close')
+    markSaved()
   }
 }
 
@@ -110,11 +125,16 @@ expression.value = props.formula.formula?.split(/([*+/()-])/).map((str) => {
 watch(scope, () => {
   evaluateExpression()
 })
+
+function handleCancel() {
+  requestClose(() => emit('close'))
+}
 </script>
 
 <template>
   <q-dialog
     :model-value="props.show"
+    :persistent="hasChanges"
     @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
@@ -123,7 +143,7 @@ watch(scope, () => {
           name="close"
           class="flex w-full justify-end mb-4 cursor-pointer"
           size="1.5em"
-          @click="$emit('close')"
+          @click="handleCancel"
         />
         <q-input
           v-model="expression"
@@ -204,7 +224,7 @@ watch(scope, () => {
         <q-btn
           :label="t('cancel')"
           no-caps
-          @click="emit('close')"
+          @click="handleCancel"
         />
         <q-btn
           :label="t('submit')"
@@ -215,6 +235,17 @@ watch(scope, () => {
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>
 
 <style scoped>

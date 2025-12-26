@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { klona } from 'klona'
 import { changeLocale } from '@formkit/i18n'
+import { computed, ref, watch } from 'vue'
 import type { Machine } from '~/types'
 
 const props = defineProps<{
@@ -20,7 +21,37 @@ defineEmits([...useDialogPluginComponent.emits])
 
 const kc = useKeycloak()
 const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginComponent()
-const formData = ref(klona(props.initialData) as Machine)
+const formData = ref(klona(props.initialData ?? {}) as Machine)
+const guardReady = ref(props.isEdit)
+
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+} = useUnsavedDialogGuard({
+  getState: () => formData.value,
+  setState: (state) => {
+    formData.value = klona((state ?? props.initialData ?? {}) as Machine)
+  },
+  isOpen: () => guardReady.value,
+})
+
+const requiredDefaultsReady = computed(() => {
+  if (props.isEdit)
+    return true
+  const data = formData.value
+  return typeof data.inUse !== 'undefined'
+    && typeof data.steamUnit !== 'undefined'
+    && typeof data.groupId !== 'undefined'
+    && typeof data.tbbModel !== 'undefined'
+})
+
+watch(requiredDefaultsReady, (ready) => {
+  if (ready)
+    guardReady.value = true
+}, { immediate: true })
 
 const { t, locale } = useI18n()
 const { notifyError } = useNotify()
@@ -81,6 +112,10 @@ async function onSubmitForm() {
   onDialogOK(klona(formData.value))
 }
 
+function handleCancel() {
+  requestClose(() => onDialogCancel())
+}
+
 const teleskopConnectionMessage = ref({
   message: '',
   color: '',
@@ -90,29 +125,6 @@ const networkConnectionMessage = ref({
   message: '',
   color: '',
 })
-
-async function checkTeleskopConnection(formData: Machine) {
-  try {
-    teleskopConnectionMessage.value.message = t('tryingConnection')
-    teleskopConnectionMessage.value.color = ''
-    await kc.fetch('/api/sync/teleskop-connection', {
-      method: 'GET',
-      retry: false,
-      query: {
-        ip: formData.ip,
-        model: formData.tbbModel,
-      },
-    })
-    teleskopConnectionMessage.value.message = t('connection-successful')
-    teleskopConnectionMessage.value.color = 'text-green'
-  } catch (error: any) {
-    console.error(error)
-    if (error.statusCode === 500) {
-      teleskopConnectionMessage.value.message = (t('noConnectionToTeleskop'))
-      teleskopConnectionMessage.value.color = 'text-red'
-    }
-  }
-}
 
 async function checkNetworkConnection(formData: Machine) {
   try {
@@ -133,6 +145,29 @@ async function checkNetworkConnection(formData: Machine) {
     if (error.statusCode === 500) {
       networkConnectionMessage.value.message = (t('noConnectionToNetwork'))
       networkConnectionMessage.value.color = 'text-red'
+    }
+  }
+}
+
+async function checkTeleskopConnection(formData: Machine) {
+  try {
+    teleskopConnectionMessage.value.message = t('tryingConnection')
+    teleskopConnectionMessage.value.color = ''
+    await kc.fetch('/api/sync/teleskop-connection', {
+      method: 'GET',
+      retry: false,
+      query: {
+        ip: formData.ip,
+        model: formData.tbbModel,
+      },
+    })
+    teleskopConnectionMessage.value.message = t('connection-successful')
+    teleskopConnectionMessage.value.color = 'text-green'
+  } catch (error: any) {
+    console.error(error)
+    if (error.statusCode === 500) {
+      teleskopConnectionMessage.value.message = (t('noConnectionToTeleskop'))
+      teleskopConnectionMessage.value.color = 'text-red'
     }
   }
 }
@@ -177,7 +212,11 @@ async function getVersionInfo(formData: Machine) {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef" @hide="onDialogHide">
+  <q-dialog
+    ref="dialogRef"
+    :persistent="hasChanges"
+    @hide="onDialogHide"
+  >
     <q-card class="max-w-[90vw] min-w-[90vw]">
       <q-card-section class="flex">
         <div class="flex-center font-extrabold text-h6">
@@ -187,7 +226,7 @@ async function getVersionInfo(formData: Machine) {
         <q-btn
           flat
           icon="close"
-          @click="onDialogCancel"
+          @click="handleCancel"
         />
       </q-card-section>
       <q-card-section>
@@ -428,16 +467,33 @@ async function getVersionInfo(formData: Machine) {
               </div>
             </div>
             <div class="flex flex-col items-end gap-2">
-              <FormKit
-                type="submit"
-                :label="t('submit')"
-                @submit="onSubmitForm"
-              />
+              <div class="flex gap-2">
+                <q-btn
+                  flat
+                  :label="t('cancel')"
+                  @click="handleCancel"
+                />
+                <FormKit
+                  type="submit"
+                  :label="t('submit')"
+                  @submit="onSubmitForm"
+                />
+              </div>
             </div>
           </div>
         </FormKit>
       </q-card-section>
     </q-card>
+    <ConfirmDialog
+      v-model="confirmVisible"
+      :title="t('unsavedChanges.title')"
+      :message="t('unsavedChanges.message')"
+      :cancel-label="t('unsavedChanges.continue')"
+      :confirm-label="t('unsavedChanges.discard')"
+      confirm-color="negative"
+      @confirm="confirmDiscard"
+      @cancel="keepEditing"
+    />
   </q-dialog>
 </template>
 

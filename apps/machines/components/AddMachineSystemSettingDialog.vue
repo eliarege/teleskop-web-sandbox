@@ -11,8 +11,27 @@ const emit = defineEmits(['close', 'add'])
 
 const { t } = useI18n()
 
-const selectedSetting = ref()
-const option = ref('passive')
+const selectedSetting = ref<Setting | undefined>()
+const option = ref<'active' | 'passive'>('passive')
+
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => ({
+    selectedSetting: selectedSetting.value,
+    option: option.value,
+  }),
+  setState: (state) => {
+    selectedSetting.value = state?.selectedSetting
+    option.value = (state?.option as typeof option.value) ?? 'passive'
+  },
+  isOpen: () => props.show,
+})
 
 const options = [
   { label: t('active'), value: 'active' },
@@ -20,13 +39,21 @@ const options = [
 ]
 
 function handleAdd() {
+  if (!selectedSetting.value)
+    return
   emit('add', { ...selectedSetting.value, isActive: option.value === 'active' })
+  markSaved()
+}
+
+function handleCancel() {
+  requestClose(() => emit('close'))
 }
 </script>
 
 <template>
   <q-dialog
     :model-value="show"
+    :persistent="hasChanges"
     @hide="$emit('close')"
   >
     <q-card class="min-w-[1000px]">
@@ -52,15 +79,26 @@ function handleAdd() {
           type="radio"
         />
         <q-card-actions align="right">
-          <q-btn :label="t('cancel')" @click="$emit('close')" />
+          <q-btn :label="t('cancel')" @click="handleCancel" />
           <q-btn
             :label="t('add')"
             color="primary"
-            :disable="selectedSetting === null"
+            :disable="!selectedSetting"
             @click="handleAdd"
           />
         </q-card-actions>
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>
