@@ -488,7 +488,7 @@ async function receiveVersionInfo() {
       :rows="modifiedMachines"
       :columns="columns"
       :machine-groups="machineGroups"
-      @dblclick="showEditModal"
+      @dbl-click="showEditModal"
       form-class="grid grid-cols-5 gap-4 grid-rows-7 select-none"
     />
     <SseLogDialog
