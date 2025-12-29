@@ -349,11 +349,38 @@ function showEditModal() {
   })
 }
 
+async function ensureNetworkConnection(machine: Machine) {
+  try {
+    await kc.fetch('/api/sync/network-connection', {
+      method: 'POST',
+      retry: false,
+      body: {
+        ip: machine.ip,
+        tbbModel: machine.tbbModel,
+      },
+    })
+    return true
+  } catch (error: any) {
+    console.error(error)
+    notifyError(error?.statusMessage ?? t('noConnectionToNetwork'))
+    return false
+  }
+}
+
 async function loadProject() {
   if (!uuid.value) {
     notifyError(t('connectionNotReady'))
     return
   }
+
+  const machine = selected.value[0]
+
+  if (!machine)
+    return
+
+  const connectionReady = await ensureNetworkConnection(machine)
+  if (!connectionReady)
+    return
 
   currentOperation.value = 'project'
 
@@ -364,8 +391,8 @@ async function loadProject() {
       retry: false,
       body: {
         uuid: uuid.value,
-        ip: selected.value[0].ip,
-        tbbModel: selected.value[0].tbbModel,
+        ip: machine.ip,
+        tbbModel: machine.tbbModel,
       },
     })
 
@@ -373,7 +400,7 @@ async function loadProject() {
       method: 'GET',
       retry: false,
       query: {
-        machineId: selected.value[0].machineId,
+        machineId: machine.machineId,
         sseId: uuid.value,
       },
     })
@@ -488,8 +515,8 @@ async function receiveVersionInfo() {
       :rows="modifiedMachines"
       :columns="columns"
       :machine-groups="machineGroups"
-      @dbl-click="showEditModal"
       form-class="grid grid-cols-5 gap-4 grid-rows-7 select-none"
+      @dbl-click="showEditModal"
     />
     <SseLogDialog
       :model-value="projectContext.showFullLogDialog"
