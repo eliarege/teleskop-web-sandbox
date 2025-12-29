@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { withBase } from 'ufo'
 import { useLongOperation } from '../composables/useLongOperation'
-import type { LogEntry } from '../composables/useLongOperation'
+import type { FetchOptions, LogEntry } from '../composables/useLongOperation'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   url: string
-  options?: Omit<RequestInit, 'body'> & { body?: any }
+  fetchOptions?: FetchOptions
   title?: string
-}>()
+  width?: string | number
+  statusTitles?: {
+    running?: string
+    success?: string
+    failed?: string
+  }
+}>(), {
+  width: '700px',
+})
 
 const emit = defineEmits([
   ...useDialogPluginComponent.emits,
@@ -16,6 +25,8 @@ const emit = defineEmits([
   'retry',
 ])
 
+const config = useRuntimeConfig()
+const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent()
 const logsContainer = ref<HTMLElement | null>(null)
 const operation = useLongOperation()
@@ -31,7 +42,11 @@ const state = reactive({
   errorMessage: operation.errorMessage,
 })
 
-operation.start(props.url, props.options)
+function startOperation() {
+  operation.start(withBase(props.url, config.app.baseURL), props.fetchOptions)
+}
+
+startOperation()
 
 export type LongOperationResult =
   | { success: true }
@@ -67,14 +82,24 @@ const statusColor = computed(() => {
 
 const statusText = computed(() => {
   if (state.isRunning)
-    return 'Running...'
+    return t('operation.running')
   if (state.isSuccess)
-    return 'Completed'
+    return t('operation.completed')
   if (state.isAborted)
-    return 'Aborted'
+    return t('operation.aborted')
   if (state.isError)
-    return 'Failed'
-  return 'Pending'
+    return t('operation.failed')
+  return t('operation.pending')
+})
+
+const statusTitle = computed(() => {
+  if (state.isRunning)
+    return props.statusTitles?.running ?? props.title
+  if (state.isSuccess)
+    return props.statusTitles?.success ?? props.title
+  if (state.isError || state.isAborted)
+    return props.statusTitles?.failed ?? props.title
+  return props.title
 })
 
 const progressColor = computed(() => {
@@ -118,12 +143,16 @@ function getResult(): LongOperationResult {
   if (state.isSuccess) {
     return { success: true }
   } else if (state.isAborted) {
-    return { success: false, aborted: true, error: 'Operation was aborted by the user.' }
+    return { success: false, aborted: true, error: t('operation.abortedByUser') }
   } else if (state.isError) {
-    return { success: false, aborted: false, error: state.errorMessage || 'An unknown error occurred.' }
+    return { success: false, aborted: false, error: state.errorMessage || t('operation.unknownError') }
   } else {
-    return { success: false, aborted: false, error: 'Operation did not complete.' }
+    return { success: false, aborted: false, error: t('operation.notCompleted') }
   }
+}
+
+function toUnit(value: string | number) {
+  return typeof value === 'number' ? `${value}px` : value
 }
 
 const canRetry = computed(() => state.isError || state.isAborted)
@@ -143,7 +172,7 @@ function handleAbort() {
 
 function handleRetry() {
   emit('retry')
-  operation.start(props.url, props.options)
+  startOperation()
 }
 
 // Auto-scroll to bottom when new logs arrive
@@ -169,11 +198,11 @@ watch(
     position="top"
     @hide="onDialogHide"
   >
-    <q-card class="q-dialog-plugin operation-log-card" style="width: 700px; max-width: 90vw;">
+    <q-card class="q-dialog-plugin operation-log-card select-none" :style="`width: ${toUnit(props.width)}; max-width: 90vw;`">
       <!-- Header -->
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">
-          {{ title || 'Operation Progress' }}
+          {{ statusTitle }}
         </div>
         <q-space />
         <q-chip
@@ -181,46 +210,47 @@ watch(
           text-color="white"
           :icon="statusIcon"
           :ripple="false"
+          class="select-none"
         >
           {{ statusText }}
         </q-chip>
       </q-card-section>
 
       <!-- Progress Bar -->
-      <q-card-section>
-        <div class="row items-center q-gutter-sm q-mb-sm">
-          <div class="text-body2 text-grey-7">
-            Progress
-          </div>
-          <q-space />
-          <div class="text-body2 text-weight-medium">
-            {{ Math.round(currentProgress) }}%
-          </div>
-        </div>
+      <q-card-section class="q-pb-none">
         <q-linear-progress
           :value="currentProgress / 100"
           :color="progressColor"
-          size="12px"
+          size="28px"
           rounded
           :indeterminate="state.isRunning && currentProgress === 0"
           :stripe="state.isRunning"
           :animation-speed="200"
-        />
+          class="my-4 select-none"
+        >
+          <div class="absolute w-full h-full flex-center">
+            <q-badge
+              color="white"
+              :text-color="progressColor"
+              :label="`${state.progress}%`"
+              class="pt-1"
+            />
+          </div>
+        </q-linear-progress>
       </q-card-section>
 
       <!-- Logs Accordion -->
-      <q-card-section class="q-pt-none">
+      <q-card-section class="q-py-none">
         <q-expansion-item
           v-model="showLogs"
-          icon="terminal"
-          label="View Details"
-          caption="Show operation logs"
+          :label="t('operation.viewDetails')"
+          switch-toggle-side
           header-class="text-grey-7"
           dense
         >
           <div
             ref="logsContainer"
-            class="console-output bg-dark text-grey-4 q-pa-md rounded-borders q-mt-sm"
+            class="console-output bg-dark text-grey-4 q-pa-md rounded-borders q-mt-sm select-text"
           >
             <div
               v-for="(log, index) in state.logs"
@@ -233,7 +263,7 @@ watch(
               <span class="log-message">{{ log.message }}</span>
             </div>
             <div v-if="state.logs.length === 0" class="text-grey-6 text-italic">
-              Waiting for operation to start...
+              {{ t('operation.waitingForStart') }}
             </div>
             <div v-if="state.isRunning" class="cursor-blink">
               _
@@ -243,7 +273,7 @@ watch(
       </q-card-section>
 
       <!-- Error Message -->
-      <q-card-section v-if="state.isError && state.errorMessage" class="q-pt-none">
+      <q-card-section v-if="state.isError && state.errorMessage" class="q-pt-none mt-2">
         <q-banner class="bg-negative text-white rounded-borders">
           <template #avatar>
             <q-icon name="error" />
@@ -257,7 +287,7 @@ watch(
         <q-btn
           v-if="state.isRunning"
           flat
-          label="Abort"
+          :label="t('operation.abort')"
           color="negative"
           icon="cancel"
           @click="handleAbort"
@@ -265,7 +295,7 @@ watch(
         <q-btn
           v-if="canRetry"
           flat
-          label="Retry"
+          :label="t('operation.retry')"
           color="primary"
           icon="refresh"
           @click="handleRetry"
@@ -273,13 +303,13 @@ watch(
         <q-btn
           :disable="!canClose"
           :color="state.isSuccess ? 'positive' : (state.isAborted ? 'warning' : 'primary')"
-          :label="canClose ? 'Close' : 'Please wait...'"
+          :label="canClose ? t('operation.close') : t('operation.pleaseWait')"
           :icon="state.isSuccess ? 'check' : (state.isAborted ? 'close' : undefined)"
           :loading="state.isRunning"
           @click="handleClose"
         >
           <q-tooltip v-if="!canClose && !state.isRunning">
-            Operation must complete successfully before closing
+            {{ t('operation.mustCompleteBeforeClosing') }}
           </q-tooltip>
         </q-btn>
       </q-card-actions>
@@ -305,7 +335,7 @@ watch(
 }
 
 .log-entry {
-  white-space: pre-wrap;
+  white-space: nowrap;
   word-break: break-word;
 }
 
@@ -334,6 +364,7 @@ watch(
 /* Custom scrollbar for console */
 .console-output::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 .console-output::-webkit-scrollbar-track {

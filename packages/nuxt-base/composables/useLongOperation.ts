@@ -1,12 +1,15 @@
 import { readonly, ref } from 'vue'
+import type { StreamLogLevel, StreamMessage } from '../shared/longOperation.types'
 
 export interface LogEntry {
   timestamp: Date
-  level: 'info' | 'warn' | 'error' | 'success'
+  level: StreamLogLevel | 'success'
   message: string
 }
 
 export type LongOperation = ReturnType<typeof useLongOperation>
+
+export type FetchOptions = Omit<RequestInit, 'body' | 'signal'> & { body?: any }
 
 export function useLongOperation() {
   const kc = useKeycloak()
@@ -41,21 +44,16 @@ export function useLongOperation() {
 
   const handleSSEData = (data: string) => {
     try {
-      const parsed = JSON.parse(data)
-
-      // Update progress if present
-      if (typeof parsed.progress === 'number') {
-        progress.value = parsed.progress
-      }
+      const parsed = JSON.parse(data) as StreamMessage
 
       switch (parsed.type) {
         case 'log':
           if (parsed.message) {
-            addLog(parsed.level || 'info', parsed.message)
+            addLog(parsed.level, parsed.message)
           }
           break
         case 'progress':
-          // Progress-only update, no log needed
+          progress.value = parsed.progress
           break
         case 'complete':
           isSuccess.value = true
@@ -63,7 +61,7 @@ export function useLongOperation() {
           progress.value = 100
           addLog('success', parsed.message || t('operation.completedSuccessfully'))
           break
-        case 'error':
+        case 'fail':
           isError.value = true
           errorMessage.value = parsed.message
           addLog('error', parsed.message)
@@ -76,20 +74,28 @@ export function useLongOperation() {
     }
   }
 
-  const start = (url: string, options?: { method?: string, body?: any }) => {
+  /**
+   * Body should be a JSON-serializable object if provided. `Accept`, `Content-Type`, and `Authorization` headers are set automatically.
+   *
+   * @param url
+   * @param fetchOptions
+   */
+  const start = (url: string, fetchOptions?: FetchOptions) => {
     reset()
     isRunning.value = true
 
     abortController = new AbortController()
 
     fetch(url, {
-      method: 'POST',
+      ...fetchOptions,
+      method: fetchOptions?.method || 'GET',
       headers: {
+        ...fetchOptions?.headers,
         'Content-Type': 'application/json',
         'Accept': 'text/event-stream',
         'Authorization': `Bearer ${kc.token}`,
       },
-      body: options?.body ? JSON.stringify(options.body) : undefined,
+      body: fetchOptions?.body ? JSON.stringify(fetchOptions.body) : undefined,
       signal: abortController.signal,
     })
       .then(async (response) => {
