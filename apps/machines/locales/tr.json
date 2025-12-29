@@ -234,7 +234,7 @@
   "unsavedChanges": {
     "title": "Kaydedilmemiş Değişiklikler",
     "message": "Kaydedilmemiş değişiklikleriniz var. Kaydetmeden çıkmak istediğinize emin misiniz?",
-    "discard": "Değişiklikleri At",
+    "discard": "Kaydetmeden Çık",
     "continue": "Düzenlemeye Devam Et"
   },
   "addNewReason": "Yeni sebep Ekle",
