@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { RouteLocationRaw } from 'vue-router'
+
 interface ConsumptionCounter {
   machineId: number
   counterId1: number
@@ -11,6 +13,7 @@ interface CounterOption {
 }
 
 const kc = useKeycloak()
+const router = useRouter()
 const { t } = useI18n()
 const { notifyError, notifySuccess } = useNotify()
 const selectedMachineId = ref()
@@ -21,6 +24,10 @@ const originalCounter1 = ref()
 const originalCounter2 = ref()
 
 const changedCounters = ref<ConsumptionCounter[]>([])
+const isSaving = ref(false)
+const showUnsavedDialog = ref(false)
+const pendingNavigation = ref<RouteLocationRaw | null>(null)
+const allowNavigation = ref(false)
 
 const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
@@ -63,6 +70,25 @@ const hasChanges = computed(() => {
     return false
   }
   return counter1.value.id !== originalCounter1.value.id || counter2.value.id !== originalCounter2.value.id
+})
+
+useEventListener(window, 'beforeunload', (event) => {
+  if (!hasChanges.value)
+    return
+  event.preventDefault()
+  event.returnValue = ''
+})
+
+onBeforeRouteLeave((to) => {
+  if (allowNavigation.value) {
+    allowNavigation.value = false
+    return true
+  }
+  if (!hasChanges.value)
+    return true
+  pendingNavigation.value = to.fullPath
+  showUnsavedDialog.value = true
+  return false
 })
 
 watch(counters, (_newValue, _oldValue) => {
@@ -113,7 +139,9 @@ function handleOptionChange() {
 
 async function handleSubmit() {
   if (changedCounters.value.length === 0)
-    return
+    return true
+
+  isSaving.value = true
 
   try {
     const result = await kc.fetch('/api/consumption-counters/consumption-counters', {
@@ -133,9 +161,13 @@ async function handleSubmit() {
     originalCounter2.value = counter2.value
 
     await refreshCounterOptions()
+    return true
   } catch (error: any) {
     const errorMessage = error.data?.statusMessage || error.statusMessage || error.message || 'unknown'
     notifyError(t(`error.${errorMessage}`))
+    return false
+  } finally {
+    isSaving.value = false
   }
 }
 
@@ -144,6 +176,39 @@ function handleCancel() {
   counter2.value = originalCounter2.value
 
   changedCounters.value = changedCounters.value.filter(c => c.machineId !== selectedMachineId.value)
+}
+
+function cancelLeavePrompt() {
+  showUnsavedDialog.value = false
+  pendingNavigation.value = null
+}
+
+async function proceedPendingNavigation() {
+  const target = pendingNavigation.value
+  pendingNavigation.value = null
+  showUnsavedDialog.value = false
+
+  if (!target)
+    return
+
+  allowNavigation.value = true
+  try {
+    await router.push(target)
+  } catch (error) {
+    console.error(error)
+    allowNavigation.value = false
+  }
+}
+
+async function leaveWithoutSaving() {
+  await proceedPendingNavigation()
+}
+
+async function saveAndLeave() {
+  const success = await handleSubmit()
+  if (!success)
+    return
+  await proceedPendingNavigation()
 }
 
 const copy = ref()
@@ -247,11 +312,47 @@ const contextMenuOptions = computed(() => [
           no-caps
           :label="t('submit')"
           :disabled="!hasChanges"
+          :loading="isSaving"
           @click="handleSubmit"
         />
       </q-card-actions>
     </q-card>
   </div>
+
+  <q-dialog
+    v-model="showUnsavedDialog"
+    persistent
+  >
+    <q-card style="min-width: 420px">
+      <q-card-section>
+        <div class="text-h6">
+          {{ t('unsavedChanges.title') }}
+        </div>
+        <div class="text-body2 q-mt-sm">
+          {{ t('unsavedChanges.message') }}
+        </div>
+      </q-card-section>
+      <q-card-actions align="right" class="q-pa-md">
+        <q-btn
+          flat
+          :label="t('cancel')"
+          @click="cancelLeavePrompt"
+        />
+        <q-btn
+          flat
+          color="negative"
+          :label="t('unsavedChanges.discard')"
+          @click="leaveWithoutSaving"
+        />
+        <q-btn
+          color="primary"
+          :label="t('submit')"
+          :loading="isSaving"
+          @click="saveAndLeave"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>
