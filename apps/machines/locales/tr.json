@@ -57,6 +57,9 @@
   "machine": "Makine",
   "machineStopReasons": "Makine Duruş Sebepleri",
   "loadProject": "Proje Yükle",
+  "loadingProject": "Proje Yükleniyor",
+  "loadingProjectSuccess": "Proje Yüklendi",
+  "loadingProjectFailed": "Proje Yükleme Başarısız",
   "loadProjectTranslations": "Proje Çevirilerini Yükle",
   "new": "Yeni",
   "properties": "Özellikler",
@@ -104,10 +107,13 @@
   "receiveVersionInfo": "Versiyon Bilgisi Al",
   "receivingVersionInfo": "Versiyon Bilgisi Alınıyor",
   "versionInfoReceived": "Versiyon Bilgisi Alındı",
-  "version-check-started": "Makine {machineId} için versiyon kontrolü başlatıldı",
-  "version-check-failed": "Makine {machineId} versiyon kontrolünde hata oluştu",
-  "version-check-completed": "Makine {machineId} versiyon kontrolü tamamlandı",
   "errorReceivingVersionInfo": "Versiyon Bilgisi Alınamadı",
+  "receiveVersion": {
+    "started": "Versiyon bilgisi alınıyor: \"{machine}\"",
+    "failed": "Versiyon bilgisi alınamadı: \"{machine}\"",
+    "completed": "Versiyon bilgisi alındı: \"{machine}\"",
+    "completedWithErrors": "Versiyon bilgisi alınırken bazı hatalar oluştu"
+  },
   "machineConstants": "Makine Sabitleri",
   "formulas": "Formüller",
   "theoricalCharge": "Teorik Şarj Sayısı",
@@ -521,6 +527,11 @@
   "input-outputs-failed": "Giriş/Çıkışlar güncellemesi başarısız",
   "input-outputs-starting": "Giriş/Çıkışlar güncelleniyor",
   "user-permission-update-failed": "Kullanıcı izinleri güncellenemedi",
+  "projectUpload": {
+    "starting": "Proje yüklemesi başlatılıyor",
+    "completed": "Proje yüklemesi başarılıyla tamamlandı",
+    "failed": "Proje yüklemesi başarısız"
+  },
   "NETWORK_CONN_FAILED": "Bağlantı kurulamadı.",
   "passive": "Pasif",
   "selectSettingToUpdate": "Makinede güncellenecek sistem ayarını seçiniz",
