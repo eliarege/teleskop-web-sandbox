@@ -4,7 +4,9 @@ import InputNumber from './InputNumber.vue'
 import type { CommandFormula, CommandParameter, ParameterItem, ParameterSelections } from '~/shared/types'
 
 const props = defineProps<{
-  path: string
+  stepId: number
+  parallelIndex: number // -1 for main command, >= 0 for parallel command
+  parameterIndex: number
   parameter: CommandParameter
   commandNo: number
   parameterError?: { type: string, parameterIndex?: number, parameterName?: string }
@@ -18,7 +20,11 @@ const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
 
-const programParameter: ParameterItem = editor.getPathElement(props.path)
+const programParameter = editor.getPathElement({
+  stepId: props.stepId,
+  parallelIndex: props.parallelIndex,
+  parameterIndex: props.parameterIndex,
+})
 const model = computed({
   get: () => Number(programParameter.value),
   set: (newValue) => {
@@ -83,7 +89,7 @@ const isValueInRange = computed(() => {
   return value >= props.parameter.minValue && value <= props.parameter.maxValue
 })
 
-const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const stepIndex = computed(() => editor.program.steps.findIndex(s => s.stepId === props.stepId))
 
 function handleFocus() {
   const step = editor.program.steps[stepIndex.value]

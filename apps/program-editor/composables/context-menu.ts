@@ -1,5 +1,6 @@
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import type { Router } from 'vue-router'
+import { klona } from 'klona'
 import { isProgramError } from './utils'
 import { useCopyAndSendStore } from './copyAndSend'
 import type { BulkDeletionResponse, CopyItem, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
@@ -65,14 +66,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     sourceMachineId.value = editor.machine.id
     sourceMachineCommands.value = new Map(editor.machine.commands)
     editor.selectedSteps.forEach((step) => {
-      copiedStepValues.value.push(step)
+      copiedStepValues.value.push(klona(step))
     })
   }
 
   /** Kopyalanan adımları mevcut programa yapıştırır ve makine komutlarına göre adapte eder */
   function pasteStep() {
     const editor = useEditorStore()
-    const stepIndex = editor.getStepIndex(editor.selectedSteps[0]?.stepId)
+
+    const stepIndex = editor.selectedSteps.length
+      ? editor.getStepIndex(editor.selectedSteps[0].stepId)
+      : editor.program.steps.length
+
     const isSameMachine = sourceMachineId.value === editor.machine.id
 
     editor.selectedSteps = copiedStepValues.value.map(step => adaptStepToMachine(step, sourceMachineCommands.value, isSameMachine))

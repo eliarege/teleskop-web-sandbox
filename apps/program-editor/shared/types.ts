@@ -221,6 +221,28 @@ export interface ioListItem {
   value: [number, number][]
 }
 
+// Path types for component navigation
+export interface StepPath {
+  stepId: number
+}
+
+export interface CommandPath {
+  stepId: number
+  parallelIndex: number // -1 for main command, >= 0 for parallel command
+}
+
+export interface ParameterPath {
+  stepId: number
+  parallelIndex: number // -1 for main command, >= 0 for parallel command
+  parameterIndex: number
+}
+
+export interface IoPath {
+  stepId: number
+  parallelIndex: number // -1 for main command, >= 0 for parallel command
+  ioIndex: number
+}
+
 export interface StepItem {
   MACHINEID: number
   PROGNO: number

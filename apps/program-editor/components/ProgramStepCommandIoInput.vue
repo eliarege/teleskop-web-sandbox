@@ -2,7 +2,9 @@
 import type { CommandIO, CommandIOSelection, ioListItem } from '~/shared/types'
 
 const props = defineProps<{
-  path: string
+  stepId: number
+  parallelIndex: number // -1 for main command, >= 0 for parallel command
+  ioIndex: number
   io: CommandIO
   commandNo: number
   ioError?: { type: string, ioIndex?: number, ioName?: string }
@@ -11,7 +13,11 @@ const props = defineProps<{
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const programIO: ioListItem = editor.getPathElement(props.path)
+const programIO = editor.getPathElement({
+  stepId: props.stepId,
+  parallelIndex: props.parallelIndex,
+  ioIndex: props.ioIndex,
+})
 
 const model = computed({
   get: () => encode(programIO),
@@ -43,7 +49,7 @@ const selectedOptionsText = computed(() => {
   return selected.length > 0 ? selected.join(', ').slice(0, 24) : t('noSelection')
 })
 
-const stepIndex = computed(() => Number(props.path.split('.')[1]))
+const stepIndex = computed(() => editor.program.steps.findIndex(s => s.stepId === props.stepId))
 
 function handleFocus() {
   const step = editor.program.steps[stepIndex.value]

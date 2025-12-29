@@ -7,7 +7,7 @@ import type { ProgramStep } from '~/shared/types'
 import { useErrorStore } from '~/composables/utils'
 
 const props = defineProps<{
-  path: string
+  stepId: number
 }>()
 
 const $q = useQuasar()
@@ -16,17 +16,16 @@ const editor = useEditorStore()
 const errorStore = useErrorStore()
 const { $commandManager } = useNuxtApp()
 
-const step: ProgramStep = editor.getPathElement(props.path)
-const stepIndex = computed(() => Number(props.path.split('.').pop()))
+const step = editor.getPathElement({ stepId: props.stepId })
+const stepIndex = computed(() => editor.getStepIndex(step.stepId))
 const stepIcons = computed(() => {
   const mainIcon = editor.getCommandIcon(step.mainCommand.commandNo)
   const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getCommandIcon(commandNo))
 
   return [mainIcon, ...parallelIcons].filter(icon => isDef(icon))
 })
-function isLastStep(index: number): boolean {
-  return editor.program.steps.length - 1 === index
-}
+
+const isLastStep = computed(() => editor.program.steps.length - 1 === stepIndex.value)
 
 const expanded = ref<boolean>(
   errorStore.getStepErrors(editor.machine.id, editor.program.programNo, step.stepId).length > 0
@@ -51,7 +50,7 @@ const sortableOptions: SortableOptions = {
 function deleteParallelStep(stepIndex: number, index: number): void {
   editor.selectedSteps = [editor.program.steps[stepIndex]]
   const settings = useProgramWriteSettings()
-  if (!isLastStep(stepIndex) && settings.value.removeParallelCommandFromOtherSteps) {
+  if (!isLastStep.value && settings.value.removeParallelCommandFromOtherSteps) {
     const parallelStep = editor.program.steps[stepIndex].parallelCommands[index]
     $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', parallelStep.commandNo)
   }
@@ -101,7 +100,8 @@ function removeError(commandId: number) {
     <div @click="removeError(step.mainCommand.commandId)">
       <ProgramStepCommandForm
         class="flex-1"
-        :path="`${props.path}.mainCommand`"
+        :step-id="step.stepId"
+        :parallel-index="-1"
         :expanded
         :command-error="getCommandError(step.mainCommand.commandId)"
       />
@@ -113,10 +113,10 @@ function removeError(commandId: number) {
       class="e-border-color border-(t x-0) pl-16"
     >
       <Sortable
-        :list="step.parallelCommands"
-        item-key="commandId"
-        :options="sortableOptions"
         class="parallel-commands"
+        item-key="commandId"
+        :list="step.parallelCommands"
+        :options="sortableOptions"
         :data-index="stepIndex"
       >
         <template #header>
@@ -132,7 +132,8 @@ function removeError(commandId: number) {
           >
             <div>
               <ProgramStepCommandForm
-                :path="`${props.path}.parallelCommands.${index}`"
+                :step-id="step.stepId"
+                :parallel-index="index"
                 :expanded
                 :command-error="getCommandError(step.parallelCommands[index].commandId)"
               />

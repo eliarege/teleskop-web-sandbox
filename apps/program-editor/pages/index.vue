@@ -184,7 +184,7 @@ const items = [
             } else {
               const stepIndex = Number(errors[errors.length - 1].split('-')[0])
               notifyError(t('invalidCommand'))
-              editor.scrollPage(stepIndex, true)
+              editor.scrollPage(editor.program.steps[stepIndex].stepId, true)
             }
           },
         },
@@ -202,7 +202,7 @@ const items = [
             } else {
               const stepIndex = Number(errors[errors.length - 1].split('-')[0])
               notifyError(t('invalidCommand'))
-              editor.scrollPage(stepIndex, true)
+              editor.scrollPage(editor.program.steps[stepIndex].stepId, true)
             }
           },
         },

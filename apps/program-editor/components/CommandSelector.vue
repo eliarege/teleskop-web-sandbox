@@ -6,7 +6,7 @@ import { useEditorStore } from '~~/composables/editor'
 import { useProgramWriteSettings } from '~/composables/settings'
 import { CommandEligibility } from '~/shared/constants'
 
-const props = defineProps<{ path: string }>()
+const props = defineProps<{ stepId: number, parallelIndex: number }>() // -1 for main command
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -17,12 +17,12 @@ const selectRef = ref<QSelect>()
 const { mt } = useProjectTranslations()
 const settings = useProgramWriteSettings()
 
-const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
-const stepIndex = computed(() => Number(props.path.split('.')[1]))
-const isMainCommand = computed(() => props.path.split('.')[2] === 'mainCommand')
-const isLastStep = computed(() => stepIndex.value === editor.program.steps.length - 1)
-const stepData = computed(() => editor.program.steps[stepIndex.value])
-const id = computed(() => `${stepData.value.stepId}-${programCommand.value.commandId}`)
+const programCommand = ref(editor.getPathElement({ stepId: props.stepId, parallelIndex: props.parallelIndex }))
+const isMainCommand = computed(() => props.parallelIndex === -1)
+const lastStep = computed(() => editor.program.steps[editor.program.steps.length - 1])
+const isLastStep = computed(() => props.stepId === lastStep.value.stepId)
+const step = computed(() => editor.program.steps.find(s => s.stepId === props.stepId)!)
+const id = computed(() => `${step.value.stepId}-${programCommand.value.commandId}`)
 
 const availableCommands = computed(() => {
   const allCommands: MachineCommand[] = Array.from(editor.machine.commands.values())
@@ -31,8 +31,8 @@ const availableCommands = computed(() => {
     .filter(({ commandType }) => !(isMainCommand.value && commandType === CommandEligibility.PARALLEL_ONLY))
     .filter(({ commandNo }) =>
       commandNo === programCommand.value.commandNo
-      || (stepData.value.mainCommand.commandNo !== commandNo
-      && !stepData.value.parallelCommands.some(cmd => cmd.commandNo === commandNo)),
+      || (step.value.mainCommand.commandNo !== commandNo
+      && !step.value.parallelCommands.some(cmd => cmd.commandNo === commandNo)),
     )
     .filter(({ commandNo }) =>
       !settings.value.preventParallelUsageForDisabledCommands
@@ -67,10 +67,10 @@ function validateCommand() {
 }
 
 watch(() => programCommand.value.commandNo, validateCommand)
-watch(() => stepData.value.mainCommand.commandNo, validateCommand)
+watch(() => step.value.mainCommand.commandNo, validateCommand)
 
 onMounted(() => {
-  if (!isDef(programCommand.value.commandNo) || (isMainCommand.value && !isDef(stepData.value.mainCommand.commandNo))) {
+  if (!isDef(programCommand.value.commandNo) || (isMainCommand.value && !isDef(step.value.mainCommand.commandNo))) {
     editor.errorIds.add(id.value)
   } else if (!editor.machine.commands.has(programCommand.value.commandNo)) {
     editor.errorIds.add(id.value)
@@ -80,7 +80,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (stepData.value)
+  if (step.value)
     editor.errorIds.delete(id.value)
 })
 
@@ -107,14 +107,14 @@ function getCommandLabel(option: any) {
 
 function isParallelCommandRestricted(commandNo: number): boolean {
   if (!isMainCommand.value) {
-    const mainCommandNo = stepData.value.mainCommand.commandNo
+    const mainCommandNo = step.value.mainCommand.commandNo
     return editor.machine.commands.get(mainCommandNo)?.dontUseList?.includes(commandNo) || false
   }
   return false
 }
 
 function handleFocus() {
-  const step = editor.program.steps[stepIndex.value]
+  const step = editor.program.steps.find(s => s.stepId === props.stepId)
   if (step && !editor.isStepSelected(step.stepId)) {
     editor.selectedSteps = [step]
   }
@@ -138,17 +138,17 @@ function handleFocus() {
       style="width: 250px"
       class="text-3 command-selector"
       options-dense
-      dense
       auto-close
       outlined
       filled
+      dense
       disable-down-open-menu
       @update:model-value="updateStepCommand"
       @focus="handleFocus"
     >
       <QTooltip v-if="isParallelCommandRestricted(programCommand.commandNo)">
         {{ t('cannotParallelCommand', {
-          mainCommandNo: stepData.mainCommand.commandNo,
+          mainCommandNo: step.mainCommand.commandNo,
           parallelCommandNo: programCommand.commandNo,
         }) }}
       </QTooltip>
