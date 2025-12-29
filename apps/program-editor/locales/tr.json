@@ -21,10 +21,24 @@
   "noSelection": "Seçim Yok",
   "invalidCommand": "Hatalı komutu kontrol ediniz",
   "emptyCommand": "Komut boş olamaz",
+  "commandNo": "Komut No",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
     "invalid": "{field} geçersiz."
+  },
+  "contextBar": {
+    "durationErrorsTitle": "Süre Hesaplama Hataları",
+    "durationErrorsTooltip": "Program süresi hesaplanırken hatalar oluştu. Detayları görmek için tıklayın."
+  },
+  "calculationErrors": {
+    "COMMAND_NOT_DEFINED": "Komut tanımlı değil",
+    "MACHINE_COMMAND_NOT_FOUND": "Makine komutu bulunamadı",
+    "FORMULA_X_FAILED": "Formül X hesaplaması başarısız",
+    "FORMULA_A_FAILED": "Formül A hesaplaması başarısız",
+    "FORMULA_MAXA_FAILED": "Formül maxA hesaplaması başarısız",
+    "FORMULA_B_FAILED": "Formül B hesaplaması başarısız",
+    "FORMULA_Y_FAILED": "Formül Y hesaplaması başarısız"
   },
   "programStatusInfo": {
     "_": "Program Durum Renkleri",

@@ -1,5 +1,6 @@
 import nearley from 'nearley'
 // @ts-expect-error TODO: Add shims for nearley files
+import { isDef } from '@teleskop/utils'
 import grammar from './grammar.ne'
 import { ParameterType } from './constants'
 import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineConstant, Program, ProgramStep } from './types'
@@ -9,27 +10,41 @@ interface CalculationContext {
   machine: Machine
 }
 
+interface StepResult {
+  errors: string[][]
+  duration: number
+}
+
 /**
  * Programın teorik süresini hesaplar.
  * @param program - Program
  * @param machine - Machine
  * @returns {number} Program duration
  */
-export function calculateProgramDuration(program: Program, machine: Machine, initialTemperature: number): number {
-  let duration = 0
+export function calculateProgramDuration(program: Program, machine: Machine, initialTemperature: number):
+{ errors: string[][], duration: number, stepDuration: StepResult[] } {
   const context: CalculationContext = {
     temperature: initialTemperature,
     machine,
   }
 
+  const errors: string[][] = []
+  const stepDuration: StepResult[] = []
+  let totalDuration = 0
+
   for (const step of program.steps) {
-    const stepDuration = _calculateProgramStepDuration(step, context)
-    for (const _ of stepDuration) {
-      duration += _.duration
-    }
+    const result = _calculateProgramStepDuration(step, context)[0]
+
+    stepDuration.push(result)
+    errors.push(...result.errors)
+    totalDuration += result.duration
   }
 
-  return duration
+  return {
+    errors,
+    duration: Math.round(totalDuration),
+    stepDuration,
+  }
 }
 
 /**
@@ -97,7 +112,7 @@ export function calculateProgramDurationPoint(machine: Machine, program: Program
  * @param index - Programın kacinci adımı
  * @returns {number} Teorik sure
  */
-export function calculateProgramStepDuration(program: Program, machine: Machine, initialTemperature: number, index: number): { duration: number, temperature: number }[] {
+export function calculateProgramStepDuration(program: Program, machine: Machine, initialTemperature: number, index: number): { errors: string[][], duration: number, temperature: number }[] {
   const context: CalculationContext = {
     temperature: initialTemperature,
     machine,
@@ -118,41 +133,57 @@ export function calculateProgramStepDuration(program: Program, machine: Machine,
   return _calculateProgramStepDuration(program.steps[index], context)
 }
 
-function _calculateProgramStepDuration(step: ProgramStep, context: CalculationContext): { duration: number, temperature: number }[] {
-  const stepInfo = [{ duration: 0, temperature: context.temperature }]
+function _calculateProgramStepDuration(step: ProgramStep, context: CalculationContext): { errors: string[][], duration: number, temperature: number }[] {
   let duration = 0
+  const stepInfo = [{ errors: [] as string[][], duration: 0, temperature: context.temperature }]
 
   const commandNo = step.mainCommand.commandNo
-  if (commandNo) {
-    const machineCommand = context.machine.commands.get(commandNo)
-    if (!machineCommand)
-      return stepInfo
-
-    duration += calculateFormula(step, commandNo, machineCommand.x, context.machine)
-
-    const a = calculateFormula(step, commandNo, machineCommand.a, context.machine) || 0
-
-    const maxA = calculateFormula(step, commandNo, machineCommand.maxA, context.machine) || 0
-
-    let minA = Math.min(a, maxA) || 0
-    if (minA === 0)
-      minA = Math.max(a, maxA)
-
-    const b = calculateFormula(step, commandNo, machineCommand.b, context.machine) || 0
-
-    if (machineCommand.isTemperature) {
-      const temperature = calculateFormula(step, commandNo, machineCommand.y, context.machine) || 0
-      const lastTemperature = context.temperature
-      if (temperature)
-        context.temperature = temperature
-
-      if (minA)
-        duration += ((Math.abs(temperature - lastTemperature) / minA) * 60)
-    }
-
-    if (b)
-      stepInfo.push({ duration: Math.round(b), temperature: context.temperature })
+  if (!isDef(commandNo)) {
+    stepInfo[0].errors.push(['COMMAND_NOT_DEFINED', String(commandNo)])
+    return stepInfo
   }
+
+  const machineCommand = context.machine.commands.get(commandNo)
+  if (!machineCommand) {
+    stepInfo[0].errors.push(['MACHINE_COMMAND_NOT_FOUND', String(commandNo)])
+    return stepInfo
+  }
+
+  const x = calculateFormula(step, commandNo, machineCommand.x, context.machine)
+  if (!isDef(x))
+    stepInfo[0].errors.push(['FORMULA_X_FAILED', String(commandNo)])
+  duration += x || 0
+
+  const a = calculateFormula(step, commandNo, machineCommand.a, context.machine)
+  if (!isDef(a))
+    stepInfo[0].errors.push(['FORMULA_A_FAILED', String(commandNo)])
+
+  const maxA = calculateFormula(step, commandNo, machineCommand.maxA, context.machine)
+  if (!isDef(maxA))
+    stepInfo[0].errors.push(['FORMULA_MAXA_FAILED', String(commandNo)])
+  let minA = Math.min(a, maxA) || 0
+  if (minA === 0)
+    minA = Math.max(a, maxA)
+
+  const b = calculateFormula(step, commandNo, machineCommand.b, context.machine)
+  if (!isDef(b))
+    stepInfo[0].errors.push(['FORMULA_B_FAILED', String(commandNo)])
+
+  if (machineCommand.isTemperature) {
+    const calculatedTemp = calculateFormula(step, commandNo, machineCommand.y, context.machine)
+    if (!isDef(calculatedTemp))
+      stepInfo[0].errors.push(['FORMULA_Y_FAILED', String(commandNo)])
+
+    const lastTemperature = context.temperature
+    if (calculatedTemp)
+      context.temperature = calculatedTemp
+
+    if (minA)
+      duration += ((Math.abs(calculatedTemp - lastTemperature) / minA) * 60)
+  }
+
+  if (b)
+    stepInfo.push({ duration: Math.round(b), temperature: context.temperature })  
 
   stepInfo[0].duration = Math.round(duration)
   stepInfo[0].temperature = context.temperature

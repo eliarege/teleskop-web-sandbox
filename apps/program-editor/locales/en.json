@@ -19,12 +19,26 @@
   "treatmentParameterLimitReached": "Command {commandNo} cannot be used more than {limit}",
   "cannotParallelCommand": "Command {parallelCommandNo} cannot be used in parallel with command {mainCommandNo}",
   "noSelection": "No Selection",
-  "invalidCommand": "Check for faulty command",
+  "invalidCommand": "Check the invalid command",
   "emptyCommand": "Command cannot be empty",
+  "commandNo": "Command No",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",
     "invalid": "{field} is invalid."
+  },
+  "contextBar": {
+    "durationErrorsTitle": "Duration Calculation Errors",
+    "durationErrorsTooltip": "There are errors in calculating the program duration. Click to see details."
+  },
+  "calculationErrors": {
+    "COMMAND_NOT_DEFINED": "Command not defined",
+    "MACHINE_COMMAND_NOT_FOUND": "Machine command not found",
+    "FORMULA_X_FAILED": "Formula X calculation failed",
+    "FORMULA_A_FAILED": "Formula A calculation failed",
+    "FORMULA_MAXA_FAILED": "Formula maxA calculation failed",
+    "FORMULA_B_FAILED": "Formula B calculation failed",
+    "FORMULA_Y_FAILED": "Formula Y calculation failed"
   },
   "programStatusInfo": {
     "_": "Program Status Colors",
