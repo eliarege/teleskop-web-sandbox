@@ -22,6 +22,7 @@
   "invalidCommand": "Check the invalid command",
   "emptyCommand": "Command cannot be empty",
   "commandNo": "Command No",
+  "unknownCommand": "Unknown Command",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",
@@ -730,5 +731,9 @@
     "openProgram": "Open Program",
     "searchError": "Search error occurred",
     "selectCommand": "Select Command"
+  },
+  "copyStepDialog": {
+    "title": "Copy Step",
+    "message": "Select the step to which you want to copy the step."
   }
 }

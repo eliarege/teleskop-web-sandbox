@@ -22,6 +22,7 @@
   "invalidCommand": "Hatalı komutu kontrol ediniz",
   "emptyCommand": "Komut boş olamaz",
   "commandNo": "Komut No",
+  "unknownCommand": "Bilinmeyen Komut",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
@@ -747,5 +748,9 @@
     "openProgram": "Programı Aç",
     "searchError": "Arama sırasında hata oluştu",
     "selectCommand": "Komut Seçiniz"
+  },
+  "copyStepDialog": {
+    "title": "Adım Kopyala",
+    "message": "Kopyalamak istediğiniz adımı seçiniz."
   }
 }

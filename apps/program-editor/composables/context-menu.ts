@@ -3,7 +3,7 @@ import type { Router } from 'vue-router'
 import { klona } from 'klona'
 import { isProgramError } from './utils'
 import { useCopyAndSendStore } from './copyAndSend'
-import type { BulkDeletionResponse, CopyItem, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
+import type { BulkDeletionResponse, CopyItem, Machine, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
 import { notification } from '~/shared/functions'
 import type { CopyAndSendResult } from '~/server/utils/JobManager'
 
@@ -35,7 +35,7 @@ export interface ContextMenuStore {
   getComparisonBasket: () => { machineId: number, programNo: number }[]
   isThereCopiedValue: ComputedRef<boolean>
   programVersions: Ref<ProgramHeaderArchive[]>
-  copyStep: () => void
+  copyStep: (machine: Machine, selectedSteps: ProgramStep[]) => void
   pasteStep: () => void
   sendAllPrograms: (machine: { id: number, name: string }) => Promise<void>
   getAllPrograms: (machine: { id: number, name: string }) => Promise<void>
@@ -60,14 +60,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     _router = ctx?.router ?? {} as Router
   }
 
-  function copyStep() {
-    const editor = useEditorStore()
-    copiedStepValues.value = []
-    sourceMachineId.value = editor.machine.id
-    sourceMachineCommands.value = new Map(editor.machine.commands)
-    editor.selectedSteps.forEach((step) => {
-      copiedStepValues.value.push(klona(step))
-    })
+  function copyStep(machine: Machine, selectedSteps: ProgramStep[]) {
+    copiedStepValues.value = klona(selectedSteps)
+    sourceMachineId.value = machine.id
+    sourceMachineCommands.value = machine.commands
   }
 
   /** Kopyalanan adımları mevcut programa yapıştırır ve makine komutlarına göre adapte eder */
@@ -80,8 +76,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
     const isSameMachine = sourceMachineId.value === editor.machine.id
 
-    editor.selectedSteps = copiedStepValues.value.map(step => adaptStepToMachine(step, sourceMachineCommands.value, isSameMachine))
-    editor.program.steps.splice(stepIndex, 0, ...editor.selectedSteps)
+    const adaptedSteps = copiedStepValues.value.map(step => adaptStepToMachine(step, sourceMachineCommands.value, isSameMachine))
+    editor.program.steps.splice(stepIndex, 0, ...adaptedSteps)
   }
 
   function getCopiedStepsValues(): ProgramStep[] | undefined {

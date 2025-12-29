@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { QForm } from 'quasar'
+import CMCopyStepDialog from '~/components/CMCopyStepDialog.vue'
 import ProgramEditor from '~/components/ProgramEditor.vue'
 import TBUnsavedChangesDialog from '~/components/TBUnsavedChangesDialog.vue'
 import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
-import type { ContextBarButtons } from '~/shared/types'
 import { contextMenuStore } from '~/utils/context-menu'
+import type { ContextBarButtons, ProgramStep } from '~/shared/types'
 
 const editor = useEditorStore()
 const form = ref<QForm>()
@@ -296,7 +297,22 @@ onKeyStroke(['A', 'a'], (event: KeyboardEvent) => {
 onKeyStroke(['C', 'c'], (event: KeyboardEvent) => {
   if (ctrl.value) {
     event.preventDefault()
-    contextMenuStore.copyStep()
+
+    const { machine, program, selectedSteps } = editor
+
+    $q.dialog({
+      component: CMCopyStepDialog,
+      componentProps: {
+        machine,
+        program: {
+          programNo: program.programNo,
+          name: program.name,
+        },
+        selectedSteps,
+      },
+    }).onOk((chosenProgramSteps: ProgramStep[]) => {
+      contextMenuStore.copyStep(machine, chosenProgramSteps)
+    })
   }
 })
 
