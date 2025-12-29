@@ -4,7 +4,7 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
 import { areProgramsEqual, useErrorStore } from './utils'
 import { capitalize } from '~/shared/utils'
-import type { CommandError, CommandTypes, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ProcessType, Program, ProgramDetailPDFData, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, TeleskopSettings, ioListItem } from '~/shared/types'
+import type { CommandError, CommandPath, CommandTypes, IoPath, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ParameterPath, ProcessType, Program, ProgramDetailPDFData, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, StepPath, TeleskopSettings, ioListItem } from '~/shared/types'
 import { CommandEligibility, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
@@ -931,33 +931,62 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Verilen yol (path) üzerinden programın bir öğesini getirir.
+   * Verilen yolun sonundaki öğeyi geri döndürür.
    *
-   * Yol yapısı şu şekildedir:
-   * 1. Step index
-   * 2. Main Komut (mainCommand), Parallel Komut (parallelCommands)
-   * 3. Komut index (main ise 0)
-   * 4. Parametre (parameters), IO (ioList)
-   * 5. IO index
-   * 6. IO value index
+   * @param {StepPath | CommandPath | ParameterPath | IoPath} path - Yol nesnesi.
    *
-   * @param {string} path - Elde edilmek istenen öğenin nokta ile ayrılmış yoludur.
+   * @returns {ProgramStep | ProgramStepCommand | ParameterItem | ioListItem} Yolun sonundaki öğe.
    *
-   * @returns {any} Yolun sonundaki öğe. Eğer yol geçersizse `undefined` döner.
-   *
-   * @description Bu fonksiyon, verilen yol (örneğin: `program.steps.step1`) üzerinden ilgili öğeyi arar ve bulur. Eğer yol geçersizse, `undefined` döner.
+   * @description Bu fonksiyon, verilen yol nesnesi üzerinden ilgili öğeyi arar ve bulur.
    */
-  function getPathElement(path: string): any {
-    const pathParts = path.split('.')
-    let currentElement = program.value as any
-    for (const part of pathParts) {
-      if (isDef(currentElement)) {
-        currentElement = currentElement[part]
-      } else {
-        return
-      }
+  function getPathElement(path: StepPath): ProgramStep
+  function getPathElement(path: CommandPath): ProgramStepCommand
+  function getPathElement(path: ParameterPath): ParameterItem
+  function getPathElement(path: IoPath): ioListItem
+  function getPathElement(path: StepPath | CommandPath | ParameterPath | IoPath): ProgramStep | ProgramStepCommand | ParameterItem | ioListItem {
+    // Find the step
+    const step = program.value.steps.find(s => s.stepId === path.stepId)
+    if (!isDef(step)) {
+      throw new Error(`Step with stepId ${path.stepId} not found`)
     }
-    return currentElement
+
+    // If only stepId is present, return the step
+    if (!('parallelIndex' in path)) {
+      return step
+    }
+
+    // Get the command (main or parallel)
+    const command = path.parallelIndex === -1
+      ? step.mainCommand
+      : step.parallelCommands[path.parallelIndex]
+
+    if (!isDef(command)) {
+      throw new Error(`Command at parallelIndex ${path.parallelIndex} not found`)
+    }
+
+    // If only stepId and parallelIndex are present, return the command
+    if (!('parameterIndex' in path) && !('ioIndex' in path)) {
+      return command
+    }
+
+    // Return parameter or io
+    if ('parameterIndex' in path) {
+      const parameter = command.parameters[path.parameterIndex]
+      if (!isDef(parameter)) {
+        throw new Error(`Parameter at index ${path.parameterIndex} not found`)
+      }
+      return parameter
+    }
+
+    if ('ioIndex' in path) {
+      const io = command.ioList[path.ioIndex]
+      if (!isDef(io)) {
+        throw new Error(`IO at index ${path.ioIndex} not found`)
+      }
+      return io
+    }
+
+    throw new Error('Invalid path object')
   }
 
   /**

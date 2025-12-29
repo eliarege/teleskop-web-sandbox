@@ -6,8 +6,8 @@ import ProgramStepCommandIoInput from './ProgramStepCommandIoInput.vue'
 import type { CommandError, CommandIO, CommandParameter, ProgramStepCommand } from '~/shared/types'
 
 const props = defineProps<{
-  path: string
   stepId: number
+  parallelIndex: number // -1 for main command, >= 0 for parallel command
   expanded?: boolean
   commandError?: CommandError
 }>()
@@ -17,7 +17,7 @@ const $q = useQuasar()
 const editor = useEditorStore()
 const { $commandManager } = useNuxtApp()
 
-const programCommand: ProgramStepCommand = editor.getPathElement(props.path)
+const programCommand = editor.getPathElement({ stepId: props.stepId, parallelIndex: props.parallelIndex })
 const machineCommand = computed(() => {
   if (!isDef(programCommand.commandNo))
     return { editableParameters: [], selectableIOs: [] }
@@ -47,7 +47,7 @@ const groupedParameters = computed(() => {
   }, {} as Record<string, { param: CommandParameter, originalIndex: number }[]>)
 })
 
-const isParallelCommand = computed(() => props.path.includes('.parallelCommands.'))
+const isParallelCommand = computed(() => props.parallelIndex >= 0)
 const stepIndex = computed(() => editor.program.steps.findIndex(s => s.stepId === props.stepId))
 const isLastStep = computed(() => stepIndex.value === editor.program.steps.length - 1)
 
@@ -124,7 +124,7 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
         <!-- Command -->
         <div class="flex">
           <div class="pb-1 pr-2">
-            <CommandSelector :path="props.path" :step-id="stepId" />
+            <CommandSelector :step-id="stepId" :parallel-index="parallelIndex" />
           </div>
 
           <!-- Parameters & IOs -->
@@ -138,8 +138,9 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
               <ProgramStepCommandParameterInput
                 v-for="item in group"
                 :key="`pr-${programCommand.commandNo}-${item.originalIndex}`"
-                :path="`${props.path}.parameters.${item.originalIndex}`"
                 :step-id="stepId"
+                :parallel-index="parallelIndex"
+                :parameter-index="item.originalIndex"
                 :parameter="item.param"
                 :command-no="programCommand.commandNo!"
                 class="parameter-input"
@@ -150,8 +151,9 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
             <ProgramStepCommandIoInput
               v-for="(io, index) in machineCommand.selectableIOs"
               :key="`io-${programCommand.commandNo}-${index}`"
-              :path="`${props.path}.ioList.${index}`"
               :step-id="stepId"
+              :parallel-index="parallelIndex"
+              :io-index="index"
               :io="io"
               :command-no="programCommand.commandNo!"
               :io-error="props.commandError?.messages.find(m => m.ioIndex === io.index)"

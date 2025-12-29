@@ -62,7 +62,7 @@ function onDragEnd(event: SortableEvent) {
 
         <QItemSection class="pl-2" @click.stop="editor.selectStep($event.ctrlKey, step.stepId)">
           <div :id="`step-${step.stepId}`">
-            <ProgramStepForm :path="`steps.${index}`" />
+            <ProgramStepForm :step-id="step.stepId" />
           </div>
         </QItemSection>
 

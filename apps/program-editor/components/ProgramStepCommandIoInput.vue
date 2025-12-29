@@ -2,8 +2,9 @@
 import type { CommandIO, CommandIOSelection, ioListItem } from '~/shared/types'
 
 const props = defineProps<{
-  path: string
   stepId: number
+  parallelIndex: number // -1 for main command, >= 0 for parallel command
+  ioIndex: number
   io: CommandIO
   commandNo: number
   ioError?: { type: string, ioIndex?: number, ioName?: string }
@@ -12,7 +13,11 @@ const props = defineProps<{
 const { t } = useI18n()
 const editor = useEditorStore()
 const { mt } = useProjectTranslations()
-const programIO: ioListItem = editor.getPathElement(props.path)
+const programIO = editor.getPathElement({
+  stepId: props.stepId,
+  parallelIndex: props.parallelIndex,
+  ioIndex: props.ioIndex,
+})
 
 const model = computed({
   get: () => encode(programIO),

@@ -7,7 +7,7 @@ import type { ProgramStep } from '~/shared/types'
 import { useErrorStore } from '~/composables/utils'
 
 const props = defineProps<{
-  path: string
+  stepId: number
 }>()
 
 const $q = useQuasar()
@@ -16,7 +16,7 @@ const editor = useEditorStore()
 const errorStore = useErrorStore()
 const { $commandManager } = useNuxtApp()
 
-const step: ProgramStep = editor.getPathElement(props.path)
+const step = editor.getPathElement({ stepId: props.stepId })
 const stepIndex = computed(() => editor.getStepIndex(step.stepId))
 const stepIcons = computed(() => {
   const mainIcon = editor.getCommandIcon(step.mainCommand.commandNo)
@@ -100,8 +100,8 @@ function removeError(commandId: number) {
     <div @click="removeError(step.mainCommand.commandId)">
       <ProgramStepCommandForm
         class="flex-1"
-        :path="`${props.path}.mainCommand`"
         :step-id="step.stepId"
+        :parallel-index="-1"
         :expanded
         :command-error="getCommandError(step.mainCommand.commandId)"
       />
@@ -132,8 +132,8 @@ function removeError(commandId: number) {
           >
             <div>
               <ProgramStepCommandForm
-                :path="`${props.path}.parallelCommands.${index}`"
                 :step-id="step.stepId"
+                :parallel-index="index"
                 :expanded
                 :command-error="getCommandError(step.parallelCommands[index].commandId)"
               />

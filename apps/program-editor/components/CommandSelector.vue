@@ -6,7 +6,7 @@ import { useEditorStore } from '~~/composables/editor'
 import { useProgramWriteSettings } from '~/composables/settings'
 import { CommandEligibility } from '~/shared/constants'
 
-const props = defineProps<{ path: string, stepId: number }>()
+const props = defineProps<{ stepId: number, parallelIndex: number }>() // -1 for main command
 
 const $q = useQuasar()
 const { t } = useI18n()
@@ -17,8 +17,8 @@ const selectRef = ref<QSelect>()
 const { mt } = useProjectTranslations()
 const settings = useProgramWriteSettings()
 
-const programCommand = ref<ProgramStepCommand>(editor.getPathElement(props.path))
-const isMainCommand = computed(() => props.path.split('.')[2] === 'mainCommand')
+const programCommand = ref(editor.getPathElement({ stepId: props.stepId, parallelIndex: props.parallelIndex }))
+const isMainCommand = computed(() => props.parallelIndex === -1)
 const lastStep = computed(() => editor.program.steps[editor.program.steps.length - 1])
 const isLastStep = computed(() => props.stepId === lastStep.value.stepId)
 const step = computed(() => editor.program.steps.find(s => s.stepId === props.stepId)!)
