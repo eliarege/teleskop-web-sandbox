@@ -2,11 +2,16 @@
 import { computed, ref } from 'vue'
 import { QBtn, QTooltip } from 'quasar'
 import { useResizeObserver } from '@vueuse/core'
+import TBDurationErrorsDialog from './TBDurationErrorsDialog.vue'
 import { useContextBarState } from '~/composables/useContextBar'
 import { calculateProgramDuration } from '~/shared/formula'
 
-const { contextBarButtons } = useContextBarState()
+const { t } = useI18n()
 const editor = useEditorStore()
+const { contextBarButtons } = useContextBarState()
+
+const duration = computed(() => editor.program.duration)
+const durationErrors = ref<string[][]>([])
 
 const visibleContextBarButtons = computed(() =>
   contextBarButtons.value.filter(btn => btn.visible !== false),
@@ -15,11 +20,9 @@ const visibleContextBarButtons = computed(() =>
 function calcProgramDuration() {
   const { machine, program, teleskopSettings: { initialTemperature } } = editor
 
-  return (editor.program.duration = calculateProgramDuration(
-    program,
-    machine,
-    initialTemperature,
-  ))
+  const { duration, errors } = calculateProgramDuration(program, machine, initialTemperature)
+  editor.program.duration = duration
+  durationErrors.value = errors
 }
 
 // Button Label Auto-Hide Logic
@@ -38,6 +41,15 @@ useResizeObserver(container, () => {
 
   showLabels.value = openButtonWidth < container.value.clientWidth
 })
+
+onMounted(() => {
+  calcProgramDuration()
+})
+
+watch(() => [
+  editor.program.steps,
+  editor.teleskopSettings.initialTemperature,
+], calcProgramDuration, { deep: true })
 </script>
 
 <template>
@@ -83,7 +95,24 @@ useResizeObserver(container, () => {
         v-if="editor.program.programNo"
         class="flex items-center px-2"
       >
-        {{ formatDuration(calcProgramDuration()) }}
+        <q-icon
+          v-if="durationErrors.length > 0"
+          name="warning"
+          color="warning"
+          class="mr-2 cursor-pointer"
+          @click="$q.dialog({
+            component: TBDurationErrorsDialog,
+            componentProps: {
+              machine: editor.machine,
+              errors: durationErrors,
+            },
+          })"
+        >
+          <QTooltip>
+            {{ t('contextBar.durationErrorsTooltip') }}
+          </QTooltip>
+        </q-icon>
+        {{ formatDuration(duration) }}
       </div>
 
       <!-- Right Drawer Button -->

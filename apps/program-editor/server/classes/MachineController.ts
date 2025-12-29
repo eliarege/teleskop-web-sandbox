@@ -1158,7 +1158,7 @@ export class MachineController {
     program.duration = calculateProgramDuration(program, {
       ...machine,
       commands: this.commandArrayToMap(machine.commands),
-    }, initialTemp)
+    }, initialTemp).duration
 
     const chemRequests = machine.tbbModel === 'Tonello'
       ? await this.countTonelloChemicalRequests(program)
@@ -1212,8 +1212,14 @@ export class MachineController {
       PHASEVERSION: 1,
       INTERVENTIONFREEPROGRAM: 0,
     }]
+
+    const programDuration = calculateProgramDuration(program, {
+      ...machine,
+      commands: this.commandArrayToMap(machine.commands),
+    }, initialTemp)
+
     program.steps.forEach((step, i) => {
-      // TODO: programda hatalı io varsa makinedeki tanımı yoksa burada hata veriyor.
+      const stepDuration = programDuration.stepDuration[i].duration
 
       // BFMASTERSTEPS
       steps.push({
@@ -1225,7 +1231,7 @@ export class MachineController {
         ISCONDITIONAL: 0,
         CONDITIONSTR: '',
         ERRORS: 0,
-        THEORETICDURATION: 0,
+        THEORETICDURATION: stepDuration,
       })
       // BFMASTERSTEPPARAMS
       step.mainCommand.parameters.forEach((parameter) => {
