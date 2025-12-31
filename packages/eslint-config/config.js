@@ -23,6 +23,7 @@ export const workspaceEslintConfig = antfu(
       'antfu/new-line': 'off',
       'style/brace-style': ['error', '1tbs'],
       'ts/consistent-type-definitions': 'off',
+      'ts/method-signature-style': 'off',
     },
   },
 )
