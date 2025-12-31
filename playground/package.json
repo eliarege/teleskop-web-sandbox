@@ -14,6 +14,11 @@
     "postinstall": "nuxt prepare",
     "keycloak": "../keycloak/keycloak.sh"
   },
+  "dependencies": {
+    "@teleskop/utils": "workspace:*",
+    "fast-deep-equal": "3.1.3",
+    "klona": "2.0.6"
+  },
   "devDependencies": {
     "@teleskop/nuxt-base": "workspace:*",
     "@types/node": "22.9.0",
