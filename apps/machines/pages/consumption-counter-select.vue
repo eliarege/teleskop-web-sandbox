@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RouteLocationRaw } from 'vue-router'
+import { useUnsavedDialogGuard } from '~/composables/useUnsavedDialogGuard'
 
 interface ConsumptionCounter {
   machineId: number
@@ -25,9 +25,21 @@ const originalCounter2 = ref()
 
 const changedCounters = ref<ConsumptionCounter[]>([])
 const isSaving = ref(false)
-const showUnsavedDialog = ref(false)
-const pendingNavigation = ref<RouteLocationRaw | null>(null)
-const allowNavigation = ref(false)
+
+const {
+  confirmVisible,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard<ConsumptionCounter[]>({
+  getState: () => changedCounters.value.map(counter => ({ ...counter })),
+  setState: (state) => {
+    changedCounters.value = (state ?? []).map(counter => ({ ...counter }))
+  },
+  isOpen: () => true,
+  router,
+  enableBeforeUnload: true,
+})
 
 const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
@@ -70,25 +82,6 @@ const hasChanges = computed(() => {
     return false
   }
   return counter1.value.id !== originalCounter1.value.id || counter2.value.id !== originalCounter2.value.id
-})
-
-useEventListener(window, 'beforeunload', (event) => {
-  if (!hasChanges.value)
-    return
-  event.preventDefault()
-  event.returnValue = ''
-})
-
-onBeforeRouteLeave((to) => {
-  if (allowNavigation.value) {
-    allowNavigation.value = false
-    return true
-  }
-  if (!hasChanges.value)
-    return true
-  pendingNavigation.value = to.fullPath
-  showUnsavedDialog.value = true
-  return false
 })
 
 watch(counters, (_newValue, _oldValue) => {
@@ -161,6 +154,7 @@ async function handleSubmit() {
     originalCounter2.value = counter2.value
 
     await refreshCounterOptions()
+    markSaved()
     return true
   } catch (error: any) {
     const errorMessage = error.data?.statusMessage || error.statusMessage || error.message || 'unknown'
@@ -178,37 +172,16 @@ function handleCancel() {
   changedCounters.value = changedCounters.value.filter(c => c.machineId !== selectedMachineId.value)
 }
 
-function cancelLeavePrompt() {
-  showUnsavedDialog.value = false
-  pendingNavigation.value = null
-}
-
-async function proceedPendingNavigation() {
-  const target = pendingNavigation.value
-  pendingNavigation.value = null
-  showUnsavedDialog.value = false
-
-  if (!target)
-    return
-
-  allowNavigation.value = true
-  try {
-    await router.push(target)
-  } catch (error) {
-    console.error(error)
-    allowNavigation.value = false
-  }
-}
-
-async function leaveWithoutSaving() {
-  await proceedPendingNavigation()
+function leaveWithoutSaving() {
+  confirmDiscard()
 }
 
 async function saveAndLeave() {
   const success = await handleSubmit()
   if (!success)
     return
-  await proceedPendingNavigation()
+  markSaved()
+  confirmDiscard()
 }
 
 const copy = ref()
@@ -320,7 +293,7 @@ const contextMenuOptions = computed(() => [
   </div>
 
   <q-dialog
-    v-model="showUnsavedDialog"
+    v-model="confirmVisible"
     persistent
   >
     <q-card style="min-width: 420px">
@@ -336,7 +309,7 @@ const contextMenuOptions = computed(() => [
         <q-btn
           flat
           :label="t('cancel')"
-          @click="cancelLeavePrompt"
+          @click="keepEditing"
         />
         <q-btn
           flat
