@@ -106,9 +106,8 @@ export function useUnsavedDialogGuard<T>(options: UseUnsavedDialogGuardOptions<T
     })
   })
 
-  let stopBeforeUnload: (() => void) | undefined
   if (typeof window !== 'undefined') {
-    stopBeforeUnload = useEventListener(window, 'beforeunload', (event) => {
+    useEventListener(window, 'beforeunload', (event) => {
       if (!shouldPreventLeave())
         return
       event.preventDefault()
@@ -118,7 +117,6 @@ export function useUnsavedDialogGuard<T>(options: UseUnsavedDialogGuardOptions<T
 
   onScopeDispose(() => {
     removeGuard()
-    stopBeforeUnload?.()
   })
 
   return {
