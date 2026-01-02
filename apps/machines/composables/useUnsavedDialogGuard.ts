@@ -1,20 +1,19 @@
 import { klona } from 'klona'
 import { isEqual } from 'lodash-es'
-import type { Router } from 'vue-router'
+import { useEventListener } from '@vueuse/core'
+import { useRouter } from 'vue-router'
 
 interface UseUnsavedDialogGuardOptions<T> {
   getState: () => T
   setState: (state: T) => void
   isOpen: () => boolean
-  router?: Router
-  enableBeforeUnload?: boolean
   shouldPreventLeave?: () => boolean
 }
 
 interface UseUnsavedDialogGuardResult {
   hasChanges: Ref<boolean>
   confirmVisible: Ref<boolean>
-  requestClose: (action: () => void) => void
+  requestClose: (action: () => void, cancelAction?: () => void) => void
   confirmDiscard: () => void
   keepEditing: () => void
   captureBaseline: () => void
@@ -32,6 +31,7 @@ export function useUnsavedDialogGuard<T>(options: UseUnsavedDialogGuardOptions<T
   const confirmVisible = ref(false)
   const pendingAction = ref<(() => void) | null>(null)
   const pendingCancelAction = ref<(() => void) | null>(null)
+  const router = useRouter()
 
   function captureBaseline() {
     baseline.value = cloneValue(options.getState())
@@ -93,38 +93,33 @@ export function useUnsavedDialogGuard<T>(options: UseUnsavedDialogGuardOptions<T
 
   const shouldPreventLeave = () => options.shouldPreventLeave?.() ?? hasChanges.value
 
-  if (options.router) {
-    const removeGuard = options.router.beforeEach((_to, _from, next) => {
-      if (!shouldPreventLeave()) {
-        next()
-        return
-      }
+  const removeGuard = router.beforeEach((_to, _from, next) => {
+    if (!shouldPreventLeave()) {
+      next()
+      return
+    }
 
-      requestClose(() => {
-        next()
-      }, () => {
-        next(false)
-      })
+    requestClose(() => {
+      next()
+    }, () => {
+      next(false)
     })
+  })
 
-    onScopeDispose(() => {
-      removeGuard()
-    })
-  }
-
-  if (options.enableBeforeUnload && typeof window !== 'undefined') {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  let stopBeforeUnload: (() => void) | undefined
+  if (typeof window !== 'undefined') {
+    stopBeforeUnload = useEventListener(window, 'beforeunload', (event) => {
       if (!shouldPreventLeave())
         return
       event.preventDefault()
       event.returnValue = ''
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    onScopeDispose(() => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
     })
   }
+
+  onScopeDispose(() => {
+    removeGuard()
+    stopBeforeUnload?.()
+  })
 
   return {
     hasChanges,

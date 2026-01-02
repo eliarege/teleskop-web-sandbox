@@ -13,7 +13,6 @@ interface CounterOption {
 }
 
 const kc = useKeycloak()
-const router = useRouter()
 const { t } = useI18n()
 const { notifyError, notifySuccess } = useNotify()
 const selectedMachineId = ref()
@@ -26,6 +25,13 @@ const originalCounter2 = ref()
 const changedCounters = ref<ConsumptionCounter[]>([])
 const isSaving = ref(false)
 
+const hasChanges = computed(() => {
+  if (!counter1.value || !counter2.value || !originalCounter1.value || !originalCounter2.value) {
+    return false
+  }
+  return counter1.value.id !== originalCounter1.value.id || counter2.value.id !== originalCounter2.value.id
+})
+
 const {
   confirmVisible,
   confirmDiscard,
@@ -37,8 +43,7 @@ const {
     changedCounters.value = (state ?? []).map(counter => ({ ...counter }))
   },
   isOpen: () => true,
-  router,
-  enableBeforeUnload: true,
+  shouldPreventLeave: () => hasChanges.value,
 })
 
 const { data: machines } = useAuthFetch('/api/machines/active-machines')
@@ -75,13 +80,6 @@ const counter2Options = computed(() => {
 const { data: counters, refresh: refreshCounters } = useAuthFetch('/api/consumption-counters/consumption-counter', {
   immediate: false,
   query: { machineId: selectedMachineId },
-})
-
-const hasChanges = computed(() => {
-  if (!counter1.value || !counter2.value || !originalCounter1.value || !originalCounter2.value) {
-    return false
-  }
-  return counter1.value.id !== originalCounter1.value.id || counter2.value.id !== originalCounter2.value.id
 })
 
 watch(counters, (_newValue, _oldValue) => {
@@ -173,6 +171,7 @@ function handleCancel() {
 }
 
 function leaveWithoutSaving() {
+  handleCancel()
   confirmDiscard()
 }
 
