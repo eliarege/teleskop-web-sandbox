@@ -12,9 +12,28 @@ const kc = useKeycloak()
 
 const { t } = useI18n()
 
-const selected = ref<Partial<TreatmentParameter>>({
-  id: -1,
-  treatmentParameter: '',
+function createDefaultSelection() {
+  return {
+    id: -1,
+    treatmentParameter: '',
+  }
+}
+
+const selected = ref<Partial<TreatmentParameter>>(createDefaultSelection())
+
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => selected.value,
+  setState: (state) => {
+    selected.value = state ? { ...state } : createDefaultSelection()
+  },
+  isOpen: () => props.show,
 })
 
 const selectedGroupId = ref(-1)
@@ -30,10 +49,8 @@ async function handleAdd() {
       body: selected.value,
     })
     await refreshParams()
-    selected.value = {
-      id: -1,
-      treatmentParameter: '',
-    }
+    selected.value = createDefaultSelection()
+    markSaved()
     notifySuccess(t('PARAMETER_CREATED_SUCCESSFULLY'))
   } catch (error: any) {
     if (error.statusCode === 409) {
@@ -51,6 +68,7 @@ async function handleEdit() {
     })
     await refreshParams()
     notifySuccess(t('PARAMETER_UPDATED_SUCCESSFULLY'))
+    markSaved()
   } catch (error: any) {
     if (error.statusCode === 409) {
       notifyError(t('PARAMETER_ALREADY_EXISTS'))
@@ -66,10 +84,8 @@ async function handleDelete() {
       body: selected.value,
     })
     await refreshParams()
-    selected.value = {
-      id: -1,
-      treatmentParameter: '',
-    }
+    selected.value = createDefaultSelection()
+    markSaved()
     notifySuccess(t('PARAMETER_DELETED_SUCCESSFULLY'))
   } catch (error: any) {
     if (error.statusCode === 404) {
@@ -82,12 +98,18 @@ async function handleDelete() {
 async function handleGroupClick(obj: TreatmentParameter) {
   selected.value = obj
   selectedGroupId.value = obj.id
+  markSaved()
+}
+
+function handleCancel() {
+  requestClose(() => emit('close'))
 }
 </script>
 
 <template>
   <q-dialog
     :model-value="props.show"
+    :persistent="hasChanges"
     @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
@@ -116,6 +138,13 @@ async function handleGroupClick(obj: TreatmentParameter) {
               :disable="selected.id === -1"
               @click="handleDelete"
             />
+            <q-btn
+              no-caps
+              :label="t('cancel')"
+              color="secondary"
+              outline
+              @click="handleCancel"
+            />
           </div>
         </div>
         <div class="my-4">
@@ -139,6 +168,17 @@ async function handleGroupClick(obj: TreatmentParameter) {
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>
 
 <style scoped>

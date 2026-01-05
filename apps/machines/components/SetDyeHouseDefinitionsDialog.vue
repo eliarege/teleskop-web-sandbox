@@ -12,12 +12,31 @@ const kc = useKeycloak()
 
 const { t } = useI18n()
 
-const options = ref<Record<string, boolean>>({
-  users: false,
-  manualReasons: false,
-  machineIdleReasons: false,
-  machineFinishReasons: false,
-  commandTimeoutReasons: false,
+function createDefaultOptions() {
+  return {
+    users: false,
+    manualReasons: false,
+    machineIdleReasons: false,
+    machineFinishReasons: false,
+    commandTimeoutReasons: false,
+  }
+}
+
+const options = ref<Record<string, boolean>>(createDefaultOptions())
+
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => options.value,
+  setState: (state) => {
+    options.value = state ? { ...state } : createDefaultOptions()
+  },
+  isOpen: () => props.show,
 })
 
 const { notifySuccess, notifyError } = useNotify()
@@ -32,9 +51,14 @@ async function setDefinitions() {
       },
     })
     notifySuccess(t('definitionsUploaded'))
+    markSaved()
   } catch (error) {
     notifyError(t('errorDuringProcess'))
   }
+}
+
+function handleCancel() {
+  requestClose(() => emit('close'))
 }
 
 function selectAll() {
@@ -57,7 +81,11 @@ function reverseSelected() {
 </script>
 
 <template>
-  <q-dialog :model-value="show" @hide="emit('close')">
+  <q-dialog
+    :model-value="show"
+    :persistent="hasChanges"
+    @hide="emit('close')"
+  >
     <q-card class="p-8 min-w-[1000px]">
       <div class="flex mb-4">
         <h3 class="flex grow justify-center">
@@ -67,7 +95,7 @@ function reverseSelected() {
           name="close"
           class="cursor-pointer"
           size="1.5em"
-          @click="$emit('close')"
+          @click="handleCancel"
         />
       </div>
       <div class="grid grid-cols-2 gap-2 mb-4">
@@ -96,7 +124,7 @@ function reverseSelected() {
         <q-btn
           no-caps
           :label="t('cancel')"
-          @click="emit('close')"
+          @click="handleCancel"
         />
         <q-btn
           no-caps
@@ -106,6 +134,17 @@ function reverseSelected() {
       </div>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>
 
 <style scoped>

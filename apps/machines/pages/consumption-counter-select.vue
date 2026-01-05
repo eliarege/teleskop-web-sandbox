@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useUnsavedDialogGuard } from '~/composables/useUnsavedDialogGuard'
+
 interface ConsumptionCounter {
   machineId: number
   counterId1: number
@@ -21,6 +23,28 @@ const originalCounter1 = ref()
 const originalCounter2 = ref()
 
 const changedCounters = ref<ConsumptionCounter[]>([])
+const isSaving = ref(false)
+
+const hasChanges = computed(() => {
+  if (!counter1.value || !counter2.value || !originalCounter1.value || !originalCounter2.value) {
+    return false
+  }
+  return counter1.value.id !== originalCounter1.value.id || counter2.value.id !== originalCounter2.value.id
+})
+
+const {
+  confirmVisible,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard<ConsumptionCounter[]>({
+  getState: () => changedCounters.value.map(counter => ({ ...counter })),
+  setState: (state) => {
+    changedCounters.value = (state ?? []).map(counter => ({ ...counter }))
+  },
+  isOpen: () => true,
+  shouldPreventLeave: () => hasChanges.value,
+})
 
 const { data: machines } = useAuthFetch('/api/machines/active-machines')
 
@@ -56,13 +80,6 @@ const counter2Options = computed(() => {
 const { data: counters, refresh: refreshCounters } = useAuthFetch('/api/consumption-counters/consumption-counter', {
   immediate: false,
   query: { machineId: selectedMachineId },
-})
-
-const hasChanges = computed(() => {
-  if (!counter1.value || !counter2.value || !originalCounter1.value || !originalCounter2.value) {
-    return false
-  }
-  return counter1.value.id !== originalCounter1.value.id || counter2.value.id !== originalCounter2.value.id
 })
 
 watch(counters, (_newValue, _oldValue) => {
@@ -113,7 +130,9 @@ function handleOptionChange() {
 
 async function handleSubmit() {
   if (changedCounters.value.length === 0)
-    return
+    return true
+
+  isSaving.value = true
 
   try {
     const result = await kc.fetch('/api/consumption-counters/consumption-counters', {
@@ -133,9 +152,14 @@ async function handleSubmit() {
     originalCounter2.value = counter2.value
 
     await refreshCounterOptions()
+    markSaved()
+    return true
   } catch (error: any) {
     const errorMessage = error.data?.statusMessage || error.statusMessage || error.message || 'unknown'
     notifyError(t(`error.${errorMessage}`))
+    return false
+  } finally {
+    isSaving.value = false
   }
 }
 
@@ -144,6 +168,19 @@ function handleCancel() {
   counter2.value = originalCounter2.value
 
   changedCounters.value = changedCounters.value.filter(c => c.machineId !== selectedMachineId.value)
+}
+
+function leaveWithoutSaving() {
+  handleCancel()
+  confirmDiscard()
+}
+
+async function saveAndLeave() {
+  const success = await handleSubmit()
+  if (!success)
+    return
+  markSaved()
+  confirmDiscard()
 }
 
 const copy = ref()
@@ -247,11 +284,47 @@ const contextMenuOptions = computed(() => [
           no-caps
           :label="t('submit')"
           :disabled="!hasChanges"
+          :loading="isSaving"
           @click="handleSubmit"
         />
       </q-card-actions>
     </q-card>
   </div>
+
+  <q-dialog
+    v-model="confirmVisible"
+    persistent
+  >
+    <q-card style="min-width: 420px">
+      <q-card-section>
+        <div class="text-h6">
+          {{ t('unsavedChanges.title') }}
+        </div>
+        <div class="text-body2 q-mt-sm">
+          {{ t('unsavedChanges.message') }}
+        </div>
+      </q-card-section>
+      <q-card-actions align="right" class="q-pa-md">
+        <q-btn
+          flat
+          :label="t('cancel')"
+          @click="keepEditing"
+        />
+        <q-btn
+          flat
+          color="negative"
+          :label="t('unsavedChanges.discard')"
+          @click="leaveWithoutSaving"
+        />
+        <q-btn
+          color="primary"
+          :label="t('submit')"
+          :loading="isSaving"
+          @click="saveAndLeave"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <style scoped>

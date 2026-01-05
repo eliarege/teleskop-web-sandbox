@@ -30,6 +30,21 @@ const settingsList = [
 
 const formData = ref<Partial<Setting>>({})
 
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => formData.value,
+  setState: (state) => {
+    formData.value = state ? { ...state } : {}
+  },
+  isOpen: () => props.show,
+})
+
 const { data: _setting } = useAuthFetch('/api/machines/teleskop-settings', {
   default: () => ({}),
   onResponse: (res) => {
@@ -48,6 +63,7 @@ const { data: _setting } = useAuthFetch('/api/machines/teleskop-settings', {
         formData.value[item.label as Label] = false
       }
     }
+    markSaved()
   },
 
 })
@@ -113,12 +129,18 @@ async function handleSubmit() {
     method: 'PUT',
     body: submitData,
   })
+  markSaved()
+}
+
+function handleCancel() {
+  requestClose(() => emit('close'))
 }
 </script>
 
 <template>
   <q-dialog
     :model-value="props.show"
+    :persistent="hasChanges"
     @hide="emit('close')"
   >
     <q-card class="min-w-[1000px]">
@@ -133,9 +155,27 @@ async function handleSubmit() {
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" />
-          <FormKit type="submit" :label="t('submit')" />
+          <div class="flex justify-end gap-2 mt-4">
+            <q-btn
+              flat
+              :label="t('cancel')"
+              @click="handleCancel"
+            />
+            <FormKit type="submit" :label="t('submit')" />
+          </div>
         </FormKit>
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>

@@ -13,6 +13,7 @@ const selected = defineModel('selected', {
   default: () => [],
   required: true,
 })
+const emit = defineEmits(['dblClick'])
 
 const { t } = useI18n()
 const kc = useKeycloak()
@@ -174,6 +175,10 @@ function onRowClick(row: Machine, isContextMenu = false) {
     // }
   }
 }
+function onDblClick(row: Machine) {
+  selected.value = [row]
+  emit('dblClick', row)
+}
 function selectAll() {
   if (selected.value.length === props.rows.length) {
     selected.value = []
@@ -236,6 +241,7 @@ function selectAll() {
             v-for="col in bodyProps.cols"
             :key="col.name"
             :props="bodyProps"
+            @dblclick="onDblClick(bodyProps.row)"
           >
             <div v-if="typeof col.value === 'boolean'">
               <TwIcon

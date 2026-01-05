@@ -22,6 +22,20 @@ const { notifyError } = useNotify()
 const showModal = ref(false)
 const selected = ref<T[]>([])
 const formData = ref<T>({})
+const {
+  hasChanges,
+  confirmVisible,
+  requestClose,
+  confirmDiscard,
+  keepEditing,
+  markSaved,
+} = useUnsavedDialogGuard({
+  getState: () => formData.value,
+  setState: (state) => {
+    formData.value = state ? { ...state } : {}
+  },
+  isOpen: () => showModal.value,
+})
 const action = ref<'add' | 'edit'>()
 const tableColumns = ref([])
 const schema = ref([])
@@ -76,6 +90,7 @@ function handleSubmit(formData: T) {
   else if (action.value === 'edit')
     emit('edit', formData, selected.value[0])
   selected.value = []
+  markSaved()
   showModal.value = false
 }
 
@@ -85,6 +100,14 @@ function handleDelete() {
     selected.value = []
   } else
     notifyError(t('pleaseSelectaRowToDelete'))
+}
+
+function closeDialog() {
+  showModal.value = false
+}
+
+function handleCancel() {
+  requestClose(() => closeDialog())
 }
 // TODO: fix locale change error
 watch(showModal, async (newValue, _oldValue) => {
@@ -147,13 +170,17 @@ watch(showModal, async (newValue, _oldValue) => {
   </q-table>
 
   <!-- Form Dialog -->
-  <q-dialog v-model="showModal" @hide="emit('close')">
+  <q-dialog
+    v-model="showModal"
+    :persistent="hasChanges"
+    @hide="emit('close')"
+  >
     <q-card class="min-w-fit">
       <q-card-actions align="right">
         <q-btn
           flat
           icon="close"
-          @click="showModal = false;emit('close')"
+          @click="handleCancel"
         />
       </q-card-actions>
       <q-card-section>
@@ -166,11 +193,27 @@ watch(showModal, async (newValue, _oldValue) => {
         >
           <FormKitSchema :schema="schema" />
           <slot name="form-content" :form-data="formData" />
-          <q-card-actions align="right" class="col-span-full">
+          <q-card-actions align="right" class="col-span-full gap-2">
+            <q-btn
+              flat
+              :label="t('cancel')"
+              @click="handleCancel"
+            />
             <FormKit type="submit" :label="t('submit')" />
           </q-card-actions>
         </FormKit>
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <ConfirmDialog
+    v-model="confirmVisible"
+    :title="t('unsavedChanges.title')"
+    :message="t('unsavedChanges.message')"
+    :cancel-label="t('unsavedChanges.continue')"
+    :confirm-label="t('unsavedChanges.discard')"
+    confirm-color="negative"
+    @confirm="confirmDiscard"
+    @cancel="keepEditing"
+  />
 </template>
