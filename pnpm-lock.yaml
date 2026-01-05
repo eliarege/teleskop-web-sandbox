@@ -14,9 +14,9 @@ patchedDependencies:
   httpxy:
     hash: b368a8dd810663a4b97ecfbaa010178cc1cf4644f16a8ad8f5573a7dfda092bb
     path: patches/httpxy.patch
-  quasar:
-    hash: 29ba394d9559db64142e24ec1d32afe164a95993be3eee8cef1fad072284c532
-    path: patches/quasar.patch
+  quasar@2.18.6:
+    hash: 4049f03a542841d6c1bbeb32d3f4ef08e75e88dc5554061e9a4deb9e028f6e59
+    path: patches/quasar@2.18.6.patch
 
 importers:
 
@@ -1289,7 +1289,7 @@ importers:
         version: 6.9.16
       nuxt-quasar-ui:
         specifier: 2.1.7
-        version: 2.1.7(@quasar/extras@1.16.13)(magicast@0.3.5)(quasar@2.17.2(patch_hash=29ba394d9559db64142e24ec1d32afe164a95993be3eee8cef1fad072284c532))(rollup@4.25.0)(webpack-sources@3.3.3)
+        version: 2.1.7(@quasar/extras@1.16.13)(magicast@0.3.5)(quasar@2.18.6(patch_hash=4049f03a542841d6c1bbeb32d3f4ef08e75e88dc5554061e9a4deb9e028f6e59))(rollup@4.25.0)(webpack-sources@3.3.3)
       pinia:
         specifier: 2.2.6
         version: 2.2.6(typescript@5.6.3)(vue@3.5.12(typescript@5.6.3))
@@ -1306,8 +1306,8 @@ importers:
         specifier: 6.1.1
         version: 6.1.1
       quasar:
-        specifier: 2.17.2
-        version: 2.17.2(patch_hash=29ba394d9559db64142e24ec1d32afe164a95993be3eee8cef1fad072284c532)
+        specifier: 2.18.6
+        version: 2.18.6(patch_hash=4049f03a542841d6c1bbeb32d3f4ef08e75e88dc5554061e9a4deb9e028f6e59)
       simple-keyboard:
         specifier: 3.8.16
         version: 3.8.16
@@ -7611,8 +7611,8 @@ packages:
     resolution: {integrity: sha512-YWWTjgABSKcvs/nWBi9PycY/JiPJqOD4JA6o9Sej2AtvSGarXxKC3OQSk4pAarbdQlKAh5D4FCQkJNkW+GAn3w==}
     engines: {node: '>=0.6'}
 
-  quasar@2.17.2:
-    resolution: {integrity: sha512-wycJcrjXsNxyNFYaw7eviKAo0I3LaQap0GCHXUEiaAi4H+a9LJbgkoZSZKCP4M0UO4iVnkWVkQzsFodyHk5uHQ==}
+  quasar@2.18.6:
+    resolution: {integrity: sha512-ZlK+vJXOBPSFDCNQDBDNwSI+AHoqaFPxK8ve6mhsYLhMKWI5b8zsGY9VU1xYjngO2aBvU4fvGWXy4tTbzrBk8Q==}
     engines: {node: '>= 10.18.1', npm: '>= 6.13.4', yarn: '>= 1.21.1'}
 
   queue-microtask@1.2.3:
@@ -15505,14 +15505,14 @@ snapshots:
 
   nuxi@3.15.0: {}
 
-  nuxt-quasar-ui@2.1.7(@quasar/extras@1.16.13)(magicast@0.3.5)(quasar@2.17.2(patch_hash=29ba394d9559db64142e24ec1d32afe164a95993be3eee8cef1fad072284c532))(rollup@4.25.0)(webpack-sources@3.3.3):
+  nuxt-quasar-ui@2.1.7(@quasar/extras@1.16.13)(magicast@0.3.5)(quasar@2.18.6(patch_hash=4049f03a542841d6c1bbeb32d3f4ef08e75e88dc5554061e9a4deb9e028f6e59))(rollup@4.25.0)(webpack-sources@3.3.3):
     dependencies:
       '@nuxt/kit': 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.3.3)
       '@quasar/extras': 1.16.13
       defu: 6.1.4
       magic-string: 0.30.12
       p-memoize: 7.1.1
-      quasar: 2.17.2(patch_hash=29ba394d9559db64142e24ec1d32afe164a95993be3eee8cef1fad072284c532)
+      quasar: 2.18.6(patch_hash=4049f03a542841d6c1bbeb32d3f4ef08e75e88dc5554061e9a4deb9e028f6e59)
       semver: 7.6.3
     transitivePeerDependencies:
       - magicast
@@ -16312,7 +16312,7 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
-  quasar@2.17.2(patch_hash=29ba394d9559db64142e24ec1d32afe164a95993be3eee8cef1fad072284c532): {}
+  quasar@2.18.6(patch_hash=4049f03a542841d6c1bbeb32d3f4ef08e75e88dc5554061e9a4deb9e028f6e59): {}
 
   queue-microtask@1.2.3: {}
 

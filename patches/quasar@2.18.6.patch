@@ -1,26 +1,18 @@
 diff --git a/dist/quasar.client.js b/dist/quasar.client.js
-index b337796910094e6801d31ae27366fda45a96d48d..b2ce1450478da11fd06ac02825d6eb140f4622de 100644
+index efe39d03a7204fcd5b478749465d71221077137f..dcb935e199a47c7bee3f21effc4f3f319c6d48ee 100644
 --- a/dist/quasar.client.js
 +++ b/dist/quasar.client.js
-@@ -20821,7 +20821,8 @@ var QSelect_default = createComponent({
+@@ -20767,7 +20767,8 @@ var QSelect_default = createComponent({
      // override of useVirtualScrollProps > virtualScrollItemSize (no default)
      virtualScrollItemSize: useVirtualScrollProps.virtualScrollItemSize.type,
      onNewValue: Function,
 -    onFilter: Function
 +    onFilter: Function,
-+    disableDownOpenMenu: Boolean,
++    disableDownOpenMenu: Boolean
    },
    emits: [
      ...useFieldEmits,
-@@ -21209,6 +21210,7 @@ var QSelect_default = createComponent({
-       if (shouldIgnoreKey(e) === true) {
-         return;
-       }
-+      
-       const newValueModeValid = inputValue.value.length !== 0 && (props4.newValueMode !== void 0 || props4.onNewValue !== void 0);
-       const tabShouldSelect = e.shiftKey !== true && props4.disableTabSelection !== true && props4.multiple !== true && (optionIndex.value !== -1 || newValueModeValid === true);
-       if (e.keyCode === 27) {
-@@ -21220,7 +21222,7 @@ var QSelect_default = createComponent({
+@@ -21158,7 +21159,7 @@ var QSelect_default = createComponent({
          return;
        }
        if (e.target === void 0 || e.target.id !== state.targetUid.value || state.editable.value !== true) return;
@@ -29,7 +21,7 @@ index b337796910094e6801d31ae27366fda45a96d48d..b2ce1450478da11fd06ac02825d6eb14
          stopAndPrevent(e);
          showPopup();
          return;
-@@ -21249,7 +21251,7 @@ var QSelect_default = createComponent({
+@@ -21187,7 +21188,7 @@ var QSelect_default = createComponent({
          );
          moveOptionSelection(e.keyCode === 33 ? 1 : -1, props4.multiple);
        }
@@ -39,22 +31,22 @@ index b337796910094e6801d31ae27366fda45a96d48d..b2ce1450478da11fd06ac02825d6eb14
          moveOptionSelection(e.keyCode === 38 ? -1 : 1, props4.multiple);
        }
 diff --git a/dist/types/index.d.ts b/dist/types/index.d.ts
-index da29c434007c6db64bececf40521ba75fa2fc41c..eac4dd5a4b0893ce8bfec5c7dec3a5c96514da0a 100644
+index a72729bbd0d20a9059287d31962c5fea96dfe3cf..7ba7415ad5ead1640e13231e063b6c4d67d8c122 100644
 --- a/dist/types/index.d.ts
 +++ b/dist/types/index.d.ts
-@@ -10992,6 +10992,10 @@ export interface QSelectProps {
+@@ -11022,6 +11022,10 @@ export interface QSelectProps {
     * Default value: 'default'
     */
    behavior?: "default" | "menu" | "dialog" | undefined;
 +  /**
 +   * When menu is closed, prevent ArrowDown from opening the menu
 +   */
-+  disableDownOpenMenu?: boolean
++  disableDownOpenMenu?: boolean;
    /**
     * Emitted when the virtual scroll occurs
     * @param details Object of properties on the new scroll position
 diff --git a/src/components/select/QSelect.js b/src/components/select/QSelect.js
-index 2bba0526126c220f10edec21534a252c5e3714b2..0f1be423b017f8c493d2798d49a68e0340cb1af4 100644
+index b0d922f75b8850275ab4d5426774e9e8f8d92437..39dba48f2e402c2eb1d2de10b4354ff1f4d16d02 100644
 --- a/src/components/select/QSelect.js
 +++ b/src/components/select/QSelect.js
 @@ -134,7 +134,8 @@ export default createComponent({
@@ -63,11 +55,11 @@ index 2bba0526126c220f10edec21534a252c5e3714b2..0f1be423b017f8c493d2798d49a68e03
      onNewValue: Function,
 -    onFilter: Function
 +    onFilter: Function,
-+    disableDownOpenMenu: Boolean,
++    disableDownOpenMenu: Boolean
    },
  
    emits: [
-@@ -742,6 +743,7 @@ export default createComponent({
+@@ -748,6 +749,7 @@ export default createComponent({
          e.keyCode === 40
          && state.innerLoading.value !== true
          && menu.value === false
@@ -75,7 +67,7 @@ index 2bba0526126c220f10edec21534a252c5e3714b2..0f1be423b017f8c493d2798d49a68e03
        ) {
          stopAndPrevent(e)
          showPopup()
-@@ -794,7 +796,7 @@ export default createComponent({
+@@ -801,7 +803,7 @@ export default createComponent({
        }
  
        // up, down
