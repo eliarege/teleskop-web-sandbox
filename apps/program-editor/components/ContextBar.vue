@@ -8,6 +8,8 @@ import { calculateProgramDuration } from '~/shared/formula'
 
 const { t } = useI18n()
 const editor = useEditorStore()
+const machine = useMachineStore()
+const teleskopSettings = useTeleskopSettingsStore()
 const { contextBarButtons } = useContextBarState()
 
 const duration = computed(() => editor.program.duration)
@@ -18,9 +20,11 @@ const visibleContextBarButtons = computed(() =>
 )
 
 function calcProgramDuration() {
-  const { machine, program, teleskopSettings: { initialTemperature } } = editor
-
-  const { duration, errors } = calculateProgramDuration(program, machine, initialTemperature)
+  const { duration, errors } = calculateProgramDuration(
+    editor.program,
+    machine.currentMachine,
+    teleskopSettings.initialTemperature,
+  )
   editor.program.duration = duration
   durationErrors.value = errors
 }
@@ -48,7 +52,7 @@ onMounted(() => {
 
 watch(() => [
   editor.program.steps,
-  editor.teleskopSettings.initialTemperature,
+  teleskopSettings.initialTemperature,
 ], calcProgramDuration, { deep: true })
 </script>
 
@@ -103,7 +107,7 @@ watch(() => [
           @click="$q.dialog({
             component: TBDurationErrorsDialog,
             componentProps: {
-              machine: editor.machine,
+              machine: machine.currentMachine,
               errors: durationErrors,
             },
           })"

@@ -5,10 +5,11 @@ import { isDef } from '@teleskop/utils'
 import { useEditorStore } from '~/composables/editor'
 import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
 
-const editor = useEditorStore()
-const { mt } = useProjectTranslations()
-const { t } = useI18n()
 const $q = useQuasar()
+const { t } = useI18n()
+const editor = useEditorStore()
+const machine = useMachineStore()
+const { mt } = useProjectTranslations()
 const { $commandManager } = useNuxtApp()
 
 const sortableOptions = computed<SortableOptions>(() => ({
@@ -26,11 +27,11 @@ const searchQuery = ref('')
 const { notifyError } = useNotify()
 
 const translatedCommands = computed(() => {
-  const commandsArray: MachineCommand[] = Array.from(editor.machine.commands.values())
+  const commandsArray: MachineCommand[] = Array.from(machine.currentMachine.commands.values())
   return commandsArray.map(command => ({
     ...command,
-    name: mt(command.name, editor.machine.id),
-    icon: editor.getCommandIcon(command.commandNo),
+    name: mt(command.name, machine.currentMachine.id),
+    icon: machine.getCommandIcon(command.commandNo),
   }))
 })
 
@@ -124,7 +125,7 @@ function validateParallelCommands(stepIndex: number): boolean {
               <div v-else class="inline-block w-4 h-4" />
               <span class="font-bold">{{ command.commandNo }}</span>
               <TruncatedText
-                :text="`/ ${mt(command.name, editor.machine.id)}`"
+                :text="`/ ${mt(command.name, machine.currentMachine.id)}`"
                 :max-length="24"
               />
             </QItemLabel>

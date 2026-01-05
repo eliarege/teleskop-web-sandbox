@@ -13,14 +13,15 @@ const props = defineProps<{
 const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
+const machine = useMachineStore()
 const errorStore = useErrorStore()
 const { $commandManager } = useNuxtApp()
 
 const step = editor.getPathElement({ stepId: props.stepId })
 const stepIndex = computed(() => editor.getStepIndex(step.stepId))
 const stepIcons = computed(() => {
-  const mainIcon = editor.getCommandIcon(step.mainCommand.commandNo)
-  const parallelIcons = step.parallelCommands.map(({ commandNo }) => editor.getCommandIcon(commandNo))
+  const mainIcon = machine.getCommandIcon(step.mainCommand.commandNo)
+  const parallelIcons = step.parallelCommands.map(({ commandNo }) => machine.getCommandIcon(commandNo))
 
   return [mainIcon, ...parallelIcons].filter(icon => isDef(icon))
 })
@@ -28,7 +29,7 @@ const stepIcons = computed(() => {
 const isLastStep = computed(() => editor.program.steps.length - 1 === stepIndex.value)
 
 const expanded = ref<boolean>(
-  errorStore.getStepErrors(editor.machine.id, editor.program.programNo, step.stepId).length > 0
+  errorStore.getStepErrors(machine.currentMachine.id, editor.program.programNo, step.stepId).length > 0
   || editor.allStepExpanded,
 )
 const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
@@ -88,7 +89,7 @@ function removeError(commandId: number) {
     </div>
 
     <QBtn
-      v-if="!editor.isTonello"
+      v-if="!machine.isTonello"
       class="expand-btn mr-2"
       :icon="expandIcon"
       flat
@@ -107,7 +108,7 @@ function removeError(commandId: number) {
       />
     </div>
   </div>
-  <div v-if="!editor.isTonello">
+  <div v-if="!machine.isTonello">
     <div
       v-show="expanded"
       class="e-border-color border-(t x-0) pl-16"

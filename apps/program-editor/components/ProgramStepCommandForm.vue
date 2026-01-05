@@ -15,21 +15,21 @@ const props = defineProps<{
 const { t } = useI18n()
 const $q = useQuasar()
 const editor = useEditorStore()
+const machine = useMachineStore()
 const { $commandManager } = useNuxtApp()
 
 const programCommand = editor.getPathElement({ stepId: props.stepId, parallelIndex: props.parallelIndex })
 const machineCommand = computed(() => {
   if (!isDef(programCommand.commandNo))
     return { editableParameters: [], selectableIOs: [] }
-
-  const command = editor.machine.commands.get(programCommand.commandNo)
+  const command = machine.currentMachine.commands.get(programCommand.commandNo)
   const editableParameters = command?.parameters.filter((parameter: CommandParameter) => parameter.editable || parameter.useFormula) || []
   const selectableIOs = command?.ioList.filter((io: CommandIO) => io.selectable) || []
 
   return { editableParameters, selectableIOs }
 })
 
-const commandIcon = computed(() => editor.getCommandIcon(programCommand.commandNo!))
+const commandIcon = computed(() => machine.getCommandIcon(programCommand.commandNo!))
 
 /**
  * Parametreleri `BFCOMMANDPARAMETERS.PARAMETERGROUP` alanına göre grupla.

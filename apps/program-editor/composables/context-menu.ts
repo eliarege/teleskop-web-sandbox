@@ -69,12 +69,13 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   /** Kopyalanan adımları mevcut programa yapıştırır ve makine komutlarına göre adapte eder */
   function pasteStep() {
     const editor = useEditorStore()
+    const machine = useMachineStore()
 
     const stepIndex = editor.selectedSteps.length
       ? editor.getStepIndex(editor.selectedSteps[0].stepId)
       : editor.program.steps.length
 
-    const isSameMachine = sourceMachineId.value === editor.machine.id
+    const isSameMachine = sourceMachineId.value === machine.currentMachine.id
 
     const adaptedSteps = copiedStepValues.value.map(step => adaptStepToMachine(step, sourceMachineCommands.value, isSameMachine))
     editor.program.steps.splice(stepIndex, 0, ...adaptedSteps)

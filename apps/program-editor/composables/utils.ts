@@ -3,7 +3,7 @@ import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { klona } from 'klona'
 import { useEditorStore } from './editor'
-import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, MachineInfo, ParameterItem, ParameterSelections, Program, ProgramDetailPDFData, ProgramError, ProgramFilter, ProgramHeader, ProgramPDFPayloadMap, ProgramStep, ProgramStepCommand, ProgramTableRow, StepError, ioListItem } from '~/shared/types'
+import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, Program, ProgramError, ProgramFilter, ProgramPDFPayloadMap, ProgramStep, ProgramStepCommand, StepError, ioListItem } from '~/shared/types'
 
 export interface CommitState {
   insert: any[]
@@ -406,7 +406,9 @@ export function adaptStepToMachine(step: ProgramStep, sourceMachineCommands: Map
  */
 export function adaptCommand(stepCommand: ProgramStepCommand, sourceMachineCommands: Map<number, MachineCommand>, isSameMachine: boolean): ProgramStepCommand {
   const editor = useEditorStore()
-  const targetMachineCommand = editor.machine.commands.get(stepCommand.commandNo)
+  const machine = useMachineStore()
+
+  const targetMachineCommand = machine.currentMachine.commands.get(stepCommand.commandNo)
   const newCommand = editor.createEmptyCommand()
 
   // Komut hedef makinede yok

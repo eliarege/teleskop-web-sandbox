@@ -98,6 +98,8 @@ export interface RegisteredCommands {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const machine = useMachineStore()
+
   return {
     name: 'newProgram',
     execute(ctx: any) {
@@ -108,11 +110,11 @@ registerCommand(() => {
         componentProps: {
           type: 'newProgram',
           program,
-          machineId: editor.machine.id,
-          machineName: editor.machine.name,
+          machineId: machine.currentMachine.id,
+          machineName: machine.currentMachine.name,
           allProgramNos: editor.allPrograms.map(p => p.programNo),
           allProcessTypes: editor.allProcessTypes,
-          isTonello: editor.isTonello,
+          isTonello: machine.isTonello,
         },
       }).onOk(async (newProgram: Program) => {
         const result = await editor.onSubmit(newProgram)
@@ -133,6 +135,8 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const machine = useMachineStore()
+
   return {
     name: 'saveAsProgram',
     execute(ctx: any) {
@@ -141,11 +145,11 @@ registerCommand(() => {
         componentProps: {
           type: 'saveAs',
           program: editor.program,
-          machineId: editor.machine.id,
-          machineName: editor.machine.name,
+          machineId: machine.currentMachine.id,
+          machineName: machine.currentMachine.name,
           allProgramNos: editor.allPrograms.map(p => p.programNo),
           allProcessTypes: editor.allProcessTypes,
-          isTonello: editor.isTonello,
+          isTonello: machine.isTonello,
         },
       }).onOk(async (newProgram: Program) => {
         await editor.onSubmit(newProgram)
@@ -195,6 +199,7 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const machine = useMachineStore()
   const contextMenuStore = useContextMenuStore()
 
   return {
@@ -212,7 +217,7 @@ registerCommand(() => {
           ctx.$q.dialog({
             component: DeleteResultsDialog,
             componentProps: {
-              machine: editor.machine,
+              machine: machine.currentMachine,
               results: response,
             },
           })
@@ -280,22 +285,20 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return {
     name: 'deleteProgramFromMultiMachine',
     async execute(ctx: any, selectedRows: ProgramItem[]) {
-      await editor.fetchAllMachine()
-      await editor.fetchMachineGroups()
-
       ctx.$q.dialog({
         component: CMMachineListDialog,
         componentProps: {
           type: 'deleteFromMultiMachine',
-          currentMachineId: editor.machine.id,
-          allMachines: editor.allMachines,
-          machineGroups: editor.machineGroups,
-          selectedMachineIds: [editor.machine.id],
-          disabledMachineIds: [editor.machine.id],
+          currentMachineId: machine.currentMachine.id,
+          allMachines: machine.allMachines,
+          machineGroups: machine.machineGroups,
+          selectedMachineIds: [machine.currentMachine.id],
+          disabledMachineIds: [machine.currentMachine.id],
         },
       }).onOk(async (machines: MachineInfo[]) => {
         ctx.$q.dialog({
@@ -361,6 +364,7 @@ async function getProgramsOrder(ctx: any, selectedRows: ProgramTableRow[]): Prom
 
 async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
   const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return new Promise((resolve, reject) => {
     ctx.$q.dialog({
@@ -368,11 +372,11 @@ async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
       componentProps: {
         type: 'newProgram',
         program: editor.createEmptyProgram(),
-        machineId: editor.machine.id,
-        machineName: editor.machine.name,
+        machineId: machine.currentMachine.id,
+        machineName: machine.currentMachine.name,
         allProgramNos: editor.allPrograms.map(p => p.programNo),
         allProcessTypes: editor.allProcessTypes,
-        isTonello: editor.isTonello,
+        isTonello: machine.isTonello,
       },
     }).onOk((program: ProgramHeader) => {
       resolve(program)
@@ -384,6 +388,8 @@ async function getNewProgramDetails(ctx: any): Promise<ProgramHeader> {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const machine = useMachineStore()
+
   return {
     name: 'renameProgram',
     async execute(ctx: any, machineId: number, programNo: number) {
@@ -398,10 +404,10 @@ registerCommand(() => {
             type: 'rename',
             program,
             machineId,
-            machineName: editor.machine.name,
+            machineName: machine.currentMachine.name,
             allProgramNos: [],
             allProcessTypes: editor.allProcessTypes,
-            isTonello: editor.isTonello,
+            isTonello: machine.isTonello,
           },
         }).onOk(async (program: ProgramHeader) => {
           editor.isLoading = true
@@ -469,21 +475,19 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return {
     name: 'copyAndSend',
     async execute(ctx: any, selectedRows: ProgramItem[]) {
-      await editor.fetchAllMachine()
-      await editor.fetchMachineGroups()
-
-      const sourceMachine = { id: editor.machine.id, name: editor.machine.name }
+      const sourceMachine = { id: machine.currentMachine.id, name: machine.currentMachine.name }
 
       ctx.$q.dialog({
         component: CMMachineListCopyAndSendDialog,
         componentProps: {
           type: 'copyAndSend',
-          allMachines: editor.allMachines,
-          machineGroups: editor.machineGroups,
+          allMachines: machine.allMachines,
+          machineGroups: machine.machineGroups,
         },
       }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
         await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
@@ -581,6 +585,7 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return {
     name: 'printProgram',
@@ -588,9 +593,9 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBPrintProgramDialog,
         componentProps: {
-          machineName: editor.machine.name,
+          machineName: machine.currentMachine.name,
           programList: editor.allPrograms,
-          commandList: Array.from(editor.machine.commands.values()),
+          commandList: Array.from(machine.currentMachine.commands.values()),
         },
       })
       return true
@@ -599,7 +604,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return {
     name: 'printProgramList',
@@ -607,7 +612,7 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBPrintProgramListDialog,
         componentProps: {
-          machineName: editor.machine.name,
+          machineName: machine.currentMachine.name,
         },
       })
       return true
@@ -628,14 +633,18 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const teleskopSettings = useTeleskopSettingsStore()
+
   return {
     name: 'editProgramIcons',
     async execute(ctx: any) {
-      const editor = useEditorStore()
       ctx.$q.dialog({
         component: TBApplicationSettingsDialog,
+        componentProps: {
+          selectedIcons: teleskopSettings.selectedIcons,
+        },
       }).onOk(async (value: string) => {
-        await editor.updateTeleskopSettings(TeleskopSettingsIds.SELECTED_ICONS, value)
+        await teleskopSettings.updateTeleskopSettings(TeleskopSettingsIds.SELECTED_ICONS, value)
       })
       return true
     },
@@ -644,21 +653,20 @@ registerCommand(() => {
 
 registerCommand(() => {
   const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return {
     name: 'programVersionInfo',
     async execute(ctx: any, program: { programNo: number, name: string }) {
       try {
-        const machine = editor.machine
-
         editor.isLoading = true
-        await contextMenuStore.fetchVersions(machine.id, program.programNo)
+        await contextMenuStore.fetchVersions(machine.currentMachine.id, program.programNo)
         editor.isLoading = false
 
         ctx.$q.dialog({
           component: CMVersionDialog,
           componentProps: {
-            machine,
+            machine: machine.currentMachine,
             program,
             rows: contextMenuStore.programVersions.value,
           },
@@ -666,7 +674,7 @@ registerCommand(() => {
           // Dialog closed after successful operation, refresh program
           editor.isLoading = true
           try {
-            await editor.loadProgram(machine.id, program.programNo)
+            await editor.loadProgram(machine.currentMachine.id, program.programNo)
           } catch (error) {
             console.error('Error refreshing program:', error)
           } finally {
@@ -684,7 +692,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return {
     name: 'allCommandsList',
@@ -692,9 +700,9 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBAllCommandsDialog,
         componentProps: {
-          machineId: editor.machine.id,
-          machineName: editor.machine.name,
-          machineCommands: Array.from(editor.machine.commands.values()),
+          machineId: machine.currentMachine.id,
+          machineName: machine.currentMachine.name,
+          machineCommands: Array.from(machine.currentMachine.commands.values()),
         },
       }).onOk((command: MachineCommand) => {
         const { $q, $commandManager } = useNuxtApp()
@@ -707,17 +715,18 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
+  const machine = useMachineStore()
+
   return {
     name: 'commandDetails',
     async execute(ctx: any, commandNo: number) {
-      const machineCommand = editor.machine.commands.get(commandNo)
+      const machineCommand = machine.currentMachine.commands.get(commandNo)
 
       ctx.$q.dialog({
         component: TBCommandDetailDialog,
         componentProps: {
-          machineId: editor.machine.id,
-          machineName: editor.machine.name,
+          machineId: machine.currentMachine.id,
+          machineName: machine.currentMachine.name,
           machineCommand,
         },
       })
@@ -727,7 +736,7 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return {
     name: 'exportToExcel',
@@ -735,7 +744,7 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBExportExcelDialog,
         componentProps: {
-          machineName: editor.machine.name,
+          machineName: machine.currentMachine.name,
         },
       })
       return true
@@ -802,7 +811,9 @@ function moveParallelStepExecute(
   oldValue?: any,
 ): boolean {
   const editor = useEditorStore()
-  const commandName = editor.machine.commands.get(commandNo)?.name
+  const machine = useMachineStore()
+
+  const commandName = machine.currentMachine.commands.get(commandNo)?.name
   const currentStepIndex = stepIndex || editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
 
   ctx.$q.dialog({
@@ -866,6 +877,7 @@ registerCommand(() => {
 
 registerCommand(() => {
   const kc = useKeycloak()
+
   return {
     name: 'machineConstants',
     async execute(ctx: any, machineId: number) {
@@ -900,11 +912,12 @@ registerCommand(() => {
     name: 'checkErrors',
     async execute() {
       const editor = useEditorStore()
+      const machine = useMachineStore()
 
       editor.isLoading = true
       try {
         for (const { programNo } of editor.selectedPrograms) {
-          await editor.fetchProgram(editor.machine.id, programNo)
+          await editor.fetchProgram(machine.currentMachine.id, programNo)
         }
       } finally {
         editor.isLoading = false
@@ -914,7 +927,8 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
+  const machine = useMachineStore()
+
   return {
     name: 'findAndReplace',
     async execute(ctx: any, machineId: number, machineName: string) {
@@ -923,7 +937,7 @@ registerCommand(() => {
         componentProps: {
           machineId,
           machineName,
-          machineCommands: editor.machine.commands,
+          machineCommands: machine.currentMachine?.commands,
         },
       })
       return true
@@ -970,26 +984,23 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
+  const machine = useMachineStore()
 
   return {
     name: 'selectMachine',
     async execute(ctx: any, options: { singleSelection?: boolean } = {}) {
-      await editor.fetchAllMachine()
-      await editor.fetchMachineGroups()
-
       ctx.$q.dialog({
         component: CMMachineListDialog,
         componentProps: {
           type: 'selectMachine',
-          currentMachineId: editor.machine.id,
-          allMachines: editor.allMachines,
-          machineGroups: editor.machineGroups,
-          selectedMachineIds: editor.selectedMachines.map(m => m.id),
+          currentMachineId: machine.currentMachine.id,
+          allMachines: machine.allMachines,
+          machineGroups: machine.machineGroups,
+          selectedMachineIds: machine.selectedMachines.map(m => m.id),
           singleSelection: options.singleSelection,
         },
       }).onOk(async (machines: MachineInfo[]) => {
-        editor.selectedMachines = machines
+        machine.selectedMachines = machines
       }).onCancel(() => {
         return false
       })

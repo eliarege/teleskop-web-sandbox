@@ -2,13 +2,12 @@
 import DMP from 'diff-match-patch'
 import Main from '~/components/Comparison/Main.vue'
 import type { ContextBarButtons, Program, ProgramHeaderArchive, ProgramInfoHeader, ProgramStep, ProgramStepCommandDiff } from '~/shared/types'
-import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
 
 const dmp = new DMP()
 const kc = useKeycloak()
 const route = useRoute()
-const editor = useEditorStore()
+const machine = useMachineStore()
 const { notifyError } = useNotify()
 
 const loading = ref(true)
@@ -52,7 +51,7 @@ if (v1 && v2) {
 }
 
 try {
-  await editor.loadMachine(Number(m))
+  await machine.loadMachine(Number(m))
 } catch (error) {
   notifyError('Machine could not be loaded.')
 } finally {

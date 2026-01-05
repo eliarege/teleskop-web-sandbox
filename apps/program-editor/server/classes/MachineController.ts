@@ -9,7 +9,7 @@ import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../consta
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
-import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, MachineInfo, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepError, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { AdditiveType, CommandType, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -1150,15 +1150,16 @@ export class MachineController {
       throw new PError('PROGRAM_EXISTS', { machineId: this.id, programNo: program.programNo })
     }
 
+    const { initialTemperature = 25 } = await getTeleskopSettings()
+
     const machine = await this.getMachineInfo()
     const commands = machine.commands
-    const initialTemp = (await getTeleskopSettings()).initialTemperature
     const timestamp = this.getCurrentTimestamp()
 
     program.duration = calculateProgramDuration(program, {
       ...machine,
       commands: this.commandArrayToMap(machine.commands),
-    }, initialTemp).duration
+    }, initialTemperature).duration
 
     const chemRequests = machine.tbbModel === 'Tonello'
       ? await this.countTonelloChemicalRequests(program)
@@ -1216,7 +1217,7 @@ export class MachineController {
     const programDuration = calculateProgramDuration(program, {
       ...machine,
       commands: this.commandArrayToMap(machine.commands),
-    }, initialTemp)
+    }, initialTemperature)
 
     program.steps.forEach((step, i) => {
       const stepDuration = programDuration.stepDuration[i].duration

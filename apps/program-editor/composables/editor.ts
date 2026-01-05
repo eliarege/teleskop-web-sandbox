@@ -4,18 +4,15 @@ import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
 import { useProgramWriteSettings } from './settings'
 import { areProgramsEqual, useErrorStore } from './utils'
 import { capitalize } from '~/shared/utils'
-import type { CommandError, CommandPath, CommandTypes, IoPath, Machine, MachineCommand, MachineGroup, MachineInfo, ParameterItem, ParameterPath, ProcessType, Program, ProgramDetailPDFData, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepIcon, StepPath, TeleskopSettings, ioListItem } from '~/shared/types'
-import { CommandEligibility, MoveParallel, TeleskopSettingsIds, commandTypeMaps } from '~/shared/constants'
+import type { CommandError, CommandPath, CommandTypes, IoPath, MachineCommand, ParameterItem, ParameterPath, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepPath, ioListItem } from '~/shared/types'
+import { CommandEligibility, MoveParallel } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
 export const useEditorStore = defineStore('editor', () => {
   const program = ref<Program>(createEmptyProgram())
   const originalProgram = ref<Program>(createEmptyProgram())
-  const machine = ref<Machine>(createMachine())
-  const allMachines = ref<Machine[]>([])
-  const machineGroups = ref<MachineGroup[]>([])
-  const selectedMachines = ref<MachineInfo[]>([])
+
   const selectedPrograms = ref<ProgramTableRow[]>([])
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTableRow[]>([])
@@ -31,59 +28,14 @@ export const useEditorStore = defineStore('editor', () => {
   const { t, locale, messages } = $i18n
   const route = useRoute()
   const kc = useKeycloak()
+  const machine = useMachineStore()
   const errorIds = ref(new Set<string>())
   const { notifySuccess, notifyError, notifyWarning } = useNotify()
 
-  const isTonello = computed(() => machine.value.tbbModel === 'Tonello')
-
-  const teleskopSettings = ref<TeleskopSettings>({
-    initialTemperature: 25,
-    selectedIcons: 0,
-    treatmentSettings: {
-      optimizedEnable: false,
-      optimizedLimit: 10,
-    },
-  })
-
   /**
-   * Teleskop ayarlarını alır ve teleskopSettings değişkenine atar.
-   *
-   * Bu fonksiyon, sunucudan teleskop ayarlarını almak için bir API çağrısı yapar ve
-   * alınan ayarları `teleskopSettings` reaktif değişkenine atar.
-   * API yanıtı alındıktan sonra, bu ayarlar bileşen içinde kullanılabilir hale gelir.
-   *
-   * @returns {Promise<void>} Promise döner ve asenkron bir işlem olduğunu belirtir.
+   * Programı sıfırlar ve boş bir program oluşturur.
    */
-  async function fetchTeleskopSettings(): Promise<void> {
-    teleskopSettings.value = await kc.fetch<TeleskopSettings>('/api/teleskop-settings', { method: 'GET' })
-  }
-
-  /**
-   * Seçili makineyi değiştirir ve ilgili makine sayfasına yönlendirir.
-   *
-   * Bu fonksiyon, geçerli makineyi değiştirir ve yeni bir makine ID'si ile yönlendirme işlemi
-   * gerçekleştirir. Eğer mevcut makine ID'si, parametre olarak verilen ID ile farklıysa,
-   * mevcut makine sıfırlanır ve yeni bir makine nesnesi oluşturulur. Sayfada yönlendirme yapılırken
-   * mevcut rota `/machine/:id` formatında ise, sayfa yeniden yüklenmeden yalnızca URL değiştirilir.
-   *
-   * @param {number} id - Değiştirilecek makinenin ID'si.
-   *
-   * @returns {Promise<void>} Promise döner ve asenkron bir işlem olduğunu belirtir.
-   */
-  async function changeMachine(id: number): Promise<void> {
-    if (isLoading.value)
-      return
-
-    const MACHINE_PATH_RE = /^\/machine\/\d+$/
-    // Replace only if navigating from /machine/:id
-    const replace = MACHINE_PATH_RE.test(route.path)
-
-    await navigateTo({
-      path: `/machine/${id}`,
-      replace,
-    })
-
-    // Makina değiştiğinde program da sıfırlanması gerekiyor
+  function resetProgram(): void {
     program.value = createEmptyProgram()
   }
 
@@ -140,7 +92,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     // Belirli bir komut numarası verilmişse, komut bilgilerini al ve kontrol et
     if (isDef(commandNo)) {
-      const machineCommand = machine.value?.commands.get(commandNo)
+      const machineCommand = machine.currentMachine.commands.get(commandNo)
 
       if (!isDef(machineCommand)) {
         return notifyError(t('error.machineCommandNotFound', { commandNo }))
@@ -162,7 +114,7 @@ export const useEditorStore = defineStore('editor', () => {
       const settings = useProgramWriteSettings()
 
       for (const command of parallelCommands) {
-        const machineCommand = machine.value.commands.get(command.commandNo)
+        const machineCommand = machine.currentMachine.commands.get(command.commandNo)
 
         if (!machineCommand)
           continue
@@ -319,7 +271,7 @@ export const useEditorStore = defineStore('editor', () => {
    * Yeni komut, `createEmptyCommand` fonksiyonu ile oluşturulur ve `updateCommand` fonksiyonu ile güncellenir.
    */
   function newParallelStepCommand(commandNo: number, stepIndex: number): void {
-    const machineCommand = machine.value?.commands.get(commandNo)
+    const machineCommand = machine.currentMachine.commands.get(commandNo)
     if (!machineCommand) {
       return notifyError(t('error.machineCommandNotFound', { commandNo }))
     }
@@ -605,63 +557,6 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Belirtilen makine ID'sine göre makine verilerini getirir.
-   *
-   * @param {number} machineId - Getirilecek makinenin ID'si.
-   *
-   * @returns {Promise<void>} Makine verileri başarıyla getirildikten sonra `Promise` döner.
-   *
-   * @description Bu fonksiyon, API üzerinden belirtilen makine ID'sine sahip makine verilerini çeker.
-   * Veriler, `Machine` ve `MachineCommand` türlerini içeren bir nesne olarak döner.
-   * Elde edilen makine komutları, bir `Map` yapısına dönüştürülerek `machine` değişkenine atanır.
-   */
-  async function fetchMachine(machineId: number): Promise<Machine & { commands: Map<number, MachineCommand> }> {
-    const machineData = await kc.fetch<Machine & { commands: MachineCommand[] }>(`/api/machine/${machineId}`)
-
-    return {
-      ...machineData,
-      commands: new Map((machineData.commands).map(command => [command.commandNo, command])),
-    }
-  }
-
-  /**
-   * Belirtilen makine ID'sine göre makine verilerini yükler.
-   *
-   * @param {number} machineId - Yüklenecek makinenin ID'si.
-   *
-   * @returns {Promise<void>} Makine verileri başarıyla yüklendikten sonra `Promise` döner.
-   *
-   * @description Bu fonksiyon, `fetchMachine` fonksiyonunu kullanarak belirtilen makine ID'sine sahip makine verilerini çeker ve `machine` değişkenine atar.
-   */
-  async function loadMachine(machineId: number): Promise<void> {
-    machine.value = await fetchMachine(machineId)
-  }
-
-  /**
-   * Tüm makineleri getirir.
-   *
-   * @returns {Promise<Machine[]>} Makineleri içeren bir `Promise` döner.
-   *
-   * @description Bu fonksiyon, API üzerinden tüm makineleri çeker ve bir dizi olarak döner.
-   * Elde edilen makineler, `Machine` türünde nesneler içerir.
-   */
-  async function fetchAllMachine(): Promise<void> {
-    allMachines.value = await kc.fetch<Machine[]>('/api/machine')
-  }
-
-  /**
-   * Makine gruplarını getirir.
-   *
-   * @returns {Promise<MachineGroup[]>} Makine gruplarını içeren bir `Promise` döner.
-   *
-   * @description Bu fonksiyon, API üzerinden makine gruplarını çeker ve bir dizi olarak döner.
-   * Elde edilen makine grupları, `MachineGroup` türünde nesneler içerir.
-   */
-  async function fetchMachineGroups(): Promise<void> {
-    machineGroups.value = await kc.fetch<MachineGroup[]>('/api/machine-group')
-  }
-
-  /**
    * Tüm programları getirir ve isteğe bağlı olarak filtreler uygular.
    *
    * @returns {Promise<void>} Programlar başarıyla getirildikten sonra `Promise` döner.
@@ -694,7 +589,7 @@ export const useEditorStore = defineStore('editor', () => {
    * @description Bu fonksiyon, mevcut makinenin ID'sine göre tüm programları yeniden getirir ve `allPrograms` değişkenine atar.
    */
   async function refreshAllPrograms(): Promise<void> {
-    allPrograms.value = await fetchAllPrograms(machine.value.id)
+    allPrograms.value = await fetchAllPrograms(machine.currentMachine.id)
   }
 
   /**
@@ -725,29 +620,6 @@ export const useEditorStore = defineStore('editor', () => {
   async function updateProcessType(updatedType: ProcessType, originalProcessCode?: number): Promise<void> {
     await kc.fetch<void>('/api/process', { method: 'PUT', body: { processType: updatedType, originalProcessCode } })
     await fetchAllProcessTypes()
-  }
-
-  /**
-   * Yeni bir makine nesnesi oluşturur ve başlangıç değerleriyle döner.
-   *
-   * @returns {Machine} Yeni oluşturulmuş, varsayılan değerlerle doldurulmuş makine nesnesi.
-   *
-   * @description Bu fonksiyon, yeni bir makine nesnesi oluşturur ve içerisinde gerekli tüm alanları varsayılan değerlerle (örneğin: 0, boş string, yeni bir `Map` nesnesi vb.) başlatır.
-   * Elde edilen makine nesnesi, makineyle ilgili temel bilgileri tutacak şekilde yapılandırılmıştır.
-   */
-  function createMachine(): Machine {
-    return {
-      id: 0,
-      name: '',
-      groupId: 0,
-      tbbModel: 'T7700',
-      commands: new Map<number, MachineCommand>(),
-      batchParameters: [],
-      commandFormulas: [],
-      constants: [],
-      treatmentParameters: [],
-      commandTypes: [],
-    }
   }
 
   /**
@@ -990,38 +862,6 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Teleskop ayarlarını günceller ve API'ye gönderir.
-   *
-   * @param {TeleskopSettingsIds} id - Güncellenmek istenen ayarın ID'si.
-   * @param {string} value - Ayar için yeni değer. Değer türüne bağlı olarak uygun şekilde işlenir.
-   *
-   * @returns {Promise<void>} Güncelleme işlemi tamamlandığında çözümlenen bir promise döner.
-   *
-   * @description Bu fonksiyon, verilen ayar kimliğine göre teleskop ayarlarını günceller ve yapılan değişikliği API'ye gönderir.
-   */
-  async function updateTeleskopSettings(id: TeleskopSettingsIds, value: string): Promise<void> {
-    switch (id) {
-      case TeleskopSettingsIds.OPTIMIZED_ENABLE:
-        teleskopSettings.value.treatmentSettings.optimizedEnable = value === 'true'
-        break
-      case TeleskopSettingsIds.OPTIMIZED_LIMIT:
-        teleskopSettings.value.treatmentSettings.optimizedLimit = Number(value)
-        break
-      case TeleskopSettingsIds.SELECTED_ICONS:
-        teleskopSettings.value.selectedIcons = Number(value)
-        break
-      case TeleskopSettingsIds.INITIAL_TEMPERATURE:
-        teleskopSettings.value.initialTemperature = Number(value)
-        break
-    }
-
-    await kc.fetch<void>('/api/teleskop-settings', {
-      method: 'PUT',
-      body: { id, value },
-    })
-  }
-
-  /**
    * Verilen makine ID'sine göre makine komut tiplerini getirir.
    *
    * @param {number} machineId - Makine ID
@@ -1031,43 +871,7 @@ export const useEditorStore = defineStore('editor', () => {
    * @description Bu fonksiyon, belirtilen makine ID'sine göre komut tiplerini getirir.
    */
   async function fetchCommandTypes(machineId: number): Promise<void> {
-    machine.value.commandTypes = await kc.fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
-  }
-
-  /**
-   * Verilen bir komut numarası ile ilişkili ikonu döndürür.
-   *
-   * @param {number} commandNo - İkonun alınacağı komut numarası.
-   *
-   * @returns {StepIcon | undefined} Komutla ilişkili ikon veya eğer ikon bulunamazsa ya da seçim koşulları sağlanmazsa `undefined`.
-   *
-   * @description Bu fonksiyon, bir komut numarasının tanımlı olup olmadığını kontrol eder ve ilgili komutu ve komut tipini alır.
-   * Ardından, komut tipinin bilinen bir eşlemeyle uyumlu olup olmadığını ve `teleskopSettings` içindeki ikon ayarlarına göre
-   * ikonun gösterilip gösterilmeyeceğini belirler. Tüm koşullar sağlanırsa, uygun `StepIcon` döner; aksi takdirde `undefined` döner.
-   */
-  function getCommandIcon(commandNo: number): StepIcon | undefined {
-    if (!isDef(commandNo))
-      return
-
-    const machineCommand = machine.value.commands.get(commandNo)
-    if (!machineCommand)
-      return
-
-    const machineCommandType = machine.value.commandTypes.find(commandType => commandType.commandNo === commandNo)
-    if (!machineCommandType)
-      return
-
-    const commandType = commandTypeMaps.find(map => map.value === machineCommandType.commandType)
-    if (!commandType)
-      return
-
-    const iconSetting = teleskopSettings.value.selectedIcons
-    const isSelected = (Number(iconSetting) & (1 << Number(commandType.index))) > 0
-
-    if (!isSelected)
-      return
-
-    return { name: commandType.icon, label: commandType.title, color: commandType.color }
+    machine.currentMachine.commandTypes = await kc.fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
   }
 
   /**
@@ -1082,13 +886,13 @@ export const useEditorStore = defineStore('editor', () => {
     isLoading.value = true
 
     try {
-      const commandList = Array.from(machine.value.commands.values())
+      const commandList = Array.from(machine.currentMachine.commands.values())
 
       // Prepare translations for the PDF
       const processed = buildTranslations(messages.value, locale.value, t, 'printProgramListDialog')
 
       const payload = {
-        machine: { id: machine.value.id, name: machine.value.name },
+        machine: { id: machine.currentMachine.id, name: machine.currentMachine.name },
         programs: [program.value],
         selectedCommandNos: Array.from(commandList.keys()),
         commandList,
@@ -1111,10 +915,6 @@ export const useEditorStore = defineStore('editor', () => {
   return {
     program,
     originalProgram,
-    machine,
-    allMachines,
-    machineGroups,
-    selectedMachines,
     selectedPrograms,
     selectedSteps,
     isLoading,
@@ -1125,21 +925,14 @@ export const useEditorStore = defineStore('editor', () => {
     lastCommandId,
     leftDrawerOpen,
     rightDrawerOpen,
-    teleskopSettings,
     allStepExpanded,
-    isTonello,
     createEmptyStep,
     createEmptyCommand,
-    changeMachine,
+    resetProgram,
     fetchProgram,
     loadProgram,
-    fetchMachine,
-    loadMachine,
-    fetchAllMachine,
-    fetchMachineGroups,
     fetchAllPrograms,
     refreshAllPrograms,
-    createMachine,
     createEmptyProgram,
     updateProgram,
     onSubmit,
@@ -1160,9 +953,6 @@ export const useEditorStore = defineStore('editor', () => {
     deleteProcessType,
     updateProcessType,
     scrollPage,
-    getCommandIcon,
-    fetchTeleskopSettings,
-    updateTeleskopSettings,
     fetchCommandTypes,
     hasProgramChanged,
     isStepSelected,

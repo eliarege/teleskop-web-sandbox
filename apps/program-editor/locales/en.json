@@ -141,7 +141,11 @@
   "machine": {
     "isOnline": "Machine is online",
     "isOffline": "Machine is offline",
-    "connecting": "Connecting..."
+    "connecting": "Connecting...",
+    "unusableReason": {
+      "NO_COMMANDS": "Machine has no commands defined. Please update commands from Machines application.",
+      "NO_COMMAND_TYPES": "Machine has no command types defined. Please update command types from Machines application."
+    }
   },
   "command": {
     "icon": "Icon",
@@ -520,7 +524,8 @@
     "copy": "Copy Programs",
     "paste": "Paste Programs",
     "findChange": "Find - Change",
-    "compareAllPrograms": "Compare All Programs"
+    "compareAllPrograms": "Compare All Programs",
+    "goToMachineApp": "Go to Machine App"
   },
   "comparisonTable": {
     "programName": "Program Name",

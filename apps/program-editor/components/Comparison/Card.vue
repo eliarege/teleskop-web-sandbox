@@ -8,26 +8,26 @@ defineProps<{
   stepIndex: number
 }>()
 
+const machine = useMachineStore()
 const { mt } = useProjectTranslations()
-const editor = useEditorStore()
 
 function getCommandInfo(commandNo: number): MachineCommand | undefined {
-  return editor.machine.commands.get(commandNo)
+  return machine.currentMachine.commands.get(commandNo)
 }
 
 function getParameterName(commandNo: number, paramIndex: number): string {
   const command = getCommandInfo(commandNo)
   const paramName = command?.parameters[paramIndex]?.name
-  return paramName ? mt(paramName, editor.machine.id) : ''
+  return paramName ? mt(paramName, machine.currentMachine.id) : ''
 }
 
 function getCommandString(commandNo: number): string {
   const command = getCommandInfo(commandNo)
-  return command ? `${commandNo} - ${mt(command.name, editor.machine.id)}` : ''
+  return command ? `${commandNo} - ${mt(command.name, machine.currentMachine.id)}` : ''
 }
 
 function getParameterValue(param: CommandParameterDiff, commandNo: number): string {
-  const machineCommand = editor.machine.commands.get(commandNo)
+  const machineCommand = machine.currentMachine.commands.get(commandNo)
   const machineParameter = machineCommand?.parameters.find(p => param.index === p.index)
 
   if (machineParameter) {

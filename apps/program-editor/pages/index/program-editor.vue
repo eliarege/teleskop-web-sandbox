@@ -8,12 +8,15 @@ import { useContextBar } from '~/composables/useContextBar'
 import { contextMenuStore } from '~/utils/context-menu'
 import type { ContextBarButtons, ProgramStep } from '~/shared/types'
 
-const editor = useEditorStore()
+const $q = useQuasar()
+const route = useRoute()
 const form = ref<QForm>()
 const { t, locale } = useI18n()
-const route = useRoute()
-const $q = useQuasar()
 const { $commandManager } = useNuxtApp()
+
+const editor = useEditorStore()
+const machine = useMachineStore()
+const teleskopSettings = useTeleskopSettingsStore()
 
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
@@ -132,7 +135,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     shortcut: 'F3',
     icon: 'queue',
     disable: editor.isLoading,
-    visible: !editor.isTonello,
+    visible: !machine.isTonello,
     onClick() {
       editor.newParallelStep()
     },
@@ -167,10 +170,10 @@ const buttons = computed<ContextBarButtons[]>(() => [
     icon: 'info',
     disable: editor.isLoading
     || !editor.selectedSteps[0]?.mainCommand.commandNo
-    || !editor.machine.commands.has(editor.selectedSteps[0]?.mainCommand.commandNo),
+    || !machine.currentMachine.commands.has(editor.selectedSteps[0]?.mainCommand.commandNo),
     onClick() {
       const command = editor.selectedSteps[0]?.mainCommand
-      if (command.commandNo && editor.machine.commands.has(command.commandNo)) {
+      if (command.commandNo && machine.currentMachine.commands.has(command.commandNo)) {
         $commandManager.executeCommand('commandDetails', { $q }, command.commandNo)
       }
     },
@@ -182,7 +185,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     shortcut: '',
     icon: editor.allStepExpanded ? 'expand_less' : 'expand_more',
     disable: editor.isLoading,
-    visible: !editor.isTonello,
+    visible: !machine.isTonello,
     onClick() {
       editor.allStepExpanded = !editor.allStepExpanded
     },
@@ -196,7 +199,7 @@ onKeyStroke('F2', (event: KeyboardEvent) => {
 })
 
 onKeyStroke('F3', (event: KeyboardEvent) => {
-  if (route.params.program_no && !editor.isTonello) {
+  if (route.params.program_no && !machine.isTonello) {
     event.preventDefault()
     editor.newParallelStep()
   }
@@ -211,15 +214,13 @@ onKeyStroke('Insert', (event: KeyboardEvent) => {
 
 onKeyStroke(['F7'], (event: KeyboardEvent) => {
   event.preventDefault()
-  const { machine, program } = editor
-  $commandManager.executeCommand('stepCommandGraph', { $q }, machine, program)
+  $commandManager.executeCommand('stepCommandGraph', { $q }, machine.currentMachine, editor.program)
 })
 
 onKeyStroke(['F8'], (event: KeyboardEvent) => {
   event.preventDefault()
-  const { machine, program, teleskopSettings } = editor
-  const initialTemperature = teleskopSettings.initialTemperature
-  $commandManager.executeCommand('tempTimeGraph', { $q }, machine, program, initialTemperature)
+  const initialTemp = teleskopSettings.initialTemperature
+  $commandManager.executeCommand('tempTimeGraph', { $q }, machine.currentMachine, editor.program, initialTemp)
 })
 
 onKeyStroke(['Enter', 'NumpadEnter'], (event: KeyboardEvent) => {
@@ -298,7 +299,7 @@ onKeyStroke(['C', 'c'], (event: KeyboardEvent) => {
   if (ctrl.value) {
     event.preventDefault()
 
-    const { machine, program, selectedSteps } = editor
+    const { program, selectedSteps } = editor
 
     $q.dialog({
       component: CMCopyStepDialog,
@@ -311,7 +312,7 @@ onKeyStroke(['C', 'c'], (event: KeyboardEvent) => {
         selectedSteps,
       },
     }).onOk((chosenProgramSteps: ProgramStep[]) => {
-      contextMenuStore.copyStep(machine, chosenProgramSteps)
+      contextMenuStore.copyStep(machine.currentMachine, chosenProgramSteps)
     })
   }
 })
@@ -338,8 +339,8 @@ watch(locale, () => {
 })
 
 editor.isLoading = true
-if (editor.machine.id !== machineId) {
-  await editor.loadMachine(machineId)
+if (machine.currentMachine.id !== machineId) {
+  await machine.loadMachine(machineId)
   await editor.fetchCommandTypes(machineId)
   await editor.refreshAllPrograms()
 }
