@@ -83,6 +83,9 @@
   "projectLanguage": "Project Language",
   "notification": "Notification",
   "loadProject": "Load Project",
+  "loadingProject": "Loading Project",
+  "loadingProjectSuccess": "Project Loaded",
+  "loadingProjectFailed": "Project Loading Failed",
   "loadProjectTranslations": "Load Project Translations",
   "controllerOperators": "Controller Operators",
   "machineIdleReasons": "Machine Idle Reasons",
@@ -102,10 +105,13 @@
   "receiveVersionInfo": "Receive Version Info",
   "receivingVersionInfo": "Receiving Version Info",
   "versionInfoReceived": "Version Info Received",
-  "version-check-started": "Version check started for machine {machineId}",
-  "version-check-failed": "An error occurred during version check for machine {machineId}",
-  "version-check-completed": "Version check completed for machine {machineId}",
   "errorReceivingVersionInfo": "Version Info Failed",
+  "receiveVersion": {
+    "started": "Receiving version info for machine \"{machine}\"",
+    "failed": "Failed to receive version info for machine \"{machine}\"",
+    "completed": "Version info received for machine \"{machine}\"",
+    "completedWithErrors": "Version info receiving completed with errors"
+  },
   "machineConstants": "Machine Constants",
   "formulas": "Formulas",
   "getDyeHouseDefinitions": "Get Dyehouse Definitions",
@@ -518,6 +524,11 @@
   "input-outputs-failed": "Input/Outputs update failed",
   "input-outputs-starting": "Input/Outputs are updating",
   "user-permission-update-failed": "Failed to update user permissions",
+  "projectUpload": {
+    "starting": "Project upload is starting",
+    "completed": "Project upload completed successfully",
+    "failed": "Project upload failed"
+  },
   "NETWORK_CONN_FAILED": "Network connection failed.",
   "passive": "Passive",
   "selectSettingToUpdate": "Select the system setting that will be updated on machine",

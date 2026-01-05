@@ -1,0 +1,165 @@
+import { readonly, ref } from 'vue'
+import type { StreamLogLevel, StreamMessage } from '../shared/longOperation.types'
+
+export interface LogEntry {
+  timestamp: Date
+  level: StreamLogLevel | 'success'
+  message: string
+}
+
+export type LongOperation = ReturnType<typeof useLongOperation>
+
+export type FetchOptions = Omit<RequestInit, 'body' | 'signal'> & { body?: any }
+
+export function useLongOperation() {
+  const kc = useKeycloak()
+  const { t } = useI18n()
+  const isRunning = ref(false)
+  const isSuccess = ref(false)
+  const isError = ref(false)
+  const isAborted = ref(false)
+  const logs = ref<LogEntry[]>([])
+  const errorMessage = ref<string | null>(null)
+  const progress = ref(0)
+
+  let abortController: AbortController | null = null
+
+  const reset = () => {
+    isRunning.value = false
+    isSuccess.value = false
+    isError.value = false
+    isAborted.value = false
+    logs.value = []
+    errorMessage.value = null
+    progress.value = 0
+  }
+
+  const addLog = (level: LogEntry['level'], message: string) => {
+    logs.value.push({
+      timestamp: new Date(),
+      level,
+      message,
+    })
+  }
+
+  const handleSSEData = (data: string) => {
+    try {
+      const parsed = JSON.parse(data) as StreamMessage
+
+      switch (parsed.type) {
+        case 'log':
+          if (parsed.message) {
+            addLog(parsed.level, parsed.message)
+          }
+          break
+        case 'progress':
+          progress.value = parsed.progress
+          break
+        case 'complete':
+          isSuccess.value = true
+          isRunning.value = false
+          progress.value = 100
+          addLog('success', parsed.message || t('operation.completedSuccessfully'))
+          break
+        case 'fail':
+          isError.value = true
+          errorMessage.value = parsed.message
+          addLog('error', parsed.message)
+          isRunning.value = false
+          break
+      }
+    } catch (e) {
+      // If not JSON, treat as plain log message
+      addLog('info', data)
+    }
+  }
+
+  /**
+   * Body should be a JSON-serializable object if provided. `Accept`, `Content-Type`, and `Authorization` headers are set automatically.
+   *
+   * @param url
+   * @param fetchOptions
+   */
+  const start = (url: string, fetchOptions?: FetchOptions) => {
+    reset()
+    isRunning.value = true
+
+    abortController = new AbortController()
+
+    fetch(url, {
+      ...fetchOptions,
+      method: fetchOptions?.method || 'GET',
+      headers: {
+        ...fetchOptions?.headers,
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+        'Authorization': `Bearer ${kc.token}`,
+      },
+      body: fetchOptions?.body ? JSON.stringify(fetchOptions.body) : undefined,
+      signal: abortController.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const reader = response.body?.getReader()
+        if (!reader) {
+          throw new Error('No response body')
+        }
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done)
+            break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6)
+              handleSSEData(data)
+            }
+          }
+        }
+
+        // Process any remaining buffer
+        if (buffer.startsWith('data: ')) {
+          handleSSEData(buffer.slice(6))
+        }
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') {
+          isError.value = true
+          errorMessage.value = error.message
+          addLog('error', t('operation.connectionError', { message: error.message }))
+        }
+        isRunning.value = false
+      })
+  }
+
+  const abort = () => {
+    abortController?.abort()
+    isRunning.value = false
+    isAborted.value = true
+    addLog('warn', t('operation.abortedByUser'))
+  }
+
+  return {
+    isRunning: readonly(isRunning),
+    isSuccess: readonly(isSuccess),
+    isError: readonly(isError),
+    isAborted: readonly(isAborted),
+    logs: readonly(logs),
+    errorMessage: readonly(errorMessage),
+    progress: readonly(progress),
+    start,
+    abort,
+    reset,
+  }
+}

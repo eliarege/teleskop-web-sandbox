@@ -1,11 +1,9 @@
 import { withTbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { getQuery } from 'h3'
-import { inferBoolean } from '@teleskop/utils'
 import { z } from 'zod'
 import type { Knex } from 'knex'
-import type { TonelloConfiguration, TonelloFunction, TonelloInputOutputList, TonelloResponse } from '@teleskop/core'
 import { TonelloApi } from '@teleskop/core'
-import { ErrorMessageKey } from '~/shared/enums'
+import { runLongOperation } from '@teleskop/nuxt-base/server/utils/longOperationStream'
 import { knex } from '~/server/connectionPool'
 import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateProjectTranslations, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError, UnsupportedDatabaseVersionError } from '~/server/error'
@@ -16,11 +14,8 @@ import { updateTonelloInputOutputs } from '~/server/lib/tonello/input-output'
 import { updateTonelloProjectTranslations } from '~/server/lib/tonello/locale'
 import { updateTonelloBatchParameters } from '~/server/lib/tonello/batch-parameters'
 
-const sseLoggingEnabled = inferBoolean(useRuntimeConfig().sseLoggingEnabled)
-
 const querySchema = z.object({
   machineId: z.coerce.number().int().nonnegative(),
-  sseId: sseLoggingEnabled ? z.string() : z.string().optional(),
 })
 
 export default defineAuthEventHandler(async (event) => {
@@ -33,8 +28,7 @@ export default defineAuthEventHandler(async (event) => {
       data: validation.error.issues,
     })
   }
-  const { machineId, sseId } = validation.data
-  const sse = useSSE()
+  const { machineId } = validation.data
 
   const machine = await knex
     .from('BFMACHINES')
@@ -51,223 +45,209 @@ export default defineAuthEventHandler(async (event) => {
   type Step = {
     fn: (trx: Knex.Transaction) => Promise<unknown>
     message: string
+    /** Yüklenen dosyanın makinedeki yolu */
+    path?: string
   }
 
-  function handleAndCreateError(err: unknown): Error {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-    const userMessage = mapErrorToUserMessage(err)
-
-    if (sseId) {
-      sse.send(sseId, 'error-log', {
-        message: errorMessage,
-        progress: 100,
-      })
-      sse.send(sseId, 'error', {
-        progress: 100,
-        message: userMessage.code,
-        details: userMessage.details,
-      })
-    }
-
-    console.error(err)
-    return createError({
-      message: 'UPDATE_FAILED',
-      statusCode: 500,
-      data: { message: errorMessage },
-    })
-  }
-
-  async function runSteps(steps: Step[]) {
-    const totalSteps = steps.length
-    let currentStep = 0
-
-    const getCurrentProgress = () => Math.round((currentStep / totalSteps) * 100)
-
-    await knex.transaction(async (trx) => {
-      for (const { fn, message } of steps) {
-        if (sseId) {
-          sse.send(sseId, 'start', {
-            message,
-            progress: getCurrentProgress(),
-          })
-        }
-
-        try {
-          await fn(trx)
-          currentStep++
-          if (sseId) {
-            sse.send(sseId, 'log', {
-              message,
-              progress: getCurrentProgress(),
-            })
-          }
-        } catch (err: unknown) {
-          throw handleAndCreateError(err)
-        }
+  const t = await useTranslation(event)
+  const result = await runLongOperation(event, async (ctx) => {
+    const logError = (err: unknown) => {
+      const errors = []
+      if (err instanceof DatabaseQueryError) {
+        errors.push(...err.getMssqlErrors().map(e => e.message))
+      } else {
+        errors.push(err instanceof Error ? err.message : 'Unknown error')
       }
-    })
-  }
+      const userMessage = mapErrorToUserMessage(err, t)
 
-  // Handle TBB machines
-  if (machine.tbbModel !== 'Tonello') {
-    await withTbbFtpClient(machine.host, async (tbb) => {
-      await runSteps([
-        { fn: trx => updateMachineController(machineId, tbb, trx), message: 'controller-updated' },
-        { fn: trx => updateBatchParameters(machineId, tbb, trx), message: 'batch-parameters-updated' },
-        { fn: trx => updateCommandGroups(machineId, tbb, trx), message: 'command-groups-updated' },
-        { fn: trx => updateCycleControl(machineId, tbb, trx), message: 'cycle-control-updated' },
-        { fn: trx => updateSystemParams(machineId, tbb, trx), message: 'system-parameters-updated' },
-        { fn: trx => updateManualReasons(machineId, tbb, trx), message: 'manual-reasons-updated' },
-        { fn: trx => updateAnalogInputs(machineId, tbb, trx), message: 'analog-inputs-updated' },
-        { fn: trx => updateAnalogOutputs(machineId, tbb, trx), message: 'analog-outputs-updated' },
-        { fn: trx => updateDigitalInputs(machineId, tbb, trx), message: 'digital-inputs-updated' },
-        { fn: trx => updateDigitalOutputs(machineId, tbb, trx), message: 'digital-outputs-updated' },
-        { fn: trx => updateCounters(machineId, tbb, trx), message: 'counters-updated' },
-        { fn: trx => updateMachineParameters(machineId, tbb, trx), message: 'machine-parameters-updated' },
-        { fn: trx => updateCommandsGeneral(machineId, tbb, trx), message: 'general-commands-updated' },
-        { fn: trx => updateCommandParameters(machineId, tbb, trx), message: 'command-parameters-updated' },
-        { fn: trx => updateCommandIO(machineId, tbb, trx), message: 'command-io-updated' },
-        { fn: trx => updateCommandFeedback(machineId, tbb, trx), message: 'command-feedback-updated' },
-        { fn: trx => updateCommandAlarms(machineId, tbb, trx), message: 'command-alarms-updated' },
-        { fn: trx => updateCommandGraphic(machineId, tbb, trx), message: 'command-graphic-updated' },
-        { fn: trx => updateCommandEditing(machineId, tbb, trx), message: 'command-editing-updated' },
-        { fn: trx => updateLocksGeneral(machineId, tbb, trx), message: 'lock-general-updated' },
-        { fn: trx => updateLocksInput(machineId, tbb, trx), message: 'lock-input-updated' },
-        { fn: trx => updateLocksOutput(machineId, tbb, trx), message: 'lock-output-updated' },
-        { fn: trx => updateGlobalCommandFormulas(machineId, tbb, trx), message: 'global-command-formulas-updated' },
-        { fn: trx => updateConsumption(machineId, tbb, trx), message: 'consumptions-updated' },
-        { fn: trx => updateERPParams(machineId, tbb, trx), message: 'erp-parameters-updated' },
-        { fn: trx => updateIOChangedEvent(machineId, tbb, trx), message: 'io-change-events-updated' },
-        { fn: trx => updateIcons(machineId, tbb, trx), message: 'icons-updated' },
-        { fn: trx => updateArchives(machineId, tbb, trx), message: 'archives-updated' },
-        { fn: trx => updateProjectTranslations(machineId, tbb, trx), message: 'translations-updated' },
-      ])
-    })
-  }
-  // Handle tonello machines
-  else {
-    const api = new TonelloApi(`http://${machine.host}:1234`)
-    const ctx: UpdateContext = {
-      errors: [],
-      messages: [],
+      for (const error of errors) {
+        ctx.logger.error(error)
+      }
+      ctx.logger.error(userMessage)
     }
-    let functions: TonelloResponse<TonelloFunction[]>
-    let ioList: TonelloResponse<TonelloInputOutputList>
-    let config: TonelloResponse<TonelloConfiguration>
+
+    const runSteps = async (steps: Step[], startFrom = 0) => {
+      const totalSteps = steps.length
+      let currentStep = 0
+
+      const getCurrentProgress = () => Math.min(99, Math.round(startFrom + (currentStep / totalSteps) * 100))
+
+      await knex.transaction(async (trx) => {
+        for (const { fn, message, path } of steps) {
+          // ctx.cancellation.throwIfCancelled()
+          ctx.logger.info(t(`${message}-starting`) + (path ? ` (${path})` : ''))
+          ctx.state.progress(getCurrentProgress())
+          try {
+            await fn(trx)
+            currentStep++
+          } catch (err: unknown) {
+            logError(err)
+            ctx.logger.error(t(`${message}-failed`))
+            throw err
+          }
+        }
+        ctx.state.complete(t('projectUpload.completed'))
+      })
+    }
 
     try {
-      functions = await api.fetchFunctions()
-      ioList = await api.fetchInputOutputList()
-      config = await api.fetchConfiguration()
-    } catch (err: unknown) {
-      throw handleAndCreateError(err)
-    }
+      if (machine.tbbModel !== 'Tonello') {
+        ctx.logger.info(t('projectUpload.starting'))
+        ctx.state.progress(0)
 
-    const parameters = config.data.pages.flatMap(p => p.params)
-
-    const throwOnError = (ctx: UpdateContext) => {
-      if (ctx.errors.length > 0) {
-        console.error('Errors during updating Tonello project:', ctx.errors)
-        throw createError({
-          message: 'UPDATE_FAILED',
-          statusCode: 500,
-          data: ctx.errors,
+        await withTbbFtpClient(machine.host, async (tbb) => {
+          await runSteps([
+            { fn: trx => updateMachineController(machineId, tbb, trx), message: 'controller', path: '/var/controllerModel' },
+            { fn: trx => updateBatchParameters(machineId, tbb, trx), message: 'batch-parameters', path: '/tbb6500/data/config/baslatmaParametreleri' },
+            { fn: trx => updateCommandGroups(machineId, tbb, trx), message: 'command-groups', path: '/tbb6500/data/commands/commandGroup' },
+            { fn: trx => updateCycleControl(machineId, tbb, trx), message: 'cycle-control', path: '/tbb6500/data/config/manuel/cycle_kontrol' },
+            { fn: trx => updateSystemParams(machineId, tbb, trx), message: 'system-parameters', path: '/tbb6500/data/config/sistem' },
+            { fn: trx => updateManualReasons(machineId, tbb, trx), message: 'manual-reasons', path: '/tbb6500/data/config/manuelmodnedenleri' },
+            { fn: trx => updateAnalogInputs(machineId, tbb, trx), message: 'analog-inputs', path: '/tbb6500/data/io/analoginput' },
+            { fn: trx => updateAnalogOutputs(machineId, tbb, trx), message: 'analog-outputs', path: '/tbb6500/data/io/analogoutput' },
+            { fn: trx => updateDigitalInputs(machineId, tbb, trx), message: 'digital-inputs', path: '/tbb6500/data/io/sayisalinput' },
+            { fn: trx => updateDigitalOutputs(machineId, tbb, trx), message: 'digital-outputs', path: '/tbb6500/data/io/sayisaloutput' },
+            { fn: trx => updateCounters(machineId, tbb, trx), message: 'counters', path: '/tbb6500/data/io/sayac' },
+            { fn: trx => updateMachineParameters(machineId, tbb, trx), message: 'machine-parameters', path: '/tbb6500/data/config/makinesabitleri' },
+            { fn: trx => updateCommandsGeneral(machineId, tbb, trx), message: 'general-commands', path: '/tbb6500/data/commands/general' },
+            { fn: trx => updateCommandParameters(machineId, tbb, trx), message: 'command-parameters', path: '/tbb6500/data/commands/params' },
+            { fn: trx => updateCommandIO(machineId, tbb, trx), message: 'command-io', path: '/tbb6500/data/commands/io' },
+            { fn: trx => updateCommandFeedback(machineId, tbb, trx), message: 'command-feedback', path: '/tbb6500/data/commands/feedback' },
+            { fn: trx => updateCommandAlarms(machineId, tbb, trx), message: 'command-alarms', path: '/tbb6500/data/commands/alarms' },
+            { fn: trx => updateCommandGraphic(machineId, tbb, trx), message: 'command-graphic', path: '/tbb6500/data/commands/graphic' },
+            { fn: trx => updateCommandEditing(machineId, tbb, trx), message: 'command-editing', path: '/tbb6500/data/commands/editing' },
+            { fn: trx => updateLocksGeneral(machineId, tbb, trx), message: 'lock-general', path: '/tbb6500/data/locks/locks_general' },
+            { fn: trx => updateLocksInput(machineId, tbb, trx), message: 'lock-input', path: '/tbb6500/data/locks/locks_inputs' },
+            { fn: trx => updateLocksOutput(machineId, tbb, trx), message: 'lock-output', path: '/tbb6500/data/locks/locks_outputs' },
+            { fn: trx => updateGlobalCommandFormulas(machineId, tbb, trx), message: 'global-command-formulas', path: '/tbb6500/data/config/globalCommandFormulas' },
+            { fn: trx => updateConsumption(machineId, tbb, trx), message: 'consumptions', path: '/tbb6500/data/config/consumption' },
+            { fn: trx => updateERPParams(machineId, tbb, trx), message: 'erp-parameters' },
+            { fn: trx => updateIOChangedEvent(machineId, tbb, trx), message: 'io-change-events', path: '/tbb6500/data/config/io_changed_event' },
+            { fn: trx => updateIcons(machineId, tbb, trx), message: 'icons', path: '/tbb6500/data/pics/function_*' },
+            { fn: trx => updateArchives(machineId, tbb, trx), message: 'archives' },
+            { fn: trx => updateProjectTranslations(machineId, tbb, trx), message: 'translations', path: '/tbb6500/data/config/translationsProject*' },
+          ])
         })
-      }
-    }
+      } else {
+        const api = new TonelloApi(`http://${machine.host}:1234`)
+        const updateCtx: UpdateContext = {
+          errors: [],
+          messages: [],
+        }
+        ctx.logger.info({ progress: 0 }, t('projectUpload.fetchingTonelloMachineData'))
 
-    await runSteps([
-      {
-        fn: async (trx) => {
-          await updateTonelloFunctions(trx, machineId, functions.data, ctx)
-          throwOnError(ctx)
-        },
-        message: 'functions-updated',
-      },
-      {
-        fn: async (trx) => {
-          await updateTonelloInputOutputs(trx, machineId, ioList.data)
-          throwOnError(ctx)
-        },
-        message: 'input-outputs-updated',
-      },
-      {
-        fn: async (trx) => {
-          await updateTonelloMachineParameters(trx, machineId, parameters, ctx)
-          throwOnError(ctx)
-        },
-        message: 'machine-parameters-updated',
-      },
-      {
-        fn: async (trx) => {
-          await updateTonelloBatchParameters(trx, machineId)
-        },
-        message: 'batch-parameters-updated',
-      },
-      {
-        fn: async (trx) => {
-          await updateTonelloProjectTranslations(trx, machineId, ctx.messages)
-          throwOnError(ctx)
-        },
-        message: 'translations-updated',
-      },
-    ])
+        const functions = await api.fetchFunctions()
+        const ioList = await api.fetchInputOutputList()
+        const config = await api.fetchConfiguration()
+        const trxOffsetProgress = 10
+
+        ctx.logger.info({ progress: trxOffsetProgress }, t('projectUpload.tonelloMachineDataFetched'))
+
+        const parameters = config.data.pages.flatMap(p => p.params)
+
+        const throwOnError = (updateCtx: UpdateContext) => {
+          if (updateCtx.errors.length > 0) {
+            for (const err of updateCtx.errors) {
+              ctx.logger.error(err.code)
+            }
+            throw new Error('Errors occurred during Tonello machine update')
+          }
+        }
+
+        await runSteps([
+          {
+            message: 'functions',
+            fn: async (trx) => {
+              await updateTonelloFunctions(trx, machineId, functions.data, updateCtx)
+              throwOnError(updateCtx)
+            },
+          },
+          {
+            message: 'input-outputs',
+            fn: async (trx) => {
+              await updateTonelloInputOutputs(trx, machineId, ioList.data)
+              throwOnError(updateCtx)
+            },
+          },
+          {
+            message: 'machine-parameters',
+            fn: async (trx) => {
+              await updateTonelloMachineParameters(trx, machineId, parameters, updateCtx)
+              throwOnError(updateCtx)
+            },
+          },
+          {
+            message: 'batch-parameters',
+            fn: async (trx) => {
+              await updateTonelloBatchParameters(trx, machineId)
+            },
+          },
+          {
+            message: 'translations',
+            fn: async (trx) => {
+              await updateTonelloProjectTranslations(trx, machineId, updateCtx.messages)
+              throwOnError(updateCtx)
+            },
+          },
+        ], trxOffsetProgress)
+      }
+    } catch (err: unknown) {
+      logError(err)
+      ctx.state.fail(t('projectUpload.failed'))
+    }
+  })
+  if (result.kind === 'stream') {
+    return result.stream
+  } else {
+    return result.kind
   }
 })
 
-function mapErrorToUserMessage(error: any): { code: ErrorMessageKey, details?: any } {
+function mapErrorToUserMessage(error: any, t: (key: string, params?: Record<string, any>) => string): string {
   const msg = error.message ?? ''
 
   // --- Bağlantı / Ağ hataları ---
+  if (msg.includes('aborted')) {
+    return t('operation.abortedByUser')
+  }
   if (msg.includes('Timeout')) {
-    return { code: ErrorMessageKey.Timeout }
+    return t('error.timeout')
   }
   if (msg.includes('ECONNREFUSED')) {
-    return { code: ErrorMessageKey.ConnectionRefused }
+    return t('error.connection_refused')
   }
   if (msg.includes('ENETUNREACH') || msg.includes('EHOSTUNREACH')) {
-    return { code: ErrorMessageKey.NetworkUnreachable }
+    return t('error.network_unreachable')
   }
   if (msg.includes('<no response>')) {
-    return { code: ErrorMessageKey.ApiNoResponse }
+    return t('error.api_no_response')
   }
   if (msg.includes('EAI_AGAIN')) {
-    return { code: ErrorMessageKey.AddressResolutionFailed }
+    return t('error.address_resolution_failed')
   }
 
   // --- FTP / TBB istemcisi ---
   if (msg.includes('FTP') || msg.includes('tbb-ftp-client')) {
-    return { code: ErrorMessageKey.FtpError }
+    return t('error.ftp')
   }
 
   // --- Veritabanı hataları ---
   if (error instanceof UnsupportedDatabaseVersionError) {
-    return {
-      code: ErrorMessageKey.DatabaseUnsupportedVersion,
-      details: {
-        expectedVersion: error.expectedVersion,
-        actualVersion: error.actualVersion,
-      },
-    }
+    return t('error.db.unsupported_version', {
+      expectedVersion: error.expectedVersion,
+      actualVersion: error.actualVersion,
+    })
   }
   if (error instanceof DatabaseQueryError) {
-    return { code: ErrorMessageKey.DatabaseQueryError }
+    return t('error.db.query')
   }
   if (msg.includes('deadlock') || msg.includes('lock wait timeout')) {
-    return { code: ErrorMessageKey.DatabaseDeadlock }
+    return t('error.db.deadlock')
   }
   if (msg.includes('duplicate key') || msg.includes('unique constraint')) {
-    return { code: ErrorMessageKey.DatabaseDuplicateKey }
-  }
-
-  // --- Validation / Geçersiz parametre ---
-  if (msg.includes('Invalid machineId')) {
-    return { code: ErrorMessageKey.InvalidMachineId }
-  }
-  if (msg.includes('SSE ID REQUIRED')) {
-    return { code: ErrorMessageKey.SseIdRequired }
+    return t('error.db.duplicate_key')
   }
 
   // --- Genel / bilinmeyen ---
-  return { code: ErrorMessageKey.Unknown }
+  return t('error.unknown')
 }

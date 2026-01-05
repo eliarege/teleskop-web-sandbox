@@ -1,28 +1,14 @@
 <script setup lang="ts">
 import { useMagicKeys, whenever } from '@vueuse/core'
-import { withBase } from 'ufo'
-import { type DialogChainObject, QLinearProgress } from 'quasar'
-import { last } from 'lodash-es'
+import { withQuery } from 'ufo'
 import AddEditModal from '../components/AddEditModal.vue'
 import type { Machine, MachineGroup, MachineTableColumn } from '~/types'
 import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
-
-type SseEvent = 'log' | 'uuid' | 'error' | 'error-log' | 'start' | 'reset'
-
-interface SseLog {
-  type: SseEvent
-  message: string
-  rawMessage: string
-
-  progress: number
-  details?: Record<string, any>
-}
 
 const kc = useKeycloak()
 const { dialog } = useQuasar()
 const { t } = useI18n()
 const { notifySuccess, notifyError } = useNotify()
-const baseURL = useRuntimeConfig().app.baseURL
 const loadingProjectTranslations = ref(false)
 
 const { data: databaseVersion } = useAuthFetch('/api/machines/database-version', {
@@ -45,158 +31,6 @@ const modifiedMachines = computed(() => machines.value.map(m => ({
 })))
 
 const selected = ref([] as Machine[])
-
-const uuid = ref('')
-
-interface LogContext {
-  logs: SseLog[]
-  fullLogs: SseLog[]
-  logDialog: DialogChainObject | null
-  showFullLogDialog: boolean
-}
-
-const projectContext: LogContext = reactive({
-  logs: [],
-  fullLogs: [],
-  logDialog: null,
-  showFullLogDialog: false,
-} as LogContext)
-
-const versionContext: LogContext = reactive({
-  logs: [],
-  fullLogs: [],
-  logDialog: null,
-  showFullLogDialog: false,
-} as LogContext)
-
-const currentOperation = ref<'project' | 'version' | null>(null)
-
-const { event, data, close } = useEventSource(withBase('/api/sync/sse', baseURL), ['log', 'uuid', 'error', 'error-log', 'start', 'reset'], {
-  autoReconnect: true,
-})
-
-onBeforeUnmount(() => {
-  close()
-})
-
-const percentage = ref(0)
-
-function parseMessage(message?: string, details?: Record<string, any>) {
-  if (!message)
-    return ''
-  const regex = /^version-check-(started|failed|completed)-(\d+)$/
-  const match = message.match(regex)
-
-  if (match) {
-    return t(`version-check-${match[1]}`, { machineId: match[2] })
-  } else {
-    return t(message, details || {})
-  }
-}
-
-const sseErrMessage = ref('')
-const sseErrLogMessage = ref('')
-const hasError = ref(false)
-
-watch(data, (newData) => {
-  if (newData) {
-    const parsedData = JSON.parse(newData)
-    const sseData = {
-      type: event.value as SseEvent,
-      message: parseMessage(parsedData.message, parsedData.details),
-      rawMessage: parsedData.message,
-      progress: parsedData.progress,
-    }
-
-    if (sseData.type === 'uuid') {
-      uuid.value = parsedData.uuid
-      return
-    }
-
-    if (sseData.type === 'error-log') {
-      sseErrLogMessage.value = sseData.message
-    }
-
-    if (sseData.type === 'error') {
-      hasError.value = true
-      sseErrMessage.value = t(sseData.message, sseData.details || {})
-      if (currentOperation.value === 'project') {
-        handleSseLogs(projectContext, sseData)
-      } else if (currentOperation.value === 'version') {
-        handleSseLogs(versionContext, sseData)
-      }
-      return
-    }
-
-    if (currentOperation.value === 'project') {
-      handleSseLogs(projectContext, sseData)
-    } else if (currentOperation.value === 'version') {
-      handleSseLogs(versionContext, sseData)
-    }
-  }
-})
-
-function showSseLogs(ctx: LogContext) {
-  ctx.logDialog = dialog({
-    message: currentOperation.value === 'project'
-      ? t('startingProjectUpload')
-      : t('startingVersionUpdate'),
-    progress: {
-      spinner: h(QLinearProgress, {
-        color: 'primary',
-        value: percentage.value,
-      }),
-    },
-    persistent: true,
-    ok: false,
-  }).onCancel(() => {
-    ctx.logs = []
-    percentage.value = 0
-    currentOperation.value = null
-  })
-}
-
-function handleSseLogs(ctx: LogContext, sseData: SseLog) {
-  if (sseData.type === 'reset') {
-    ctx.logs = []
-  }
-  if (sseData.type !== 'error-log') {
-    ctx.logs.push(sseData)
-    percentage.value = sseData.progress / 100
-
-    if (ctx.logDialog) {
-      ctx.logDialog.update({
-        message: last(ctx.logs)?.message,
-        progress: {
-          spinner: h(QLinearProgress, {
-            color: 'primary',
-            value: percentage.value,
-          }),
-        },
-      })
-
-      if (sseData.rawMessage === 'NETWORK_CONN_FAILED') {
-        ctx.logDialog?.update({
-          cancel: {
-            label: t('dismiss'),
-          },
-        })
-      }
-      if (percentage.value === 1) {
-        ctx.fullLogs = ctx.logs
-          .filter(l => l.type !== 'start')
-          .toSorted((a, b) => a.progress > b.progress ? 1 : 0)
-        setTimeout(() => {
-          ctx.logDialog?.hide()
-          ctx.logDialog = null
-          ctx.showFullLogDialog = true
-          percentage.value = 0
-          currentOperation.value = null
-        }, 350)
-      }
-    }
-  }
-}
 
 async function handleAdd(formData: Machine) {
   await kc.fetch('/api/machines/machine', {
@@ -368,46 +202,19 @@ async function ensureNetworkConnection(machine: Machine) {
 }
 
 async function loadProject() {
-  if (!uuid.value) {
-    notifyError(t('connectionNotReady'))
-    return
-  }
-
-  const machine = selected.value[0]
-
-  if (!machine)
-    return
-
-  const connectionReady = await ensureNetworkConnection(machine)
-  if (!connectionReady)
-    return
-
-  currentOperation.value = 'project'
-
-  showSseLogs(projectContext)
-  try {
-    await kc.fetch('/api/sync/network-connection', {
-      method: 'POST',
-      retry: false,
-      body: {
-        uuid: uuid.value,
-        ip: machine.ip,
-        tbbModel: machine.tbbModel,
-      },
-    })
-
-    await kc.fetch('/api/sync/update-machine', {
+  startLongOperation(withQuery(`/api/sync/update-machine`, {
+    machineId: selected.value[0].machineId,
+  }), {
+    width: 800,
+    statusTitles: {
+      running: t('loadingProject'),
+      success: t('loadingProjectSuccess'),
+      failed: t('loadingProjectFailed'),
+    },
+    fetchOptions: {
       method: 'GET',
-      retry: false,
-      query: {
-        machineId: machine.machineId,
-        sseId: uuid.value,
-      },
-    })
-  } catch (error: any) {
-    console.error(error)
-    currentOperation.value = null
-  }
+    },
+  })
 }
 
 async function loadProjectTranslations() {
@@ -431,24 +238,16 @@ async function loadProjectTranslations() {
 }
 
 async function receiveVersionInfo() {
-  if (!uuid.value) {
-    notifyError(t('connectionNotReady'))
-    return
-  }
-
-  try {
-    currentOperation.value = 'version'
-
-    showSseLogs(versionContext)
-    await kc.fetch('/api/sync/machine-versions', {
-      query: { sseId: uuid.value },
-    })
-    await refresh()
-    selected.value = []
-  } catch (error: any) {
-    notifyError(t('errorReceivingVersionInfo', { error: error.message }))
-    currentOperation.value = null
-  }
+  startLongOperation(`/api/sync/machine-versions`, {
+    statusTitles: {
+      running: t('receivingVersionInfo'),
+      success: t('versionInfoReceived'),
+      failed: t('errorReceivingVersionInfo'),
+    },
+    fetchOptions: {
+      method: 'GET',
+    },
+  })
 }
 </script>
 
@@ -517,18 +316,6 @@ async function receiveVersionInfo() {
       :machine-groups="machineGroups"
       form-class="grid grid-cols-5 gap-4 grid-rows-7 select-none"
       @dbl-click="showEditModal"
-    />
-    <SseLogDialog
-      :model-value="projectContext.showFullLogDialog"
-      :logs="projectContext.fullLogs"
-      :err-message="sseErrLogMessage"
-      @close="projectContext.showFullLogDialog = false"
-    />
-    <SseLogDialog
-      :model-value="versionContext.showFullLogDialog"
-      :logs="versionContext.fullLogs"
-      :err-message="sseErrLogMessage"
-      @close="versionContext.showFullLogDialog = false"
     />
     <TeleskopSettingsDialog
       v-if="showTeleskopSettings"
