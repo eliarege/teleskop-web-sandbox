@@ -44,12 +44,14 @@ const { data: commands } = useAuthFetch('/api/smart-request-commands/smart-reque
   query: { machineId: selectedMachineId },
   immediate: false,
 })
+
 watch(commandOptions, () => {
   commandOptions.value?.unshift({
     commandNo: -1,
     commandName: t('empty'),
   })
 })
+
 watch(commands, (_newValue, _oldValue) => {
   for (const commandTypeMap of commandTypeMaps) {
     commandTypeMap.data = commands.value?.find(t => t.commandType === Number(commandTypeMap.id))?.commandName || t('empty')
@@ -80,67 +82,76 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <q-card class="h-[calc(100vh-41px)] flex-center flex-col ">
-    <q-card-section class="flex flex-row justify-center gap-8">
-      <div class="w-sm">
-        <h3>{{ t('machines') }}</h3>
-        <q-list
-          bordered
-          separator
-        >
-          <q-item
-            v-for="machine in machines"
-            :key="machine.machineId"
-            v-ripple
-            dense
-            clickable
-            :active="selectedMachineId === machine.machineId"
-            :focused="selectedMachineId === machine.machineId"
-            @click="selectedMachineId = machine.machineId"
+  <q-card class="h-[calc(100vh-41px)] flex flex-col">
+    <q-card-section class="flex flex-1 flex-col p-6">
+      <div class="flex flex-1 flex-wrap justify-center gap-6 min-h-0 lg:flex-nowrap">
+        <div class="flex w-full max-w-[320px] flex-1 flex-col rounded-xl border border-black/10 bg-black/5 p-4 min-h-0">
+          <h3 class="mb-3 text-lg font-semibold">
+            {{ t('machines') }}
+          </h3>
+          <q-list
+            bordered
+            separator
+            class="max-h-[520px] flex-1 overflow-auto"
           >
-            <q-item-section>
-              {{ machine.machineCode }}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-      <div v-if="commandOptions" class="w-xs flex flex-col">
+            <q-item
+              v-for="machine in machines"
+              :key="machine.machineId"
+              v-ripple
+              dense
+              clickable
+              :active="selectedMachineId === machine.machineId"
+              :focused="selectedMachineId === machine.machineId"
+              @click="selectedMachineId = machine.machineId"
+            >
+              <q-item-section>
+                {{ machine.machineCode }}
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+
         <div
-          v-for="commandMap in commandTypeMaps"
-          :key="commandMap.id"
-          class="mb-4"
+          v-if="commandOptions"
+          class="flex w-full max-w-[420px] flex-1 flex-col rounded-xl border border-black/10 bg-black/5 p-4 min-h-0"
         >
-          <q-select
-            v-model="commandMap.data"
-            dense
-            :label="commandMap.label"
-            :options="commandOptions"
-            option-label="commandName"
-            option-value="commandNo"
-            @update:model-value="handleOptionChange(commandMap.name)"
-          />
+          <h3 class="mb-3 text-lg font-semibold">
+            {{ t('smartRequestCommandDefinitions') }}
+          </h3>
+          <div class="flex flex-1 flex-col gap-3 overflow-auto pr-1">
+            <div
+              v-for="commandMap in commandTypeMaps"
+              :key="commandMap.id"
+              class="min-w-0"
+            >
+              <q-select
+                v-model="commandMap.data"
+                dense
+                :label="commandMap.label"
+                :options="commandOptions"
+                option-label="commandName"
+                option-value="commandNo"
+                @update:model-value="handleOptionChange(commandMap.name)"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </q-card-section>
-    <q-space />
-    <div class="w-full flex p-10">
-      <q-space />
-      <div class="flex gap-3">
-        <q-btn
-          :label="t('cancel')"
-          @click="router.go(0)"
-        />
-        <q-btn
-          color="primary"
-          no-caps
-          :label="t('submit')"
-          @click="handleSubmit"
-        />
-      </div>
-    </div>
+
+    <q-separator inset class="mx-6" />
+
+    <q-card-actions class="flex items-center justify-end gap-3 px-6 pb-6 pt-2">
+      <q-btn
+        :label="t('cancel')"
+        @click="router.go(0)"
+      />
+      <q-btn
+        color="primary"
+        no-caps
+        :label="t('submit')"
+        @click="handleSubmit"
+      />
+    </q-card-actions>
   </q-card>
 </template>
-
-<style scoped>
-
-</style>
