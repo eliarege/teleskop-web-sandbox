@@ -9,6 +9,63 @@ const $q = useQuasar()
 const tt = (key: string) => toRef(() => t(key))
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
+const route = useRoute()
+
+type MenuCollection = TopbarMenuItem[] | TopbarMenuItem[][] | undefined
+
+function normalizePath(path?: string | null) {
+  if (!path)
+    return ''
+
+  const trimmed = path.trim()
+
+  if (!trimmed)
+    return ''
+
+  const prefixed = trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+  const normalized = prefixed.replace(/\/+$/, '')
+
+  return normalized || '/'
+}
+
+function collectMenuItems(menuItems?: MenuCollection): TopbarMenuItem[] {
+  if (!menuItems)
+    return []
+
+  const flattened: TopbarMenuItem[] = []
+  const list = menuItems as Array<TopbarMenuItem | TopbarMenuItem[]>
+
+  for (const entry of list) {
+    if (Array.isArray(entry)) {
+      flattened.push(...collectMenuItems(entry))
+      continue
+    }
+
+    flattened.push(entry)
+
+    if (entry.subMenu?.items)
+      flattened.push(...collectMenuItems(entry.subMenu.items))
+  }
+
+  return flattened
+}
+
+function resolveItemPath(target?: TopbarMenuItem['to']) {
+  const destination = toValue(target)
+
+  if (typeof destination === 'string')
+    return normalizePath(destination)
+
+  if (
+    destination
+    && typeof destination === 'object'
+    && 'path' in destination
+    && typeof (destination as { path?: unknown }).path === 'string'
+  )
+    return normalizePath(destination.path as string)
+
+  return ''
+}
 
 const items = [
   {
@@ -170,6 +227,15 @@ const items = [
   },
 ] as TopbarMenuItem[]
 
+const navigableMenuItems = collectMenuItems(items)
+
+const currentSettingTitle = computed(() => {
+  const currentPath = normalizePath(route.path)
+  const match = navigableMenuItems.find(item => item.to && resolveItemPath(item.to) === currentPath)
+
+  return match ? toValue(match.label) : ''
+})
+
 const itemsMobile = [
   [
     {
@@ -188,7 +254,7 @@ const itemsMobile = [
       bordered
       class="bg-white text-black !dark:(bg-dark text-white) select-none"
     >
-      <QToolbar class="min-h-unset">
+      <QToolbar class="relative min-h-unset">
         <template v-if="sm">
           <QToolbarTitle shrink>
             <TopbarHomeButton />
@@ -214,6 +280,13 @@ const itemsMobile = [
         >
           <TopbarMenu :items="itemsMobile" />
         </TopbarButton>
+        <QToolbarTitle
+          v-if="currentSettingTitle"
+          shrink
+          class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-base font-semibold text-gray-900 dark:text-gray-100"
+        >
+          {{ currentSettingTitle }}
+        </QToolbarTitle>
         <QSpace />
         <div class="space-x-1">
           <TopbarAppGrid />
