@@ -18,7 +18,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const editor = useEditorStore()
+const machine = useMachineStore()
 const { mt } = useProjectTranslations()
+const teleskopSettings = useTeleskopSettingsStore()
 
 const programParameter = editor.getPathElement({
   stepId: props.stepId,
@@ -47,7 +49,7 @@ interface Option {
 const options = computed<Option[]>(() => {
   const selections = props.parameter.selections ?? []
   if (props.parameter.type === 'SELECTABLE_FORMULA') {
-    return editor.machine.commandFormulas
+    return machine.currentMachine.commandFormulas
       .filter((f: CommandFormula) => f.commandNo === props.commandNo)
       .map((f: CommandFormula) => ({
         label: f.formulaName,
@@ -56,20 +58,20 @@ const options = computed<Option[]>(() => {
       }))
   } else {
     return selections.map((selection: ParameterSelections) => ({
-      label: mt(selection.name, editor.machine.id),
+      label: mt(selection.name, machine.currentMachine.id),
       value: selection.value,
     }))
   }
 })
 
 const isOptimizable = computed(() => {
-  return editor.teleskopSettings.treatmentSettings.optimizedEnable && editor.machine.treatmentParameters.find((tp) => {
+  return teleskopSettings.treatmentSettings.optimizedEnable && machine.currentMachine.treatmentParameters.find((tp) => {
     return tp.commandNo === props.commandNo && tp.parameterIndex === props.parameter.index
   })
 })
 
 const labelLength = computed(() => {
-  return props.parameter.name ? mt(props.parameter.name, editor.machine.id).length : 0
+  return props.parameter.name ? mt(props.parameter.name, machine.currentMachine.id).length : 0
 })
 
 const selectTypes = ['SELECT', 'SELECT_ADDITIVE', 'SELECTABLE_FORMULA']
@@ -120,7 +122,7 @@ function handleBlur() {
         v-model="model"
         dense
         outlined
-        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
+        :label="parameter.name ? mt(parameter.name, machine.currentMachine.id) : undefined"
         :rules="rules"
         style="width: 150px;"
         class="text-3"
@@ -143,7 +145,7 @@ function handleBlur() {
         v-else
         v-model="model"
         :rules="rules"
-        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
+        :label="parameter.name ? mt(parameter.name, machine.currentMachine.id) : undefined"
         type="decimal"
         :maxlength="10"
         :hide-bottom-space="true"
@@ -170,7 +172,7 @@ function handleBlur() {
     <template v-else-if="parameter.type === 'SELECT' || parameter.type === 'SELECT_ADDITIVE'">
       <QSelect
         v-model="model"
-        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
+        :label="parameter.name ? mt(parameter.name, machine.currentMachine.id) : undefined"
         :options="options"
         option-value="value"
         options-dense
@@ -187,7 +189,7 @@ function handleBlur() {
     <template v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
       <QSelect
         v-model="model"
-        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
+        :label="parameter.name ? mt(parameter.name, machine.currentMachine.id) : undefined"
         :options="options"
         :option-label="(f) => f.label?.trim().slice(0, 15)"
         option-value="value"
@@ -225,7 +227,7 @@ function handleBlur() {
     <template v-else-if="parameter.type === 'CHECKBOX'">
       <InputCheckbox
         v-model="model"
-        :label="parameter.name ? mt(parameter.name, editor.machine.id) : undefined"
+        :label="parameter.name ? mt(parameter.name, machine.currentMachine.id) : undefined"
         @input-blur="handleBlur"
         @focus="handleFocus"
       />

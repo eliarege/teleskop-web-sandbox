@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MachineInfo, MachineOption, ProgramListPDFData } from '~/shared/types'
+import type { MachineInfo, MachineOption } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
@@ -7,23 +7,27 @@ const props = defineProps<{
 
 defineEmits([...useDialogPluginComponent.emits])
 
-const { t, messages, locale } = useI18n()
 const editor = useEditorStore()
+const machine = useMachineStore()
 const { notifyError } = useNotify()
+const { t, messages, locale } = useI18n()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const machineOption = ref<MachineOption>('current')
 const isPrinting = ref(false)
 const isDownloading = ref(false)
 
-const selectedMachines = computed<MachineInfo[]>(() =>
+const selectedMachines = computed<{ id: number, name: string }[]>(() =>
   machineOption.value === 'current'
-    ? [editor.machine]
-    : editor.selectedMachines,
+    ? [{
+        id: machine.currentMachine.id,
+        name: machine.currentMachine.name,
+      }]
+    : machine.selectedMachines.map(machine => ({ id: machine.id, name: machine.name })),
 )
 
 const isDisabled = computed(() =>
-  machineOption.value === 'selected' && editor.selectedMachines.length === 0
+  machineOption.value === 'selected' && machine.selectedMachines.length === 0
   || isPrinting.value
   || isDownloading.value,
 )
@@ -83,7 +87,7 @@ async function downloadProgramList() {
 
     const programListPDF = await generateProgramPDF('PROGRAM_LIST', payload)
     const fileName = machineOption.value === 'current'
-      ? `${editor.machine.name}_${t('printProgramListDialog.output.programList')}.pdf`
+      ? `${machine.currentMachine.name}_${t('printProgramListDialog.output.programList')}.pdf`
       : `${t('printProgramListDialog.output.programList')}.pdf`
 
     downloadPDF(programListPDF, fileName)

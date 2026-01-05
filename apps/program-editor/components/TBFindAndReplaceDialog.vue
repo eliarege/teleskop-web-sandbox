@@ -11,7 +11,7 @@ const props = defineProps<{
 const $q = useQuasar()
 const { t } = useI18n()
 const kc = useKeycloak()
-const editor = useEditorStore()
+const machine = useMachineStore()
 const { notifyError, notifyWarning } = useNotify()
 const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
@@ -284,7 +284,7 @@ async function performSearch() {
       machineIds = [props.machineId]
     } else if (searchType.value === '2') {
       // Selected machines
-      machineIds = editor.selectedMachines.map(m => m.id)
+      machineIds = machine.selectedMachines.map(m => m.id)
     }
 
     if (machineIds.length === 0) {
@@ -453,10 +453,10 @@ async function performSearch() {
                   </div>
 
                   <!-- Selected machines display -->
-                  <div v-if="editor.selectedMachines.length > 0" class="pl-6 pt-1">
+                  <div v-if="machine.selectedMachines.length > 0" class="pl-6 pt-1">
                     <div class="text-xs text-grey-6 dark:text-grey-4 cursor-help">
                       <span class="font-medium">
-                        {{ t('findAndReplace.machinesSelected', { count: editor.selectedMachines.length }) }}
+                        {{ t('findAndReplace.machinesSelected', { count: machine.selectedMachines.length }) }}
                       </span>
                       <q-tooltip
                         class="bg-white text-dark shadow-4 text-body2"
@@ -468,11 +468,11 @@ async function performSearch() {
                             {{ t('findAndReplace.selectedMachinesList') }}:
                           </div>
                           <div
-                            v-for="machine in editor.selectedMachines"
-                            :key="machine.id"
+                            v-for="selectedMachine in machine.selectedMachines"
+                            :key="selectedMachine.id"
                             class="q-mb-xs"
                           >
-                            • {{ machine.name }}
+                            • {{ selectedMachine.name }}
                           </div>
                         </div>
                       </q-tooltip>

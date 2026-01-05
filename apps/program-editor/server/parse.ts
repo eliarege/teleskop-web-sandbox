@@ -306,6 +306,7 @@ function createEmptyProgram(): Program {
     icon: '',
     programNo: 0,
     duration: 0,
+    stepCount: 0,
     author: null,
     comment: '',
     typeId: 0,

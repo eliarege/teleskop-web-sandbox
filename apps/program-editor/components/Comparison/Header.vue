@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { useEditorStore } from '~/composables/editor'
 import type { ProgramInfoHeader } from '~/shared/types'
 
 const props = defineProps<{
@@ -9,10 +8,10 @@ const props = defineProps<{
 }>()
 
 const { t } = useI18n()
-const editor = useEditorStore()
+const machine = useMachineStore()
 
 function editProgram(programNumber: number) {
-  navigateTo(`/machine/${editor.machine.id}/program/${programNumber}`)
+  navigateTo(`/machine/${machine.currentMachine.id}/program/${programNumber}`)
 }
 </script>
 

@@ -6,7 +6,6 @@ import MachineCommandList from '~/components/MachineCommandList.vue'
 import MachineList from '~/components/MachineList.vue'
 import ProgramTitle from '~/components/ProgramTitle.vue'
 import ContextBar from '~/components/ContextBar.vue'
-import { useEditorStore } from '~/composables/editor'
 import TopbarNotificationButton from '~/components/TopbarNotificationButton.vue'
 
 const $q = useQuasar()
@@ -17,12 +16,14 @@ const breakpoints = useBreakpoints(breakpointsTailwind)
 const sm = breakpoints.greaterOrEqual('sm')
 
 const editor = useEditorStore()
+const machine = useMachineStore()
+const teleskopSettings = useTeleskopSettingsStore()
 const { notifyError } = useNotify()
 
 editor.isLoading = true
-await editor.fetchTeleskopSettings()
+await teleskopSettings.fetchTeleskopSettings()
+await machine.fetchMachineGroups()
 await editor.fetchAllProcessTypes()
-await editor.fetchMachineGroups()
 editor.isLoading = false
 
 const tt = (key: string) => toRef(() => t(key))
@@ -73,7 +74,7 @@ const items = [
           icon: 'search',
           shortcut: 'Ctrl+F',
           onClick() {
-            $commandManager.executeCommand('findAndReplace', { $q }, editor.machine.id, editor.machine.name)
+            $commandManager.executeCommand('findAndReplace', { $q }, machine.currentMachine.id, machine.currentMachine.name)
           },
         },
         {
@@ -82,7 +83,7 @@ const items = [
           shortcut: 'F6',
           disabled: () => !editor.selectedPrograms.length,
           onClick() {
-            $commandManager.executeCommand('checkErrors', { $q }, editor.machine.id, editor.selectedPrograms)
+            $commandManager.executeCommand('checkErrors', { $q }, machine.currentMachine.id, editor.selectedPrograms)
           },
         },
       ]],
@@ -108,7 +109,7 @@ const items = [
             shortcut: 'F3',
             disabled: () => editor.selectedPrograms.length < 1,
             onClick() {
-              navigateTo(`/machine/${editor.machine.id}/program/${Math.min(...editor.selectedPrograms.map(p => p.programNo))}`)
+              navigateTo(`/machine/${machine.currentMachine.id}/program/${Math.min(...editor.selectedPrograms.map(p => p.programNo))}`)
             },
           },
           {
@@ -117,17 +118,17 @@ const items = [
             shortcut: 'Ctrl+Del',
             disabled: () => editor.selectedPrograms.length < 1,
             onClick() {
-              $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, editor.machine.id)
+              $commandManager.executeCommand('deleteProgram', { $q }, editor.selectedPrograms, machine.currentMachine.id)
             },
           },
         ],
         [
           { label: tt('menu.sendAllPrograms'), icon: 'send', onClick() {
-            const { id, name } = editor.machine
+            const { id, name } = machine.currentMachine
             $commandManager.executeCommand('sendAllPrograms', { $q }, { id, name })
           } },
           { label: tt('menu.getAllPrograms'), icon: 'download', onClick() {
-            const { id, name } = editor.machine
+            const { id, name } = machine.currentMachine
             $commandManager.executeCommand('getAllPrograms', { $q }, { id, name })
           } },
         ],
@@ -137,7 +138,7 @@ const items = [
             icon: 'edit',
             disabled: () => editor.selectedPrograms.length < 1,
             onClick() {
-              $commandManager.executeCommand('renameProgram', { $q }, editor.machine.id, editor.selectedPrograms[0].programNo)
+              $commandManager.executeCommand('renameProgram', { $q }, machine.currentMachine.id, editor.selectedPrograms[0].programNo)
             },
           },
         ],
@@ -153,10 +154,9 @@ const items = [
           label: tt('menu.versionInfo'),
           icon: 'info',
           onClick: () => {
-            const { programNo, name } = editor.program
             $commandManager.executeCommand('programVersionInfo', { $q }, {
-              programNo,
-              name,
+              programNo: editor.program.programNo,
+              name: editor.program.name,
             })
           },
         },
@@ -173,14 +173,13 @@ const items = [
           icon: 'timeline',
           shortcut: 'F8',
           onClick: () => {
-            const editor = useEditorStore()
             const errors = Array.from(editor.errorIds.values())
             const hasMainStepError = checkMainStepForErrors(errors)
 
             if (!hasMainStepError) {
-              const { machine, program, teleskopSettings } = editor
-              const initialTemperature = teleskopSettings.initialTemperature
-              $commandManager.executeCommand('tempTimeGraph', { $q }, machine, program, initialTemperature)
+              const program = editor.program
+              const initialTemp = teleskopSettings.initialTemperature
+              $commandManager.executeCommand('tempTimeGraph', { $q }, machine.currentMachine, program, initialTemp)
             } else {
               const stepIndex = Number(errors[errors.length - 1].split('-')[0])
               notifyError(t('invalidCommand'))
@@ -193,12 +192,11 @@ const items = [
           icon: 'timeline',
           shortcut: 'F7',
           onClick: () => {
-            const editor = useEditorStore()
             const errors = Array.from(editor.errorIds.values())
             const hasMainStepError = checkMainStepForErrors(errors)
 
             if (!hasMainStepError) {
-              $commandManager.executeCommand('stepCommandGraph', { $q }, editor.machine, editor.program)
+              $commandManager.executeCommand('stepCommandGraph', { $q }, machine.currentMachine, editor.program)
             } else {
               const stepIndex = Number(errors[errors.length - 1].split('-')[0])
               notifyError(t('invalidCommand'))
@@ -237,7 +235,7 @@ const items = [
   },
   {
     label: tt('menu.projectInfo'),
-    disabled: computed(() => !editor.machine.commands.size),
+    disabled: computed(() => !machine.currentMachine.commands.size),
     subMenu: {
       items: [[
         {
@@ -250,7 +248,7 @@ const items = [
         {
           label: tt('menu.machineConstants'),
           onClick() {
-            $commandManager.executeCommand('machineConstants', { $q }, editor.machine.id)
+            $commandManager.executeCommand('machineConstants', { $q }, machine.currentMachine.id)
           },
         },
       ]],
@@ -327,7 +325,7 @@ const goRoot = computed(() => {
       borderless
       class="bg-light-7 dark:bg-dark-3"
     >
-      <MachineList :machine-groups="editor.machineGroups" />
+      <MachineList :machine-groups="machine.machineGroups" />
     </QDrawer>
 
     <QPageContainer>

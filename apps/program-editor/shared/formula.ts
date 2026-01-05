@@ -183,7 +183,7 @@ function _calculateProgramStepDuration(step: ProgramStep, context: CalculationCo
   }
 
   if (b)
-    stepInfo.push({ duration: Math.round(b), temperature: context.temperature })  
+    stepInfo.push({ errors: [], duration: Math.round(b), temperature: context.temperature })
 
   stepInfo[0].duration = Math.round(duration)
   stepInfo[0].temperature = context.temperature

@@ -49,10 +49,17 @@ export interface ProcessType {
   value: number
   description: string
 }
+
+export type MachineUnusableReason =
+  | 'NO_COMMANDS'
+  | 'NO_COMMAND_TYPES'
+
 export interface MachineInfo {
   id: number
   name: string
   groupId: number
+  disabled: boolean
+  usability?: MachineUnusableReason
 }
 
 export interface MachineGroup {

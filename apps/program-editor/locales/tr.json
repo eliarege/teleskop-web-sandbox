@@ -143,7 +143,11 @@
     "isOffline": "Makine çevrimdışı",
     "connecting": "Bağlanılıyor...",
     "connectionSuccessful": "Makine bağlantısı başarılı",
-    "connectionFailed": "Makine {machineId} bağlantısı başarısız"
+    "connectionFailed": "Makine {machineId} bağlantısı başarısız",
+    "unusableReason": {
+      "NO_COMMANDS": "Makinede tanımlı komut bulunmuyor. Makineler uygulamasından komutları güncelleyiniz.",
+      "NO_COMMAND_TYPES": "Makinede tanımlı komut tipi bulunmuyor. Makineler uygulamasından komut tiplerini güncelleyiniz."
+    }
   },
   "command": {
     "icon": "İkon",
@@ -537,7 +541,8 @@
     "copy": "Programları Kopyala",
     "paste": "Programları Yapıştır",
     "findChange": "Bul - Değiştir",
-    "compareAllPrograms": "Tüm Programları Karşılaştır"
+    "compareAllPrograms": "Tüm Programları Karşılaştır",
+    "goToMachineApp": "Makineler Uygulamasına Git"
   },
   "comparisonTable": {
     "programName": "Program İsmi",

@@ -11,6 +11,7 @@ const props = defineProps<{ stepId: number, parallelIndex: number }>() // -1 for
 const $q = useQuasar()
 const { t } = useI18n()
 const editor = useEditorStore()
+const machine = useMachineStore()
 const { $commandManager } = useNuxtApp()
 const selectRef = ref<QSelect>()
 
@@ -25,7 +26,7 @@ const step = computed(() => editor.program.steps.find(s => s.stepId === props.st
 const id = computed(() => `${step.value.stepId}-${programCommand.value.commandId}`)
 
 const availableCommands = computed(() => {
-  const allCommands: MachineCommand[] = Array.from(editor.machine.commands.values())
+  const allCommands: MachineCommand[] = Array.from(machine.currentMachine.commands.values())
 
   return allCommands
     .filter(({ commandType }) => !(isMainCommand.value && commandType === CommandEligibility.PARALLEL_ONLY))
@@ -39,16 +40,16 @@ const availableCommands = computed(() => {
       || !isParallelCommandRestricted(commandNo),
     )
     .map(command => ({
-      label: `${command.commandNo} ${mt(command.name, editor.machine.id)}`,
+      label: `${command.commandNo} ${mt(command.name, machine.currentMachine.id)}`,
       value: command.commandNo,
-      icon: editor.getCommandIcon(command.commandNo),
+      icon: machine.getCommandIcon(command.commandNo),
     }))
 })
 
 const rules = [
   (value: number) => (isDef(value) || t('emptyCommand')),
   (value: number) => {
-    const machineCommand = editor.machine.commands.get(value)
+    const machineCommand = machine.currentMachine.commands.get(value)
     return machineCommand ? true : t('error.machineCommandNotFound', { commandNo: value })
   },
 ]
@@ -72,7 +73,7 @@ watch(() => step.value.mainCommand.commandNo, validateCommand)
 onMounted(() => {
   if (!isDef(programCommand.value.commandNo) || (isMainCommand.value && !isDef(step.value.mainCommand.commandNo))) {
     editor.errorIds.add(id.value)
-  } else if (!editor.machine.commands.has(programCommand.value.commandNo)) {
+  } else if (!machine.currentMachine.commands.has(programCommand.value.commandNo)) {
     editor.errorIds.add(id.value)
   }
   selectRef.value?.focus()
@@ -85,7 +86,7 @@ onUnmounted(() => {
 })
 
 async function updateStepCommand(commandNo: number) {
-  const command = editor.machine.commands.get(commandNo)
+  const command = machine.currentMachine.commands.get(commandNo)
   if (!command)
     return
 
@@ -101,14 +102,14 @@ async function updateStepCommand(commandNo: number) {
 function getCommandLabel(option: any) {
   if (option.label)
     return option.label
-  const command = editor.machine.commands.get(option)
-  return command ? `${command.commandNo} ${mt(command.name, editor.machine.id)}` : `${option} ${t('error.commandNotFound')}`
+  const command = machine.currentMachine.commands.get(option)
+  return command ? `${command.commandNo} ${mt(command.name, machine.currentMachine.id)}` : `${option} ${t('error.commandNotFound')}`
 }
 
 function isParallelCommandRestricted(commandNo: number): boolean {
   if (!isMainCommand.value) {
     const mainCommandNo = step.value.mainCommand.commandNo
-    return editor.machine.commands.get(mainCommandNo)?.dontUseList?.includes(commandNo) || false
+    return machine.currentMachine.commands.get(mainCommandNo)?.dontUseList?.includes(commandNo) || false
   }
   return false
 }

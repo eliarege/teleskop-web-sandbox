@@ -12,6 +12,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const editor = useEditorStore()
+const machine = useMachineStore()
 const { mt } = useProjectTranslations()
 const programIO = editor.getPathElement({
   stepId: props.stepId,
@@ -29,7 +30,7 @@ const model = computed({
 const separator = ','
 const options = computed(() => (
   props.io.selections.map((selection: CommandIOSelection) => ({
-    label: mt(selection.name, editor.machine.id),
+    label: mt(selection.name, machine.currentMachine.id),
     value: `${selection.type}${separator}${selection.physicalId}`,
   }))
 ))
@@ -68,7 +69,7 @@ function handleFocus() {
     >
       <div class="relative pt-4 text-3 min-w-32 max-w-40">
         <div class="q-input-text">
-          {{ mt(props.io.name, editor.machine.id) }}
+          {{ mt(props.io.name, machine.currentMachine.id) }}
         </div>
         <div class="option-text">
           {{ selectedOptionsText }}

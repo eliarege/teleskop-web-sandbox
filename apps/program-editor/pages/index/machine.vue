@@ -24,6 +24,7 @@ const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 const editor = useEditorStore()
+const machine = useMachineStore()
 const filter = useProgramFilterStore()
 const machineStatusStore = useMachineStatusStore()
 const machineId = Number(route.params.machine_id)
@@ -33,10 +34,6 @@ contextMenuStore.setCtx({ t, router })
 const sortedSelectedPrograms = computed(() =>
   editor.selectedPrograms.slice().sort((a, b) => a.programNo - b.programNo),
 )
-
-onBeforeMount(async () => {
-  await machineStatusStore.checkMachineStatus(machineId, { notifyOnError: false })
-})
 
 onKeyStroke('F2', (event: KeyboardEvent) => {
   event.preventDefault()
@@ -117,7 +114,7 @@ onKeyStroke(['Enter'], (event: KeyboardEvent) => {
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
   if (!isActiveElementEditable()) {
     event.preventDefault()
-    $commandManager.executeCommand('deleteProgram', { $q }, sortedSelectedPrograms.value, editor.machine.id)
+    $commandManager.executeCommand('deleteProgram', { $q }, sortedSelectedPrograms.value, machine.currentMachine.id)
   }
 })
 
@@ -154,15 +151,6 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
 
 if (filter.existingFilter.clearOnChange)
   filter.clearFilter()
-
-editor.isLoading = true
-if (editor.machine.id !== machineId) {
-  await editor.loadMachine(machineId)
-  await editor.fetchCommandTypes(machineId)
-}
-await editor.refreshAllPrograms().then(() => {
-  editor.isLoading = false
-})
 
 const isMoreThanOneRowSelected = computed(() => sortedSelectedPrograms.value.length > 1)
 const hasOnlyOnController = computed(() => sortedSelectedPrograms.value.some(
@@ -342,7 +330,7 @@ const columns = computed<ProgramTableColumn[]>(() =>
       field: (row: ProgramTableRow) => getProcessTypeName(row.typeId),
       sortable: true,
       align: 'center',
-      hidden: editor.isTonello,
+      hidden: machine.isTonello,
     },
     {
       name: 'additionalType',
@@ -355,7 +343,7 @@ const columns = computed<ProgramTableColumn[]>(() =>
       },
       sortable: true,
       align: 'center',
-      hidden: editor.isTonello,
+      hidden: machine.isTonello,
     },
     {
       name: 'operator',
@@ -553,7 +541,7 @@ const contextMenuOptions = computed(() => [
         (row: ProgramTableRow) =>
           row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
-      hidden: editor.isTonello,
+      hidden: machine.isTonello,
       onClick: () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(
@@ -746,6 +734,27 @@ function handleRowClass(row: ProgramTableRow): string {
   }
   return 'no-changes'
 }
+
+onBeforeMount(async () => {
+  editor.isLoading = true
+
+  if (machine.isMachineDisabled(machineId)) {
+    await machine.selectFirstUsableMachine()
+    editor.isLoading = false
+    return
+  }
+
+  if (machine.currentMachine.id !== machineId) {
+    await machine.loadMachine(machineId)
+    await editor.fetchCommandTypes(machineId)
+  }
+
+  await editor.refreshAllPrograms().then(() => {
+    editor.isLoading = false
+  })
+
+  machineStatusStore.checkMachineStatus(machineId, { notifyOnError: false })
+})
 
 onUnmounted(() => {
   editor.selectedPrograms = []

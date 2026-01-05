@@ -10,7 +10,7 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
-const editor = useEditorStore()
+const machine = useMachineStore()
 const { mt } = useProjectTranslations()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
@@ -18,7 +18,7 @@ const commandIcons = computed(() =>
   Object.fromEntries(
     props.machineCommands.map(cmd => [
       cmd.commandNo,
-      editor.getCommandIcon(cmd.commandNo),
+      machine.getCommandIcon(cmd.commandNo),
     ]),
   ),
 )

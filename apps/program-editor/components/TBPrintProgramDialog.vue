@@ -11,6 +11,7 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits])
 
 const editor = useEditorStore()
+const machine = useMachineStore()
 const { notifyError } = useNotify()
 const { t, locale, messages } = useI18n()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
@@ -30,15 +31,15 @@ const isDownloading = ref(false)
 
 const selectedMachine = computed(() => {
   if (machineOption.value === 'current') {
-    return editor.machine
-  } else if (machineOption.value === 'selected' && editor.selectedMachines.length > 0) {
-    return editor.selectedMachines[0]
+    return machine.currentMachine
+  } else if (machineOption.value === 'selected' && machine.selectedMachines.length > 0) {
+    return machine.selectedMachines[0]
   }
   return null
 })
 
 const isDisabled = computed(() =>
-  machineOption.value === 'selected' && !editor.selectedMachines.length
+  machineOption.value === 'selected' && !machine.selectedMachines.length
   || selectedPrograms.value.length === 0
   || selectedCommands.value.length === 0
   || isPrinting.value
@@ -73,8 +74,8 @@ async function loadCommandList() {
   selectedCommands.value = []
 
   try {
-    const machine = await editor.fetchMachine(selectedMachine.value.id)
-    commandList.value = Array.from(machine.commands.values())
+    const machineData = await machine.fetchMachine(selectedMachine.value.id)
+    commandList.value = Array.from(machineData.commands.values())
   } finally {
     isLoadingCommands.value = false
   }
@@ -91,7 +92,7 @@ async function getPrograms(machineId: number, programNos: number[]): Promise<Pro
   return programs
 }
 
-watch([machineOption, () => editor.selectedMachines], loadData)
+watch([machineOption, () => machine.selectedMachines], loadData)
 
 const programColumns = computed(() => [
   { name: 'programNo', label: t('printProgramListDialog.programNo'), field: 'programNo', align: 'left' as const, sortable: true },

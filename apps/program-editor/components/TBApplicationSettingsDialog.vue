@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { commandTypeMaps } from '~/shared/constants'
 
+const props = defineProps<{
+  selectedIcons: number
+}>()
+
 defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
-const editor = useEditorStore()
-const selectedIcons = ref(editor.teleskopSettings.selectedIcons)
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+
+const selectedIcons = ref(props.selectedIcons)
 const fullSelect = Number.parseInt('1'.repeat(commandTypeMaps.length), 2)
 const selectAll = ref(selectedIcons.value === fullSelect)
-const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 function toggleSelectAll() {
   selectAll.value = !selectAll.value

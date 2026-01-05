@@ -14,23 +14,23 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
-const editor = useEditorStore()
+const machine = useMachineStore()
 const { mt } = useProjectTranslations()
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent()
 
-const commandName = computed(() => mt(props.commandName, editor.machine.id))
+const commandName = computed(() => mt(props.commandName, machine.currentMachine.id))
 const startIndex = ref(props.stepIndex)
 const endIndex = ref(props.stepsLength)
 
-const commandIcon = computed(() => editor.getCommandIcon(props.commandNo))
-const commandParameter = computed(() => editor.machine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index))
+const commandIcon = computed(() => machine.getCommandIcon(props.commandNo))
+const commandParameter = computed(() => machine.currentMachine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index))
 const parameterFormat = computed(() => commandParameter.value?.format || '')
 
 const parameterName = computed(() => {
   if (!props.parameter)
     return ''
-  const parameter = editor.machine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index)
-  return parameter ? mt(parameter.name, editor.machine.id) : ''
+  const parameter = machine.currentMachine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index)
+  return parameter ? mt(parameter.name, machine.currentMachine.id) : ''
 })
 
 const stepOptions = computed(() => Array.from({ length: props.stepsLength }, (_, i) => i + 1))

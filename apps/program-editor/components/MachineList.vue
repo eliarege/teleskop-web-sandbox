@@ -11,20 +11,24 @@ const props = defineProps<{
 const { t } = useI18n()
 const route = useRoute()
 const editor = useEditorStore()
+const machine = useMachineStore()
 const machineStatusStore = useMachineStatusStore()
 
-onMounted(() => {
-  if (route.path === '/') {
-    const firstMachine = props.machineGroups.find(group => group.machines.length)?.machines[0]
-    if (firstMachine)
-      editor.changeMachine(firstMachine.id)
+onMounted(() => async () => {
+  if (route.path !== '/')
+    return
+
+  const selected = await machine.selectFirstUsableMachine()
+  if (selected) {
+    editor.resetProgram()
   }
 })
 
 async function onUpdateSelected(selection: string) {
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])
-    await editor.changeMachine(id)
+    await machine.changeMachine(id)
+    editor.resetProgram()
   } else {
     await navigateTo('/')
   }
@@ -68,7 +72,7 @@ async function retryMachineConnection(machineId: number, event: Event) {
         borderless
       >
         <template
-          v-for="group in machineGroups"
+          v-for="group in props.machineGroups"
           :key="group.groupId"
         >
           <QExpansionItem
@@ -89,10 +93,17 @@ async function retryMachineConnection(machineId: number, event: Event) {
               borderless
               clickable
               dense
+              :disable="machine.disabled"
               @click="onUpdateSelected(`${machine.groupId}-${machine.id}`)"
               @contextmenu.prevent="currentMachine = machine"
               @mousedown.middle="openMachineInNewTab(machine.id)"
             >
+              <q-tooltip
+                v-if="machine.disabled && machine.usability"
+              >
+                {{ t(`machine.unusableReason.${machine.usability}`) }}
+              </q-tooltip>
+
               <QItemSection dense>
                 {{ machine.name }}
               </QItemSection>
@@ -119,7 +130,9 @@ async function retryMachineConnection(machineId: number, event: Event) {
                 touch-position
                 context-menu
               >
-                <MachineListContextMenu :machine-id="currentMachine?.id" :machine-name="currentMachine?.name" />
+                <MachineListContextMenu
+                  :machine
+                />
               </QMenu>
             </QItem>
           </QExpansionItem>

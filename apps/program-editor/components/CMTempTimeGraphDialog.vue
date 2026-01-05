@@ -20,7 +20,7 @@ defineEmits([...useDialogPluginComponent.emits])
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, LineController, CategoryScale, LinearScale)
 
 const { t } = useI18n()
-const editor = useEditorStore()
+const machine = useMachineStore()
 const { dialogRef, onDialogHide } = useDialogPluginComponent()
 
 const showIcons = ref(true)
@@ -107,7 +107,7 @@ function calculateChartData() {
       pointRadius: 4,
       pointHoverRadius: 6,
       pointBackgroundColor: dataPoints.map((_, index) =>
-        editor.getCommandIcon(stepInfo[index]?.commandNo)?.color ?? '#000000',
+        machine.getCommandIcon(stepInfo[index]?.commandNo)?.color ?? '#000000',
       ),
     }],
   }
@@ -180,7 +180,7 @@ interface Point {
 
 function calcDataPoints(dataPoints: Coordinate[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
   return dataPoints.map(({ x, y }, index) => {
-    const commandIcon = editor.getCommandIcon(stepInfo[index]?.commandNo)
+    const commandIcon = machine.getCommandIcon(stepInfo[index]?.commandNo)
     const isNotLast = index < dataPoints.length - 1
 
     return {

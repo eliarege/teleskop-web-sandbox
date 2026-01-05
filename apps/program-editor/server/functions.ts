@@ -1,7 +1,8 @@
 import type { Knex } from 'knex'
-import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
+import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, MachineUnusableReason, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
+import { TeleskopSettingsIds } from '~/shared/constants'
 
 interface TransactionOptions {
   trx?: Knex.Transaction
@@ -70,23 +71,43 @@ export async function getMachineGroup(): Promise<MachineGroup[]> {
  */
 export async function getMachines(): Promise<MachineInfo[]> {
   const machines: MachineInfo[] = await db('BFMACHINES')
-    .select('MACHINEID AS id', 'MACHINECODE AS name', 'GRUPNO AS groupId')
+    .select({
+      id: 'MACHINEID',
+      name: 'MACHINECODE',
+      groupId: 'GRUPNO',
+    })
     .where('INUSE', 1)
     .andWhere('USEINTELESKOP', 1)
 
   return machines
 }
 
-export async function getMachinesAsList(): Promise<{ name: string, value: number, label: string }[]> {
-  const machines: { name: string, value: number, label: string }[] = await db('BFMACHINES')
-    .select('MACHINEID AS value', 'MACHINECODE AS name', 'GRUPNO AS groupId')
-    .where('INUSE', 1)
-    .andWhere('USEINTELESKOP', 1)
-  return machines.map(machine => ({
-    name: machine.name,
-    value: machine.value,
-    label: `${machine.value}. ${machine.name}`,
-  }))
+/**
+ * Makine disable (devre dışı) durumunu kontrol eder
+ * Komutu olmayan makineler disable kabul edilir
+ */
+export async function getMachineDisableStatus(
+  machineIds: number[],
+):
+  Promise<Record<number, { disabled: boolean, reason?: MachineUnusableReason }>> {
+  if (!machineIds.length)
+    return {}
+
+  const rows = await db('BFMASTERCOMMANDS')
+    .distinct('MACHINEID')
+    .whereIn('MACHINEID', machineIds)
+    .where({ ACTIVATED: 1, ISDELETED: 0 })
+
+  const enabledIds = new Set(rows.map(r => r.MACHINEID))
+
+  return Object.fromEntries(
+    machineIds.map(id => [
+      id,
+      enabledIds.has(id)
+        ? { disabled: false }
+        : { disabled: true, reason: 'NO_COMMANDS' },
+    ]),
+  )
 }
 
 /**
@@ -97,9 +118,22 @@ export async function groupMachinesByGroup(): Promise<MachineGroup[]> {
   const machines: MachineInfo[] = await getMachines()
   const groups: MachineGroup[] = await getMachineGroup()
 
+  const machineIds = machines.map(m => m.id)
+  const disabledMachines = await getMachineDisableStatus(machineIds)
+
   return groups.map(group => ({
     ...group,
-    machines: machines.filter(machine => machine.groupId === group.groupId),
+    machines: machines
+      .filter(machine => machine.groupId === group.groupId)
+      .map((machine) => {
+        const status = disabledMachines[machine.id]
+
+        return {
+          ...machine,
+          disabled: status?.disabled ?? false,
+          usability: status?.reason,
+        }
+      }),
   }))
 }
 
@@ -231,17 +265,20 @@ export async function ensureTreatmentGroups(): Promise<TreatmentGroup[]> {
 export async function fetchTeleskopSettings(): Promise<TeleskopSettings> {
   const settings = await db('TFTELESKOPSETTINGS').select({ id: 'ID', value: 'VALUE' })
 
+  const getValue = (id: TeleskopSettingsIds) =>
+    settings.find(s => s.id === id)?.value
+
   // Program yazarken optimize edilsin
-  const optimizedEnable = settings.find(s => s.id === 3)?.value === '1'
+  const optimizedEnable = getValue(TeleskopSettingsIds.OPTIMIZED_ENABLE) === '1'
 
   // Optimize edilebilen parametre sayısı (yoksa 10 alınacak)
-  const optimizedLimit = Number(settings.find(s => s.id === 11)?.value ?? 10)
+  const optimizedLimit = Number(getValue(TeleskopSettingsIds.OPTIMIZED_LIMIT) ?? 10)
 
   // Programda gösterilecek ikonlar
-  const selectedIcons = Number(settings.find(s => s.id === 12)?.value ?? 0)
+  const selectedIcons = Number(getValue(TeleskopSettingsIds.SELECTED_ICONS) ?? 0)
 
   // Başlangıç sıcaklığı
-  const initialTemperature = Number(settings.find(s => s.id === 13)?.value ?? 25)
+  const initialTemperature = Number(getValue(TeleskopSettingsIds.INITIAL_TEMPERATURE) ?? 25)
 
   return {
     treatmentSettings: {

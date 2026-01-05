@@ -10,13 +10,13 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
-const editor = useEditorStore()
+const machine = useMachineStore()
 const { mt } = useProjectTranslations()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const machineOption = ref<MachineOption>('current')
 const selectedMachines = computed(() =>
-  machineOption.value === 'current' ? [editor.machine] : editor.selectedMachines,
+  machineOption.value === 'current' ? [machine.currentMachine] : machine.selectedMachines,
 )
 
 const fields = [
@@ -30,8 +30,8 @@ const selectedFields = ref<number[]>([1, 2, 3, 4])
 async function excelFormatter(workbook: ExcelJS.Workbook) {
   const commands: MachineCommand[] = []
 
-  for (const machine of selectedMachines.value) {
-    const machineData = await editor.fetchMachine(machine.id)
+  for (const selectedMachine of selectedMachines.value) {
+    const machineData = await machine.fetchMachine(selectedMachine.id)
     commands.push(...machineData.commands.values())
   }
 
@@ -104,20 +104,20 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
     if (!sheet)
       continue
 
-    for (const machine of selectedMachines.value) {
+    for (const selectedMachine of selectedMachines.value) {
       if (field === 1) {
         commands.forEach((command) => {
           sheet.addRow({
-            machineName: machine?.name,
+            machineName: selectedMachine?.name,
             commandNo: command.commandNo,
-            commandName: mt(command.name, machine.id),
+            commandName: mt(command.name, selectedMachine.id),
           })
         })
       } else if (field === 2) {
         for (const command of commands) {
           sheet.addRow({
-            machineName: machine?.name,
-            commandName: mt(command.name, machine.id),
+            machineName: selectedMachine?.name,
+            commandName: mt(command.name, selectedMachine.id),
           })
 
           if (command.parameters.find(param => param.editable === true)) {
@@ -164,11 +164,11 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
           sheet.addRow({})
         }
       } else if (field === 3) {
-        const { constants: machineConstants } = await editor.fetchMachine(machine.id)
+        const { constants: machineConstants } = await machine.fetchMachine(selectedMachine.id)
 
         machineConstants.forEach((constant: MachineConstant) => {
           sheet.addRow({
-            machineName: machine?.name,
+            machineName: selectedMachine?.name,
             parameterId: constant.machineParameterId,
             parameterName: constant.paramString,
             value: constant.currentValue,
@@ -180,7 +180,7 @@ async function excelFormatter(workbook: ExcelJS.Workbook) {
         commands.forEach((command) => {
           command.parameters.forEach((param) => {
             sheet.addRow({
-              machineName: machine?.name,
+              machineName: selectedMachine?.name,
               commandNo: command?.commandNo,
               commandName: command?.name,
               value: Number(param?.value) < 0 ? t('exportExcelDialog.required') : param?.value,
@@ -200,7 +200,7 @@ async function exportExcel() {
 
   const buffer = await workbook.xlsx.writeBuffer()
   const fileName = machineOption.value === 'current'
-    ? `${editor.machine.name}_${t('exportExcelDialog.report')}`
+    ? `${machine.currentMachine.name}_${t('exportExcelDialog.report')}`
     : `${t('exportExcelDialog.report')}`
   downloadExcelFile(fileName, buffer)
   onDialogCancel()
