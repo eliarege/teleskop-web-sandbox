@@ -1,8 +1,62 @@
 # Changelog
 
+## 0.62.0 - 2026-01-05
+
+[Compare Changes](7ba56d6318ebfd8a149e0ca6078238602fb05957...627edc3d781c6c165c287f876b3ad36076ff5b91)
+
+### 🚀 Features
+
+-  **PE**: Show program duration calculation errors via dialog, save duration of steps to database ([a3cb08e](a3cb08e42ffe76b495cf03693016907b2b77e9fc))
+-  **PE**: Implement copy step dialog and enhance context menu functionality for step copying ([f5a4d3a](f5a4d3a04643e05e8fa64992033420e140da4906))
+-  **MA**: Open MimicDialog on double click ([9d243f5](9d243f5fb392c0efa6e28c24f5dcff9e1ce83738))
+-  **MA**: Dialogs stay persistent onChange ([f9039d9](f9039d97be7ef083be79443a5dddd0318127d9e7))
+-  **MA**: Network connection check before project upload ([57cdcec](57cdcec4806e888f9b3209a192510a7039867b3e))
+-  **MA**: Dialog prompt on leaving before saving changes ([e6b5797](e6b579731e49523f6810d68d60590a7f43f61dc4))
+-  **MA**: UseUnsavedDialogGuard generalized to pages ([0142fb7](0142fb73a518a9ef5e1fb1cc5f5f84597ee1637b))
+-  **MA**: UseUnsavedDialogGuard changes ([c64d2db](c64d2db29f9b8bb8fe4b3d502852d8796972aff4))
+- **nuxt-base**: Implement LongOperationDialog and related utilities for handling long-running operations ([b830092](b8300924910e1f744173f98db0bbf9b3d96eef8b))
+- **nuxt-base**: Implement SSE-based long-running task tracking and cancellation ([9ff35a4](9ff35a47e7e8b1395033912fd179e4895c1cc05e))
+-  **MA**: Migrate to `longProcess` for SSE-tracked tasks ([bc4730e](bc4730ebab55344a2e6f324f6e3b1faf64ceefc7))
+
+### 🐛 Bug Fixes
+
+-  **MA**: Add T9 entries to tbb model options ([4ecfe61](4ecfe61fc61227772a740b43aebf028703589e65))
+-  **PE**: Prevent execution of treatment parameters fetch when optimized settings are disabled ([5de5e56](5de5e564d6bc64476bc9716575fd931e721b79e4))
+-  **PE**: Remove min-height styles for dense input field ([9800f2e](9800f2e91e96486a7e186c5fd01bc5403099d163))
+- **quasar**: Rename `prevent-down-when-closed` prop to `disable-down-open-menu` to be more clear of its purpose ([724cf19](724cf1976c642e27097d1f516b54f480fa000167))
+-  **PE**: Enhance options handling in `ProgramStepCommandParameterInput` for selectable formulas and improve dynamic width styling ([67aa794](67aa794f049e7977255c8fdf7cfd2fa7d8c7d529))
+-  **PE**: Improve delete and navigation key handling in program editor ([f37f974](f37f9741f1afe06fe7ced00af6eb539f94ec3c27))
+-  **PE**: Update scrollPage function to use stepId instead of stepIndex for improved navigation ([e19185f](e19185f14911c13a0252121d7dffe35a9e1edd7b))
+-  **PE**: Remove unused handleFocus function to clean up code ([aac681c](aac681c6fb310048b5f4b91a7580bf252799defb))
+-  **PE**: Update step selection logic to use stepId instead of stepIndex for improved clarity ([da54f10](da54f10e5b8f76965b00991d9045ddca7ee3fae0))
+-  **PE**: Refactor getStepIndex function ([8fa464a](8fa464a504e17bde5d4625aa6c1a97c207d7e482))
+-  **PE**: Update stepId usage across components for improved consistency and clarity ([4f43cef](4f43cef86b57907c424fcd7da5f1c0264825bb66))
+-  **PE**: Clone copied step values to prevent mutation and improve data integrity ([2a9b334](2a9b334df90c6c9814a7c603680e91b25ee237f8))
+-  **PE**: Add handleFocus function to select step on focus and improve user interaction ([c94d9ca](c94d9ca578c666a08b3e8c52d24442bfd5e62c4a))
+-  **PE**: Adjust newParallelStep function to select the last step for parallel commands ([aa4c953](aa4c9532c699134758f62fd608e2affa5ceabe19))
+-  **MA**: Default steamUnitOption moved to Kg ([38e9b57](38e9b5750a580265c6ddb87e44ced1c1a9f70050))
+-  **MA**: Double click behaviour ([ca78d7c](ca78d7c694817db0f168592cfc94d3b8fe270f2b))
+-  **MA**: Emitted event name ([e1669f3](e1669f3ba2309ac3401eb35d3d3950ad107e66a2))
+-  **PE**: Disable machines with no commands (TW-171) ([9c85a93](9c85a9346eba4ee811c76544c711a33361a82c89))
+
+### ♻️ Refactor
+
+-  **PE**: `getPathElement` accepts path objects instead of strings ([4b39107](4b39107d340fc4e8724e835c05307e98956d55a6))
+
+### 🎨 Styling
+
+- **eslint**: Disable ts/method-signature-style rule in ESLint config ([9dd3509](9dd35093a6850e50dcf5631a096effea5164233a))
+
+### 🔧 Miscellaneous Tasks
+
+-  **MA**: Localization ([b7a44ce](b7a44ce74df235f4d39d3d151b2935d0c6435b30))
+-  **MA**: Removed unnecessary variable declaration ([6581076](658107634c84a629d49fec705ed8d5df4f706cd1))
+- **nuxt-base**: Enable server-side translations ([ab5333a](ab5333ad4c62a0991fb680881bd5331ffa5e8cb0))
+- Update lockfile ([627edc3](627edc3d781c6c165c287f876b3ad36076ff5b91))
+
 ## 0.61.0 - 2025-12-18
 
-[Compare Changes](d04c0bd47f7609d19446a4207abac8a2e53ce5f7...b7ccb22f5b1242aa48839d1e26dd06473d3c3ac2)
+[Compare Changes](d04c0bd47f7609d19446a4207abac8a2e53ce5f7...7ba56d6318ebfd8a149e0ca6078238602fb05957)
 
 ### 🚀 Features
 
