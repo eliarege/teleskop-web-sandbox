@@ -1,27 +1,20 @@
 <script setup lang="ts">
-import { QTree, useDialogPluginComponent } from 'quasar'
-import type { MachineGroup, MachineInfo, PasteOptions } from '~/shared/types'
+import { useDialogPluginComponent } from 'quasar'
+import CMMachineSelector from './CMMachineSelector.vue'
+import type { MachineInfo, MachineOption, PasteOptions } from '~/shared/types'
 
 const props = defineProps<{
+  machineName: string
   type: string
-  allMachines: MachineInfo[]
-  machineGroups: MachineGroup[]
+  selectedMachines: MachineInfo[]
 }>()
 
-defineEmits([
-  ...useDialogPluginComponent.emits,
-])
+defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
-const ticked = ref<string[]>([])
-const selectAll = ref(false)
-const expanded = ref<string[]>([])
-
-const selectedMachines = computed(() => {
-  return props.allMachines.filter(machine => ticked.value.includes(`${machine.groupId}-${machine.id}`))
-})
+const machineOption = ref<MachineOption>('current')
 
 // Program yapıştırma seçenekleri
 const pasteOption = ref<PasteOptions>('overwrite') // default: var olan programın üzerine yaz
@@ -35,46 +28,6 @@ const pasteOptions: { label: string, value: PasteOptions }[] = [
     value: 'skip',
   },
 ]
-
-const nodes = computed(() => {
-  if (!props.machineGroups || !props.allMachines)
-    return []
-
-  return props.machineGroups.filter(group => group.machines.length > 0).map(group => ({
-    id: group.groupId,
-    label: group.name,
-    selectable: false,
-    children: group.machines.map(machine => ({
-      id: `${group.groupId}-${machine.id}`,
-      label: machine.name,
-      selectable: false,
-    })),
-  }))
-})
-
-function selectAllMachines() {
-  if (!selectAll.value)
-    ticked.value = nodes.value.flatMap(group => group.children.map(machine => machine.id))
-  else
-    ticked.value = []
-
-  selectAll.value = !selectAll.value
-}
-
-function expandToggle() {
-  if (expanded.value.length === 0)
-    expanded.value = nodes.value.flatMap(getAllNodeIds)
-  else
-    expanded.value = []
-}
-
-function getAllNodeIds(node: any) {
-  const ids = [node.id]
-  if (node.children) {
-    ids.push(...node.children.flatMap(getAllNodeIds))
-  }
-  return ids
-}
 </script>
 
 <template>
@@ -99,53 +52,25 @@ function getAllNodeIds(node: any) {
         </div>
       </QCardSection>
 
+      <QCardSection>
+        <CMMachineSelector
+          :model-value="machineOption"
+          :machine-name="props.machineName"
+          :selected-machines="props.selectedMachines"
+        />
+      </QCardSection>
+
+      <!-- Program Paste Options -->
       <QCardSection class="text-gray-8 dark:text-gray-3">
-        <div class="text-sm mb-2">
-          {{ t(`contextMenu.${props.type}.selectMachine`) }}
+        <div class="text-subtitle1 text-weight-medium">
+          {{ t('contextMenu.copyAndSend.dialog.pasteOptions') }}
         </div>
-        <div class="flex justify-center">
-          <QTree
-            v-model:ticked="ticked"
-            v-model:expanded="expanded"
-            :nodes="nodes"
-            node-key="id"
-            tick-strategy="leaf"
-            default-expand-all
-            dense
-            class="w-full min-h-120 max-h-120 overflow-y-scroll"
-          />
-        </div>
-
-        <div class="flex gap-4 justify-start p-2">
-          <QBtn
-            class="w-40 bg-gray-1 dark:bg-dark-4"
-            :label="selectAll ? t('dropAll') : t('selectAll')"
-            dense
-            flat
-            @click="selectAllMachines"
-          />
-
-          <QBtn
-            class="w-40 bg-gray-1 dark:bg-dark-4"
-            :label="expanded.length ? t('collapseAll') : t('expandAll')"
-            dense
-            flat
-            @click="expandToggle"
-          />
-        </div>
-
-        <!-- Program Paste Options -->
-        <div class="q-mt-md">
-          <div class="text-subtitle1 text-weight-medium">
-            {{ t('contextMenu.copyAndSend.dialog.pasteOptions') }}
-          </div>
-          <q-option-group
-            v-model="pasteOption"
-            :options="pasteOptions"
-            type="radio"
-            dense
-          />
-        </div>
+        <q-option-group
+          v-model="pasteOption"
+          :options="pasteOptions"
+          type="radio"
+          dense
+        />
       </QCardSection>
 
       <QCardActions

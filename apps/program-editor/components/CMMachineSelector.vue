@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import type { MachineOption } from '~/shared/types'
+import type { MachineInfo, MachineOption } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
   singleSelection?: boolean
+  selectedMachines: MachineInfo[]
 }>()
+
+defineEmits([...useDialogPluginComponent.emits])
 
 const model = defineModel<MachineOption>({ required: true })
 
 const $q = useQuasar()
 const { t } = useI18n()
-const editor = useEditorStore()
 const { $commandManager } = useNuxtApp()
 
 function selectMachineDialog() {
@@ -51,10 +53,10 @@ function selectMachineDialog() {
           />
         </div>
 
-        <div v-if="editor.selectedMachines.length > 0" class="pl-6 pt-1">
+        <div v-if="props.selectedMachines.length > 0" class="pl-6 pt-1">
           <div class="text-xs text-grey-6 dark:text-grey-4 cursor-help">
             <span class="font-medium">
-              {{ t('machineSelectorDialog.machinesSelected', { count: editor.selectedMachines.length }) }}
+              {{ t('machineSelectorDialog.machinesSelected', { count: props.selectedMachines.length }) }}
             </span>
             <q-tooltip
               class="bg-white text-dark shadow-4 text-body2"
@@ -66,7 +68,7 @@ function selectMachineDialog() {
                   {{ t('machineSelectorDialog.selectedMachinesList') }}:
                 </div>
                 <div
-                  v-for="machine in editor.selectedMachines"
+                  v-for="machine in props.selectedMachines"
                   :key="machine.id"
                   class="q-mb-xs"
                 >

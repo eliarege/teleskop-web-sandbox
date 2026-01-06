@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { MachineInfo, MachineOption } from '~/shared/types'
+import CMMachineSelector from './CMMachineSelector.vue'
+import type { MachineOption } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
@@ -125,6 +126,7 @@ async function downloadProgramList() {
         <CMMachineSelector
           v-model="machineOption"
           :machine-name="props.machineName"
+          :selected-machines="machine.selectedMachines"
         />
       </q-card-section>
 

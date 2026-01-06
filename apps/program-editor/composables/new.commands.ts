@@ -485,9 +485,9 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: CMMachineListCopyAndSendDialog,
         componentProps: {
+          machineName: machine.currentMachine.name,
           type: 'copyAndSend',
-          allMachines: machine.allMachines,
-          machineGroups: machine.machineGroups,
+          selectedMachines: machine.selectedMachines,
         },
       }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
         await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
@@ -596,6 +596,7 @@ registerCommand(() => {
           machineName: machine.currentMachine.name,
           programList: editor.allPrograms,
           commandList: Array.from(machine.currentMachine.commands.values()),
+          selectedMachines: machine.selectedMachines,
         },
       })
       return true
@@ -745,6 +746,7 @@ registerCommand(() => {
         component: TBExportExcelDialog,
         componentProps: {
           machineName: machine.currentMachine.name,
+          selectedMachines: machine.selectedMachines,
         },
       })
       return true

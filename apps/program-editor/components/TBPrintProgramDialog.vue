@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import type { MachineCommand, MachineOption, Program, ProgramTableRow } from '~/shared/types'
+import type { MachineCommand, MachineInfo, MachineOption, Program, ProgramTableRow } from '~/shared/types'
 import CMMachineSelector from '~/components/CMMachineSelector.vue'
 
 const props = defineProps<{
   machineName: string
   programList: ProgramTableRow[]
   commandList: MachineCommand[]
+  selectedMachines: MachineInfo[]
 }>()
 
 defineEmits([...useDialogPluginComponent.emits])
@@ -221,6 +222,7 @@ async function printProgram() {
           v-model="machineOption"
           :machine-name="props.machineName"
           single-selection
+          :selected-machines="props.selectedMachines"
         />
       </q-card-section>
 
