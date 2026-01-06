@@ -1,15 +1,11 @@
 import { readonly, ref } from 'vue'
 import type { StreamLogLevel, StreamMessage } from '../shared/longOperation.types'
 
-export interface LogEntry {
+interface LogEntry {
   timestamp: Date
   level: StreamLogLevel | 'success'
   message: string
 }
-
-export type LongOperation = ReturnType<typeof useLongOperation>
-
-export type FetchOptions = Omit<RequestInit, 'body' | 'signal'> & { body?: any }
 
 export function useLongOperation() {
   const kc = useKeycloak()
@@ -74,6 +70,8 @@ export function useLongOperation() {
     }
   }
 
+  type FetchOptions = Omit<RequestInit, 'body' | 'signal'> & { body?: any }
+
   /**
    * Body should be a JSON-serializable object if provided. `Accept`, `Content-Type`, and `Authorization` headers are set automatically.
    *
@@ -93,7 +91,7 @@ export function useLongOperation() {
         ...fetchOptions?.headers,
         'Content-Type': 'application/json',
         'Accept': 'text/event-stream',
-        'Authorization': `Bearer ${kc.token}`,
+        'Authorization': `Bearer ${kc.token.value}`,
       },
       body: fetchOptions?.body ? JSON.stringify(fetchOptions.body) : undefined,
       signal: abortController.signal,
