@@ -23,7 +23,7 @@ function selectMachineDialog() {
 </script>
 
 <template>
-  <div class="m-2">
+  <div class="mx-2">
     <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
       {{ t('machineSelectorDialog.machineOptions') }}
     </label>

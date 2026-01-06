@@ -16,7 +16,7 @@ const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginC
 
 const machineOption = ref<MachineOption>('current')
 
-// Program yapıştırma seçenekleri
+// Program Paste Options
 const pasteOption = ref<PasteOptions>('overwrite') // default: var olan programın üzerine yaz
 const pasteOptions: { label: string, value: PasteOptions }[] = [
   {
@@ -31,17 +31,17 @@ const pasteOptions: { label: string, value: PasteOptions }[] = [
 </script>
 
 <template>
-  <QDialog
+  <q-dialog
     ref="dialogRef"
     class="select-none"
     @hide="onDialogHide"
   >
-    <QCard>
-      <QCardSection class="w-100">
+    <q-card>
+      <q-card-section class="w-100">
         <div class="text-h6 flex">
           {{ t('contextMenu.copyToMachinesAndSend') }}
-          <QSpace />
-          <QBtn
+          <q-space />
+          <q-btn
             icon="close"
             class="text-gray-4 dark:text-gray-6"
             flat
@@ -50,47 +50,51 @@ const pasteOptions: { label: string, value: PasteOptions }[] = [
             @click="onDialogCancel"
           />
         </div>
-      </QCardSection>
+      </q-card-section>
 
-      <QCardSection>
+      <q-card-section class="pt-0">
         <CMMachineSelector
           :model-value="machineOption"
           :machine-name="props.machineName"
           :selected-machines="props.selectedMachines"
         />
-      </QCardSection>
+      </q-card-section>
 
       <!-- Program Paste Options -->
-      <QCardSection class="text-gray-8 dark:text-gray-3">
-        <div class="text-subtitle1 text-weight-medium">
-          {{ t('contextMenu.copyAndSend.dialog.pasteOptions') }}
-        </div>
-        <q-option-group
-          v-model="pasteOption"
-          :options="pasteOptions"
-          type="radio"
-          dense
-        />
-      </QCardSection>
+      <q-card-section class="pt-0">
+        <div class="mx-2">
+          <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
+            {{ t('contextMenu.copyAndSend.dialog.pasteOptions') }}
+          </label>
 
-      <QCardActions
+          <q-option-group
+            v-model="pasteOption"
+            :options="pasteOptions"
+            type="radio"
+            dense
+            class="column q-gutter-sm"
+          />
+        </div>
+      </q-card-section>
+
+      <q-card-actions
         align="right"
         class="q-pa-md bg-gray-1 dark:bg-dark-4"
       >
-        <QBtn
+        <q-btn
           :label="t('cancel')"
           class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
           flat
           @click="onDialogCancel"
         />
-        <QBtn
+        <q-btn
           class="q-mr-sm text-gray-1 dark:text-gray-2 bg-primary"
           :disabled="selectedMachines.length === 0"
           :label="t(`contextMenu.${props.type}.operate`)"
           flat
           @click="onDialogOK({ machines: selectedMachines, pasteOption })"
         />
-      </QCardActions>
-    </QCard>
-  </QDialog>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
