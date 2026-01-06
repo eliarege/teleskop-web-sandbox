@@ -1,4 +1,4 @@
-## Handling Long Operations
+## Handling Long-Running Tasks with Real-Time Updates with Task Stream
 
 ### Use Case
 
@@ -18,7 +18,7 @@ senaryolar için uygundur.
 export default defineEventHandler(async (event) => {
   const t = await useTranslation(event)
   const itemCount = 5
-  const res = runLongOperation(event, ({ logger, cancellation }) => {
+  const res = createTaskStream(event, ({ logger, cancellation }) => {
     logger.info(t('Starting long operation'))
     logger.info(t('Initialization complete'))
     logger.progress(10)
@@ -53,8 +53,8 @@ export default defineEventHandler(async (event) => {
 
 ### Frontend Usage
 ```ts
-await startLongOperation('/api/long-operation', {
-  title: 'Long Operation',
+await startTaskStream('/api/task-stream', {
+  title: 'Example Long Operation',
   statusTitles: {
     // Different titles based on state of operation
   },
@@ -64,26 +64,17 @@ await startLongOperation('/api/long-operation', {
 })
 ```
 
-### Related Files
+### Nginx Configuration
 
-> TODO: Move these files to a separate layer maybe
-```
-├── components
-│   └── LongOperationDialog.vue
-├── composables
-│   └── useLongOperation.ts
-├── docs
-│   └── longOperation.md
-├── locales
-│   ├── en.json
-│   ├── pt.json
-│   └── tr.json
-├── server
-│   └── utils
-│       ├── keyValueRepository.ts
-│       └── longOperationStream.ts
-├── shared
-│   └── longOperation.types.ts
-└── utils
-    └── longOperation.ts
+Ensure that your Nginx configuration supports Server-Sent Events (SSE) by including the following settings:
+
+```nginx
+location /api/task-stream {
+    proxy_set_header Connection '';
+    proxy_http_version 1.1;
+    chunked_transfer_encoding off;
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_pass http://your_backend_upstream;
+}
 ```

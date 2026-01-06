@@ -81,24 +81,5 @@
     "retry": "Retry",
     "reconnect": "Reconnect",
     "disconnected": "Disconnected"
-  },
-  "operation": {
-    "running": "Running",
-    "completed": "Completed",
-    "failed": "Failed",
-    "abort": "Abort",
-    "retry": "Retry",
-    "aborted": "Aborted",
-    "viewDetails": "View Details",
-    "showOperationLogs": "Show operation logs",
-    "waitingForStart": "Waiting for operation to start...",
-    "mustCompleteBeforeClosing": "Operation must complete successfully before closing",
-    "pleaseWait": "Please wait...",
-    "close": "Close",
-    "notCompleted": "Operation did not complete",
-    "unknownError": "An unknown error occurred",
-    "completedSuccessfully": "Operation completed successfully",
-    "abortedByUser": "Operation aborted by user",
-    "connectionError": "Connection error: {message}"
   }
 }

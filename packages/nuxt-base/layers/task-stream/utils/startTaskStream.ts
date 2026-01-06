@@ -1,8 +1,8 @@
 import { Dialog } from 'quasar'
-import LongOperationDialog, { type LongOperationResult } from '../components/LongOperationDialog.vue'
-import type { FetchOptions } from '../composables/useLongOperation'
+import TaskStreamDialog, { type TaskStreamResult } from '../components/TaskStreamDialog.vue'
+import type { TaskStreamFetchOptions } from '../composables/useTaskStream'
 
-type LongOperationOptions = {
+type TaskStreamOptions = {
   title?: string
   statusTitles?: {
     running?: string
@@ -11,16 +11,16 @@ type LongOperationOptions = {
   }
   body?: any
   width?: string | number
-  fetchOptions?: FetchOptions
+  fetchOptions?: TaskStreamFetchOptions
 }
 
-export function startLongOperation(
+export function startTaskStream(
   url: string,
-  options?: LongOperationOptions,
-): Promise<LongOperationResult> {
+  options?: TaskStreamOptions,
+): Promise<TaskStreamResult> {
   return new Promise(((resolve) => {
     Dialog.create({
-      component: LongOperationDialog,
+      component: TaskStreamDialog,
       componentProps: {
         url,
         options: options?.fetchOptions,

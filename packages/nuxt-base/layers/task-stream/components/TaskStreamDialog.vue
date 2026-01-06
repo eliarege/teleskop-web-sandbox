@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { withBase } from 'ufo'
-import { useLongOperation } from '../composables/useLongOperation'
-import type { FetchOptions, LogEntry } from '../composables/useLongOperation'
+import { useTaskStream } from '../composables/useTaskStream'
+import type { TaskStreamFetchOptions } from '../composables/useTaskStream'
 
 const props = withDefaults(defineProps<{
   url: string
-  fetchOptions?: FetchOptions
+  fetchOptions?: TaskStreamFetchOptions
   title?: string
   width?: string | number
   statusTitles?: {
@@ -29,30 +29,30 @@ const config = useRuntimeConfig()
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent()
 const logsContainer = ref<HTMLElement | null>(null)
-const operation = useLongOperation()
+const task = useTaskStream()
 const showLogs = ref(false)
 
 const state = reactive({
-  logs: operation.logs,
-  progress: operation.progress,
-  isRunning: operation.isRunning,
-  isSuccess: operation.isSuccess,
-  isAborted: operation.isAborted,
-  isError: operation.isError,
-  errorMessage: operation.errorMessage,
+  logs: task.logs,
+  progress: task.progress,
+  isRunning: task.isRunning,
+  isSuccess: task.isSuccess,
+  isAborted: task.isAborted,
+  isError: task.isError,
+  errorMessage: task.errorMessage,
 })
 
-function startOperation() {
-  operation.start(withBase(props.url, config.app.baseURL), props.fetchOptions)
+function startTaskStream() {
+  task.start(withBase(props.url, config.app.baseURL), props.fetchOptions)
 }
 
-startOperation()
+startTaskStream()
 
-export type LongOperationResult =
+export type TaskStreamResult =
   | { success: true }
   | { success: false, aborted: boolean, error: string }
 
-const currentProgress = computed(() => operation.progress.value ?? 0)
+const currentProgress = computed(() => task.progress.value ?? 0)
 
 const canClose = computed(() => state.isSuccess || state.isAborted || state.isError)
 
@@ -82,14 +82,14 @@ const statusColor = computed(() => {
 
 const statusText = computed(() => {
   if (state.isRunning)
-    return t('operation.running')
+    return t('taskStream.running')
   if (state.isSuccess)
-    return t('operation.completed')
+    return t('taskStream.completed')
   if (state.isAborted)
-    return t('operation.aborted')
+    return t('taskStream.aborted')
   if (state.isError)
-    return t('operation.failed')
-  return t('operation.pending')
+    return t('taskStream.failed')
+  return t('taskStream.pending')
 })
 
 const statusTitle = computed(() => {
@@ -139,15 +139,15 @@ function formatTime(date: Date) {
   })
 }
 
-function getResult(): LongOperationResult {
+function getResult(): TaskStreamResult {
   if (state.isSuccess) {
     return { success: true }
   } else if (state.isAborted) {
-    return { success: false, aborted: true, error: t('operation.abortedByUser') }
+    return { success: false, aborted: true, error: t('taskStream.abortedByUser') }
   } else if (state.isError) {
-    return { success: false, aborted: false, error: state.errorMessage || t('operation.unknownError') }
+    return { success: false, aborted: false, error: state.errorMessage || t('taskStream.unknownError') }
   } else {
-    return { success: false, aborted: false, error: t('operation.notCompleted') }
+    return { success: false, aborted: false, error: t('taskStream.notCompleted') }
   }
 }
 
@@ -160,19 +160,19 @@ const canRetry = computed(() => state.isError || state.isAborted)
 function handleClose() {
   if (canClose.value) {
     emit('close')
-    operation.reset()
+    task.reset()
     onDialogOK(getResult())
   }
 }
 
 function handleAbort() {
   emit('abort')
-  operation.abort()
+  task.abort()
 }
 
 function handleRetry() {
   emit('retry')
-  startOperation()
+  startTaskStream()
 }
 
 // Auto-scroll to bottom when new logs arrive
@@ -194,11 +194,11 @@ watch(
     :maximized="$q.screen.lt.sm"
     transition-show="slide-down"
     transition-hide="slide-up"
-    class="operation-log-dialog"
+    class="task-stream-dialog"
     position="top"
     @hide="onDialogHide"
   >
-    <q-card class="q-dialog-plugin operation-log-card select-none" :style="`width: ${toUnit(props.width)}; max-width: 90vw;`">
+    <q-card class="q-dialog-plugin task-stream-card select-none" :style="`width: ${toUnit(props.width)}; max-width: 90vw;`">
       <!-- Header -->
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">
@@ -243,7 +243,7 @@ watch(
       <q-card-section class="q-py-none">
         <q-expansion-item
           v-model="showLogs"
-          :label="t('operation.viewDetails')"
+          :label="t('taskStream.viewDetails')"
           switch-toggle-side
           header-class="text-grey-7"
           dense
@@ -263,7 +263,7 @@ watch(
               <span class="log-message">{{ log.message }}</span>
             </div>
             <div v-if="state.logs.length === 0" class="text-grey-6 text-italic">
-              {{ t('operation.waitingForStart') }}
+              {{ t('taskStream.waitingForStart') }}
             </div>
             <div v-if="state.isRunning" class="cursor-blink">
               _
@@ -287,7 +287,7 @@ watch(
         <q-btn
           v-if="state.isRunning"
           flat
-          :label="t('operation.abort')"
+          :label="t('taskStream.abort')"
           color="negative"
           icon="cancel"
           @click="handleAbort"
@@ -295,7 +295,7 @@ watch(
         <q-btn
           v-if="canRetry"
           flat
-          :label="t('operation.retry')"
+          :label="t('taskStream.retry')"
           color="primary"
           icon="refresh"
           @click="handleRetry"
@@ -303,13 +303,13 @@ watch(
         <q-btn
           :disable="!canClose"
           :color="state.isSuccess ? 'positive' : (state.isAborted ? 'warning' : 'primary')"
-          :label="canClose ? t('operation.close') : t('operation.pleaseWait')"
+          :label="canClose ? t('taskStream.close') : t('taskStream.pleaseWait')"
           :icon="state.isSuccess ? 'check' : (state.isAborted ? 'close' : undefined)"
           :loading="state.isRunning"
           @click="handleClose"
         >
           <q-tooltip v-if="!canClose && !state.isRunning">
-            {{ t('operation.mustCompleteBeforeClosing') }}
+            {{ t('taskStream.mustCompleteBeforeClosing') }}
           </q-tooltip>
         </q-btn>
       </q-card-actions>
@@ -318,7 +318,7 @@ watch(
 </template>
 
 <style scoped>
-.operation-log-card {
+.task-stream-card {
   display: flex;
   flex-direction: column;
   border-top-left-radius: 4px !important;
@@ -383,7 +383,7 @@ watch(
 </style>
 
 <style>
-.operation-log-dialog .fixed-top {
+.task-stream-dialog .fixed-top {
   top: 20px;
 }
 </style>

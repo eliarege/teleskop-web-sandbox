@@ -1,0 +1,21 @@
+{
+  "taskStream": {
+    "running": "Running",
+    "completed": "Completed",
+    "failed": "Failed",
+    "abort": "Abort",
+    "retry": "Retry",
+    "aborted": "Aborted",
+    "viewDetails": "View Details",
+    "showTaskLogs": "Show task logs",
+    "waitingForStart": "Waiting for task to start...",
+    "mustCompleteBeforeClosing": "Task must complete successfully before closing",
+    "pleaseWait": "Please wait...",
+    "close": "Close",
+    "notCompleted": "Task did not complete",
+    "unknownError": "An unknown error occurred",
+    "completedSuccessfully": "Task completed successfully",
+    "abortedByUser": "Task aborted by user",
+    "connectionError": "Connection error: {message}"
+  }
+}

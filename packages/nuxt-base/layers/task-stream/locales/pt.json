@@ -1,0 +1,19 @@
+{
+  "taskStream": {
+    "running": "Em execução",
+    "completed": "Concluído",
+    "failed": "Falhou",
+    "abort": "Abortar",
+    "retry": "Tentar novamente",
+    "aborted": "Abortado",
+    "viewDetails": "Ver Detalhes",
+    "showTaskLogs": "Mostrar logs da tarefa",
+    "waitingForStart": "Aguardando o início da tarefa...",
+    "mustCompleteBeforeClosing": "A tarefa deve ser concluída com sucesso antes de fechar",
+    "pleaseWait": "Por favor, aguarde...",
+    "close": "Fechar",
+    "completedSuccessfully": "Tarefa concluída com sucesso",
+    "abortedByUser": "Tarefa abortada pelo usuário",
+    "connectionError": "Erro de conexão: {message}"
+  }
+}

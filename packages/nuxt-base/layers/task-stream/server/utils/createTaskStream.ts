@@ -2,9 +2,9 @@ import { randomInt } from 'node:crypto'
 import type { H3Event } from 'h3'
 import pino from 'pino'
 import z from 'zod/v4'
-import type { StreamLogLevel, StreamMessage } from '../../shared/longOperation.types'
+import type { StreamLogLevel, StreamMessage } from '../../shared/taskStream.types'
 
-export interface OperationStreamLogMeta {
+export interface TaskStreamLogMeta {
   [key: string]: any
 }
 
@@ -13,8 +13,8 @@ export interface ParentLogFn {
   (message: string): void
 }
 
-export interface OperationStreamLogFn {
-  (meta: OperationStreamLogMeta, message?: string): void
+export interface TaskStreamLogFn {
+  (meta: TaskStreamLogMeta, message?: string): void
   (message: string): void
 }
 
@@ -26,52 +26,52 @@ export interface ParentLogger {
 }
 
 // Need to make it similar to pino logger
-export interface OperationStreamLogger {
-  info: OperationStreamLogFn
-  warn: OperationStreamLogFn
-  error: OperationStreamLogFn
-  debug: OperationStreamLogFn
+export interface TaskStreamLogger {
+  info: TaskStreamLogFn
+  warn: TaskStreamLogFn
+  error: TaskStreamLogFn
+  debug: TaskStreamLogFn
 }
 
-export interface OperationStreamCheckpoint<T = unknown> {
+export interface TaskStreamCheckpoint<T = unknown> {
   get: () => Promise<T | null>
   set: (value: T) => Promise<void>
 }
 
-export interface OperationStreamState {
+export interface TaskStreamState {
   progress: (value: number) => void
   complete: (message?: string) => Promise<void>
   fail: (error: unknown, message?: string) => Promise<void>
 }
 
-export interface OperationStreamCancellation {
+export interface TaskStreamCancellation {
   isCancelled: () => boolean
   throwIfCancelled: () => void
 }
 
-export interface OperationStream<T = unknown> {
+export interface TaskStream<T = unknown> {
   stream: ReadableStream<Uint8Array>
-  logger: OperationStreamLogger
+  logger: TaskStreamLogger
   /** AbortSignal that triggers when client disconnects */
   signal: AbortSignal
-  state: OperationStreamState
-  cancellation: OperationStreamCancellation
-  checkpoint: OperationStreamCheckpoint<T>
+  state: TaskStreamState
+  cancellation: TaskStreamCancellation
+  checkpoint: TaskStreamCheckpoint<T>
 }
 
-export type OperationStreamTask<T = unknown> = {
+export type TaskStreamData<T = unknown> = {
   id: string
   status: 'pending' | 'running' | 'completed' | 'failed' | 'aborted'
   checkpoint: T | null
   updatedAt: number
 }
 
-export interface OperationStreamOptions {
+export interface TaskStreamOptions {
   parentLogger?: ParentLogger
   clientLogLevel?: StreamLogLevel
 }
 
-export type OperationResult =
+export type TaskStreamOutput =
   | { kind: 'stream', stream: ReadableStream }
   | { kind: 'completed' }
   | { kind: 'aborted' }
@@ -84,8 +84,8 @@ const LOG_LEVEL: Record<StreamLogLevel, number> = {
 }
 
 interface TaskRepository {
-  get: (id: string) => Promise<OperationStreamTask | null>
-  set: (id: string, task: OperationStreamTask) => Promise<void>
+  get: (id: string) => Promise<TaskStreamData | null>
+  set: (id: string, task: TaskStreamData) => Promise<void>
   delete: (id: string) => Promise<void>
   cleanup: () => Promise<void>
 }
@@ -97,7 +97,7 @@ interface InMemoryTaskRepositoryOptions {
 }
 
 class InMemoryTaskRepository implements TaskRepository {
-  private store = new Map<string, OperationStreamTask>()
+  private store = new Map<string, TaskStreamData>()
   private cleanupInterval: number
   private taskTTLSeconds: number
   private failedTaskTTLSeconds: number
@@ -111,8 +111,8 @@ class InMemoryTaskRepository implements TaskRepository {
     setInterval(() => this.cleanup(), this.cleanupInterval).unref()
   }
 
-  async get<T>(id: string): Promise<OperationStreamTask<T> | null> {
-    const task = this.store.get(id) as OperationStreamTask<T> | undefined
+  async get<T>(id: string): Promise<TaskStreamData<T> | null> {
+    const task = this.store.get(id) as TaskStreamData<T> | undefined
     if (task && this.isExpired(task)) {
       this.store.delete(id)
       return null
@@ -120,7 +120,7 @@ class InMemoryTaskRepository implements TaskRepository {
     return task || null
   }
 
-  async set(id: string, task: OperationStreamTask): Promise<void> {
+  async set(id: string, task: TaskStreamData): Promise<void> {
     task.updatedAt = Date.now()
     this.store.set(id, task)
   }
@@ -137,7 +137,7 @@ class InMemoryTaskRepository implements TaskRepository {
     }
   }
 
-  private isExpired(task: OperationStreamTask): boolean {
+  private isExpired(task: TaskStreamData): boolean {
     if (task.status === 'completed' || task.status === 'aborted') {
       return true
     } else if (task.status === 'failed') {
@@ -171,14 +171,14 @@ export class ClientCancelledError extends Error {}
 class TaskManager<T = unknown> {
   constructor(private store: TaskRepository) {}
 
-  async getOrCreate(taskId?: string): Promise<OperationStreamTask<T>> {
-    const task = taskId ? (await this.store.get(taskId) as OperationStreamTask<T> | null) : null
+  async getOrCreate(taskId?: string): Promise<TaskStreamData<T>> {
+    const task = taskId ? (await this.store.get(taskId) as TaskStreamData<T> | null) : null
     return task || {
       id: taskId || randomId(),
       status: 'pending',
       checkpoint: null,
       updatedAt: Date.now(),
-    } as OperationStreamTask<T>
+    } as TaskStreamData<T>
   }
 
   async setRunning(taskId: string): Promise<void> {
@@ -214,7 +214,7 @@ class TaskManager<T = unknown> {
   }
 
   async getCheckpoint(taskId: string): Promise<T | null> {
-    const task = await this.store.get(taskId) as OperationStreamTask<T> | null
+    const task = await this.store.get(taskId) as TaskStreamData<T> | null
     return (task?.checkpoint as T) ?? null
   }
 
@@ -238,7 +238,7 @@ class StreamManager {
   public readonly stream: ReadableStream<Uint8Array>
 
   constructor(
-    private event: H3Event,
+    event: H3Event,
     private parentLogger: ParentLogger,
     private clientLogLevel: StreamLogLevel,
   ) {
@@ -300,9 +300,9 @@ class StreamManager {
     }
   }
 
-  createLogger(): OperationStreamLogger {
+  createLogger(): TaskStreamLogger {
     const createLogMethod = (level: StreamLogLevel) => {
-      return (metaOrMessage: OperationStreamLogMeta | string, message?: string) => {
+      return (metaOrMessage: TaskStreamLogMeta | string, message?: string) => {
         if (typeof metaOrMessage === 'string') {
           this.parentLogger[level](metaOrMessage)
           this.send({ type: 'log', level, message: metaOrMessage })
@@ -338,18 +338,26 @@ class StreamManager {
 
   throwIfCancelled(): void {
     if (this.isClosed)
-      throw new ClientCancelledError('Operation cancelled by client')
+      throw new ClientCancelledError('Task cancelled by client')
   }
 }
 
 /**
- * Run a long operation with SSE streaming and task persistence
+ * Create task stream with given handler. Task state is fetched via `taskId` query parameter.
+ *
+ * @returns TaskStreamOutput based on task state
+ *
+ * - If task is already running, throws 409 error
+ * - If task was completed, returns `{ kind: 'completed' }`
+ * - If task was aborted, returns `{ kind: 'aborted' }`
+ *
+ * Otherwise, returns `{ kind: 'stream', stream: ReadableStream }`
  */
-export async function runLongOperation<T>(
+export async function createTaskStream<T>(
   event: H3Event,
-  handler: (ctx: Omit<OperationStream<T>, 'stream'>) => Promise<void>,
-  options?: OperationStreamOptions,
-): Promise<OperationResult> {
+  handler: (ctx: Omit<TaskStream<T>, 'stream'>) => Promise<void>,
+  options?: TaskStreamOptions,
+): Promise<TaskStreamOutput> {
   // Parse and validate query parameters
   const query = querySchema.safeParse(getQuery(event))
   if (!query.success) {
@@ -393,7 +401,7 @@ export async function runLongOperation<T>(
 
   let isFinalized = false
   // Create context for consumer
-  const ctx: Omit<OperationStream<T>, 'stream'> = {
+  const ctx: Omit<TaskStream<T>, 'stream'> = {
     logger: streamManager.createLogger(),
     signal: streamManager.getSignal(),
     state: {

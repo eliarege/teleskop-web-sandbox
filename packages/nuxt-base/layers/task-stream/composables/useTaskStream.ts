@@ -1,5 +1,5 @@
 import { readonly, ref } from 'vue'
-import type { StreamLogLevel, StreamMessage } from '../shared/longOperation.types'
+import type { StreamLogLevel, StreamMessage } from '../shared/taskStream.types'
 
 interface LogEntry {
   timestamp: Date
@@ -7,7 +7,9 @@ interface LogEntry {
   message: string
 }
 
-export function useLongOperation() {
+export type TaskStreamFetchOptions = Omit<RequestInit, 'body' | 'signal'> & { body?: any }
+
+export function useTaskStream() {
   const kc = useKeycloak()
   const { t } = useI18n()
   const isRunning = ref(false)
@@ -55,7 +57,7 @@ export function useLongOperation() {
           isSuccess.value = true
           isRunning.value = false
           progress.value = 100
-          addLog('success', parsed.message || t('operation.completedSuccessfully'))
+          addLog('success', parsed.message || t('taskStream.completedSuccessfully'))
           break
         case 'fail':
           isError.value = true
@@ -70,15 +72,13 @@ export function useLongOperation() {
     }
   }
 
-  type FetchOptions = Omit<RequestInit, 'body' | 'signal'> & { body?: any }
-
   /**
    * Body should be a JSON-serializable object if provided. `Accept`, `Content-Type`, and `Authorization` headers are set automatically.
    *
    * @param url
    * @param fetchOptions
    */
-  const start = (url: string, fetchOptions?: FetchOptions) => {
+  const start = (url: string, fetchOptions?: TaskStreamFetchOptions) => {
     reset()
     isRunning.value = true
 
@@ -135,7 +135,7 @@ export function useLongOperation() {
         if (error.name !== 'AbortError') {
           isError.value = true
           errorMessage.value = error.message
-          addLog('error', t('operation.connectionError', { message: error.message }))
+          addLog('error', t('taskStream.connectionError', { message: error.message }))
         }
         isRunning.value = false
       })
@@ -145,7 +145,7 @@ export function useLongOperation() {
     abortController?.abort()
     isRunning.value = false
     isAborted.value = true
-    addLog('warn', t('operation.abortedByUser'))
+    addLog('warn', t('taskStream.abortedByUser'))
   }
 
   return {

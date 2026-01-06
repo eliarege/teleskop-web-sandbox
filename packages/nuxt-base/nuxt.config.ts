@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2024-11-12',
-  extends: [],
+  extends: ['./layers/task-stream'],
   runtimeConfig: {
     public: {
       appList: '',

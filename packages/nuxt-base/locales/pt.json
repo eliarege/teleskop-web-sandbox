@@ -79,22 +79,5 @@
     "retry": "Tentar novamente",
     "reconnect": "Reconectar",
     "disconnected": "Desconectado"
-  },
-  "operation": {
-    "running": "Em execução",
-    "completed": "Concluído",
-    "failed": "Falhou",
-    "abort": "Abortar",
-    "retry": "Tentar novamente",
-    "aborted": "Abortado",
-    "viewDetails": "Ver Detalhes",
-    "showOperationLogs": "Mostrar logs da operação",
-    "waitingForStart": "Aguardando o início da operação...",
-    "mustCompleteBeforeClosing": "A operação deve ser concluída com sucesso antes de fechar",
-    "pleaseWait": "Por favor, aguarde...",
-    "close": "Fechar",
-    "completedSuccessfully": "Operação concluída com sucesso",
-    "abortedByUser": "Operação abortada pelo usuário",
-    "connectionError": "Erro de conexão: {message}"
   }
 }

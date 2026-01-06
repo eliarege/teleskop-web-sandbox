@@ -81,24 +81,5 @@
     "retry": "Yeniden dene",
     "reconnect": "Yeniden bağlan",
     "disconnected": "Bağlantı kesildi."
-  },
-  "operation": {
-    "running": "Çalışıyor",
-    "aborted": "İptal Edildi",
-    "completed": "Tamamlandı",
-    "failed": "Başarısız",
-    "abort": "İptal Et",
-    "retry": "Yeniden dene",
-    "viewDetails": "Detayları Görüntüle",
-    "showOperationLogs": "İşlem loglarını göster",
-    "pleaseWait": "Lütfen bekleyin...",
-    "close": "Kapat",
-    "mustCompleteBeforeClosing": "Kapatmadan önce işlemin başarıyla tamamlanması gerekiyor",
-    "waitingForStart": "İşlemin başlaması bekleniyor...",
-    "notCompleted": "İşlem tamamlanmadı",
-    "unknownError": "Bilinmeyen bir hata oluştu",
-    "completedSuccessfully": "İşlem başarıyla tamamlandı",
-    "abortedByUser": "İşlem kullanıcı tarafından iptal edildi",
-    "connectionError": "Bağlantı hatası: {message}"
   }
 }
