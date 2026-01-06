@@ -2,16 +2,16 @@
 import { klona } from 'klona'
 import { changeLocale } from '@formkit/i18n'
 import { computed, ref, watch } from 'vue'
+import defu from 'defu'
 import type { Machine } from '~/types'
+import { steamUnitOptions, tbbModelOptions } from '~/shared/constants'
 
 const props = defineProps<{
   title: string
   isEdit: boolean
   initialData?: Machine
   formClass?: string
-  steamUnitOptions: string[]
   machineGroups: { label: string, value: number | string }[]
-  tbbModelOptions: string[]
   mtTempIoOptions: { machineId: number, label: string, value: number | string }[]
   steamValveDoOptions: { machineId: number, label: string, value: number | string }[]
   machines: Machine[]
@@ -21,8 +21,22 @@ defineEmits([...useDialogPluginComponent.emits])
 
 const kc = useKeycloak()
 const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginComponent()
-const formData = ref(klona(props.initialData ?? {}) as Machine)
+const formData = ref(defu(props.initialData ?? {}, {
+  inUse: true,
+  additionalTank1: true,
+  reserveTank: true,
+  reelCount: 0,
+  nozzleCount: 0,
+  steamUnit: 'Kg',
+} satisfies Partial<Machine>))
 const guardReady = ref(props.isEdit)
+
+const steamUnitOptionsWithEmpty = computed(() => {
+  return [
+    { label: '---', value: '' },
+    ...steamUnitOptions.map(option => ({ label: option, value: option })),
+  ]
+})
 
 const {
   hasChanges,
@@ -118,18 +132,18 @@ function handleCancel() {
 
 const teleskopConnectionMessage = ref({
   message: '',
-  color: '',
+  class: '',
 })
 
 const networkConnectionMessage = ref({
   message: '',
-  color: '',
+  class: '',
 })
 
 async function checkNetworkConnection(formData: Machine) {
   try {
     networkConnectionMessage.value.message = t('tryingConnection')
-    networkConnectionMessage.value.color = ''
+    networkConnectionMessage.value.class = 'text-black'
     await kc.fetch('/api/sync/network-connection', {
       method: 'POST',
       retry: false,
@@ -139,12 +153,12 @@ async function checkNetworkConnection(formData: Machine) {
       },
     })
     networkConnectionMessage.value.message = (t('connection-successful'))
-    networkConnectionMessage.value.color = 'text-green'
+    networkConnectionMessage.value.class = 'text-primary'
   } catch (error: any) {
     console.error(error)
     if (error.statusCode === 500) {
       networkConnectionMessage.value.message = (t('noConnectionToNetwork'))
-      networkConnectionMessage.value.color = 'text-red'
+      networkConnectionMessage.value.class = 'text-red'
     }
   }
 }
@@ -152,7 +166,7 @@ async function checkNetworkConnection(formData: Machine) {
 async function checkTeleskopConnection(formData: Machine) {
   try {
     teleskopConnectionMessage.value.message = t('tryingConnection')
-    teleskopConnectionMessage.value.color = ''
+    teleskopConnectionMessage.value.class = 'text-black'
     await kc.fetch('/api/sync/teleskop-connection', {
       method: 'GET',
       retry: false,
@@ -162,12 +176,12 @@ async function checkTeleskopConnection(formData: Machine) {
       },
     })
     teleskopConnectionMessage.value.message = t('connection-successful')
-    teleskopConnectionMessage.value.color = 'text-green'
+    teleskopConnectionMessage.value.class = 'text-primary'
   } catch (error: any) {
     console.error(error)
     if (error.statusCode === 500) {
       teleskopConnectionMessage.value.message = (t('noConnectionToTeleskop'))
-      teleskopConnectionMessage.value.color = 'text-red'
+      teleskopConnectionMessage.value.class = 'text-red'
     }
   }
 }
@@ -201,7 +215,7 @@ async function getVersionInfo(formData: Machine) {
     if (response.version) {
       formData.version = response.version
       versionInfoMessage.value.message = t('versionInfoReceived')
-      versionInfoMessage.value.color = 'text-green'
+      versionInfoMessage.value.color = 'text-primary'
     }
   } catch (error: any) {
     console.error(error)
@@ -217,7 +231,7 @@ async function getVersionInfo(formData: Machine) {
     :persistent="hasChanges"
     @hide="onDialogHide"
   >
-    <q-card class="max-w-[90vw] min-w-[90vw]">
+    <q-card class="form-card">
       <q-card-section class="flex">
         <div class="flex-center font-extrabold text-h6">
           {{ title }}
@@ -229,15 +243,15 @@ async function getVersionInfo(formData: Machine) {
           @click="handleCancel"
         />
       </q-card-section>
-      <q-card-section>
+      <q-card-section class="pt-2">
         <FormKit
           v-model="formData"
           :actions="false"
           type="form"
-          form-class="flex flex-col gap-6"
+          form-class="space-y-4"
           @submit="onSubmitForm"
         >
-          <div class="grid grid-cols-5 gap-4 items-start">
+          <div class="form-card-section grid grid-cols-5 gap-4 items-start !pb-2">
             <FormKit
               :readonly="isEdit"
               blocked
@@ -333,8 +347,7 @@ async function getVersionInfo(formData: Machine) {
               type="select"
               name="steamUnit"
               :label="t('steamUnit')"
-              :options="steamUnitOptions"
-              validation="required"
+              :options="steamUnitOptionsWithEmpty"
               :validation-label="t('steamUnit')"
             />
             <FormKit
@@ -344,14 +357,11 @@ async function getVersionInfo(formData: Machine) {
               :options="mtTempIoOptions"
               :disabled="!formData.version"
             />
-            <div />
-            <div />
-            <div />
             <FormKit
               type="checkbox"
               name="inUse"
+              :classes="{ outer: 'col-start-1' }"
               :label="t('inUse')"
-              :value="true"
             />
             <FormKit
               type="checkbox"
@@ -363,35 +373,102 @@ async function getVersionInfo(formData: Machine) {
               name="theoreticalWater"
               :label="t('theoreticalWaterCalculationActive')"
             />
+            <!-- Buttons for connection checks and version info -->
+            <div class="col-span-5 justify-start flex gap-2 mt-2">
+              <div class="space-y-1">
+                <q-btn
+                  no-caps
+                  :disabled="!formData.ip"
+                  color="primary"
+                  @click="checkTeleskopConnection(formData)"
+                >
+                  {{ t('checkTeleskopConnection') }}
+                  <q-tooltip v-if="!formData.ip">
+                    {{ t('enterIpToCheckConnection') }}
+                  </q-tooltip>
+                </q-btn>
+                <div
+                  :class="[teleskopConnectionMessage.class]"
+                  class="formkit-message"
+                >
+                  {{ teleskopConnectionMessage.message || '&nbsp;' }}
+                </div>
+              </div>
+              <div class="space-y-1">
+                <q-btn
+                  no-caps
+                  :disabled="!formData.ip"
+                  color="primary"
+                  @click="checkNetworkConnection(formData)"
+                >
+                  {{ t('checkNetworkConnection') }}
+                  <q-tooltip v-if="!formData.ip">
+                    {{ t('enterIpToCheckConnection') }}
+                  </q-tooltip>
+                </q-btn>
+                <div
+                  :class="[networkConnectionMessage.class]"
+                  class="formkit-message"
+                >
+                  {{ networkConnectionMessage.message || '&nbsp;' }}
+                </div>
+              </div>
+              <div class="space-y-1">
+                <q-btn
+                  no-caps
+                  :disabled="!formData.tbbModel || formData.tbbModel === 'Tonello' || !formData.ip"
+                  color="primary"
+                  @click="getVersionInfo(formData)"
+                >
+                  {{ t('receiveVersionInfo') }}
+                  <q-tooltip v-if="!formData.tbbModel || formData.tbbModel === 'Tonello' || !formData.ip">
+                    <template v-if="!formData.ip">
+                      {{ t('enterIpToReceiveVersionInfo') }}
+                    </template>
+                    <template v-else>
+                      {{ t('versionInfoNotAvailableForTonello') }}
+                    </template>
+                  </q-tooltip>
+                </q-btn>
+                <div
+                  :class="[versionInfoMessage.color]"
+                  class="formkit-message"
+                >
+                  {{ versionInfoMessage.message || '&nbsp;' }}
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="grid grid-cols-2 gap-4 items-start">
-            <FormKit
-              type="checkbox"
-              name="additionalTank1"
-              :label="t('additionalTank1')"
-            />
-            <FormKit
-              type="checkbox"
-              name="additionalTank2"
-              :label="t('additionalTank2')"
-            />
-            <FormKit
-              type="checkbox"
-              name="additionalTank3"
-              :label="t('additionalTank3')"
-            />
-            <FormKit
-              type="checkbox"
-              name="additionalTank4"
-              :label="t('additionalTank4')"
-            />
-            <FormKit
-              type="checkbox"
-              name="reserveTank"
-              :label="t('reserveTank')"
-            />
+          <div class="form-card-section">
+            <div class="grid grid-cols-2 gap-4 w-1/3">
+              <FormKit
+                type="checkbox"
+                name="additionalTank1"
+                :label="t('additionalTank1')"
+              />
+              <FormKit
+                type="checkbox"
+                name="additionalTank2"
+                :label="t('additionalTank2')"
+              />
+              <FormKit
+                type="checkbox"
+                name="additionalTank3"
+                :label="t('additionalTank3')"
+              />
+              <FormKit
+                type="checkbox"
+                name="additionalTank4"
+                :label="t('additionalTank4')"
+              />
+              <FormKit
+                type="checkbox"
+                name="reserveTank"
+                :label="t('reserveTank')"
+              />
+            </div>
           </div>
-          <div class="grid grid-cols-5 gap-4 items-start">
+          <div class="form-card-section space-y-4">
             <FormKit
               type="checkbox"
               name="theoreticalSteam"
@@ -413,73 +490,20 @@ async function getVersionInfo(formData: Machine) {
               :disabled="!formData.theoreticalSteam"
             />
           </div>
-          <div class="flex items-center justify-between">
-            <div class="flex-center gap-2">
-              <div flex-center flex-col>
-                <FormKit
-                  type="button"
-                  :disabled="!formData.ip"
-                  @click="checkTeleskopConnection(formData)"
-                >
-                  {{ t('checkTeleskopConnection') }}
-                  <QTooltip v-if="!formData.ip">
-                    {{ t('enterIpToCheckConnection') }}
-                  </QTooltip>
-                </FormKit>
-                <span :class="teleskopConnectionMessage.color" class="row-start-7">
-                  {{ teleskopConnectionMessage.message || '&nbsp;' }}
-                </span>
-              </div>
-              <div flex-center flex-col>
-                <FormKit
-                  type="button"
-                  :disabled="!formData.ip"
-                  @click="checkNetworkConnection(formData)"
-                >
-                  {{ t('checkNetworkConnection') }}
-                  <QTooltip v-if="!formData.ip">
-                    {{ t('enterIpToCheckConnection') }}
-                  </QTooltip>
-                </FormKit>
-                <span :class="networkConnectionMessage.color" class="row-start-7">
-                  {{ networkConnectionMessage.message || '&nbsp;' }}
-                </span>
-              </div>
-              <div flex-center flex-col>
-                <FormKit
-                  type="button"
-                  :disabled="!formData.tbbModel || formData.tbbModel === 'Tonello' || !formData.ip"
-                  @click="getVersionInfo(formData)"
-                >
-                  {{ t('receiveVersionInfo') }}
-                  <QTooltip v-if="!formData.tbbModel || formData.tbbModel === 'Tonello' || !formData.ip">
-                    <template v-if="!formData.ip">
-                      {{ t('enterIpToReceiveVersionInfo') }}
-                    </template>
-                    <template v-else>
-                      {{ t('versionInfoNotAvailableForTonello') }}
-                    </template>
-                  </QTooltip>
-                </FormKit>
-                <span :class="versionInfoMessage.color" class="row-start-7">
-                  {{ versionInfoMessage.message || '&nbsp;' }}
-                </span>
-              </div>
-            </div>
-            <div class="flex flex-col items-end gap-2">
-              <div class="flex gap-2">
-                <q-btn
-                  flat
-                  :label="t('cancel')"
-                  @click="handleCancel"
-                />
-                <FormKit
-                  type="submit"
-                  :label="t('submit')"
-                  @submit="onSubmitForm"
-                />
-              </div>
-            </div>
+          <div class="flex items-center gap-2">
+            <FormKitMessages />
+            <q-space />
+            <q-btn
+              flat
+              :label="t('cancel')"
+              @click="handleCancel"
+            />
+            <q-btn
+              color="primary"
+              type="submit"
+              :label="t('submit')"
+              @submit="onSubmitForm"
+            />
           </div>
         </FormKit>
       </q-card-section>
@@ -498,6 +522,15 @@ async function getVersionInfo(formData: Machine) {
 </template>
 
 <style lang="postcss">
+.form-card {
+  max-width: min(max(70vw, 1100px), 100vw);
+  min-width: min(max(70vw, 1100px), 100vw);
+  user-select: none;
+}
+.form-card-section {
+  @apply border-(1 gray-400) rounded-md p-4;
+}
+
 .formkit-outer {
   margin: 0;
 }

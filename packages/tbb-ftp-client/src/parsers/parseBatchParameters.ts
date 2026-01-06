@@ -1,7 +1,7 @@
 import type { BatchParameter } from '../types'
 
 const unitMap = [
-  '---',
+  '',
   'Kg',
   'lt',
   'sec',

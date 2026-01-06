@@ -17,7 +17,7 @@ export default defineAuthEventHandler(async (event) => {
 
   const t = await useTranslation(event)
 
-  const result = await runLongOperation(event, async (ctx) => {
+  const result = await createTaskStream(event, async (ctx) => {
     const totalSteps = machines.length
     let currentStep = 0
     let hasFailedOnce = false

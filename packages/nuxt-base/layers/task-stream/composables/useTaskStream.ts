@@ -1,7 +1,7 @@
 import { readonly, ref } from 'vue'
 import type { StreamLogLevel, StreamMessage } from '../shared/taskStream.types'
 
-interface LogEntry {
+export interface TaskStreamLogEntry {
   timestamp: Date
   level: StreamLogLevel | 'success'
   message: string
@@ -16,7 +16,7 @@ export function useTaskStream() {
   const isSuccess = ref(false)
   const isError = ref(false)
   const isAborted = ref(false)
-  const logs = ref<LogEntry[]>([])
+  const logs = ref<TaskStreamLogEntry[]>([])
   const errorMessage = ref<string | null>(null)
   const progress = ref(0)
 
@@ -32,7 +32,7 @@ export function useTaskStream() {
     progress.value = 0
   }
 
-  const addLog = (level: LogEntry['level'], message: string) => {
+  const addLog = (level: TaskStreamLogEntry['level'], message: string) => {
     logs.value.push({
       timestamp: new Date(),
       level,

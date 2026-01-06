@@ -378,6 +378,7 @@ export interface MachineTableColumn extends Omit<QTableColumn, 'label'> {
   label: string
   field: keyof Machine | ((row: Machine) => any)
   sortable?: boolean
+  visible?: MaybeRefOrGetter<boolean>
   align?: 'left' | 'right' | 'center'
   format?: (value: Date, row: Machine) => string
   tooltip?: (value: Date, row: Machine) => string

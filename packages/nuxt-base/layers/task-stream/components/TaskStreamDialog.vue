@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { withBase } from 'ufo'
 import { useTaskStream } from '../composables/useTaskStream'
-import type { TaskStreamFetchOptions } from '../composables/useTaskStream'
+import type { TaskStreamFetchOptions, TaskStreamLogEntry } from '../composables/useTaskStream'
 
 const props = withDefaults(defineProps<{
   url: string
@@ -112,7 +112,7 @@ const progressColor = computed(() => {
   return 'primary'
 })
 
-function getLogColor(level: LogEntry['level']) {
+function getLogColor(level: TaskStreamLogEntry['level']) {
   switch (level) {
     case 'error': return 'text-negative'
     case 'warn': return 'text-warning'
@@ -121,7 +121,7 @@ function getLogColor(level: LogEntry['level']) {
   }
 }
 
-function getLogPrefix(level: LogEntry['level']) {
+function getLogPrefix(level: TaskStreamLogEntry['level']) {
   switch (level) {
     case 'error': return '[ERROR]'
     case 'warn': return '[WARN]'
@@ -196,6 +196,7 @@ watch(
     transition-hide="slide-up"
     class="task-stream-dialog"
     position="top"
+    no-shake
     @hide="onDialogHide"
   >
     <q-card class="q-dialog-plugin task-stream-card select-none" :style="`width: ${toUnit(props.width)}; max-width: 90vw;`">

@@ -3,7 +3,6 @@ import { useMagicKeys, whenever } from '@vueuse/core'
 import { withQuery } from 'ufo'
 import AddEditModal from '../components/AddEditModal.vue'
 import type { Machine, MachineGroup, MachineTableColumn } from '~/types'
-import { steamUnitOptions, tbbModelOptions } from '~/server/utils/constants'
 
 const kc = useKeycloak()
 const { dialog } = useQuasar()
@@ -78,6 +77,10 @@ whenever(keys.shift_alt_t, () => {
   showTeleskopSettings.value = true
 })
 
+const anyMachineHasReels = computed(() => {
+  return machines.value.some(m => m.reelCount > 0)
+})
+
 const columns = ref([
   {
     name: 'machineId',
@@ -114,6 +117,7 @@ const columns = ref([
     label: t('reelCount'),
     field: 'reelCount',
     align: 'left',
+    visible: anyMachineHasReels,
   },
   {
     name: 'ip',
@@ -140,10 +144,7 @@ function showAddModal() {
     component: AddEditModal,
     componentProps: {
       title: t('addMachine'),
-      initialData: {},
       isEdit: false,
-      tbbModelOptions,
-      steamUnitOptions,
       machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
       mtTempIoOptions: [],
       steamValveDoOptions: [],
@@ -154,26 +155,23 @@ function showAddModal() {
     handleAdd(formData)
   })
 }
-function showEditModal() {
-  const selectedMachine = selected.value[0]
+function showEditModal(machine: Machine) {
   dialog({
     component: AddEditModal,
     componentProps: {
       title: t('editMachine'),
-      initialData: selectedMachine,
+      initialData: machine,
       isEdit: true,
-      tbbModelOptions,
-      steamUnitOptions,
       machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
-      mtTempIoOptions: selectedMachine.MTOptions.map(o => ({
+      mtTempIoOptions: machine.MTOptions.map(o => ({
         label: o.name,
         value: o.id,
-        machineId: selectedMachine.machineId,
+        machineId: machine.machineId,
       })),
-      steamValveDoOptions: selectedMachine.steamValveOptions.map(s => ({
+      steamValveDoOptions: machine.steamValveOptions.map(s => ({
         label: s.ioName,
         value: s.ioId,
-        machineId: selectedMachine.machineId,
+        machineId: machine.machineId,
       })),
       machines: machines.value,
     },
@@ -183,26 +181,8 @@ function showEditModal() {
   })
 }
 
-async function ensureNetworkConnection(machine: Machine) {
-  try {
-    await kc.fetch('/api/sync/network-connection', {
-      method: 'POST',
-      retry: false,
-      body: {
-        ip: machine.ip,
-        tbbModel: machine.tbbModel,
-      },
-    })
-    return true
-  } catch (error: any) {
-    console.error(error)
-    notifyError(error?.statusMessage ?? t('noConnectionToNetwork'))
-    return false
-  }
-}
-
 async function loadProject() {
-  startLongOperation(withQuery(`/api/sync/update-machine`, {
+  startTaskStream(withQuery(`/api/sync/update-machine`, {
     machineId: selected.value[0].machineId,
   }), {
     width: 800,
@@ -238,7 +218,7 @@ async function loadProjectTranslations() {
 }
 
 async function receiveVersionInfo() {
-  startLongOperation(`/api/sync/machine-versions`, {
+  startTaskStream(`/api/sync/machine-versions`, {
     statusTitles: {
       running: t('receivingVersionInfo'),
       success: t('versionInfoReceived'),
@@ -268,7 +248,7 @@ async function receiveVersionInfo() {
           color="primary"
           :label="t('edit')"
           :disable="selected.length !== 1 || loadingProjectTranslations"
-          @click="showEditModal"
+          @click="showEditModal(selected[0])"
         />
         <q-btn
           no-caps
@@ -315,7 +295,7 @@ async function receiveVersionInfo() {
       :columns="columns"
       :machine-groups="machineGroups"
       form-class="grid grid-cols-5 gap-4 grid-rows-7 select-none"
-      @dbl-click="showEditModal"
+      @machine-dblclick="showEditModal($event)"
     />
     <TeleskopSettingsDialog
       v-if="showTeleskopSettings"

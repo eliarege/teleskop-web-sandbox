@@ -49,5 +49,4 @@ export const steamUnitOptions = [
   'pH',
   'mbar',
   'lt/dk',
-  '---',
 ]

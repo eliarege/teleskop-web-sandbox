@@ -3,7 +3,6 @@ import { getQuery } from 'h3'
 import { z } from 'zod'
 import type { Knex } from 'knex'
 import { TonelloApi } from '@teleskop/core'
-import { runLongOperation } from '@teleskop/nuxt-base/server/utils/longOperationStream'
 import { knex } from '~/server/connectionPool'
 import { updateAnalogInputs, updateArchives, updateBatchParameters, updateCommandAlarms, updateCommandIO, updateCommandParameters, updateConsumption, updateCycleControl, updateDigitalInputs, updateERPParams, updateGlobalCommandFormulas, updateIOChangedEvent, updateIcons, updateLocksGeneral, updateLocksOutput, updateProjectTranslations, updateSystemParams } from '~/server/utils/updateDatabase'
 import { DatabaseQueryError, UnsupportedDatabaseVersionError } from '~/server/error'
@@ -50,7 +49,7 @@ export default defineAuthEventHandler(async (event) => {
   }
 
   const t = await useTranslation(event)
-  const result = await runLongOperation(event, async (ctx) => {
+  const result = await createTaskStream(event, async (ctx) => {
     const logError = (err: unknown) => {
       const errors = []
       if (err instanceof DatabaseQueryError) {
@@ -74,7 +73,7 @@ export default defineAuthEventHandler(async (event) => {
 
       await knex.transaction(async (trx) => {
         for (const { fn, message, path } of steps) {
-          // ctx.cancellation.throwIfCancelled()
+          ctx.cancellation.throwIfCancelled()
           ctx.logger.info(t(`${message}-starting`) + (path ? ` (${path})` : ''))
           ctx.state.progress(getCurrentProgress())
           try {
@@ -208,7 +207,7 @@ function mapErrorToUserMessage(error: any, t: (key: string, params?: Record<stri
 
   // --- Bağlantı / Ağ hataları ---
   if (msg.includes('aborted')) {
-    return t('operation.abortedByUser')
+    return t('taskStream.abortedByUser')
   }
   if (msg.includes('Timeout')) {
     return t('error.timeout')

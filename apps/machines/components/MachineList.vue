@@ -8,13 +8,12 @@ const props = defineProps<{
   columns: MachineTableColumn[]
   machineGroups: MachineGroup[]
 }>()
+const emit = defineEmits(['machineDblclick'])
 const selected = defineModel('selected', {
   type: Array as PropType<Array<Machine>>,
   default: () => [],
   required: true,
 })
-const emit = defineEmits(['dblClick'])
-
 const { t } = useI18n()
 const kc = useKeycloak()
 const copy = ref<number | null>(null)
@@ -24,6 +23,10 @@ const showGetDyeHouseDefinitions = ref(false)
 const showSetDyeHouseDefinitions = ref(false)
 
 const isTonello = (machine: Machine) => machine.tbbModel === 'Tonello'
+
+const visibleColumns = computed(() => {
+  return props.columns.filter(col => col.visible !== false).map(col => col.name)
+})
 
 const contextMenuOptions = computed<IContextMenuOption[]>(() => [
   {
@@ -96,29 +99,58 @@ function removeSelection(row: Machine) {
   selected.value = selected.value.filter(r => r.machineId !== row.machineId)
 }
 const ctrl = useKeyModifier('Control')
+const focusedIndex = ref(-1)
+
 let cursor = -1
 let lastDirection = 0
 
 onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
   event.preventDefault()
+  // Select first row if nothing is selected
   if (selected.value.length === 0 || cursor === -1) {
     cursor = 0
     selected.value = [props.rows[0]]
+    focusedIndex.value = 0
     return
   }
-  if (lastDirection !== -1) {
-    cursor++
-    cursor %= props.rows.length
-  }
-  const next = props.rows[cursor]
-  if (!ctrl.value) {
-    selected.value = [next]
+  // Edge-case: if item at the end is not selected, we need to select it
+  if (cursor === props.rows.length - 1) {
+    if (!isRowSelected(props.rows[cursor])) {
+      selected.value.push(props.rows[cursor])
+      focusedIndex.value = cursor
+    } else {
+      return
+    }
   } else {
-    if (selected.value.includes(next))
-      selected.value = selected.value.filter(s => s.machineId !== next.machineId)
-    else
-      selected.value.push(next)
+    if (!ctrl.value || (ctrl.value && lastDirection !== -1)) {
+      cursor++
+    }
+    let next = props.rows[cursor]
+    if (!ctrl.value) {
+      selected.value = [next]
+      focusedIndex.value = cursor
+    } else {
+      if (isRowSelected(next)) {
+        if (selected.value.length > 1) {
+          selected.value = selected.value.filter(s => s.machineId !== next.machineId)
+          focusedIndex.value = cursor + 1
+        } else if (cursor < props.rows.length - 1) {
+          // Move to next item if it's the only one selected
+          cursor++
+          next = props.rows[cursor]
+          if (isRowSelected(next)) {
+            selected.value = selected.value.filter(s => s.machineId !== next.machineId)
+          } else {
+            selected.value.push(next)
+          }
+        }
+      } else {
+        selected.value.push(next)
+        focusedIndex.value = cursor
+      }
+    }
   }
+  scrollToRow(cursor)
   lastDirection = 1
 })
 
@@ -127,64 +159,88 @@ onKeyStroke(['ArrowUp'], (event: KeyboardEvent) => {
   if (selected.value.length === 0 || cursor === -1) {
     cursor = 0
     selected.value = [props.rows[0]]
+    focusedIndex.value = 0
     return
   }
-  if (lastDirection !== 1) {
-    cursor--
-    if (cursor < 0)
-      cursor += props.rows.length
-  }
-
-  const next = props.rows[cursor]
-  if (!ctrl.value) {
-    selected.value = [next]
+  // Edge-case: if item at the start is not selected, we need to select it
+  if (cursor === 0) {
+    if (!isRowSelected(props.rows[cursor])) {
+      selected.value.push(props.rows[cursor])
+      focusedIndex.value = cursor
+    } else {
+      return
+    }
   } else {
-    if (selected.value.includes(next))
-      selected.value = selected.value.filter(s => s.machineId !== next.machineId)
-    else
-      selected.value.push(next)
+    if (!ctrl.value || (ctrl.value && lastDirection !== 1)) {
+      cursor--
+    }
+
+    let next = props.rows[cursor]
+    if (!ctrl.value) {
+      selected.value = [next]
+      focusedIndex.value = cursor
+    } else {
+      if (isRowSelected(next)) {
+        if (selected.value.length > 1) {
+          selected.value = selected.value.filter(s => s.machineId !== next.machineId)
+          focusedIndex.value = cursor - 1
+        } else if (cursor > 0) {
+          // Move to previous item if it's the only one selected
+          cursor--
+          next = props.rows[cursor]
+          if (isRowSelected(next)) {
+            selected.value = selected.value.filter(s => s.machineId !== next.machineId)
+          } else {
+            selected.value.push(next)
+          }
+        }
+      } else {
+        selected.value.push(next)
+        focusedIndex.value = cursor
+      }
+    }
   }
+  scrollToRow(cursor)
   lastDirection = -1
 })
 
-function onRowClick(row: Machine, isContextMenu = false) {
+let lastScrollTime = 0
+
+function scrollToRow(index: number) {
+  const row = document.querySelectorAll('.machine-list tbody tr')[index] as HTMLElement | undefined
+  if (row) {
+    const currTime = Date.now()
+    const scrollBehavior = currTime - lastScrollTime < 100 ? 'instant' : 'smooth'
+    lastScrollTime = currTime
+    row.scrollIntoView({ block: 'center', behavior: scrollBehavior })
+  }
+}
+
+function chooseMachineRow(row: Machine) {
   lastDirection = 0
   cursor = props.rows.findIndex(r => r.machineId === row.machineId)
-  if (!isContextMenu && isRowSelected(row)) {
-    removeSelection(row)
-  } else {
+  if (!isRowSelected(row)) {
     if (ctrl.value) {
       if (selected.value.includes(row)) {
         removeSelection(row)
       } else {
         selected.value = [...selected.value, row]
+        focusedIndex.value = cursor
       }
       return
     }
-    // if (shift.value && selected.value.length > 0) {
-    //   const lastSelected = selected.value[selected.value.length - 1]
-    //   const startIndex = props.rows.indexOf(lastSelected)
-    //   const endIndex = props.rows.indexOf(row)
-
-    //   if (startIndex !== -1 && endIndex !== -1) {
-    //     const range = props.rows.slice(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex) + 1)
-    //     selected.value = [...new Set([...selected.value, ...range])]
-    //   }
-    // } else {
     selected.value = [row]
-    // }
+    focusedIndex.value = cursor
   }
 }
-function onDblClick(row: Machine) {
-  selected.value = [row]
-  emit('dblClick', row)
+function onRowDblClick(row: Machine) {
+  emit('machineDblclick', row)
 }
 function selectAll() {
   if (selected.value.length === props.rows.length) {
     selected.value = []
   } else {
-    const missingRows = props.rows.filter(row => !selected.value.includes(row))
-    selected.value = [...selected.value, ...missingRows]
+    selected.value = [...props.rows]
   }
 }
 </script>
@@ -195,7 +251,7 @@ function selectAll() {
       :rows="rows"
       :columns
       dense
-      :hide-bottom="true"
+      :visible-columns="visibleColumns"
       row-key="machineId"
       binary-state-sort
       class="machine-list"
@@ -227,9 +283,15 @@ function selectAll() {
         <q-tr
           :props="bodyProps"
           class="machine-row"
-          :class="isRowSelected(bodyProps.row) ? '!bg-blue-100 dark:!bg-dark-3' : ''"
-          @click="onRowClick(bodyProps.row, false)"
-          @contextmenu.prevent="onRowClick(bodyProps.row, true)"
+          :class="[
+            isRowSelected(bodyProps.row)
+              ? focusedIndex === bodyProps.rowIndex
+                ? '!bg-blue-200 dark:!bg-dark-2'
+                : '!bg-blue-100 dark:!bg-dark-3'
+              : '',
+          ]"
+          @click="chooseMachineRow(bodyProps.row)"
+          @contextmenu.prevent="chooseMachineRow(bodyProps.row)"
         >
           <q-td>
             <q-checkbox
@@ -241,7 +303,7 @@ function selectAll() {
             v-for="col in bodyProps.cols"
             :key="col.name"
             :props="bodyProps"
-            @dblclick="onDblClick(bodyProps.row)"
+            @dblclick="onRowDblClick(bodyProps.row)"
           >
             <div v-if="typeof col.value === 'boolean'">
               <TwIcon
@@ -293,6 +355,14 @@ function selectAll() {
   height: calc(100vh - 110px);
   overflow-y: auto;
   user-select: none;
+
+  .q-table {
+    padding-bottom: 10vh;
+  }
+
+  tbody tr:last-child > td {
+    border-bottom-width: 1px !important;
+  }
 
   .q-table__top,
   .q-table__bottom,
