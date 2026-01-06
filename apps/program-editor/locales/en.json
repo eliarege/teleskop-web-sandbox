@@ -694,7 +694,7 @@
   },
   "deleteResultsDialog": {
     "title": "Delete Results",
-    "program": "Program",
+    "programName": "Program Name",
     "deletedFromMachine": "Deleted From Machine",
     "deletedFromDb": "Deleted From DB"
   },

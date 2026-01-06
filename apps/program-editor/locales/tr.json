@@ -711,7 +711,7 @@
   },
   "deleteResultsDialog": {
     "title": "Silme Sonuçları",
-    "program": "Program",
+    "programName": "Program Adı",
     "deletedFromMachine": "Makineden Silindi",
     "deletedFromDb": "Veritabanından Silindi"
   },
