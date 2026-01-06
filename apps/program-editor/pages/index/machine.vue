@@ -18,18 +18,32 @@ definePageMeta({
   path: '/machine/:machine_id',
 })
 
-const { $commandManager } = useNuxtApp()
-const { t, locale } = useI18n()
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
+const { t, locale } = useI18n()
+const { notifyError } = useNotify()
+const { $commandManager } = useNuxtApp()
+
 const editor = useEditorStore()
 const machine = useMachineStore()
 const filter = useProgramFilterStore()
 const machineStatusStore = useMachineStatusStore()
-const machineId = Number(route.params.machine_id)
+
 const tableRef = ref()
 contextMenuStore.setCtx({ t, router })
+const machineId = Number(route.params.machine_id)
+
+if (!machineId || !machine.hasMachine(machineId)) {
+  if (machineId) {
+    notifyError(t('machineNotFound', { machineId }))
+  }
+
+  const redirected = await machine.selectFirstUsableMachine()
+  if (!redirected) {
+    notifyError(t('noUsableMachineFound'))
+  }
+}
 
 const sortedSelectedPrograms = computed(() =>
   editor.selectedPrograms.slice().sort((a, b) => a.programNo - b.programNo),
@@ -740,14 +754,13 @@ onBeforeMount(async () => {
 
   if (machine.isMachineDisabled(machineId)) {
     await machine.selectFirstUsableMachine()
+    notifyError(t('machineNotUsable', { machineId }))
     editor.isLoading = false
     return
   }
 
-  if (machine.currentMachine.id !== machineId) {
-    await machine.loadMachine(machineId)
-    await editor.fetchCommandTypes(machineId)
-  }
+  await machine.loadMachine(machineId)
+  await editor.fetchCommandTypes(machineId)
 
   await editor.refreshAllPrograms().then(() => {
     editor.isLoading = false

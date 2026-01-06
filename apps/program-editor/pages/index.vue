@@ -26,6 +26,15 @@ await machine.fetchMachineGroups()
 await editor.fetchAllProcessTypes()
 editor.isLoading = false
 
+const machineId = Number(isDef(route.params.machine_id))
+
+if (!machineId) {
+  const redirected = await machine.selectFirstUsableMachine()
+  if (!redirected) {
+    notifyError(t('machine.noUsableMachineFound'))
+  }
+}
+
 const tt = (key: string) => toRef(() => t(key))
 
 const items = [
