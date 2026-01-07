@@ -29,6 +29,8 @@ const formData = ref(defu(props.initialData ?? {}, {
   nozzleCount: 0,
   steamUnit: 'Kg',
 } satisfies Partial<Machine>))
+
+const isDialogVisible = ref(false)
 const guardReady = ref(props.isEdit)
 
 const steamUnitOptionsWithEmpty = computed(() => {
@@ -228,8 +230,10 @@ async function getVersionInfo(formData: Machine) {
 <template>
   <q-dialog
     ref="dialogRef"
-    :persistent="hasChanges"
+    :persistent="hasChanges || !isDialogVisible"
+    :no-shake="!isDialogVisible"
     @hide="onDialogHide"
+    @show="isDialogVisible = true"
   >
     <q-card class="form-card">
       <q-card-section class="flex">
