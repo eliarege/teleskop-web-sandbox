@@ -211,7 +211,7 @@ async function loadProjectTranslations() {
     })
     notifySuccess(t('projectTranslationsLoadedSuccessfully'))
   } catch (error: any) {
-    notifyError(`${t('errorloadingProjectTranslationsTranslations')}: ${error?.message}`)
+    notifyError(`${t('errorLoadingProjectTranslations')}: ${error?.message}`)
   } finally {
     loadingProjectTranslations.value = false
   }
