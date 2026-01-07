@@ -45,7 +45,11 @@ async function handleSubmit() {
     <q-card-section class="flex flex-row justify-center gap-8">
       <div class="w-sm">
         <h3>{{ t('machines') }}</h3>
-        <q-list bordered separator>
+        <q-list
+          bordered
+          separator
+          class="overflow-y-auto h-160"
+        >
           <q-item
             v-for="machine in machines"
             :key="machine.machineId"

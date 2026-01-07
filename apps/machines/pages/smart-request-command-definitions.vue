@@ -85,7 +85,7 @@ async function handleSubmit() {
   <q-card class="h-[calc(100vh-41px)] flex flex-col">
     <q-card-section class="flex flex-1 flex-col p-6">
       <div class="flex flex-1 flex-wrap justify-center gap-6 min-h-0 lg:flex-nowrap">
-        <div class="flex w-full max-w-[320px] flex-1 flex-col rounded-xl border border-black/10 bg-black/5 p-4 min-h-0">
+        <div class="flex w-full max-w-[320px] flex-1 flex-col rounded-xl border border-black/10 bg-black/3 p-4 min-h-0">
           <h3 class="mb-3 text-lg font-semibold">
             {{ t('machines') }}
           </h3>
@@ -113,7 +113,7 @@ async function handleSubmit() {
 
         <div
           v-if="commandOptions"
-          class="flex w-full max-w-[420px] flex-1 flex-col rounded-xl border border-black/10 bg-black/5 p-4 min-h-0"
+          class="flex w-full max-w-[420px] flex-1 flex-col rounded-xl border border-black/10 bg-black/3 p-4 min-h-0"
         >
           <h3 class="mb-3 text-lg font-semibold">
             {{ t('smartRequestCommandDefinitions') }}

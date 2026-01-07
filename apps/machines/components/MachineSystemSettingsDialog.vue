@@ -108,7 +108,8 @@ function invertSelection() {
       <q-separator />
       <q-card-section>
         <div>
-          <div class="w-full">
+          <!-- Settings List -->
+          <div>
             <div class="text-lg">
               {{ t('settingsToUpdate') }}
             </div>
