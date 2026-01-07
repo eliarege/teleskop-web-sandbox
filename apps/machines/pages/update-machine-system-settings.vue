@@ -2,8 +2,7 @@
 import type { Machine, Setting } from '~/types'
 
 const { t } = useI18n()
-const kc = useKeycloak()
-const { notifySuccess, notifyError } = useNotify()
+const { notifyError } = useNotify()
 const showAddMachineSystemSetting = ref(false)
 const isLoading = ref(false)
 
@@ -215,49 +214,15 @@ async function handleSend() {
     return
   }
 
-  isLoading.value = true
-
-  try {
-    const response = await kc.fetch('/api/sync/machine-settings', {
+  startTaskStream('/api/sync/machine-settings', {
+    fetchOptions: {
       method: 'POST',
       body: {
         settings: selectedSettings.value,
-        machines: selectedMachines.map(machine => machine.machineId),
+        machines: selectedMachines.map(m => m.machineId),
       },
-      timeout: 60000,
-    })
-
-    if (response.success) {
-      notifySuccess(t('settingsUpdatedSuccessfully'))
-    } else {
-      const failedMachines = response.results.filter((r: any) => !r.success)
-      if (failedMachines.length > 0) {
-        const failedIps = failedMachines.map((m: any) => m.ip).join(', ')
-        notifyError(t('partialUpdateError', {
-          success: response.successCount,
-          total: response.totalMachines,
-          failedIps,
-        }))
-      }
-    }
-
-    selectedSettings.value = []
-    machines.value?.forEach(machine => machine.check = false)
-  } catch (error: any) {
-    console.error('Machine settings update error:', error)
-
-    if (error.message?.includes('timeout') || error.message?.includes('Timeout')) {
-      notifyError(t('timeoutError'))
-    } else if (error.statusCode === 500) {
-      notifyError(t('serverError'))
-    } else if (error.statusCode === 400) {
-      notifyError(error.statusMessage || t('validationError'))
-    } else {
-      notifyError(t('updateError'))
-    }
-  } finally {
-    isLoading.value = false
-  }
+    },
+  })
 }
 
 function selectAll() {

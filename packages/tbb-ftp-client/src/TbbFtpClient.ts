@@ -94,6 +94,10 @@ export class TbbFtpClient {
     this.client.close()
   }
 
+  [Symbol.dispose]() {
+    this.close()
+  }
+
   /**
    * Download file at path via FTP
    *

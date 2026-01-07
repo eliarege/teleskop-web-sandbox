@@ -1,75 +1,52 @@
+import type { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import { withTbbFtpClient } from '@teleskop/tbb-ftp-client'
+import { isDef } from '@teleskop/utils'
+import z from 'zod'
 import { knex } from '~/server/connectionPool'
-import type { Setting } from '~/types'
+
+const bodySchema = z.object({
+  machines: z.array(z.coerce.number().int().positive()).min(1),
+  settings: z.array(
+    z.object({
+      caption: z.string(),
+      isActive: z.boolean(),
+    }),
+  ).min(1),
+})
 
 export default defineAuthEventHandler(async (event) => {
-  const { machines, settings } = await readBody(event)
+  const { machines, settings } = await readValidatedBody(event, bodySchema.parse)
 
-  if (!machines?.length) {
-    throw createError({
-      statusCode: 400,
-      message: 'No machines selected',
-    })
-  }
+  const res = await createTaskStream(event, async (ctx) => {
+    const machineRows = await knex('BFMACHINES')
+      .select({ id: 'MACHINEID', hostname: 'IP' })
+      .whereIn('MACHINEID', machines)
 
-  if (!settings?.length) {
-    throw createError({
-      statusCode: 400,
-      message: 'No settings selected',
-    })
-  }
+    const totalMachines = machineRows.length
+    for (const [index, machine] of machineRows.entries()) {
+      ctx.cancellation.throwIfCancelled()
+      ctx.logger.info(`Processing machine ${machine.id} (${machine.hostname}) (${index + 1}/${totalMachines})`)
 
-  let system: Record<string, string> = {}
-  const results: Array<{ machineId: string, ip: string, success: boolean, error?: string }> = []
+      try {
+        await withTbbFtpClient(machine.hostname, async (tbb: TbbFtpClient) => {
+          const system = await tbb.fetchSystemParams()
 
-  const numMachineIds = machines.map((machineId: string) => Number.parseInt(machineId))
+          settings.forEach((newSetting) => {
+            if (isDef(system[newSetting.caption])) {
+              system[newSetting.caption] = newSetting.isActive ? '1' : '0'
+            }
+          })
 
-  const machineData = await knex('BFMACHINES')
-    .select('MACHINEID', 'IP')
-    .whereIn('MACHINEID', numMachineIds)
-
-  for (const machine of machineData) {
-    const { MACHINEID: machineId, IP: ip } = machine
-
-    try {
-      await withTbbFtpClient(ip, async (tbb) => {
-        // 30 saniye timeout ayarla
-        system = await tbb.fetchSystemParams()
-
-        settings.forEach((newSetting: Setting) => {
-          if (system[newSetting.caption] !== undefined) {
-            system[newSetting.caption] = newSetting.isActive ? '1' : '0'
-          }
-        })
-
-        await tbb.uploadSystemParams(system)
-      })
-
-      results.push({
-        machineId: machineId.toString(),
-        ip,
-        success: true,
-      })
-    } catch (error: any) {
-      console.error(`Failed to update machine ${machineId} (${ip}):`, error)
-
-      results.push({
-        machineId: machineId.toString(),
-        ip,
-        success: false,
-        error: error.message || 'Unknown error',
-      })
+          await tbb.uploadSystemParams(system)
+        }, { timeout: 2000 })
+      } catch (err) {
+        ctx.logger.error(`Failed to update machine ${machine.id} (${machine.hostname}): ${(err as Error).message}`)
+      } finally {
+        ctx.state.progress(Math.floor((index + 1) / totalMachines * 100))
+      }
     }
-  }
+    ctx.state.complete('Machine settings synchronization complete.')
+  })
 
-  const successCount = results.filter(r => r.success).length
-  const failCount = results.filter(r => !r.success).length
-
-  return {
-    success: failCount === 0,
-    totalMachines: results.length,
-    successCount,
-    failCount,
-    results,
-  }
+  return res.kind === 'stream' ? res.stream : res
 })
