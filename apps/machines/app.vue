@@ -4,6 +4,7 @@ import { breakpointsTailwind } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 
 const { t } = useI18n()
+const $q = useQuasar()
 
 const tt = (key: string) => toRef(() => t(key))
 const breakpoints = useBreakpoints(breakpointsTailwind)
@@ -31,7 +32,12 @@ const items = [
             items: [[
               {
                 label: tt('updateMachineSystemSettings'),
-                to: '/update-machine-system-settings',
+                onClick: async () => {
+                  $q.dialog({
+                    component: (await import('~/components/MachineSystemSettingsDialog.vue')).default,
+                    componentProps: {},
+                  })
+                },
               },
               {
                 label: tt('controllerOperators'),
@@ -232,6 +238,10 @@ input.formkit-input[type='number']::-webkit-inner-spin-button,
 input.formkit-input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 input.formkit-input[type='number'] {
