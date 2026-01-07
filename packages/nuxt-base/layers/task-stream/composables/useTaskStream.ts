@@ -96,7 +96,7 @@ export function useTaskStream() {
         ...fetchOptions?.headers,
         'Content-Type': 'application/json',
         'Accept': 'text/event-stream',
-        'Authorization': `Bearer ${kc.token.value}`,
+        ...(kc.token.value ? { Authorization: `Bearer ${kc.token.value}` } : {}),
       },
       body: fetchOptions?.body ? JSON.stringify(fetchOptions.body) : undefined,
       signal: abortController.signal,
@@ -163,7 +163,7 @@ export function useTaskStream() {
         headers: {
           ...fetchOptions?.headers,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${kc.token.value}`,
+          ...(kc.token.value ? { Authorization: `Bearer ${kc.token.value}` } : {}),
         },
         body: fetchOptions?.body ? JSON.stringify(fetchOptions.body) : undefined,
       })
