@@ -23,6 +23,10 @@
   "emptyCommand": "Command cannot be empty",
   "commandNo": "Command No",
   "unknownCommand": "Unknown Command",
+  "machineNotFound": "Machine {machineId} not found.",
+  "machineNotUsable": "Machine {machineId} is not usable.",
+  "noUsableMachineFound": "No usable machine found. Please check the status of machines from Machines application.",
+  "programNotFound": "Program {programNo} not found on machine {machineId}.",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",
@@ -690,7 +694,7 @@
   },
   "deleteResultsDialog": {
     "title": "Delete Results",
-    "program": "Program",
+    "programName": "Program Name",
     "deletedFromMachine": "Deleted From Machine",
     "deletedFromDb": "Deleted From DB"
   },

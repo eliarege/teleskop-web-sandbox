@@ -1,4 +1,5 @@
 import { machineStore } from '~/server/classes/MachineStore'
+import logger from '~/server/logger'
 
 export default defineAuthEventHandler(async (event) => {
   const { machine_id } = getRouterParams(event)
@@ -19,7 +20,7 @@ export default defineAuthEventHandler(async (event) => {
 
     return await machine.getMachineStatus()
   } catch (error) {
-    console.error('Machine status check failed:', error)
+    logger.error(`Machine ${machineId} status check failed`)
     return false
   }
 })

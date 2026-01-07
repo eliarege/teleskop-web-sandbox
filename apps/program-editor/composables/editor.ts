@@ -33,6 +33,16 @@ export const useEditorStore = defineStore('editor', () => {
   const { notifySuccess, notifyError, notifyWarning } = useNotify()
 
   /**
+   * Belirtilen program numarasına sahip bir programın var olup olmadığını kontrol eder.
+   *
+   * @param {number} programNo - Kontrol edilecek program numarası.
+   * @returns {boolean} Program mevcutsa `true`, değilse `false` döner.
+   */
+  function hasProgram(programNo: number): boolean {
+    return allPrograms.value.find(p => p.programNo === programNo) !== undefined
+  }
+
+  /**
    * Programı sıfırlar ve boş bir program oluşturur.
    */
   function resetProgram(): void {
@@ -926,6 +936,7 @@ export const useEditorStore = defineStore('editor', () => {
     leftDrawerOpen,
     rightDrawerOpen,
     allStepExpanded,
+    hasProgram,
     createEmptyStep,
     createEmptyCommand,
     resetProgram,

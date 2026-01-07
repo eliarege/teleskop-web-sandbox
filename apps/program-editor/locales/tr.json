@@ -23,6 +23,10 @@
   "emptyCommand": "Komut boş olamaz",
   "commandNo": "Komut No",
   "unknownCommand": "Bilinmeyen Komut",
+  "machineNotFound": "Makine {machineId} bulunamadı.",
+  "machineNotUsable": "Makine {machineId} kullanılabilir değil.",
+  "noUsableMachineFound": "Kullanılabilir makine bulunamadı. Lütfen makineler uygulamasından makinelerin durumunu kontrol ediniz.",
+  "programNotFound": "Program {programNo} makine {machineId} üzerinde bulunamadı.",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
@@ -707,7 +711,7 @@
   },
   "deleteResultsDialog": {
     "title": "Silme Sonuçları",
-    "program": "Program",
+    "programName": "Program Adı",
     "deletedFromMachine": "Makineden Silindi",
     "deletedFromDb": "Veritabanından Silindi"
   },

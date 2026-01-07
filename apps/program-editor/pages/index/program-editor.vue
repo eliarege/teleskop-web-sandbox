@@ -12,6 +12,7 @@ const $q = useQuasar()
 const route = useRoute()
 const form = ref<QForm>()
 const { t, locale } = useI18n()
+const { notifyError } = useNotify()
 const { $commandManager } = useNuxtApp()
 
 const editor = useEditorStore()
@@ -20,6 +21,17 @@ const teleskopSettings = useTeleskopSettingsStore()
 
 const machineId = Number(route.params.machine_id)
 const programNo = Number(route.params.program_no)
+
+if (!machineId || !machine.hasMachine(machineId)) {
+  if (machineId) {
+    notifyError(t('machineNotFound', { machineId }))
+  }
+
+  const redirected = await machine.selectFirstUsableMachine()
+  if (!redirected) {
+    notifyError(t('noUsableMachineFound'))
+  }
+}
 
 const ctrl = useKeyModifier('Control')
 
@@ -338,14 +350,28 @@ watch(locale, () => {
   form.value?.validate()
 })
 
-editor.isLoading = true
-if (machine.currentMachine.id !== machineId) {
+onBeforeMount(async () => {
+  editor.isLoading = true
+
+  if (machine.isMachineDisabled(machineId)) {
+    await machine.selectFirstUsableMachine()
+    notifyError(t('machineNotUsable', { machineId }))
+    editor.isLoading = false
+    return
+  }
+
   await machine.loadMachine(machineId)
   await editor.fetchCommandTypes(machineId)
   await editor.refreshAllPrograms()
-}
-await editor.loadProgram(machineId, programNo)
-editor.isLoading = false
+
+  if (!programNo || !editor.hasProgram(programNo)) {
+    await machine.changeMachine(machineId)
+    notifyError(t('programNotFound', { machineId, programNo }))
+  }
+
+  await editor.loadProgram(machineId, programNo)
+  editor.isLoading = false
+})
 </script>
 
 <template>

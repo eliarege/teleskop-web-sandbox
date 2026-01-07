@@ -81,6 +81,16 @@ export const useMachineStore = defineStore('machine', () => {
   const kc = useKeycloak()
 
   /**
+   * Belirtilen makinenin mevcut olup olmadığını kontrol eder.
+   *
+   * @param {number} machineId - Kontrol edilecek makinenin ID'si.
+   * @returns {boolean} Makine mevcut ise true, değilse false döner.
+   */
+  function hasMachine(machineId: number): boolean {
+    return allMachines.value.find(machine => machine.id === machineId) !== undefined
+  }
+
+  /**
    * Belirtilen makinenin kullanılamaz (disabled) durumda olup olmadığını kontrol eder.
    *
    * @param {number} machineId - Kontrol edilecek makinenin ID'si.
@@ -248,6 +258,7 @@ export const useMachineStore = defineStore('machine', () => {
     selectedMachines,
     allMachines,
     isTonello,
+    hasMachine,
     isMachineDisabled,
     fetchMachine,
     loadMachine,

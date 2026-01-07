@@ -14,16 +14,6 @@ const editor = useEditorStore()
 const machine = useMachineStore()
 const machineStatusStore = useMachineStatusStore()
 
-onMounted(() => async () => {
-  if (route.path !== '/')
-    return
-
-  const selected = await machine.selectFirstUsableMachine()
-  if (selected) {
-    editor.resetProgram()
-  }
-})
-
 async function onUpdateSelected(selection: string) {
   if (selection) {
     const id = Number.parseInt(selection.split('-')[1])

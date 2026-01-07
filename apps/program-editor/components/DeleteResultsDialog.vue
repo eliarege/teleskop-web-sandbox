@@ -15,8 +15,14 @@ const { dialogRef, onDialogCancel } = useDialogPluginComponent()
 
 const columns = computed<QTableColumn[]>(() => [
   {
-    name: 'program',
-    label: t('deleteResultsDialog.program'),
+    name: 'programNo',
+    label: '#',
+    field: 'programNo',
+    align: 'left',
+  },
+  {
+    name: 'programName',
+    label: t('deleteResultsDialog.programName'),
     field: 'programName',
     align: 'left',
   },
@@ -58,23 +64,21 @@ const columns = computed<QTableColumn[]>(() => [
       </q-card-section>
 
       <!-- Results Table -->
-      <q-card-section>
+      <q-card-section class="pt-0">
         <q-table
           :rows="props.results.results"
           :columns="columns"
           dense
           flat
           :rows-per-page-options="[0]"
+          table-header-style="position: sticky; top: 0; z-index: 1; height: 40px;"
+          table-header-class="bg-gray-1 dark:bg-dark-4"
           style="max-height: 400px"
         >
           <!-- Program Column -->
-          <template #body-cell-program="cellProps">
+          <template #body-cell-programName="cellProps">
             <q-td :props="cellProps">
-              <div>
-                <div class="text-weight-medium">
-                  {{ cellProps.row.programNo }} - <TruncatedText :text="cellProps.value" />
-                </div>
-              </div>
+              <TruncatedText :text="cellProps.value" />
             </q-td>
           </template>
 
