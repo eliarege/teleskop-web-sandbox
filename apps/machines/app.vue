@@ -52,22 +52,14 @@ function collectMenuItems(menuItems?: MenuCollection): TopbarMenuItem[] {
 
 function resolveItemPath(target?: TopbarMenuItem['to']) {
   const destination = toValue(target)
-
-  if (typeof destination === 'string')
-    return normalizePath(destination)
-
-  if (
-    destination
-    && typeof destination === 'object'
-    && 'path' in destination
-    && typeof (destination as { path?: unknown }).path === 'string'
-  )
-    return normalizePath(destination.path as string)
-
-  return ''
+  return destination ? normalizePath(destination) : ''
 }
 
 const items = [
+  {
+    label: tt('machines'),
+    to: '/',
+  },
   {
     label: tt('machineGroup'),
     subMenu: {
@@ -212,16 +204,6 @@ const items = [
             ]],
           },
         },
-        {
-          label: tt('applicationSettings'),
-          subMenu: {
-            items: [[
-              {
-                label: tt('projectViewLanguage'),
-              },
-            ]],
-          },
-        },
       ]],
     },
   },
@@ -263,13 +245,17 @@ const itemsMobile = [
             v-for="(item, index) in items"
             :key="index"
             :label="item.subMenu ? unref(item.label) : ''"
-            :disable="unref(item.disabled)"
+            :disable="unref(item.disabled) || (item.to && resolveItemPath(item.to) === normalizePath(route.path))"
           >
             <TopbarMenu
               v-if="item.subMenu"
               v-bind="item.subMenu"
             />
-            <NuxtLink v-else :to="unref(item.to)">
+            <NuxtLink
+              v-else
+              :to="unref(item.to)"
+              exact-active-class="font-bold opacity-80"
+            >
               {{ unref(item.label) }}
             </NuxtLink>
           </TopbarButton>
