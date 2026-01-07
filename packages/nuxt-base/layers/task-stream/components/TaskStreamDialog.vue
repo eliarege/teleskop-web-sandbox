@@ -184,6 +184,23 @@ function handleRetry() {
   startTaskStream()
 }
 
+const copied = ref(false)
+let copyTimeout: number | null = null
+
+async function copyLogsToClipboard() {
+  const logText = state.logs
+    .map(log => `[${formatTime(log.timestamp)}] ${getLogPrefix(log.level)} ${log.message}`)
+    .join('\n')
+  await navigator.clipboard.writeText(logText)
+  copied.value = true
+  if (copyTimeout !== null) {
+    clearTimeout(copyTimeout)
+  }
+  copyTimeout = window.setTimeout(() => {
+    copied.value = false
+  }, 1000)
+}
+
 // Auto-scroll to bottom when new logs arrive
 watch(
   () => state.logs.length,
@@ -258,6 +275,21 @@ watch(
           header-class="text-grey-7"
           dense
         >
+          <template #header>
+            <q-item-section>
+              {{ t('taskStream.viewDetails') }}
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                flat
+                round
+                :icon="copied ? 'check' : 'content_copy'"
+                @click.stop="copyLogsToClipboard"
+              >
+                <q-tooltip>{{ t('taskStream.copyLogs') }}</q-tooltip>
+              </q-btn>
+            </q-item-section>
+          </template>
           <div
             ref="logsContainer"
             class="console-output bg-dark text-grey-4 q-pa-md rounded-borders q-mt-sm select-text"

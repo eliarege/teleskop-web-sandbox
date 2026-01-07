@@ -7,6 +7,7 @@
     "retry": "Retry",
     "aborted": "Aborted",
     "viewDetails": "View Details",
+    "copyLogs": "Copy Logs",
     "showTaskLogs": "Show task logs",
     "waitingForStart": "Waiting for task to start...",
     "mustCompleteBeforeClosing": "Task must complete successfully before closing",
