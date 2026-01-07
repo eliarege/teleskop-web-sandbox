@@ -1,8 +1,23 @@
 # Changelog
 
+## 0.64.0 - 2026-01-07
+
+[Compare Changes](493522b8b2fae475aac3f343258705446cad31d0...179cb2c57f56db9767708fcc28aedbd19b890460)
+
+### 🚀 Features
+
+-  **MA**: Add home page link as a machines button at topbar ([ab9b428](ab9b428c9ee27574a7a5f6429f20c425652bd2d1))
+- **task-stream**: Add copy logs functionality and update translations ([179cb2c](179cb2c57f56db9767708fcc28aedbd19b890460))
+
+### 🐛 Bug Fixes
+
+- **task-stream**: Conditionally add Authorization header based on token presence at `useTaskStream` ([02ba49e](02ba49e7173587295b2e200507ff78510baf6c9e))
+-  **MA**: Improve layout of step-skipping-reason-commands page ([c6342c2](c6342c20511981911fde4ff69faa35b8ea81a5d9))
+-  **MA**: Correct error message key for loading project translations ([2be102d](2be102d4a76f166c397a44b7c32cdc6150718e1c))
+
 ## 0.63.0 - 2026-01-07
 
-[Compare Changes](04c6a4cb6ce16753e4bc7dde38c3f69310ebabb8...3972c88021dd97e4fe281197cf07bc0abff50af3)
+[Compare Changes](04c6a4cb6ce16753e4bc7dde38c3f69310ebabb8...493522b8b2fae475aac3f343258705446cad31d0)
 
 ### 🚀 Features
 
