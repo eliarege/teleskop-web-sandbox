@@ -1,8 +1,39 @@
 # Changelog
 
+## 0.63.0 - 2026-01-07
+
+[Compare Changes](04c6a4cb6ce16753e4bc7dde38c3f69310ebabb8...3972c88021dd97e4fe281197cf07bc0abff50af3)
+
+### 🚀 Features
+
+-  **MA**: Refactor AddEditModal and MachineList components for improved functionality and UI ([b4bbf1d](b4bbf1d7ded23b0b15d2e3248d878ebb9430a90b))
+-  **PE**: Implement machine and program existence checks with user notifications ([fa28d22](fa28d2231a14761addfb402454a239ce027d65f6))
+- **nuxt-base**: Task stream related fixes/features ([81b7409](81b740943280e9ff96c3d17a09f853bfcb2da883))
+-  **MA**: Use task stream while updating machine settings ([61a5ac4](61a5ac4015fbac01a3f3451433fc36e9072566f5))
+-  **MA**: Update machine system settings has been converted from page to a dialog ([cd43bc9](cd43bc9c71c06f884f9048214699944b5dca751d))
+-  **MA**: Title of the page added to QToolbar ([5b11aea](5b11aea935a94e7e916fc2971f0178fc754a5b7b))
+
+### 🐛 Bug Fixes
+
+- **root**: Remove invalid trailing command in `locales/en.json` ([f182902](f1829022a0bf0462dc96ee8e57a5f05864834454))
+- **useLongOperation**: Incorrectly used ref object in string interpolation, remove type exports ([4feb172](4feb1725922317a722ddc900957b3dae6f1184a2))
+-  **PE**: Replace console.error with logger for machine status check failures ([55c9b3b](55c9b3bd3129f4b87db7b56e6bfa720282ad5bfe))
+-  **MA**: Prevent triple click on machine rows from closing dialog ([3b5c297](3b5c297f63416e60a584260d40433e30d99615b3))
+-  **MA**: Smart-request-command-definitions page layout fix ([73838b2](73838b25328d4b4724f709e6df18700c3008e6fa))
+
+### ♻️ Refactor
+
+- **nuxt-base**: Rename `longOperation to `taskStream` and move it to a separate nuxt layer ([0a97a0e](0a97a0e4d91cc95f9d57731ed21e41a1f1bec693))
+-  **PE**: Update program column structure and improve table header styling ([8d13c53](8d13c53e4e39744521daed0680c9a18985e23409))
+
+### 🔧 Miscellaneous Tasks
+
+- **nuxt-base**: Update quasar to version 2.18.6 ([0c1b0b5](0c1b0b50dc5a7a7d15e75a86a7e835daea17a350))
+- Bump packageManager to pnpm@10.27.0 ([c57abfd](c57abfda641383d6d49ed69d5bbc3bfb6e6bcace))
+
 ## 0.62.0 - 2026-01-05
 
-[Compare Changes](7ba56d6318ebfd8a149e0ca6078238602fb05957...627edc3d781c6c165c287f876b3ad36076ff5b91)
+[Compare Changes](7ba56d6318ebfd8a149e0ca6078238602fb05957...04c6a4cb6ce16753e4bc7dde38c3f69310ebabb8)
 
 ### 🚀 Features
 
