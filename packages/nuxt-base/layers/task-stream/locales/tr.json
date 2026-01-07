@@ -16,6 +16,7 @@
     "unknownError": "Bilinmeyen bir hata oluştu",
     "completedSuccessfully": "İşlem başarıyla tamamlandı",
     "abortedByUser": "İşlem kullanıcı tarafından iptal edildi",
+    "abortRequestError": "İptal isteği gönderilirken hata oluştu: {message}",
     "connectionError": "Bağlantı hatası: {message}"
   }
 }

@@ -1,4 +1,4 @@
-export type StreamMessageType = 'log' | 'complete' | 'fail' | 'progress'
+export type StreamMessageType = 'log' | 'meta' | 'complete' | 'fail' | 'progress'
 export type StreamLogLevel = 'info' | 'warn' | 'error' | 'debug'
 
 export type StreamLogMessage = {
@@ -6,6 +6,11 @@ export type StreamLogMessage = {
   level: StreamLogLevel
   message?: string
   [key: string]: any
+}
+
+export type StreamMetaMessage = {
+  type: 'meta'
+  id: string
 }
 
 export type StreamCompleteMessage = {
@@ -25,6 +30,7 @@ export type StreamProgressMessage = {
 
 export type StreamMessage =
   | StreamLogMessage
+  | StreamMetaMessage
   | StreamCompleteMessage
   | StreamErrorMessage
   | StreamProgressMessage

@@ -14,6 +14,7 @@
     "close": "Fechar",
     "completedSuccessfully": "Tarefa concluída com sucesso",
     "abortedByUser": "Tarefa abortada pelo usuário",
+    "abortRequestError": "Erro ao enviar solicitação de aborto: {message}",
     "connectionError": "Erro de conexão: {message}"
   }
 }

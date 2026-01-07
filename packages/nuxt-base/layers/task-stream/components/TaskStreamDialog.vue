@@ -42,8 +42,12 @@ const state = reactive({
   errorMessage: task.errorMessage,
 })
 
+function getTargetUrl() {
+  return withBase(props.url, config.app.baseURL)
+}
+
 function startTaskStream() {
-  task.start(withBase(props.url, config.app.baseURL), props.fetchOptions)
+  task.start(getTargetUrl(), props.fetchOptions)
 }
 
 startTaskStream()
@@ -167,7 +171,12 @@ function handleClose() {
 
 function handleAbort() {
   emit('abort')
-  task.abort()
+  const method = props.fetchOptions?.method?.toUpperCase() || 'GET'
+  if (method === 'GET') {
+    task.abort()
+  } else {
+    task.abortByFetch(getTargetUrl(), props.fetchOptions)
+  }
 }
 
 function handleRetry() {

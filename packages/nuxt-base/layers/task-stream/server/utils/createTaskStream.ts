@@ -50,6 +50,7 @@ export interface TaskStreamCancellation {
 }
 
 export interface TaskStream<T = unknown> {
+  readonly taskId: string
   stream: ReadableStream<Uint8Array>
   logger: TaskStreamLogger
   /** AbortSignal that triggers when client disconnects */
@@ -64,6 +65,8 @@ export type TaskStreamData<T = unknown> = {
   status: 'pending' | 'running' | 'completed' | 'failed' | 'aborted'
   checkpoint: T | null
   updatedAt: number
+  // This can only be in memory
+  streamManager?: StreamManager
 }
 
 export interface TaskStreamOptions {
@@ -173,12 +176,18 @@ class TaskManager<T = unknown> {
 
   async getOrCreate(taskId?: string): Promise<TaskStreamData<T>> {
     const task = taskId ? (await this.store.get(taskId) as TaskStreamData<T> | null) : null
-    return task || {
-      id: taskId || randomId(),
-      status: 'pending',
-      checkpoint: null,
-      updatedAt: Date.now(),
-    } as TaskStreamData<T>
+    if (task) {
+      return task
+    } else {
+      const newTask: TaskStreamData<T> = {
+        id: taskId || randomId(),
+        status: 'pending',
+        checkpoint: null,
+        updatedAt: Date.now(),
+      }
+      await this.store.set(newTask.id, newTask)
+      return newTask
+    }
   }
 
   async setRunning(taskId: string): Promise<void> {
@@ -209,6 +218,23 @@ class TaskManager<T = unknown> {
     const task = await this.store.get(taskId)
     if (task) {
       task.status = 'aborted'
+      await this.store.set(taskId, task)
+    }
+  }
+
+  async abortTask(taskId: string): Promise<void> {
+    const task = await this.store.get(taskId)
+    if (task && task.streamManager) {
+      task.streamManager.close()
+      task.status = 'aborted'
+      await this.store.set(taskId, task)
+    }
+  }
+
+  async setStreamManager(taskId: string, streamManager: StreamManager): Promise<void> {
+    const task = await this.store.get(taskId)
+    if (task) {
+      task.streamManager = streamManager
       await this.store.set(taskId, task)
     }
   }
@@ -247,16 +273,14 @@ class StreamManager {
         this.controller = ctrl
       },
       cancel: () => {
-        this.isClosed = true
-        this.abortController.abort()
+        this.close()
       },
     })
 
     // Listen for client disconnect
     if (event.node?.req) {
       event.node.req.on('close', () => {
-        this.isClosed = true
-        this.abortController.abort()
+        this.close()
       })
     }
 
@@ -285,18 +309,19 @@ class StreamManager {
       this.controller.enqueue(this.encoder.encode(message))
     } catch (e) {
       this.parentLogger.error({ error: e }, 'Failed to send SSE message')
-      this.isClosed = true
+      this.close()
     }
   }
 
   close(): void {
-    if (!this.isClosed && this.controller) {
+    if (!this.isClosed) {
       try {
-        this.controller.close()
+        this.controller?.close()
       } catch (e) {
         // Already closed
       }
       this.isClosed = true
+      this.abortController.abort()
     }
   }
 
@@ -373,7 +398,7 @@ export async function createTaskStream<T>(
   const task = await taskManager.getOrCreate(taskId)
 
   // Handle task state checks
-  if (task.status === 'running') {
+  if (task.status === 'running' && action !== 'abort') {
     throw createError({
       status: 409,
       message: 'Task is already running',
@@ -387,8 +412,8 @@ export async function createTaskStream<T>(
   }
 
   // Handle abort action on failed task
-  if (task.status === 'failed' && action === 'abort') {
-    await taskManager.setAborted(task.id)
+  if (action === 'abort') {
+    await taskManager.abortTask(task.id)
     return { kind: 'aborted' }
   }
 
@@ -398,10 +423,12 @@ export async function createTaskStream<T>(
     clientLogLevel = 'info',
   } = options || {}
   const streamManager = new StreamManager(event, parentLogger, clientLogLevel)
+  await taskManager.setStreamManager(task.id, streamManager)
 
   let isFinalized = false
   // Create context for consumer
   const ctx: Omit<TaskStream<T>, 'stream'> = {
+    taskId: task.id,
     logger: streamManager.createLogger(),
     signal: streamManager.getSignal(),
     state: {
@@ -438,6 +465,7 @@ export async function createTaskStream<T>(
 
   // Set task to running
   await taskManager.setRunning(task.id)
+  streamManager.send({ type: 'meta', id: task.id })
 
   // Execute handler asynchronously
   ;(async () => {

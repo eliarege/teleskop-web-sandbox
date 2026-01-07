@@ -23,7 +23,7 @@ export function startTaskStream(
       component: TaskStreamDialog,
       componentProps: {
         url,
-        options: options?.fetchOptions,
+        fetchOptions: options?.fetchOptions,
         title: options?.title,
         statusTitles: options?.statusTitles,
         width: options?.width,

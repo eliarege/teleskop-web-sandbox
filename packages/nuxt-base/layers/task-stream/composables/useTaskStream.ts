@@ -1,4 +1,5 @@
 import { readonly, ref } from 'vue'
+import { withQuery } from 'ufo'
 import type { StreamLogLevel, StreamMessage } from '../shared/taskStream.types'
 
 export interface TaskStreamLogEntry {
@@ -19,6 +20,7 @@ export function useTaskStream() {
   const logs = ref<TaskStreamLogEntry[]>([])
   const errorMessage = ref<string | null>(null)
   const progress = ref(0)
+  const taskId = ref<string | null>(null)
 
   let abortController: AbortController | null = null
 
@@ -49,6 +51,9 @@ export function useTaskStream() {
           if (parsed.message) {
             addLog(parsed.level, parsed.message)
           }
+          break
+        case 'meta':
+          taskId.value = parsed.id
           break
         case 'progress':
           progress.value = parsed.progress
@@ -142,13 +147,42 @@ export function useTaskStream() {
   }
 
   const abort = () => {
+    // If request is non GET request, send a fetch to abort endpoint
     abortController?.abort()
     isRunning.value = false
     isAborted.value = true
     addLog('warn', t('taskStream.abortedByUser'))
   }
 
+  /** Should be used when SSE endpoint is a non-GET request. Should send same payload as the original */
+  const abortByFetch = async (url: string, fetchOptions?: TaskStreamFetchOptions) => {
+    try {
+      const response = await fetch(withQuery(url, { action: 'abort', taskId: taskId.value }), {
+        ...fetchOptions,
+        method: fetchOptions?.method || 'GET',
+        headers: {
+          ...fetchOptions?.headers,
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${kc.token.value}`,
+        },
+        body: fetchOptions?.body ? JSON.stringify(fetchOptions.body) : undefined,
+      })
+      if (!response.ok) {
+        const error = await response.text()
+        addLog('error', t('taskStream.abortRequestError', { message: error }))
+      } else {
+        addLog('warn', t('taskStream.abortedByUser'))
+      }
+      abortController?.abort()
+      isRunning.value = false
+      isAborted.value = true
+    } catch (error) {
+      addLog('error', t('taskStream.abortRequestError', { message: (error as Error).message }))
+    }
+  }
+
   return {
+    taskId: readonly(taskId),
     isRunning: readonly(isRunning),
     isSuccess: readonly(isSuccess),
     isError: readonly(isError),
@@ -158,6 +192,7 @@ export function useTaskStream() {
     progress: readonly(progress),
     start,
     abort,
+    abortByFetch,
     reset,
   }
 }
