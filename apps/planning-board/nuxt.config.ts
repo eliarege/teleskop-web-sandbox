@@ -1,4 +1,5 @@
 import string from '@teleskop/rollup-plugin-string'
+import Base64Loader from './vite/base64'
 
 export default defineNuxtConfig({
   ssr: false,
@@ -32,5 +33,8 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: ['@bryntum/schedulerpro'],
     },
+    plugins: [
+      Base64Loader(),
+    ],
   },
 })
