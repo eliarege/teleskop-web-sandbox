@@ -3,12 +3,12 @@ import { QTree, useDialogPluginComponent } from 'quasar'
 import type { MachineGroup, MachineInfo } from '~/shared/types'
 
 const props = defineProps<{
-  type: string
-  currentMachineId: number
   allMachines: MachineInfo[]
   machineGroups: MachineGroup[]
-  disabledMachineIds?: number[]
+
   selectedMachineIds?: number[]
+  disabledMachineIds?: number[]
+
   singleSelection?: boolean
 }>()
 
@@ -23,7 +23,7 @@ const getTicked = (machine: MachineInfo) => `${machine.groupId}-${machine.id}`
 
 const disabledTickeds = computed(() =>
   props.allMachines
-    .filter(machine => props.disabledMachineIds?.includes(machine.id))
+    .filter(machine => props.disabledMachineIds?.includes(machine.id) || machine.disabled)
     .map(getTicked),
 )
 
@@ -39,17 +39,6 @@ const selectedMachines = computed(() =>
   props.allMachines.filter(machine => ticked.value.includes(getTicked(machine))),
 )
 
-// // Initialize ticked values from props.selectedMachines if provided
-// onMounted(() => {
-//   if (props.selectedMachines && props.selectedMachines.length > 0) {
-//     ticked.value = props.selectedMachines.map(machine => `${machine.groupId}-${machine.id}`)
-//   }
-// })
-
-// const selectedMachines = computed(() => {
-//   return props.allMachines.filter(machine => ticked.value.includes(`${machine.groupId}-${machine.id}`))
-// })
-
 const nodes = computed(() => {
   if (!props.machineGroups?.length || !props.allMachines?.length)
     return []
@@ -64,7 +53,7 @@ const nodes = computed(() => {
         id: getTicked(machine),
         label: machine.name,
         selectable: false,
-        disabled: props.disabledMachineIds?.includes(machine.id),
+        disabled: props.disabledMachineIds?.includes(machine.id) || machine.disabled,
       })),
     }))
 })
@@ -106,8 +95,8 @@ function expandToggle() {
   }
 }
 
-function toggleTick(nodeId: string, isDisabled: boolean, isSelectable: boolean) {
-  if (isSelectable || isDisabled)
+function toggleTick(nodeId: string, isDisabled: boolean) {
+  if (isDisabled)
     return
 
   const index = ticked.value.indexOf(nodeId)
@@ -145,7 +134,7 @@ watch(ticked, (newVal, oldVal) => {
     <q-card class="w-100">
       <q-card-section>
         <div class="text-h6 flex">
-          {{ t(`contextMenu.${props.type}.title`) }}
+          {{ t(`contextMenu.selectMachine.title`) }}
           <q-space />
           <q-btn
             icon="close"
@@ -160,7 +149,7 @@ watch(ticked, (newVal, oldVal) => {
 
       <q-card-section class="pt-0 text-gray-8 dark:text-gray-3">
         <div class="text-sm mb-2">
-          {{ t(`contextMenu.${props.type}.selectMachine`) }}
+          {{ t(`contextMenu.selectMachine.selectMachine`) }}
         </div>
         <div class="flex justify-center">
           <QTree
@@ -177,7 +166,7 @@ watch(ticked, (newVal, oldVal) => {
               <div
                 class="flex items-center gap-2 cursor-pointer select-none w-full"
                 :class="{ 'opacity-50': prop.node.disabled, 'cursor-not-allowed': prop.node.selectable || prop.node.disabled }"
-                @click="toggleTick(prop.node.id, prop.node.disabled, prop.node.selectable)"
+                @click="toggleTick(prop.node.id, prop.node.disabled)"
               >
                 <span>{{ prop.node.label }}</span>
               </div>
@@ -216,9 +205,8 @@ watch(ticked, (newVal, oldVal) => {
           @click="onDialogCancel"
         />
         <q-btn
-          class="q-mr-sm text-gray-1 dark:text-gray-2"
-          :class="props.type === 'deleteFromMultiMachine' ? 'bg-red-6' : 'bg-primary'"
-          :label="t(`contextMenu.${props.type}.operate`)"
+          class="q-mr-sm bg-primary text-gray-1 dark:text-gray-2"
+          :label="t(`contextMenu.selectMachine.operate`)"
           flat
           @click="onDialogOK(selectedMachines)"
         />

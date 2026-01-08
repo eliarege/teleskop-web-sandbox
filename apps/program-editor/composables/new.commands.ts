@@ -26,7 +26,6 @@ import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDia
 import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import CMVersionDialog from '~/components/CMVersionDialog.vue'
-import CMMachineListCopyAndSendDialog from '~/components/CMMachineListCopyAndSendDialog.vue'
 import CopyAndSendResultsDialog from '~/components/CopyAndSendResultsDialog.vue'
 import DeleteResultsDialog from '~/components/DeleteResultsDialog.vue'
 import TBFindAndReplaceDialog from '~/components/TBFindAndReplaceDialog.vue'
@@ -469,31 +468,6 @@ registerCommand(() => {
       } finally {
         editor.isLoading = false
       }
-    },
-  }
-})
-
-registerCommand(() => {
-  const editor = useEditorStore()
-  const machine = useMachineStore()
-
-  return {
-    name: 'copyAndSend',
-    async execute(ctx: any, selectedRows: ProgramItem[]) {
-      const sourceMachine = { id: machine.currentMachine.id, name: machine.currentMachine.name }
-
-      ctx.$q.dialog({
-        component: CMMachineListCopyAndSendDialog,
-        componentProps: {
-          machineName: machine.currentMachine.name,
-          type: 'copyAndSend',
-          selectedMachines: machine.selectedMachines,
-        },
-      }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
-        await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
-        await editor.refreshAllPrograms()
-      }).onCancel(() => false)
-      return true
     },
   }
 })

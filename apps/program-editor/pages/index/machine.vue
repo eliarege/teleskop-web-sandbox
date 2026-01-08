@@ -7,12 +7,13 @@ import { useQuasar } from 'quasar'
 import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
-import type { ContextBarButtons, ProgramTableRow } from '~/shared/types'
+import type { ContextBarButtons, MachineInfo, PasteOptions, ProgramTableRow } from '~/shared/types'
 import { ADDITIONAL_PROCESS_CODE_ILAVE, ProgramStatus } from '~/shared/constants'
 import { formatDuration, useErrorStore } from '~/composables/utils'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
 import { useMachineStatusStore } from '~/composables/machine'
+import CMMachineListCopyAndSendDialog from '~/components/CMMachineListCopyAndSendDialog.vue'
 
 definePageMeta({
   path: '/machine/:machine_id',
@@ -589,11 +590,24 @@ const contextMenuOptions = computed(() => [
       icon: '',
       disabled: hasOnlyOnController.value,
       onClick: () => {
-        $commandManager.executeCommand(
-          'copyAndSend',
-          { $q },
-          sortedSelectedPrograms.value,
-        )
+        const sourceMachine = { id: machine.currentMachine.id, name: machine.currentMachine.name }
+        const selectedRows = editor.selectedPrograms
+
+        $q.dialog({
+          component: CMMachineListCopyAndSendDialog,
+          componentProps: {
+            machineName: machine.currentMachine.name,
+            machineId: machine.currentMachine.id,
+
+            allMachines: machine.allMachines,
+            machineGroups: machine.machineGroups,
+
+            disabledMachineIds: [machine.currentMachine.id],
+          },
+        }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
+          await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
+          await editor.refreshAllPrograms()
+        }).onCancel(() => false)
       },
     },
     {

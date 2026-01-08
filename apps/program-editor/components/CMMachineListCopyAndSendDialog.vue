@@ -1,20 +1,31 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar'
 import CMMachineSelector from './CMMachineSelector.vue'
-import type { MachineInfo, MachineOption, PasteOptions } from '~/shared/types'
+import type { MachineGroup, MachineInfo, PasteOptions } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
-  type: string
-  selectedMachines: MachineInfo[]
+  machineId: number
+
+  allMachines: MachineInfo[]
+  machineGroups: MachineGroup[]
+
+  disabledMachineIds?: number[]
 }>()
 
-defineEmits([...useDialogPluginComponent.emits])
+defineEmits([
+  ...useDialogPluginComponent.emits,
+])
 
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
-const machineOption = ref<MachineOption>('current')
+// Local state for selected machines - will be populated by CMMachineSelector on mount
+const localSelectedMachines = ref<MachineInfo[]>([])
+
+function updateSelectedMachines(machines: MachineInfo[]) {
+  localSelectedMachines.value = machines
+}
 
 // Program Paste Options
 const pasteOption = ref<PasteOptions>('overwrite') // default: var olan programın üzerine yaz
@@ -28,6 +39,10 @@ const pasteOptions: { label: string, value: PasteOptions }[] = [
     value: 'skip',
   },
 ]
+
+function handleOK() {
+  onDialogOK({ machines: localSelectedMachines.value, pasteOption: pasteOption.value })
+}
 </script>
 
 <template>
@@ -54,9 +69,16 @@ const pasteOptions: { label: string, value: PasteOptions }[] = [
 
       <q-card-section class="pt-0">
         <CMMachineSelector
-          :model-value="machineOption"
           :machine-name="props.machineName"
-          :selected-machines="props.selectedMachines"
+          :machine-id="props.machineId"
+
+          :all-machines="props.allMachines"
+          :machine-groups="props.machineGroups"
+
+          :disabled-machine-ids="props.disabledMachineIds"
+
+          :selected-machines="localSelectedMachines"
+          @update:selected-machines="updateSelectedMachines"
         />
       </q-card-section>
 
@@ -89,10 +111,9 @@ const pasteOptions: { label: string, value: PasteOptions }[] = [
         />
         <q-btn
           class="q-mr-sm text-gray-1 dark:text-gray-2 bg-primary"
-          :disabled="selectedMachines.length === 0"
-          :label="t(`contextMenu.${props.type}.operate`)"
+          :label="t('ok')"
           flat
-          @click="onDialogOK({ machines: selectedMachines, pasteOption })"
+          @click="handleOK()"
         />
       </q-card-actions>
     </q-card>
