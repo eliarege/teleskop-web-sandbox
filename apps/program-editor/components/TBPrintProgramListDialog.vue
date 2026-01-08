@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import CMMachineSelector from './CMMachineSelector.vue'
-import type { MachineOption } from '~/shared/types'
+import type { MachineGroup, MachineInfo, MachineOption } from '~/shared/types'
 
 const props = defineProps<{
+  machineId: number
   machineName: string
+
+  allMachines: MachineInfo[]
+  machineGroups: MachineGroup[]
+
+  selectedMachines: MachineInfo[]
 }>()
 
 defineEmits([...useDialogPluginComponent.emits])
@@ -124,9 +130,17 @@ async function downloadProgramList() {
 
       <q-card-section class="pt-0">
         <CMMachineSelector
-          v-model="machineOption"
+          :machine-id="props.machineId"
           :machine-name="props.machineName"
-          :selected-machines="machine.selectedMachines"
+
+          :all-machines="props.allMachines"
+          :machine-groups="props.machineGroups"
+
+          :selected-machines="props.selectedMachines"
+          @update:selected-machines="(machines: MachineInfo[]) => {
+            machineOption = 'selected'
+            machine.selectedMachines = machines
+          }"
         />
       </q-card-section>
 

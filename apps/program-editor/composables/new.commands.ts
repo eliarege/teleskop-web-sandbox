@@ -593,7 +593,13 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBPrintProgramListDialog,
         componentProps: {
+          machineId: machine.currentMachine.id,
           machineName: machine.currentMachine.name,
+
+          allMachines: machine.allMachines,
+          machineGroups: machine.machineGroups,
+
+          selectedMachines: machine.selectedMachines,
         },
       })
       return true
