@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import type { MachineCommand, MachineInfo, MachineOption, Program, ProgramTableRow } from '~/shared/types'
+import type { MachineCommand, MachineGroup, MachineInfo, MachineOption, Program, ProgramTableRow } from '~/shared/types'
 import CMMachineSelector from '~/components/CMMachineSelector.vue'
 
 const props = defineProps<{
+  machineId: number
   machineName: string
+
+  allMachines: MachineInfo[]
+  machineGroups: MachineGroup[]
+
+  selectedMachines: MachineInfo[]
+
   programList: ProgramTableRow[]
   commandList: MachineCommand[]
-  selectedMachines: MachineInfo[]
 }>()
 
 defineEmits([...useDialogPluginComponent.emits])
@@ -219,10 +225,18 @@ async function printProgram() {
       <!-- Machine Selection -->
       <q-card-section class="pt-0">
         <CMMachineSelector
-          v-model="machineOption"
+          :machine-id="props.machineId"
           :machine-name="props.machineName"
-          single-selection
+
+          :all-machines="props.allMachines"
+          :machine-groups="props.machineGroups"
+
           :selected-machines="props.selectedMachines"
+          single-selection
+          @update:selected-machines="(machines: MachineInfo[]) => {
+            machineOption = 'selected'
+            machine.selectedMachines = machines
+          }"
         />
       </q-card-section>
 

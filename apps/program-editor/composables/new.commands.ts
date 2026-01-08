@@ -567,10 +567,16 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBPrintProgramDialog,
         componentProps: {
+          machineId: machine.currentMachine.id,
           machineName: machine.currentMachine.name,
+
+          allMachines: machine.allMachines,
+          machineGroups: machine.machineGroups,
+
+          selectedMachines: machine.selectedMachines,
+
           programList: editor.allPrograms,
           commandList: Array.from(machine.currentMachine.commands.values()),
-          selectedMachines: machine.selectedMachines,
         },
       })
       return true
