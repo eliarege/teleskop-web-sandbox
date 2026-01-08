@@ -326,7 +326,7 @@
     "updated": "Makine \"{machine}\" güncellendi",
     "error": "Makine \"{machine}\" güncellenirken hata oluştu",
     "complete": "Makine ayarları güncellenmesi tamamlandı.",
-    "completeWithErrors": "Makine ayarları güncellenmesi bazı hatalarla tamamlandı.",
+    "completedWithErrors": "Makine ayarları güncellenirken bazı hatalar oluştu.",
     "failed": "Makine ayarları güncellenmesi başarısız oldu.",
 
     "setting": {

@@ -61,9 +61,10 @@ export default defineAuthEventHandler(async (event) => {
       }
     }
     if (anySucceeded) {
-      ctx.state.complete(!anyFailed
-        ? t('updateMachineSettings.complete')
-        : t('updateMachineSettings.completeWithErrors'))
+      if (anyFailed) {
+        ctx.logger.warn(t('updateMachineSettings.completedWithErrors'))
+      }
+      ctx.state.complete()
     } else {
       ctx.state.fail(t('updateMachineSettings.failed'))
     }

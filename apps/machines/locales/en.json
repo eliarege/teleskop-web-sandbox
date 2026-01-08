@@ -322,7 +322,7 @@
     "updated": "Updated machine \"{machine}\"",
     "error": "Error updating machine \"{machine}\"",
     "complete": "Machine settings update complete.",
-    "completeWithErrors": "Machine settings update completed with errors.",
+    "completedWithErrors": "Machine settings update completed with some errors.",
     "failed": "Machine settings update failed.",
 
     "setting": {
