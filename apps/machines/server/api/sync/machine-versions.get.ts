@@ -38,10 +38,10 @@ export default defineAuthEventHandler(async (event) => {
           .update({ VERSION: version })
 
         hasSucceededOnce = true
-        ctx.logger.info(t(`receiveVersion.completed`, { machine: machine.name }))
+        ctx.logger.info(`${t(`receiveVersion.completed`, { machine: machine.name })} (${machine.hostname})`)
       } catch (err: any) {
         hasFailedOnce = true
-        ctx.logger.error(t(`receiveVersion.failed`, { machine: machine.name }))
+        ctx.logger.error(`${t(`receiveVersion.failed`, { machine: machine.name })} (${machine.hostname}): ${err?.message || err}`)
         await knex('BFMACHINES')
           .where('MACHINEID', machine.id)
           .update({ VERSION: 'Bağlantı Bulunamadı!' })
