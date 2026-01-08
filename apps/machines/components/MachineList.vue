@@ -216,6 +216,10 @@ function scrollToRow(index: number) {
   }
 }
 
+// To detect double-click vs single-click
+// We use it to prevent deselecting on double-click
+const dblClickTimer = new Map<number, number>()
+
 function chooseMachineRow(row: Machine) {
   lastDirection = 0
   cursor = props.rows.findIndex(r => r.machineId === row.machineId)
@@ -231,8 +235,20 @@ function chooseMachineRow(row: Machine) {
     }
     selected.value = [row]
     focusedIndex.value = cursor
+    dblClickTimer.set(row.machineId, window.setTimeout(() => {
+      dblClickTimer.delete(row.machineId)
+    }, 300))
+  } else {
+    const timer = dblClickTimer.get(row.machineId)
+    if (timer) {
+      clearTimeout(timer)
+      dblClickTimer.delete(row.machineId)
+    } else {
+      removeSelection(row)
+    }
   }
 }
+
 function onRowDblClick(row: Machine) {
   emit('machineDblclick', row)
 }
