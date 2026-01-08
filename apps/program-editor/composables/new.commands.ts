@@ -711,17 +711,11 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const machine = useMachineStore()
-
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
       ctx.$q.dialog({
         component: TBExportExcelDialog,
-        componentProps: {
-          machineName: machine.currentMachine.name,
-          selectedMachines: machine.selectedMachines,
-        },
       })
       return true
     },

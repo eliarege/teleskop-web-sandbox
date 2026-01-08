@@ -2,12 +2,7 @@
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
 import CMMachineSelector from './CMMachineSelector.vue'
-import type { MachineCommand, MachineConstant, MachineInfo, MachineOption } from '~/shared/types'
-
-const props = defineProps<{
-  machineName: string
-  selectedMachines: MachineInfo[]
-}>()
+import type { MachineCommand, MachineConstant, MachineGroup, MachineInfo, MachineOption } from '~/shared/types'
 
 defineEmits([...useDialogPluginComponent.emits])
 
@@ -239,9 +234,17 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
 
       <q-card-section>
         <CMMachineSelector
-          v-model="machineOption"
-          :machine-name="props.machineName"
-          :selected-machines="props.selectedMachines"
+          :machine-id="machine.currentMachine.id"
+          :machine-name="machine.currentMachine.name"
+
+          :all-machines="machine.allMachines"
+          :machine-groups="machine.machineGroups"
+
+          :selected-machines="machine.selectedMachines"
+          @update:selected-machines="(machines: MachineInfo[]) => {
+            machineOption = 'selected'
+            machine.selectedMachines = machines
+          }"
         />
       </q-card-section>
 
