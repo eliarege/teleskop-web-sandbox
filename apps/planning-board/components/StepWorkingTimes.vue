@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import jsPDF from 'jspdf'
+import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
 const props = defineProps<{
@@ -53,6 +53,7 @@ function getRowClass(row: any) {
 }
 
 async function printTable() {
+  // This was originally Roboto-Bold
   const font = await import('~/assets/Roboto-Bold.ttf?base64')
 
   const doc = new jsPDF({
@@ -167,25 +168,8 @@ async function printTable() {
   doc.rect(leftMargin, legendY + spacing * 2, boxSize, boxSize, 'S')
   doc.text(t('stepWorkingTimes.timeExceeded'), leftMargin + 7, legendY + spacing * 2 + 4)
 
-  const pdfDataUri = doc.output('dataurlstring')
-  const printWindow = window.open('', '_blank')
-  if (printWindow) {
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>${title}</title>
-          <style>
-            body { margin: 0; padding: 0; }
-            iframe { border: none; }
-          </style>
-        </head>
-        <body>
-          <iframe width="100%" height="100%" src="${pdfDataUri}"></iframe>
-        </body>
-      </html>
-    `)
-    printWindow.document.close()
-  }
+  doc.autoPrint()
+  doc.output('dataurlnewwindow')
 }
 
 function handleClose() {
