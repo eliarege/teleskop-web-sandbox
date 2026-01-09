@@ -13,7 +13,6 @@ import { updateTonelloInputOutputs } from '~/server/lib/tonello/input-output'
 import { updateTonelloProjectTranslations } from '~/server/lib/tonello/locale'
 import { updateTonelloBatchParameters } from '~/server/lib/tonello/batch-parameters'
 import { transactionWithAbort } from '~/server/utils/transaction'
-import { useSafeTranslation } from '~/server/utils/i18n'
 import { acquireMachineLock, releaseMachineLock } from '~/server/lib/machine-lock'
 
 const querySchema = z.object({
@@ -52,8 +51,6 @@ export default defineAuthEventHandler(async (event) => {
     })
   }
 
-  const t = await useSafeTranslation(event).catch(() => (k: string) => k)
-
   const result = await createTaskStream(event, async (ctx) => {
     const logError = (err: unknown) => {
       if (ctx.state.isClosed()) {
@@ -65,7 +62,7 @@ export default defineAuthEventHandler(async (event) => {
       } else {
         errors.push(err instanceof Error ? err.message : 'Unknown error')
       }
-      const userMessage = mapErrorToUserMessage(err, t)
+      const userMessage = mapErrorToUserMessage(err, ctx.t)
 
       for (const error of errors) {
         ctx.logger.error(error)
@@ -92,7 +89,7 @@ export default defineAuthEventHandler(async (event) => {
       await transactionWithAbort(knex, ctx.signal, async (trx) => {
         for (const { fn, message, path } of steps) {
           ctx.signal.throwIfAborted()
-          ctx.logger.info(t(`${message}-starting`) + (path ? ` (${path})` : ''))
+          ctx.logger.info(ctx.t(`${message}-starting`), path ? ` (${path})` : '')
           ctx.state.progress(getCurrentProgress())
           await fn(trx)
           currentStep++
@@ -102,7 +99,7 @@ export default defineAuthEventHandler(async (event) => {
 
     try {
       if (machine.tbbModel !== 'Tonello') {
-        ctx.logger.info(t('projectUpload.starting'))
+        ctx.logger.info(ctx.t('projectUpload.starting'))
         ctx.state.progress(0.1)
 
         await withTbbFtpClient(machine.host, async (tbb) => {
@@ -144,14 +141,16 @@ export default defineAuthEventHandler(async (event) => {
           errors: [],
           messages: [],
         }
-        ctx.logger.info({ progress: 0 }, t('projectUpload.fetchingTonelloMachineData'))
+        ctx.state.progress(0.1)
+        ctx.logger.info(ctx.t('projectUpload.fetchingTonelloMachineData'))
 
         const functions = await api.fetchFunctions()
         const ioList = await api.fetchInputOutputList()
         const config = await api.fetchConfiguration()
         const trxOffsetProgress = 10
 
-        ctx.logger.info({ progress: trxOffsetProgress }, t('projectUpload.tonelloMachineDataFetched'))
+        ctx.state.progress(trxOffsetProgress)
+        ctx.logger.info(ctx.t('projectUpload.tonelloMachineDataFetched'))
 
         const parameters = config.data.pages.flatMap(p => p.params)
 
@@ -201,11 +200,11 @@ export default defineAuthEventHandler(async (event) => {
           },
         ], trxOffsetProgress)
       }
-      ctx.state.complete(t('projectUpload.completed'))
+      ctx.state.complete(ctx.t('projectUpload.completed'))
     } catch (err: unknown) {
       console.error(err)
       logError(err)
-      ctx.state.fail(t('projectUpload.failed'))
+      ctx.state.fail(ctx.t('projectUpload.failed'))
     } finally {
       releaseMachineLock(machineId)
     }
@@ -222,7 +221,14 @@ export default defineAuthEventHandler(async (event) => {
   }
 })
 
-function mapErrorToUserMessage(error: any, t: (key: string, params?: Record<string, any>) => string): string {
+interface TaskI18nMeta {
+  i18n?: {
+    key: string
+    params?: Record<string, unknown>
+  }
+}
+
+function mapErrorToUserMessage(error: any, t: (key: string, params?: Record<string, unknown>) => TaskI18nMeta): TaskI18nMeta {
   const msg = error.message ?? ''
 
   // --- Bağlantı / Ağ hataları ---

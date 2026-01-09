@@ -15,6 +15,7 @@
     "close": "Close",
     "notCompleted": "Task did not complete",
     "unknownError": "An unknown error occurred",
+    "errorDetails": "Error details: {message}",
     "completedSuccessfully": "Task completed successfully",
     "abortedByUser": "Task aborted by user",
     "abortRequestError": "Error sending abort request: {message}",

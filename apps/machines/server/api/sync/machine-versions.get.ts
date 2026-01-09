@@ -15,8 +15,6 @@ export default defineAuthEventHandler(async (event) => {
     })
     .whereNot('TBBMODEL', 'Tonello')
 
-  const t = await useTranslation(event)
-
   const result = await createTaskStream(event, async (ctx) => {
     const totalSteps = machines.length
     let currentStep = 0
@@ -38,10 +36,10 @@ export default defineAuthEventHandler(async (event) => {
           .update({ VERSION: version })
 
         hasSucceededOnce = true
-        ctx.logger.info(`${t(`receiveVersion.completed`, { machine: machine.name })} (${machine.hostname})`)
+        ctx.logger.info(ctx.t('receiveVersion.completed', { machine: machine.name }), ` (${machine.hostname})`)
       } catch (err: any) {
         hasFailedOnce = true
-        ctx.logger.error(`${t(`receiveVersion.failed`, { machine: machine.name })} (${machine.hostname}): ${err?.message || err}`)
+        ctx.logger.error(ctx.t('receiveVersion.failed', { machine: machine.name }), ` (${machine.hostname}): ${err?.message || err}`)
         await knex('BFMACHINES')
           .where('MACHINEID', machine.id)
           .update({ VERSION: 'Bağlantı Bulunamadı!' })
@@ -52,10 +50,10 @@ export default defineAuthEventHandler(async (event) => {
     }
 
     if (!hasSucceededOnce) {
-      ctx.state.fail(t('errorReceivingVersionInfo'))
+      ctx.state.fail(ctx.t('errorReceivingVersionInfo'))
     } else {
       if (hasFailedOnce) {
-        ctx.logger.warn(t('receiveVersion.completedWithErrors'))
+        ctx.logger.warn(ctx.t('receiveVersion.completedWithErrors'))
       }
       ctx.state.complete()
     }

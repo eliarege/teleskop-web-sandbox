@@ -78,9 +78,6 @@ export default defineNuxtConfig({
       { code: 'tr', name: 'Türkçe', file: 'tr.json' },
       { code: 'pt', name: 'Português', file: 'pt.json' },
     ],
-    experimental: {
-      localeDetector: `./i18n.localeDetector.ts`,
-    },
   },
   vite: {
     build: {

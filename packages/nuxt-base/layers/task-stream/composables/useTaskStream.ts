@@ -48,8 +48,18 @@ export function useTaskStream() {
 
       switch (parsed.type) {
         case 'log':
-          if (parsed.message) {
-            addLog(parsed.level, parsed.message)
+          if (parsed.message || parsed.meta?.i18n) {
+            // Handle i18n translation if present
+            let message = parsed.message || ''
+            if (parsed.meta?.i18n) {
+              const { key, params } = parsed.meta.i18n
+              const translatedMessage = t(key, params ?? {})
+              // Append additional message if present (for template patterns)
+              message = message ? `${translatedMessage}${message}` : translatedMessage
+            }
+            if (message) {
+              addLog(parsed.level, message)
+            }
           }
           break
         case 'meta':
@@ -58,18 +68,39 @@ export function useTaskStream() {
         case 'progress':
           progress.value = parsed.progress
           break
-        case 'complete':
+        case 'complete': {
           isSuccess.value = true
           isRunning.value = false
           progress.value = 100
-          addLog('success', parsed.message || t('taskStream.completedSuccessfully'))
+          // Handle i18n translation if present
+          let completeMessage = parsed.message || ''
+          if (parsed.meta?.i18n) {
+            const { key, params } = parsed.meta.i18n
+            const translatedMessage = t(key, params ?? {})
+            // Append additional message if present
+            completeMessage = completeMessage ? `${translatedMessage}${completeMessage}` : translatedMessage
+          }
+          addLog('success', completeMessage || t('taskStream.completedSuccessfully'))
           break
-        case 'fail':
+        }
+        case 'fail': {
           isError.value = true
-          errorMessage.value = parsed.message
-          addLog('error', parsed.message)
+          // Handle i18n translation if present
+          let failMessage = parsed.message || ''
+          if (parsed.meta?.i18n) {
+            const { key, params } = parsed.meta.i18n
+            const translatedMessage = t(key, params ?? {})
+            // Append additional message if present
+            failMessage = failMessage ? `${translatedMessage}${failMessage}` : translatedMessage
+          }
+          errorMessage.value = failMessage || t('taskStream.unknownError')
+          addLog('error', errorMessage.value)
+          if (parsed.error) {
+            addLog('error', t('taskStream.errorDetails', { message: parsed.error }))
+          }
           isRunning.value = false
           break
+        }
       }
     } catch (e) {
       // If not JSON, treat as plain log message

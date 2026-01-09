@@ -2,11 +2,14 @@ import { randomInt } from 'node:crypto'
 import type { H3Event } from 'h3'
 import pino from 'pino'
 import z from 'zod/v4'
-import type { StreamLogLevel, StreamMessage } from '../../shared/taskStream.types'
+import type { StreamLogLevel, StreamMessage, TaskI18n } from '../../shared/taskStream.types'
 
 export interface TaskStreamLogMeta {
+  i18n?: TaskI18n
   [key: string]: any
 }
+
+export type TaskStreamErrorMeta = TaskStreamLogMeta & { error?: unknown }
 
 export interface ParentLogFn {
   (meta: object, message?: string): void
@@ -40,8 +43,8 @@ export interface TaskStreamCheckpoint<T = unknown> {
 
 export interface TaskStreamState {
   progress: (value: number) => void
-  complete: (message?: string) => Promise<void>
-  fail: (error: unknown, message?: string) => Promise<void>
+  complete: (metaOrMessage?: TaskStreamLogMeta | string, message?: string) => Promise<void>
+  fail: (metaOrMessage?: TaskStreamErrorMeta | string, message?: string) => Promise<void>
   isClosed(): boolean
 }
 
@@ -53,6 +56,8 @@ export interface TaskStream<T = unknown> {
   signal: AbortSignal
   state: TaskStreamState
   checkpoint: TaskStreamCheckpoint<T>
+  /** Helper function to create i18n translation objects for client-side translation */
+  t: (key: string, params?: Record<string, unknown>) => TaskStreamLogMeta
 }
 
 export type TaskStreamData<T = unknown> = {
@@ -164,8 +169,6 @@ const querySchema = z.object({
   taskId: z.string().optional(),
   action: z.enum(['retry', 'abort']).optional(),
 })
-
-export class ClientCancelledError extends Error {}
 
 /**
  * Task Manager - Handles all task persistence and lifecycle management
@@ -349,14 +352,13 @@ class StreamManager {
           this.parentLogger[level](metaOrMessage)
           this.send({ type: 'log', level, message: metaOrMessage })
         } else {
-          const { progress, error, ...rest } = metaOrMessage
-          this.parentLogger[level](rest, message)
+          const meta = metaOrMessage
+          this.parentLogger[level](meta, message)
           this.send({
             type: 'log',
             level,
             message: message || '',
-            progress,
-            meta: Object.keys(rest).length > 0 ? rest : undefined,
+            meta: Object.keys(meta).length > 0 ? meta : undefined,
           })
         }
       }
@@ -377,6 +379,10 @@ class StreamManager {
   isStreamCancelled(): boolean {
     return this.isCancelled
   }
+}
+
+export function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError'
 }
 
 /**
@@ -449,25 +455,38 @@ export async function createTaskStream<T>(
     taskId: task.id,
     logger: streamManager.createLogger(),
     signal: streamManager.signal,
+    t: (key: string, params?: Record<string, unknown>): TaskStreamLogMeta => ({ i18n: { key, params } }),
     state: {
-      progress: (value: number) => {
+      progress: (value) => {
         streamManager.send({ type: 'progress', progress: value })
       },
-      complete: async (message) => {
+      complete: async (metaOrMessage?: TaskStreamLogMeta | string, message?: string) => {
         if (isFinalized)
           return
         isFinalized = true
         await taskManager.setCompleted(task.id)
-        streamManager.send({ type: 'complete', message })
+
+        if (metaOrMessage && typeof metaOrMessage === 'object') {
+          streamManager.send({ type: 'complete', meta: metaOrMessage, message })
+        } else {
+          streamManager.send({ type: 'complete', message: metaOrMessage })
+        }
         streamManager.close()
       },
-      fail: async (error, message) => {
+      fail: async (metaOrMessage?: TaskStreamErrorMeta | string, message?: string) => {
         if (isFinalized)
           return
         isFinalized = true
-        const errorMessage = message || (error instanceof Error ? error.message : String(error))
         await taskManager.setFailed(task.id)
-        streamManager.send({ type: 'fail', message: errorMessage })
+        if (metaOrMessage && typeof metaOrMessage === 'object') {
+          const { error, ...meta } = metaOrMessage
+          const errorMessage = error instanceof Error
+            ? error.message
+            : error ? String(error) : undefined
+          streamManager.send({ type: 'fail', meta, message, error: errorMessage })
+        } else {
+          streamManager.send({ type: 'fail', message: metaOrMessage })
+        }
         streamManager.close()
       },
       isClosed: () => streamManager.isStreamClosed(),
@@ -486,10 +505,10 @@ export async function createTaskStream<T>(
   ;(async () => {
     try {
       await handler(ctx)
-    } catch (err) {
-      if (err instanceof ClientCancelledError)
+    } catch (error) {
+      if (isAbortError(error))
         return
-      await ctx.state.fail(err)
+      await ctx.state.fail({ error })
     } finally {
       if (import.meta.dev) {
         if (!isFinalized && warnOnReturnWithoutCompletion) {

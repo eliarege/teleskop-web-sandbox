@@ -17,7 +17,6 @@ const bodySchema = z.object({
 
 export default defineAuthEventHandler(async (event) => {
   const { machines, settings } = await readValidatedBody(event, bodySchema.parse)
-  const t = await useTranslation(event)
 
   const res = await createTaskStream(event, async (ctx) => {
     const machineRows = await knex('BFMACHINES')
@@ -46,15 +45,15 @@ export default defineAuthEventHandler(async (event) => {
           })
 
           await tbb.uploadSystemParams(system)
-          ctx.logger.info(`${t('updateMachineSettings.updated', {
+          ctx.logger.info(ctx.t('updateMachineSettings.updated', {
             machine: machine.name,
-          })} (${machine.hostname})`)
+          }), ` (${machine.hostname})`)
           anySucceeded = true
         }, { timeout: 2000 })
       } catch (err) {
-        ctx.logger.error(`${t('updateMachineSettings.error', {
+        ctx.logger.error(ctx.t('updateMachineSettings.error', {
           machine: machine.name,
-        })} (${machine.hostname}): ${(err as Error).message}`)
+        }), ` (${machine.hostname}): ${(err as Error).message}`)
         anyFailed = true
       } finally {
         ctx.state.progress(Math.floor((index + 1) / totalMachines * 100))
@@ -62,11 +61,11 @@ export default defineAuthEventHandler(async (event) => {
     }
     if (anySucceeded) {
       if (anyFailed) {
-        ctx.logger.warn(t('updateMachineSettings.completedWithErrors'))
+        ctx.logger.warn(ctx.t('updateMachineSettings.completedWithErrors'))
       }
       ctx.state.complete()
     } else {
-      ctx.state.fail(t('updateMachineSettings.failed'))
+      ctx.state.fail(ctx.t('updateMachineSettings.failed'))
     }
   })
 
