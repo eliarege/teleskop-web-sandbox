@@ -18,13 +18,13 @@ senaryolar için uygundur.
 export default defineEventHandler(async (event) => {
   const t = await useTranslation(event)
   const itemCount = 5
-  const res = createTaskStream(event, ({ logger, cancellation }) => {
+  const res = createTaskStream(event, ({ logger, signal }) => {
     logger.info(t('Starting long operation'))
     logger.info(t('Initialization complete'))
     logger.progress(10)
 
     for (let i = 1; i <= itemCount; i++) {
-      cancellation.throwIfCancelled()
+      signal.throwIfAborted()
       const itemProgress = 10 + Math.round((i - 1) / itemCount * 80)
       logger.info(`Processing item ${i}/${itemCount}...`)
       logger.progress(itemProgress)

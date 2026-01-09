@@ -42,11 +42,7 @@ export interface TaskStreamState {
   progress: (value: number) => void
   complete: (message?: string) => Promise<void>
   fail: (error: unknown, message?: string) => Promise<void>
-}
-
-export interface TaskStreamCancellation {
-  isCancelled: () => boolean
-  throwIfCancelled: () => void
+  isClosed(): boolean
 }
 
 export interface TaskStream<T = unknown> {
@@ -56,7 +52,6 @@ export interface TaskStream<T = unknown> {
   /** AbortSignal that triggers when client disconnects */
   signal: AbortSignal
   state: TaskStreamState
-  cancellation: TaskStreamCancellation
   checkpoint: TaskStreamCheckpoint<T>
 }
 
@@ -72,6 +67,10 @@ export type TaskStreamData<T = unknown> = {
 export interface TaskStreamOptions {
   parentLogger?: ParentLogger
   clientLogLevel?: StreamLogLevel
+  /** Warn if sending message on closed stream */
+  warnOnClosedStreamSend?: boolean
+  /** Warn during development if handler returns without calling complete() or fail() */
+  warnOnReturnWithoutCompletion?: boolean
 }
 
 export type TaskStreamOutput =
@@ -214,18 +213,10 @@ class TaskManager<T = unknown> {
     }
   }
 
-  async setAborted(taskId: string): Promise<void> {
-    const task = await this.store.get(taskId)
-    if (task) {
-      task.status = 'aborted'
-      await this.store.set(taskId, task)
-    }
-  }
-
   async abortTask(taskId: string): Promise<void> {
     const task = await this.store.get(taskId)
     if (task && task.streamManager) {
-      task.streamManager.close()
+      task.streamManager.cancel()
       task.status = 'aborted'
       await this.store.set(taskId, task)
     }
@@ -253,6 +244,11 @@ class TaskManager<T = unknown> {
   }
 }
 
+interface StreamManagerOptions {
+  parentLogger: ParentLogger
+  clientLogLevel: StreamLogLevel
+  warnOnClosedStreamSend: boolean
+}
 /**
  * Stream Manager - Handles SSE stream creation and message sending
  */
@@ -260,27 +256,31 @@ class StreamManager {
   private encoder = new TextEncoder()
   private controller: ReadableStreamDefaultController<Uint8Array> | null = null
   private isClosed = false
+  private isCancelled = false
   private abortController = new AbortController()
+  private clientLogLevel: StreamLogLevel
+  private parentLogger: ParentLogger
   public readonly stream: ReadableStream<Uint8Array>
 
   constructor(
     event: H3Event,
-    private parentLogger: ParentLogger,
-    private clientLogLevel: StreamLogLevel,
+    private options: StreamManagerOptions,
   ) {
+    this.parentLogger = options.parentLogger
+    this.clientLogLevel = options.clientLogLevel
     this.stream = new ReadableStream<Uint8Array>({
       start: (ctrl) => {
         this.controller = ctrl
       },
       cancel: () => {
-        this.close()
+        this.cancel()
       },
     })
 
     // Listen for client disconnect
     if (event.node?.req) {
       event.node.req.on('close', () => {
-        this.close()
+        this.cancel()
       })
     }
 
@@ -292,9 +292,17 @@ class StreamManager {
     })
   }
 
+  get signal(): AbortSignal {
+    return this.abortController.signal
+  }
+
   send(data: StreamMessage): void {
     if (this.isClosed || !this.controller) {
-      if (import.meta.dev) {
+      if (
+        import.meta.dev
+          && this.options.warnOnClosedStreamSend
+          && data.type === 'log' && LOG_LEVEL[data.level] < LOG_LEVEL[this.clientLogLevel]
+      ) {
         this.parentLogger.warn('Attempted to send message on closed stream')
       }
       return
@@ -309,10 +317,11 @@ class StreamManager {
       this.controller.enqueue(this.encoder.encode(message))
     } catch (e) {
       this.parentLogger.error({ error: e }, 'Failed to send SSE message')
-      this.close()
+      this.cancel()
     }
   }
 
+  /** Close the stream normally (e.g., after complete/fail) */
   close(): void {
     if (!this.isClosed) {
       try {
@@ -321,8 +330,16 @@ class StreamManager {
         // Already closed
       }
       this.isClosed = true
-      this.abortController.abort()
     }
+  }
+
+  /** Cancel the stream (client disconnect or abort) - DOES aborts signal */
+  cancel() {
+    if (this.isClosed)
+      return
+    this.isCancelled = true
+    this.abortController.abort()
+    this.close()
   }
 
   createLogger(): TaskStreamLogger {
@@ -353,17 +370,12 @@ class StreamManager {
     }
   }
 
-  getSignal(): AbortSignal {
-    return this.abortController.signal
-  }
-
-  isCancelled(): boolean {
+  isStreamClosed(): boolean {
     return this.isClosed
   }
 
-  throwIfCancelled(): void {
-    if (this.isClosed)
-      throw new ClientCancelledError('Task cancelled by client')
+  isStreamCancelled(): boolean {
+    return this.isCancelled
   }
 }
 
@@ -421,8 +433,14 @@ export async function createTaskStream<T>(
   const {
     parentLogger = defaultLogger,
     clientLogLevel = 'info',
+    warnOnClosedStreamSend = true,
+    warnOnReturnWithoutCompletion = true,
   } = options || {}
-  const streamManager = new StreamManager(event, parentLogger, clientLogLevel)
+  const streamManager = new StreamManager(event, {
+    parentLogger,
+    clientLogLevel,
+    warnOnClosedStreamSend,
+  })
   await taskManager.setStreamManager(task.id, streamManager)
 
   let isFinalized = false
@@ -430,7 +448,7 @@ export async function createTaskStream<T>(
   const ctx: Omit<TaskStream<T>, 'stream'> = {
     taskId: task.id,
     logger: streamManager.createLogger(),
-    signal: streamManager.getSignal(),
+    signal: streamManager.signal,
     state: {
       progress: (value: number) => {
         streamManager.send({ type: 'progress', progress: value })
@@ -452,10 +470,7 @@ export async function createTaskStream<T>(
         streamManager.send({ type: 'fail', message: errorMessage })
         streamManager.close()
       },
-    },
-    cancellation: {
-      isCancelled: () => streamManager.isCancelled(),
-      throwIfCancelled: () => streamManager.throwIfCancelled(),
+      isClosed: () => streamManager.isStreamClosed(),
     },
     checkpoint: {
       get: () => taskManager.getCheckpoint(task.id),
@@ -477,7 +492,7 @@ export async function createTaskStream<T>(
       await ctx.state.fail(err)
     } finally {
       if (import.meta.dev) {
-        if (task.status === 'running') {
+        if (!isFinalized && warnOnReturnWithoutCompletion) {
           parentLogger.warn(
             { taskId: task.id },
             'Handler exited without calling complete() or fail()',
