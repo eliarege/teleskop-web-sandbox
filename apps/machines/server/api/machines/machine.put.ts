@@ -1,38 +1,51 @@
+import { z } from 'zod'
 import { knex } from '~/server/connectionPool'
-import type { Machine } from '~/types'
+import { isMachineLocked } from '~/server/lib/machine-lock'
+import { machineSchema } from '~/shared/schemas/machine'
+
+const updateMachineSchema = z.object({
+  id: z.number().int().positive(),
+  data: machineSchema,
+})
 
 export default defineAuthEventHandler(async (event) => {
-  const { formData } = await readBody<{ formData: Machine }>(event)
+  const { id, data: machine } = await readValidatedBody(event, updateMachineSchema.parse)
+  if (isMachineLocked(id)) {
+    throw createError({
+      message: `Machine ${id} is currently locked for update`,
+      statusCode: 423,
+    })
+  }
+
   try {
     const res = await knex('BFMACHINES').where({
-      MACHINEID: formData.machineId,
+      MACHINEID: id,
     }).update({
-      MACHINEID: Number(formData.machineId),
-      MACHINECODE: formData.machineCode,
-      GRUPNO: formData.groupId,
-      TBBMODEL: formData.tbbModel,
-      THEORICALCHARGE: formData.theoricalCharge,
-      MACHINECAPACITY: formData.machineCapacity,
-      PlcModel: formData.plcModel,
-      IP: formData.ip,
+      MACHINEID: Number(machine.machineId),
+      MACHINECODE: machine.machineCode,
+      GRUPNO: machine.groupId,
+      TBBMODEL: machine.tbbModel,
+      THEORICALCHARGE: machine.theoricalCharge,
+      MACHINECAPACITY: machine.machineCapacity,
+      IP: machine.ip,
       PORT: 8080,
-      VERSION: formData.version,
-      NOZZLECOUNT: formData.nozzleCount,
-      theoricalChargeDuration: formData.theoricalChargeDuration,
-      REELCOUNT: formData.reelCount,
-      STEAMUNIT: formData.steamUnit,
-      INUSE: formData.inUse,
-      MTTEMPIO: formData.MTTempIo,
-      STEAMKGPERHOUR: formData.steamKgPerHour,
-      STEAMVALVEDO: formData.steamValveDo,
-      ADDITIONALTANK1: formData.additionalTank1,
-      ADDITIONALTANK2: formData.additionalTank2,
-      ADDITIONALTANK3: formData.additionalTank3,
-      ADDITIONALTANK4: formData.additionalTank4,
-      RESERVETANK: formData.reserveTank,
-      STOREELECTRICITYASINC: formData.storeElectricityAsInc,
-      THEORETICALWATER: formData.theoreticalWater,
-      THEORETICALSTEAM: formData.theoreticalSteam,
+      VERSION: machine.version,
+      NOZZLECOUNT: machine.nozzleCount,
+      theoricalChargeDuration: machine.theoricalChargeDuration,
+      REELCOUNT: machine.reelCount,
+      STEAMUNIT: machine.steamUnit,
+      INUSE: machine.inUse,
+      MTTEMPIO: machine.MTTempIo,
+      STEAMKGPERHOUR: machine.steamKgPerHour,
+      STEAMVALVEDO: machine.steamValveDo,
+      ADDITIONALTANK1: machine.additionalTank1,
+      ADDITIONALTANK2: machine.additionalTank2,
+      ADDITIONALTANK3: machine.additionalTank3,
+      ADDITIONALTANK4: machine.additionalTank4,
+      RESERVETANK: machine.reserveTank,
+      STOREELECTRICITYASINC: machine.storeElectricityAsInc,
+      THEORETICALWATER: machine.theoreticalWater,
+      THEORETICALSTEAM: machine.theoreticalSteam,
     })
     return res
   } catch (err) {

@@ -1,8 +1,8 @@
 import { knex } from '~/server/connectionPool'
-import type { Machine } from '~/types'
+import { machineSchema } from '~/shared/schemas/machine'
 
 export default defineAuthEventHandler(async (event) => {
-  const machine: Machine = await readBody(event)
+  const machine = await readValidatedBody(event, machineSchema.parse)
 
   const res = await knex('BFMACHINES').insert({
     MACHINEID: machine.machineId,
@@ -22,8 +22,15 @@ export default defineAuthEventHandler(async (event) => {
     MTTEMPIO: machine.MTTempIo,
     STEAMKGPERHOUR: machine.steamKgPerHour,
     STEAMVALVEDO: machine.steamValveDo,
-    PORT: 8080,
     theoricSteam: machine.theoreticalSteam,
+    THEORETICALWATER: machine.theoreticalWater,
+    STOREELECTRICITYASINC: machine.storeElectricityAsInc,
+    ADDITIONALTANK1: machine.additionalTank1,
+    ADDITIONALTANK2: machine.additionalTank2,
+    ADDITIONALTANK3: machine.additionalTank3,
+    ADDITIONALTANK4: machine.additionalTank4,
+    RESERVETANK: machine.reserveTank,
+    PORT: 8080,
   })
   return res
 })

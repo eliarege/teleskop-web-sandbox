@@ -12,6 +12,9 @@ import { updateTonelloMachineParameters } from '~/server/lib/tonello/machine-con
 import { updateTonelloInputOutputs } from '~/server/lib/tonello/input-output'
 import { updateTonelloProjectTranslations } from '~/server/lib/tonello/locale'
 import { updateTonelloBatchParameters } from '~/server/lib/tonello/batch-parameters'
+import { transactionWithAbort } from '~/server/utils/transaction'
+import { useSafeTranslation } from '~/server/utils/i18n'
+import { acquireMachineLock, releaseMachineLock } from '~/server/lib/machine-lock'
 
 const querySchema = z.object({
   machineId: z.coerce.number().int().nonnegative(),
@@ -41,16 +44,21 @@ export default defineAuthEventHandler(async (event) => {
     })
   }
 
-  type Step = {
-    fn: (trx: Knex.Transaction) => Promise<unknown>
-    message: string
-    /** Yüklenen dosyanın makinedeki yolu */
-    path?: string
+  const acquired = acquireMachineLock(machineId)
+  if (!acquired) {
+    throw createError({
+      message: `Machine ${machineId} is currently locked for update`,
+      statusCode: 423,
+    })
   }
 
-  const t = await useTranslation(event)
+  const t = await useSafeTranslation(event).catch(() => (k: string) => k)
+
   const result = await createTaskStream(event, async (ctx) => {
     const logError = (err: unknown) => {
+      if (ctx.state.isClosed()) {
+        return
+      }
       const errors = []
       if (err instanceof DatabaseQueryError) {
         errors.push(...err.getMssqlErrors().map(e => e.message))
@@ -65,42 +73,42 @@ export default defineAuthEventHandler(async (event) => {
       ctx.logger.error(userMessage)
     }
 
+    type Step = {
+      fn: (trx: Knex.Transaction) => Promise<unknown>
+      message: string
+      /** Yüklenen dosyanın makinedeki yolu */
+      path?: string
+    }
+
     const runSteps = async (steps: Step[], startFrom = 0) => {
       const totalSteps = steps.length
       let currentStep = 0
 
-      const getCurrentProgress = () => Math.min(99, Math.round(startFrom + (currentStep / totalSteps) * 100))
+      const getCurrentProgress = () => {
+        const progress = Math.round(startFrom + (currentStep / totalSteps) * 100)
+        return Math.min(Math.max(progress, 0.1), 99)
+      }
 
-      await knex.transaction(async (trx) => {
+      await transactionWithAbort(knex, ctx.signal, async (trx) => {
         for (const { fn, message, path } of steps) {
-          ctx.cancellation.throwIfCancelled()
+          ctx.signal.throwIfAborted()
           ctx.logger.info(t(`${message}-starting`) + (path ? ` (${path})` : ''))
           ctx.state.progress(getCurrentProgress())
-          try {
-            await fn(trx)
-            currentStep++
-          } catch (err: unknown) {
-            logError(err)
-            ctx.logger.error(t(`${message}-failed`))
-            throw err
-          }
+          await fn(trx)
+          currentStep++
         }
-        ctx.state.complete(t('projectUpload.completed'))
       })
     }
 
     try {
       if (machine.tbbModel !== 'Tonello') {
         ctx.logger.info(t('projectUpload.starting'))
-        ctx.state.progress(0)
+        ctx.state.progress(0.1)
 
         await withTbbFtpClient(machine.host, async (tbb) => {
           await runSteps([
-            { fn: trx => updateMachineController(machineId, tbb, trx), message: 'controller', path: '/var/controllerModel' },
             { fn: trx => updateBatchParameters(machineId, tbb, trx), message: 'batch-parameters', path: '/tbb6500/data/config/baslatmaParametreleri' },
             { fn: trx => updateCommandGroups(machineId, tbb, trx), message: 'command-groups', path: '/tbb6500/data/commands/commandGroup' },
-            { fn: trx => updateCycleControl(machineId, tbb, trx), message: 'cycle-control', path: '/tbb6500/data/config/manuel/cycle_kontrol' },
-            { fn: trx => updateSystemParams(machineId, tbb, trx), message: 'system-parameters', path: '/tbb6500/data/config/sistem' },
             { fn: trx => updateManualReasons(machineId, tbb, trx), message: 'manual-reasons', path: '/tbb6500/data/config/manuelmodnedenleri' },
             { fn: trx => updateAnalogInputs(machineId, tbb, trx), message: 'analog-inputs', path: '/tbb6500/data/io/analoginput' },
             { fn: trx => updateAnalogOutputs(machineId, tbb, trx), message: 'analog-outputs', path: '/tbb6500/data/io/analogoutput' },
@@ -119,12 +127,15 @@ export default defineAuthEventHandler(async (event) => {
             { fn: trx => updateLocksInput(machineId, tbb, trx), message: 'lock-input', path: '/tbb6500/data/locks/locks_inputs' },
             { fn: trx => updateLocksOutput(machineId, tbb, trx), message: 'lock-output', path: '/tbb6500/data/locks/locks_outputs' },
             { fn: trx => updateGlobalCommandFormulas(machineId, tbb, trx), message: 'global-command-formulas', path: '/tbb6500/data/config/globalCommandFormulas' },
-            { fn: trx => updateConsumption(machineId, tbb, trx), message: 'consumptions', path: '/tbb6500/data/config/consumption' },
             { fn: trx => updateERPParams(machineId, tbb, trx), message: 'erp-parameters' },
             { fn: trx => updateIOChangedEvent(machineId, tbb, trx), message: 'io-change-events', path: '/tbb6500/data/config/io_changed_event' },
             { fn: trx => updateIcons(machineId, tbb, trx), message: 'icons', path: '/tbb6500/data/pics/function_*' },
             { fn: trx => updateArchives(machineId, tbb, trx), message: 'archives' },
             { fn: trx => updateProjectTranslations(machineId, tbb, trx), message: 'translations', path: '/tbb6500/data/config/translationsProject*' },
+            { fn: trx => updateMachineController(machineId, tbb, trx), message: 'controller', path: '/var/controllerModel' },
+            { fn: trx => updateSystemParams(machineId, tbb, trx), message: 'system-parameters', path: '/tbb6500/data/config/sistem' },
+            { fn: trx => updateCycleControl(machineId, tbb, trx), message: 'cycle-control', path: '/tbb6500/data/config/manuel/cycle_kontrol' },
+            { fn: trx => updateConsumption(machineId, tbb, trx), message: 'consumptions', path: '/tbb6500/data/config/consumption' },
           ])
         })
       } else {
@@ -190,11 +201,20 @@ export default defineAuthEventHandler(async (event) => {
           },
         ], trxOffsetProgress)
       }
+      ctx.state.complete(t('projectUpload.completed'))
     } catch (err: unknown) {
+      console.error(err)
       logError(err)
       ctx.state.fail(t('projectUpload.failed'))
+    } finally {
+      releaseMachineLock(machineId)
     }
+  }).catch((err) => {
+    // Handle stream creation errors
+    releaseMachineLock(machineId)
+    throw err
   })
+
   if (result.kind === 'stream') {
     return result.stream
   } else {

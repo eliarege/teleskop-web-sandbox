@@ -31,18 +31,18 @@ const modifiedMachines = computed(() => machines.value.map(m => ({
 
 const selected = ref([] as Machine[])
 
-async function handleAdd(formData: Machine) {
+async function handleAdd(data: Machine) {
   await kc.fetch('/api/machines/machine', {
     method: 'POST',
-    body: formData,
+    body: data,
   })
   await refresh()
 }
 
-async function handleEdit(formData: Machine) {
+async function handleEdit(id: number, data: Machine) {
   await kc.fetch('/api/machines/machine', {
     method: 'PUT',
-    body: { formData },
+    body: { id, data },
   })
   await refresh()
 }
@@ -150,9 +150,8 @@ function showAddModal() {
       steamValveDoOptions: [],
       machines: machines.value,
     },
-    persistent: true,
-  }).onOk((formData: Machine) => {
-    handleAdd(formData)
+  }).onOk((payload: { data: Machine }) => {
+    handleAdd(payload.data)
   })
 }
 function showEditModal(machine: Machine) {
@@ -175,9 +174,8 @@ function showEditModal(machine: Machine) {
       })),
       machines: machines.value,
     },
-    persistent: true,
-  }).onOk((formData: Machine) => {
-    handleEdit(formData)
+  }).onOk((payload: { id: number, data: Machine }) => {
+    handleEdit(payload.id, payload.data)
   })
 }
 

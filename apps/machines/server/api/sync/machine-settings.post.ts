@@ -33,7 +33,7 @@ export default defineAuthEventHandler(async (event) => {
     let anyFailed = false
 
     for (const [index, machine] of machineRows.entries()) {
-      ctx.cancellation.throwIfCancelled()
+      ctx.signal.throwIfAborted()
 
       try {
         await withTbbFtpClient(machine.hostname, async (tbb: TbbFtpClient) => {

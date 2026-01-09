@@ -23,7 +23,7 @@ export default defineAuthEventHandler(async (event) => {
     let hasFailedOnce = false
     let hasSucceededOnce = false
     for (const machine of machines) {
-      ctx.cancellation.throwIfCancelled()
+      ctx.signal.throwIfAborted()
       try {
         const response = await $fetch(`http://${machine.hostname}:8080`, {
           method: 'POST',

@@ -20,14 +20,18 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits])
 
 const kc = useKeycloak()
+const initialMachineId = props.initialData?.machineId || null
 const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginComponent()
 const formData = ref(defu(props.initialData ?? {}, {
-  inUse: true,
-  additionalTank1: true,
-  reserveTank: true,
   reelCount: 0,
   nozzleCount: 0,
   steamUnit: 'Kg',
+  inUse: true,
+  additionalTank1: true,
+  reserveTank: true,
+  storeElectricityAsInc: false,
+  theoreticalWater: false,
+  theoreticalSteam: false,
 } satisfies Partial<Machine>))
 
 const isDialogVisible = ref(false)
@@ -125,7 +129,10 @@ const theoriticalChargeRule = function (node: FormKitNode) {
 }
 
 async function onSubmitForm() {
-  onDialogOK(klona(formData.value))
+  onDialogOK({
+    id: initialMachineId || formData.value.machineId,
+    data: klona(formData.value),
+  })
 }
 
 function handleCancel() {
@@ -257,9 +264,8 @@ async function getVersionInfo(formData: Machine) {
         >
           <div class="form-card-section grid grid-cols-5 gap-4 items-start !pb-2">
             <FormKit
-              :readonly="isEdit"
-              blocked
-              type="text"
+              type="number"
+              number="integer"
               name="machineId"
               label="ID"
               validation="required|number|uniqueMachineId"
@@ -293,22 +299,25 @@ async function getVersionInfo(formData: Machine) {
               validation-label="TBB Model"
             />
             <FormKit
-              type="text"
+              type="number"
               name="machineCapacity"
+              number="integer"
               :label="t('machineCapacity')"
               validation="required|number"
               :validation-label="t('machineCapacity')"
             />
             <FormKit
-              type="text"
+              type="number"
               name="reelCount"
+              number="integer"
               :label="t('reelCount')"
               validation="required|number"
               :validation-label="t('reelCount')"
             />
             <FormKit
-              type="text"
+              type="number"
               name="nozzleCount"
+              number="integer"
               :label="t('nozzleCount')"
               validation="required|number"
               :validation-label="t('nozzleCount')"
@@ -338,6 +347,7 @@ async function getVersionInfo(formData: Machine) {
             />
             <FormKit
               type="number"
+              number="integer"
               name="theoricalChargeDuration"
               :label="t('theoricalChargeDuration')"
               :validation="[['required'], ['min', 45], ['max', 1440], ['theoriticalChargeRule']]"
