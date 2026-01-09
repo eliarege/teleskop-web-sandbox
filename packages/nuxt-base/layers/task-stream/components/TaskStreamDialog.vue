@@ -391,6 +391,9 @@ watch(
   font-weight: bold;
   font-size: 11px;
 }
+.log-message {
+  margin-right: 24px;
+}
 
 .cursor-blink {
   display: inline-block;

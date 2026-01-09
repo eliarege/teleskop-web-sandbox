@@ -1,6 +1,7 @@
 import { readonly, ref } from 'vue'
 import { withQuery } from 'ufo'
 import type { StreamLogLevel, StreamMessage } from '../shared/taskStream.types'
+import { isAbortError } from '../shared/taskStream.utils'
 
 export interface TaskStreamLogEntry {
   timestamp: Date
@@ -8,7 +9,12 @@ export interface TaskStreamLogEntry {
   message: string
 }
 
-export type TaskStreamFetchOptions = Omit<RequestInit, 'body' | 'signal'> & { body?: any }
+export type TaskStreamFetchOptions = Omit<RequestInit, 'body' | 'signal'> & {
+  body?: any
+  onResponseError?: (response: Response, logFn: TaskStreamLogFn) => void | Promise<void>
+}
+
+export type TaskStreamLogFn = (level: TaskStreamLogEntry['level'], message: string) => void
 
 export function useTaskStream() {
   const kc = useKeycloak()
@@ -34,7 +40,7 @@ export function useTaskStream() {
     progress.value = 0
   }
 
-  const addLog = (level: TaskStreamLogEntry['level'], message: string) => {
+  const addLog: TaskStreamLogFn = (level, message) => {
     logs.value.push({
       timestamp: new Date(),
       level,
@@ -134,7 +140,16 @@ export function useTaskStream() {
     })
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          isError.value = true
+          if (fetchOptions?.onResponseError) {
+            await fetchOptions.onResponseError(response, addLog)
+          } else {
+            const errorMsg = `HTTP error! status: ${response.status}`
+            errorMessage.value = errorMsg
+            addLog('error', errorMsg)
+          }
+          isRunning.value = false
+          return
         }
 
         const reader = response.body?.getReader()
@@ -168,7 +183,7 @@ export function useTaskStream() {
         }
       })
       .catch((error) => {
-        if (error.name !== 'AbortError') {
+        if (!isAbortError(error)) {
           isError.value = true
           errorMessage.value = error.message
           addLog('error', t('taskStream.connectionError', { message: error.message }))

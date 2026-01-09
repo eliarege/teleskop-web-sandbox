@@ -3,6 +3,7 @@ import type { H3Event } from 'h3'
 import pino from 'pino'
 import z from 'zod/v4'
 import type { StreamLogLevel, StreamMessage, TaskI18n } from '../../shared/taskStream.types'
+import { isAbortError } from '../../shared/taskStream.utils'
 
 export interface TaskStreamLogMeta {
   i18n?: TaskI18n
@@ -379,10 +380,6 @@ class StreamManager {
   isStreamCancelled(): boolean {
     return this.isCancelled
   }
-}
-
-export function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === 'AbortError'
 }
 
 /**
