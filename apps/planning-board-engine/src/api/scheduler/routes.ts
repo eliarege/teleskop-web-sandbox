@@ -78,9 +78,10 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
   fastify.put(
     '/planning_board/auto_add',
-    async (request, reply) => {
+    async (request: FastifyRequest<{ Body: { value: boolean } }>, reply) => {
       try {
-        await updateAutoAdd()
+        const { value } = request.body
+        await updateAutoAdd(value)
         return reply.code(200).send('Successful')
       } catch (err: any) {
         fastify.log.error(`An error occurred while updating auto add status: ${err}`)

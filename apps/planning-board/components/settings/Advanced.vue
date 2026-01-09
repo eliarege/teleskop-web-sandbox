@@ -57,9 +57,10 @@ function refreshData() {
   })
 }
 
-async function updateAutoAdd() {
+async function updateAutoAdd(value: boolean) {
   await kc.fetch('/api/autoAdd', {
     method: 'PUT',
+    body: { value },
   })
 }
 </script>
