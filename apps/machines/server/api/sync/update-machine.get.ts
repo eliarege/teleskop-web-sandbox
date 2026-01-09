@@ -43,11 +43,12 @@ export default defineAuthEventHandler(async (event) => {
     })
   }
 
-  const acquired = acquireMachineLock(machineId)
-  if (!acquired) {
+  const res = acquireMachineLock(machineId, 'loading-project')
+  if (!res.success) {
     throw createError({
       message: `Machine ${machineId} is currently locked for update`,
       statusCode: 423,
+      data: { reason: res.reason },
     })
   }
 
@@ -107,10 +108,6 @@ export default defineAuthEventHandler(async (event) => {
             { fn: trx => updateBatchParameters(machineId, tbb, trx), message: 'batch-parameters', path: '/tbb6500/data/config/baslatmaParametreleri' },
             { fn: trx => updateCommandGroups(machineId, tbb, trx), message: 'command-groups', path: '/tbb6500/data/commands/commandGroup' },
             { fn: trx => updateManualReasons(machineId, tbb, trx), message: 'manual-reasons', path: '/tbb6500/data/config/manuelmodnedenleri' },
-            { fn: trx => updateAnalogInputs(machineId, tbb, trx), message: 'analog-inputs', path: '/tbb6500/data/io/analoginput' },
-            { fn: trx => updateAnalogOutputs(machineId, tbb, trx), message: 'analog-outputs', path: '/tbb6500/data/io/analogoutput' },
-            { fn: trx => updateDigitalInputs(machineId, tbb, trx), message: 'digital-inputs', path: '/tbb6500/data/io/sayisalinput' },
-            { fn: trx => updateDigitalOutputs(machineId, tbb, trx), message: 'digital-outputs', path: '/tbb6500/data/io/sayisaloutput' },
             { fn: trx => updateCounters(machineId, tbb, trx), message: 'counters', path: '/tbb6500/data/io/sayac' },
             { fn: trx => updateMachineParameters(machineId, tbb, trx), message: 'machine-parameters', path: '/tbb6500/data/config/makinesabitleri' },
             { fn: trx => updateCommandsGeneral(machineId, tbb, trx), message: 'general-commands', path: '/tbb6500/data/commands/general' },
@@ -133,6 +130,10 @@ export default defineAuthEventHandler(async (event) => {
             { fn: trx => updateSystemParams(machineId, tbb, trx), message: 'system-parameters', path: '/tbb6500/data/config/sistem' },
             { fn: trx => updateCycleControl(machineId, tbb, trx), message: 'cycle-control', path: '/tbb6500/data/config/manuel/cycle_kontrol' },
             { fn: trx => updateConsumption(machineId, tbb, trx), message: 'consumptions', path: '/tbb6500/data/config/consumption' },
+            { fn: trx => updateAnalogInputs(machineId, tbb, trx), message: 'analog-inputs', path: '/tbb6500/data/io/analoginput' },
+            { fn: trx => updateAnalogOutputs(machineId, tbb, trx), message: 'analog-outputs', path: '/tbb6500/data/io/analogoutput' },
+            { fn: trx => updateDigitalInputs(machineId, tbb, trx), message: 'digital-inputs', path: '/tbb6500/data/io/sayisalinput' },
+            { fn: trx => updateDigitalOutputs(machineId, tbb, trx), message: 'digital-outputs', path: '/tbb6500/data/io/sayisaloutput' },
           ])
         })
       } else {

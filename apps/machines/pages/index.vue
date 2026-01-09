@@ -191,6 +191,18 @@ async function loadProject() {
     },
     fetchOptions: {
       method: 'GET',
+      onResponseError: async (response, log) => {
+        if (response.status === 423 && response.headers.get('Content-Type') === 'application/json') {
+          const errorData = await response.json()
+
+          log('error', t('machineLockedError'))
+          if (errorData?.data?.reason) {
+            log('error', t(`machineLockedReason.${errorData.data.reason}`, errorData.data.reason))
+          }
+        } else {
+          log('error', `${t('errorLoadingProject')}: ${response.status} ${response.statusText}`)
+        }
+      },
     },
   })
 }

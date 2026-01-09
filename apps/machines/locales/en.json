@@ -313,6 +313,12 @@
   "listOfCirculationDosageCommands": "List of Circulation Dosage Commands",
   "listOfCirculationRequestCommands": "List of Circulation Request Commands",
   "listOfRequestCommands": "List of Request Commands",
+
+  "machineLockedError": "The machine is locked by another user. Please try again later.",
+  "machineLockedReason": {
+    "loading-project": "Machine project is being loaded"
+  },
+
   "updateMachineSettings": {
     "title": "Update Machine System Settings",
     "titleRunning": "Updating machine system settings...",

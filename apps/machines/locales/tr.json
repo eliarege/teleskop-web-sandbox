@@ -318,6 +318,12 @@
   "listOfCirculationRequestCommands": "Sirkülasyonlu İstek Komutları Listesi",
   "listOfRequestCommands": "İstek Komutları Listesi",
   "commands": "Komutlar",
+
+  "machineLockedError": "Şuan makine üzerinde başka bir kullanıcı işlem yapıyor. Lütfen daha sonra tekrar deneyin.",
+  "machineLockedReason": {
+    "loading-project": "Makine projesi yükleniyor"
+  },
+
   "updateMachineSettings": {
     "titleRunning": "Makine sistem ayarları güncelleniyor...",
     "titleSuccess": "Makine sistem ayarları başarıyla güncellendi",

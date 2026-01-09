@@ -3,39 +3,49 @@
 // Locks should have a timeout to avoid deadlocks
 
 type Lock = {
+  reason?: string
   expiresAt: number
 }
+
+type LockAcquireResult =
+  | { success: true }
+  | { success: false, reason: string | null }
+
+type LockCheckResult =
+  | { locked: true, reason: string | null }
+  | { locked: false }
 
 const locks = new Map<number, Lock>()
 const lockTimeout = 5 * 60 * 1000 // 5 minutes
 
-export function acquireMachineLock(machineId: number): boolean {
+export function acquireMachineLock(machineId: number, reason?: string): LockAcquireResult {
   const now = Date.now()
   const existingLock = locks.get(machineId)
 
   if (existingLock && existingLock.expiresAt > now) {
-    return false
+    return { success: false, reason: existingLock.reason || null }
   }
 
   // Acquire new lock
   locks.set(machineId, {
+    reason,
     expiresAt: now + lockTimeout,
   })
-  return true
+  return { success: true }
 }
 
 export function releaseMachineLock(machineId: number): void {
   locks.delete(machineId)
 }
 
-export function isMachineLocked(machineId: number): boolean {
+export function isMachineLocked(machineId: number): LockCheckResult {
   const now = Date.now()
   const existingLock = locks.get(machineId)
 
   if (existingLock && existingLock.expiresAt > now) {
-    return true
+    return { locked: true, reason: existingLock.reason || null }
   }
 
   locks.delete(machineId)
-  return false
+  return { locked: false }
 }

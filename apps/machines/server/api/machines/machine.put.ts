@@ -10,10 +10,12 @@ const updateMachineSchema = z.object({
 
 export default defineAuthEventHandler(async (event) => {
   const { id, data: machine } = await readValidatedBody(event, updateMachineSchema.parse)
-  if (isMachineLocked(id)) {
+  const res = isMachineLocked(id)
+  if (res.locked) {
     throw createError({
       message: `Machine ${id} is currently locked for update`,
       statusCode: 423,
+      data: { reason: res.reason },
     })
   }
 
