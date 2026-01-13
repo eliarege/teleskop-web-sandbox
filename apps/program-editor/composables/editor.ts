@@ -5,7 +5,7 @@ import { useProgramWriteSettings } from './settings'
 import { areProgramsEqual, useErrorStore } from './utils'
 import { capitalize } from '~/shared/utils'
 import type { CommandError, CommandPath, CommandTypes, IoPath, MachineCommand, ParameterItem, ParameterPath, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepPath, ioListItem } from '~/shared/types'
-import { CommandEligibility, MoveParallel } from '~/shared/constants'
+import { CommandEligibility, MoveParallel, ProgramStatus } from '~/shared/constants'
 
 export type EditorStore = ReturnType<typeof useEditorStore>
 
@@ -658,7 +658,7 @@ export const useEditorStore = defineStore('editor', () => {
       updatedAt: new Date(),
       isChanged: false,
       tbbProgramChangedEvent: 0,
-      prgState: 1,
+      prgState: ProgramStatus.EXISTS_ONLY_ON_DATABASE,
       updatedAtTBB: null,
       totalChemReq: 0,
       totalDyeReq: 0,

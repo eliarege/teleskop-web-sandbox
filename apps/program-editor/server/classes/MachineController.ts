@@ -303,21 +303,6 @@ export class MachineController {
   }
 
   /**
-   * Makinenin tüm programlarının dizisini getirir
-   * @returns {Promise<{ programNo: number, name: string }[]>} - Makinenin tüm programlarının dizisi
-   */
-  @withTransaction
-  async getProgramHeadersAsList(): Promise<{ programNo: number, name: string }[]> {
-    return await this.trx
-      .select({
-        programNo: 'H.PROGNO',
-        name: 'H.NAME',
-      })
-      .from('BFMASTERPRGHEADER AS H')
-      .where('H.MACHINEID', this.id)
-  }
-
-  /**
    * Makine id numarasına göre makinenin belirli bir programını getirir
    * @param {number} programNo - Program numarası
    * @returns {Promise<ProgramWithErrors>} - Program ve hata bilgileri
