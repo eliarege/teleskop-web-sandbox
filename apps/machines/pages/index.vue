@@ -49,8 +49,16 @@ async function handleDelete() {
         machineIds: selected.value.map(d => d.machineId),
       },
     })
-    await refresh()
+    await refreshMachines()
   })
+}
+
+async function refreshMachines() {
+  const selectedIds = selected.value.map(m => m.machineId)
+  await refresh()
+  await nextTick()
+  // Since selection is based on reference, we need to re-assign selected machines. Ideally, selection should be based on IDs.
+  selected.value = modifiedMachines.value.filter(m => selectedIds.includes(m.machineId))
 }
 
 const showTeleskopSettings = ref(false)
@@ -135,7 +143,7 @@ function showAddModal() {
       machines: machines.value,
     },
   }).onOk(() => {
-    refresh()
+    refreshMachines()
   })
 }
 function showEditModal(machine: Machine) {
@@ -159,7 +167,7 @@ function showEditModal(machine: Machine) {
       machines: machines.value,
     },
   }).onOk(() => {
-    refresh()
+    refreshMachines()
   })
 }
 
