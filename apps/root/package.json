@@ -16,14 +16,15 @@
     "keycloak": "../../keycloak/keycloak.sh"
   },
   "dependencies": {
-    "@teleskop/utils": "workspace:*",
     "@teleskop/nuxt-base": "workspace:*",
+    "@teleskop/utils": "workspace:*",
     "eslint": "9.14.0",
     "nuxt": "3.14.159",
     "vue": "3.5.12",
     "vue-router": "4.4.5"
   },
   "devDependencies": {
-    "typescript": "5.6.3"
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
   }
 }
