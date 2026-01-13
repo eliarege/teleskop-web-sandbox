@@ -1,8 +1,47 @@
 # Changelog
 
+## 0.65.0 - 2026-01-13
+
+[Compare Changes](55190f45ad40ddafd3be701b20c4a71ae18e6cb6...0f7f0aa3a16abeaf84b27bbe02b6e1b6c259593d)
+
+### 🚀 Features
+
+-  **MA**: Implement machine lock reasons and notify users at start of project upload process ([5953df9](5953df9fca74eee795bfe1ca14825fa91452b85e))
+-  **PB**: Add step working times feature with API integration and UI components ([6bc1bfb](6bc1bfbfa8a0350ddb5ae4cc3672b2fd0392cb7b))
+-  **PE**: Enhance machine selection dialogs and update localization strings ([0192323](0192323aa57a6d54c8560f93f43344ebab0a35c0))
+-  **PE**: Add machine selection props to TBPrintProgramDialog for enhanced functionality ([1d0dd47](1d0dd47e0e1378ea758c1be6bf37014fd1d83b3a))
+-  **PE**: Enhance TBPrintProgramListDialog with additional props for machine selection ([2a2b8e7](2a2b8e7376253f216a309aea837cf67bb61c4a4d))
+
+### 🐛 Bug Fixes
+
+-  **MA**: MachineList not allowing de-selection of rows, prevent de-selection on dblclick ([a850661](a850661f13fb7e82df90d46f45423c2a23cb2b1d))
+-  **MA**: Update completion messages for machine settings to improve clarity ([4757c2e](4757c2ea20387141dea3b0084128a2e1cc1977a4))
+-  **MA**: Enhance logging for version retrieval with machine hostname ([7360e04](7360e041044f1cc9a1022cc16650b90e4d77ab34))
+- **task-stream**: Prevent completion from aborting task signal ([de1d15e](de1d15e25af87393d7d3d3d965166028caa11979))
+-  **MA**: Fixes related to machine update and sync process ([5de6939](5de69392de34f4b9b68983291e39fc2ebac11615))
+-  **MA**: Remove server-side translations ([19db647](19db647757090ae1f46b8172428357aa201c0cc7))
+- **task-stream**: Allow users to handle response errors via `onResponseError` option ([5149fe5](5149fe5aa3672410a72c9864bd4149d9bab92b22))
+-  **PB**: Fixed auto add feature with API endpoints and UI integration ([74decd5](74decd5a02efc57300b0893a6dc44b82663422ff))
+-  **PB**: Update font usage in printTable function to use Roboto-Bold and simplify PDF output ([cb6a1cb](cb6a1cbd75cad4c047df2c472215555e52ad0959))
+-  **PB**: Update updateAutoAdd function to accept a boolean parameter and modify API call accordingly ([21415e0](21415e0871fb2d2d86d00164d23a8074ad74006e))
+-  **PE**: Enhance machine selection functionality across dialogs ([0b6dd5e](0b6dd5ebe8f4ea8854febabcc51e9e045a62ef93))
+-  **PE**: Standardize margin classes in dialog components ([8ae1b3b](8ae1b3b0995e7b9a11b0e864ad223e38ba4c9720))
+-  **PE**: Update machine selector props in export dialog for improved functionality ([d5a4e20](d5a4e20de90cc36d74fd3555829668472a6499eb))
+- **migrations**: Implement CASCADE on foreign keys for BFPROJECTMESSAGES and BFPROJECTTRANSLATIONS that references BFMACHINES ([36b0371](36b037189e38073c322f90a307fccc4f6e01bb67))
+-  **MA**: Move machine update requests inside `AddEditModal` to prevent dialog from closing when request fails ([74bc891](74bc8915a54bac9ced26e93800d982722e6ce93b))
+-  **MA**: Refactor refresh logic to update selected machine references ([0f7f0aa](0f7f0aa3a16abeaf84b27bbe02b6e1b6c259593d))
+
+### 🎨 Styling
+
+- NewIsCap exception for jsPDF constructors ([8d4c315](8d4c315c1e96f3ac13f463daeeca92b2cc6420db))
+
+### 🔧 Miscellaneous Tasks
+
+- Update lockfile, add `vite` as devDependency to root app to prevent peer dependency warnings ([eba59b6](eba59b609664bd3a534f12008e99098f8dc160ff))
+
 ## 0.64.0 - 2026-01-07
 
-[Compare Changes](493522b8b2fae475aac3f343258705446cad31d0...179cb2c57f56db9767708fcc28aedbd19b890460)
+[Compare Changes](493522b8b2fae475aac3f343258705446cad31d0...55190f45ad40ddafd3be701b20c4a71ae18e6cb6)
 
 ### 🚀 Features
 

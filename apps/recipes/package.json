@@ -1,7 +1,7 @@
 {
   "name": "recipes",
   "type": "module",
-  "version": "0.64.0",
+  "version": "0.65.0",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
