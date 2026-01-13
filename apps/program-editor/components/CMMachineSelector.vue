@@ -1,48 +1,91 @@
 <script setup lang="ts">
-import type { MachineOption } from '~/shared/types'
+import CMMachineListDialog from './CMMachineListDialog.vue'
+import type { MachineGroup, MachineInfo, MachineOption } from '~/shared/types'
 
 const props = defineProps<{
   machineName: string
-  singleSelection?: boolean
+  machineId: number
+
+  allMachines: MachineInfo[]
+  machineGroups: MachineGroup[]
+
+  disabledMachineIds?: number[]
+
+  selectedMachines: MachineInfo[]
 }>()
 
-const model = defineModel<MachineOption>({ required: true })
+const emit = defineEmits<{
+  'update:selectedMachines': [value: MachineInfo[]]
+}>()
 
 const $q = useQuasar()
 const { t } = useI18n()
-const editor = useEditorStore()
-const { $commandManager } = useNuxtApp()
+
+const isCurrentMachineDisabled = computed(() => props.disabledMachineIds?.includes(props.machineId) || false)
+
+const machineOption = ref<MachineOption>(isCurrentMachineDisabled.value ? 'selected' : 'current')
+const internalSelectedMachines = ref<MachineInfo[]>([])
+
+watch(machineOption, (newOption) => {
+  if (newOption === 'selected') {
+    emit('update:selectedMachines', internalSelectedMachines.value)
+  } else if (newOption === 'current') {
+    const currentMachine = props.allMachines.find(m => m.id === props.machineId)
+    if (!currentMachine)
+      return
+
+    emit('update:selectedMachines', [currentMachine])
+  }
+}, { immediate: true })
 
 function selectMachineDialog() {
-  return $commandManager.executeCommand('selectMachine', { $q }, {
-    singleSelection: props.singleSelection,
+  $q.dialog({
+    component: CMMachineListDialog,
+    componentProps: {
+      allMachines: props.allMachines,
+      machineGroups: props.machineGroups,
+
+      selectedMachineIds: internalSelectedMachines.value.map(m => m.id),
+      disabledMachineIds: props.disabledMachineIds,
+    },
+  }).onOk((selectedMachines: MachineInfo[]) => {
+    machineOption.value = 'selected'
+    internalSelectedMachines.value = selectedMachines
+    emit('update:selectedMachines', selectedMachines)
   })
 }
 </script>
 
 <template>
-  <div class="m-2">
+  <div class="mx-2">
     <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
       {{ t('machineSelectorDialog.machineOptions') }}
     </label>
     <div class="q-gutter-sm">
       <q-radio
-        v-model="model"
+        v-model="machineOption"
         val="current"
+        :disable="isCurrentMachineDisabled"
         :label="t('machineSelectorDialog.thisMachine', { machineName: props.machineName })"
         dense
-      />
+      >
+        <q-tooltip
+          v-if="isCurrentMachineDisabled"
+        >
+          {{ t('machineSelectorDialog.thisMachineDisabledTooltip') }}
+        </q-tooltip>
+      </q-radio>
       <div class="flex flex-col">
         <div class="flex items-center gap-2">
           <q-radio
-            v-model="model"
+            v-model="machineOption"
             val="selected"
-            :label="props.singleSelection ? t('machineSelectorDialog.selectedMachine') : t('machineSelectorDialog.selectedMachines')"
+            :label="internalSelectedMachines.length === 1 ? t('machineSelectorDialog.selectedMachine') : t('machineSelectorDialog.selectedMachines')"
             dense
           />
           <q-btn
             :label="t('machineSelectorDialog.selectMachine')"
-            :disable="model !== 'selected'"
+            :disable="machineOption !== 'selected'"
             color="primary"
             size="sm"
             outline
@@ -51,10 +94,10 @@ function selectMachineDialog() {
           />
         </div>
 
-        <div v-if="editor.selectedMachines.length > 0" class="pl-6 pt-1">
+        <div v-if="internalSelectedMachines.length > 0" class="pl-6 pt-1">
           <div class="text-xs text-grey-6 dark:text-grey-4 cursor-help">
             <span class="font-medium">
-              {{ t('machineSelectorDialog.machinesSelected', { count: editor.selectedMachines.length }) }}
+              {{ t('machineSelectorDialog.machinesSelected', { count: internalSelectedMachines.length }) }}
             </span>
             <q-tooltip
               class="bg-white text-dark shadow-4 text-body2"
@@ -66,7 +109,7 @@ function selectMachineDialog() {
                   {{ t('machineSelectorDialog.selectedMachinesList') }}:
                 </div>
                 <div
-                  v-for="machine in editor.selectedMachines"
+                  v-for="machine in internalSelectedMachines"
                   :key="machine.id"
                   class="q-mb-xs"
                 >

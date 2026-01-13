@@ -511,7 +511,8 @@
     "selectMachine": "Makine Seçiniz",
     "machinesSelected": "{count} makine seçildi",
     "selectedMachinesList": "Seçili Makine Listesi",
-    "noMachinesSelected": "Makine Seçilmedi"
+    "noMachinesSelected": "Makine Seçilmedi",
+    "thisMachineDisabledTooltip": "Bu makine şu anda kullanılamıyor."
   },
   "commandType": {
     "chemicalRequest": "Kimyasal İstek",

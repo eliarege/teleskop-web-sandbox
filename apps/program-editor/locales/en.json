@@ -494,7 +494,8 @@
     "selectMachine": "Select Machine",
     "machinesSelected": "{count} machines selected",
     "selectedMachinesList": "Selected Machines List",
-    "noMachinesSelected": "No Machines Selected"
+    "noMachinesSelected": "No Machines Selected",
+    "thisMachineDisabledTooltip": "This machine is disabled currently."
   },
   "commandType": {
     "chemicalRequest": "Chemical Request",

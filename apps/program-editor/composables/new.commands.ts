@@ -26,7 +26,6 @@ import TBWriteProgramSettingsDialog from '~/components/TBWriteProgramSettingsDia
 import CMProgramExistsDialog from '~/components/CMProgramExistsDialog.vue'
 import CMChangeProcessTypeDialog from '~/components/CMChangeProcessTypeDialog.vue'
 import CMVersionDialog from '~/components/CMVersionDialog.vue'
-import CMMachineListCopyAndSendDialog from '~/components/CMMachineListCopyAndSendDialog.vue'
 import CopyAndSendResultsDialog from '~/components/CopyAndSendResultsDialog.vue'
 import DeleteResultsDialog from '~/components/DeleteResultsDialog.vue'
 import TBFindAndReplaceDialog from '~/components/TBFindAndReplaceDialog.vue'
@@ -474,31 +473,6 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const editor = useEditorStore()
-  const machine = useMachineStore()
-
-  return {
-    name: 'copyAndSend',
-    async execute(ctx: any, selectedRows: ProgramItem[]) {
-      const sourceMachine = { id: machine.currentMachine.id, name: machine.currentMachine.name }
-
-      ctx.$q.dialog({
-        component: CMMachineListCopyAndSendDialog,
-        componentProps: {
-          type: 'copyAndSend',
-          allMachines: machine.allMachines,
-          machineGroups: machine.machineGroups,
-        },
-      }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
-        await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
-        await editor.refreshAllPrograms()
-      }).onCancel(() => false)
-      return true
-    },
-  }
-})
-
-registerCommand(() => {
   return {
     name: 'showResultsDialog',
     async execute(ctx: any, machine: { id: number, name: string }, results: CopyAndSendResult[]) {
@@ -593,7 +567,14 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBPrintProgramDialog,
         componentProps: {
+          machineId: machine.currentMachine.id,
           machineName: machine.currentMachine.name,
+
+          allMachines: machine.allMachines,
+          machineGroups: machine.machineGroups,
+
+          selectedMachines: machine.selectedMachines,
+
           programList: editor.allPrograms,
           commandList: Array.from(machine.currentMachine.commands.values()),
         },
@@ -612,7 +593,13 @@ registerCommand(() => {
       ctx.$q.dialog({
         component: TBPrintProgramListDialog,
         componentProps: {
+          machineId: machine.currentMachine.id,
           machineName: machine.currentMachine.name,
+
+          allMachines: machine.allMachines,
+          machineGroups: machine.machineGroups,
+
+          selectedMachines: machine.selectedMachines,
         },
       })
       return true
@@ -736,16 +723,11 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
-  const machine = useMachineStore()
-
   return {
     name: 'exportToExcel',
     async execute(ctx: any) {
       ctx.$q.dialog({
         component: TBExportExcelDialog,
-        componentProps: {
-          machineName: machine.currentMachine.name,
-        },
       })
       return true
     },

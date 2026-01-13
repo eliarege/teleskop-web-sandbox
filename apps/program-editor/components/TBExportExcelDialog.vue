@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
-import type { MachineCommand, MachineConstant, MachineOption } from '~/shared/types'
-
-const props = defineProps<{
-  machineName: string
-}>()
+import CMMachineSelector from './CMMachineSelector.vue'
+import type { MachineCommand, MachineConstant, MachineGroup, MachineInfo, MachineOption } from '~/shared/types'
 
 defineEmits([...useDialogPluginComponent.emits])
 
@@ -237,13 +234,22 @@ function downloadExcelFile(fileName: string, buffer: ExcelJS.Buffer) {
 
       <q-card-section>
         <CMMachineSelector
-          v-model="machineOption"
-          :machine-name="props.machineName"
+          :machine-id="machine.currentMachine.id"
+          :machine-name="machine.currentMachine.name"
+
+          :all-machines="machine.allMachines"
+          :machine-groups="machine.machineGroups"
+
+          :selected-machines="machine.selectedMachines"
+          @update:selected-machines="(machines: MachineInfo[]) => {
+            machineOption = 'selected'
+            machine.selectedMachines = machines
+          }"
         />
       </q-card-section>
 
       <q-card-section class="q-pt-none">
-        <div class="m-2">
+        <div class="mx-2">
           <label class="text-subtitle2 text-grey-8 dark:text-grey-3 q-mb-xs block">
             {{ t('exportExcelDialog.fieldsToExport') }}
           </label>
