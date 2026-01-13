@@ -14,7 +14,7 @@ const { data: databaseVersion } = useAuthFetch('/api/machines/database-version',
   default: () => '',
 })
 
-const { data: machineGroups } = await useAuthFetch<MachineGroup[]>('/api/machines/machine-groups', {
+const { data: machineGroups } = useAuthFetch<MachineGroup[]>('/api/machines/machine-groups', {
   default: () => [],
 })
 const { data: machines, refresh } = useAuthFetch<Machine[]>('/api/machines/machines', {
@@ -30,22 +30,6 @@ const modifiedMachines = computed(() => machines.value.map(m => ({
 })))
 
 const selected = ref([] as Machine[])
-
-async function handleAdd(data: Machine) {
-  await kc.fetch('/api/machines/machine', {
-    method: 'POST',
-    body: data,
-  })
-  await refresh()
-}
-
-async function handleEdit(id: number, data: Machine) {
-  await kc.fetch('/api/machines/machine', {
-    method: 'PUT',
-    body: { id, data },
-  })
-  await refresh()
-}
 
 async function handleDelete() {
   dialog({
@@ -150,8 +134,8 @@ function showAddModal() {
       steamValveDoOptions: [],
       machines: machines.value,
     },
-  }).onOk((payload: { data: Machine }) => {
-    handleAdd(payload.data)
+  }).onOk(() => {
+    refresh()
   })
 }
 function showEditModal(machine: Machine) {
@@ -174,8 +158,8 @@ function showEditModal(machine: Machine) {
       })),
       machines: machines.value,
     },
-  }).onOk((payload: { id: number, data: Machine }) => {
-    handleEdit(payload.id, payload.data)
+  }).onOk(() => {
+    refresh()
   })
 }
 

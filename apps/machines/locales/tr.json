@@ -324,6 +324,8 @@
     "loading-project": "Makine projesi yükleniyor"
   },
 
+  "unexpectedError": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin veya destek ekibiyle iletişime geçin.",
+
   "updateMachineSettings": {
     "titleRunning": "Makine sistem ayarları güncelleniyor...",
     "titleSuccess": "Makine sistem ayarları başarıyla güncellendi",

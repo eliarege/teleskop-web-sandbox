@@ -319,6 +319,8 @@
     "loading-project": "Machine project is being loaded"
   },
 
+  "unexpectedError": "An unexpected error occurred. Please try again or contact support.",
+
   "updateMachineSettings": {
     "title": "Update Machine System Settings",
     "titleRunning": "Updating machine system settings...",

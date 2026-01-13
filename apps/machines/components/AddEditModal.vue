@@ -2,7 +2,9 @@
 import { klona } from 'klona'
 import { changeLocale } from '@formkit/i18n'
 import { computed, ref, watch } from 'vue'
+import { FetchError } from 'ofetch'
 import defu from 'defu'
+import type { ZodIssue } from 'zod'
 import type { Machine } from '~/types'
 import { steamUnitOptions, tbbModelOptions } from '~/shared/constants'
 
@@ -125,14 +127,45 @@ const theoriticalChargeRule = function (node: FormKitNode) {
   if (!theo || !theoDur)
     return true
 
-  return (Number(theo) * Number(theoDur)) <= 1440
+  return (Number(theo) * Number(theoDur)) <= 14401
 }
 
-async function onSubmitForm() {
-  onDialogOK({
-    id: initialMachineId || formData.value.machineId,
-    data: klona(formData.value),
-  })
+async function onSubmitForm(data: any, node: FormKitNode) {
+  const id = initialMachineId || data.machineId
+  try {
+    if (props.isEdit) {
+      await kc.fetch('/api/machines/machine', {
+        method: 'PUT',
+        body: { id, data },
+      })
+    } else {
+      await kc.fetch('/api/machines/machine', {
+        method: 'POST',
+        body: data,
+      })
+    }
+    onDialogOK()
+  } catch (error) {
+    if (error instanceof FetchError) {
+      if (error.statusMessage === 'Validation Error') {
+        node.setErrors([], Object.fromEntries(
+          error.data?.data.issues.map((issue: ZodIssue) => [
+            issue.path[props.isEdit ? 1 : 0], // skip the 'data' part of the path
+            issue.message,
+          ]) || [],
+        ))
+        notifyError(t('validationError'))
+      } else if (error.status === 423) {
+        notifyError(t('machineLockedError'))
+      } else {
+        notifyError(t('serverError'))
+      }
+      console.error(error.data || error)
+    } else {
+      console.error(error)
+      notifyError(t('unexpectedError'))
+    }
+  }
 }
 
 function handleCancel() {
