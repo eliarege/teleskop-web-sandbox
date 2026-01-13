@@ -1,5 +1,5 @@
 import type { QBtnProps } from 'quasar'
-import type { CommandEligibility, ParameterTypeValue } from './constants'
+import type { CommandEligibility, ParameterTypeValue, ProgramRowColor } from './constants'
 
 export interface ProgramInfo {
   programNo: number
@@ -42,6 +42,7 @@ export interface ProgramTableRow {
   genericMat1Req: number
   genericMat2Req: number
   updatedAtTBB: Date
+  rowColor: ProgramRowColor
 }
 
 export interface ProcessType {

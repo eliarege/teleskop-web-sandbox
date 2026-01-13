@@ -35,6 +35,8 @@ const tableRef = ref()
 contextMenuStore.setCtx({ t, router })
 const machineId = Number(route.params.machine_id)
 
+const isDark = computed(() => $q.dark.isActive)
+
 if (!machineId || !machine.hasMachine(machineId)) {
   if (machineId) {
     notifyError(t('machineNotFound', { machineId }))
@@ -745,22 +747,11 @@ function handleContextMenu(event: Event, row: ProgramTableRow) {
   onRowClick(event, row)
 }
 
-function handleRowClass(row: ProgramTableRow): string {
-  if (row.isChanged)
-    return 'changed-on-teleskop'
-  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
-    return 'only-on-controller'
-  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
-    return 'only-on-teleskop'
-  if (row.prgState === ProgramStatus.EXISTS_ON_BOTH) {
-    if (row.updatedAtTBB && row.updatedAt) {
-      const diff = Math.abs(new Date(row.updatedAtTBB).getTime() - new Date(row.updatedAt).getTime())
-      if (diff < 1000)
-        return 'no-changes'
-      return row.updatedAtTBB > row.updatedAt ? 'changed-on-machine' : 'changed-on-teleskop'
-    }
-  }
-  return 'no-changes'
+function getRowStyle(row: ProgramTableRow) {
+  if (isDark.value)
+    return { color: row.rowColor.dark }
+  else
+    return { color: row.rowColor.light }
 }
 
 onBeforeMount(async () => {
@@ -833,8 +824,7 @@ onUnmounted(() => {
         </template>
         <template #body-cell="{ value, row, col }">
           <QTd
-            :class="[handleRowClass(row), col.__tdClass?.(row)]"
-            :style="col.__tdStyle?.(row)"
+            :style="getRowStyle(row)"
           >
             <template v-if="typeof value === 'boolean'">
               <QIcon

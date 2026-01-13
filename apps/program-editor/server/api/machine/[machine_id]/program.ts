@@ -3,7 +3,7 @@ import type { Program, ProgramTableRow } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { PError } from '~/server/error'
 import { ProgramEditorActivityCodes } from '~/server/constants'
-import { logEditorOperation } from '~/server/functions'
+import { calculateProgramRowColor, logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
 import { checkPermission } from '~/server/utils/auth'
 import type { MachineController } from '~/server/classes/MachineController'
@@ -23,7 +23,14 @@ export default defineAuthEventHandler(async (event) => {
   const query = getQuery(event)
 
   if (event.method === 'GET') {
-    return handleGetPrograms(machine, query)
+    const programs = await machine.fetchAllProgramHeaders(query)
+
+    const programWithColors = programs.map((program: ProgramTableRow) => ({
+      ...program,
+      rowColor: calculateProgramRowColor(program),
+    }))
+
+    return programWithColors
   }
 
   if (event.method === 'POST') {
@@ -42,13 +49,6 @@ export default defineAuthEventHandler(async (event) => {
 })
 
 // Helper Functions
-
-async function handleGetPrograms(machine: MachineController, query: any): Promise<{ programNo: number, name: string }[] | ProgramTableRow[]> {
-  if (query?.asList) {
-    return await machine.getProgramHeadersAsList()
-  }
-  return await machine.fetchAllProgramHeaders(query)
-}
 async function handleCreateProgram(
   machine: MachineController,
   body: any,

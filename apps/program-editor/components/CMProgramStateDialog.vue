@@ -2,21 +2,51 @@
 import { computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
+import { PROGRAM_STATUS_COLORS } from '~/shared/constants'
 
+const $q = useQuasar()
 const { t } = useI18n()
 const app = useAppProps()
+
+const isDark = computed(() => $q.dark.isActive)
+
 const showStatusColorPopup = useLocalStorage(`${app.name}.showPopup`, true)
 
 function togglePopup() {
   showStatusColorPopup.value = !showStatusColorPopup.value
 }
 
-const programStatus = computed(() => [
-  { label: t('programStatusInfo.noChanges'), className: 'no-changes' },
-  { label: t('programStatusInfo.onlyOnTeleskop'), className: 'only-on-teleskop' },
-  { label: t('programStatusInfo.onlyOnController'), className: 'only-on-controller' },
-  { label: t('programStatusInfo.changedOnTeleskop'), className: 'changed-on-teleskop' },
-  { label: t('programStatusInfo.changedOnMachine'), className: 'changed-on-machine' },
+const programStatusList = computed(() => [
+  {
+    label: t('programStatusInfo.noChanges'),
+    color: isDark.value
+      ? PROGRAM_STATUS_COLORS.NO_CHANGES.dark
+      : PROGRAM_STATUS_COLORS.NO_CHANGES.light,
+  },
+  {
+    label: t('programStatusInfo.onlyOnTeleskop'),
+    color: isDark.value
+      ? PROGRAM_STATUS_COLORS.EXISTS_ONLY_ON_DATABASE.dark
+      : PROGRAM_STATUS_COLORS.EXISTS_ONLY_ON_DATABASE.light,
+  },
+  {
+    label: t('programStatusInfo.onlyOnController'),
+    color: isDark.value
+      ? PROGRAM_STATUS_COLORS.EXISTS_ONLY_ON_CONTROLLER.dark
+      : PROGRAM_STATUS_COLORS.EXISTS_ONLY_ON_CONTROLLER.light,
+  },
+  {
+    label: t('programStatusInfo.changedOnTeleskop'),
+    color: isDark.value
+      ? PROGRAM_STATUS_COLORS.CHANGED_ON_TELESKOP.dark
+      : PROGRAM_STATUS_COLORS.CHANGED_ON_TELESKOP.light,
+  },
+  {
+    label: t('programStatusInfo.changedOnMachine'),
+    color: isDark.value
+      ? PROGRAM_STATUS_COLORS.CHANGED_ON_MACHINE.dark
+      : PROGRAM_STATUS_COLORS.CHANGED_ON_MACHINE.light,
+  },
 ])
 </script>
 
@@ -37,10 +67,10 @@ const programStatus = computed(() => [
     <div v-show="showStatusColorPopup" class="status-body">
       <div class="flex flex-col">
         <div
-          v-for="status in programStatus"
+          v-for="status in programStatusList"
           :key="status.label"
         >
-          <span :class="status.className">
+          <span :style="{ color: status.color }">
             {{ status.label }}
           </span>
         </div>
