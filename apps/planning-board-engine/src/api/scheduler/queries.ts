@@ -1277,3 +1277,302 @@ export async function getJobOrderWithPlanKey(planKey: number, trx = knex): Promi
     .where('PLANKEY', planKey)
     .andWhere('lastForJoborder', 1)
 }
+
+export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
+  step: number
+  program: number
+  command: number
+  startTime: Date
+  endTime: Date | null
+  theoreticalDuration: number
+  actualDuration: number
+  stepStatus: 0 | 1 | 2
+  isFinished: boolean
+}>> {
+  if (!batchKey) {
+    throw new Error('batchKey is undefined')
+  }
+
+  const batch = await knex('BADATA')
+    .first({
+      machineId: 'MACHINEID',
+      programList: 'PROGRAMNOLIST',
+      startTime: knex.raw(
+        'DATEADD(MINUTE, ?, STARTTIME)',
+        [config.teleskopTimezoneOffset],
+      ),
+      endTime: knex.raw(
+        'DATEADD(MINUTE, ?, ENDTIME)',
+        [config.teleskopTimezoneOffset],
+      ),
+      cancelTime: knex.raw(
+        'DATEADD(MINUTE, ?, CANCELTIME)',
+        [config.teleskopTimezoneOffset],
+      ),
+    })
+    .where('BATCHKEY', batchKey)
+
+  if (!batch) {
+    throw new Error(`Batch with key ${batchKey} not found`)
+  }
+
+  const isActive = !(batch.endTime || batch.cancelTime)
+
+  // Get step changes and actual steps
+  const stepChanges = await getBatchStepChangesInternal(batchKey)
+  const actualSteps = await getBatchActualStepsInternal(batchKey)
+
+  // Initialize theoretical step numbers and status
+  for (const step of actualSteps) {
+    step.theoreticalStepNo = step.actualStepNo
+    step.stepStatus = 0
+    step.isFinished = true
+  }
+
+  // Get theoretical steps
+  const theoricSteps = isActive
+    ? await getActiveBatchTheoreticalStepsInternal(batch.machineId, batch.programList)
+    : await getArchivedBatchTheoreticalStepsInternal(batch.machineId, batch.programList, batch.startTime)
+
+  // Apply step changes
+  for (const change of stepChanges) {
+    if (!change.isInsert) {
+      // Step deletion
+      for (const step of actualSteps) {
+        if (step.theoreticalStepNo >= change.stepNo && step.startTime > change.changeDate) {
+          step.theoreticalStepNo++
+        }
+      }
+    } else {
+      // Step insertion
+      for (const step of actualSteps) {
+        if (step.startTime > change.changeDate) {
+          if (step.theoreticalStepNo === change.stepNo) {
+            step.theoreticalStepNo -= 0.001
+            step.stepStatus = 1
+          } else if (step.theoreticalStepNo > change.stepNo) {
+            step.theoreticalStepNo--
+          }
+        }
+      }
+    }
+  }
+
+  // Find skipped steps
+  const skippedSteps: ActualStepDetailed[] = []
+  for (let i = 1; i < actualSteps.length; i++) {
+    const step = actualSteps[i]
+    const lastStep = actualSteps[i - 1]
+
+    if (step.theoreticalStepNo - lastStep.theoreticalStepNo > 1) {
+      skippedSteps.push(...theoricSteps
+        .filter(ts => ts.stepNo > lastStep.theoreticalStepNo && ts.stepNo < step.theoreticalStepNo)
+        .map(ts => ({
+          actualStepNo: -1,
+          theoreticalStepNo: ts.stepNo,
+          commandNo: ts.commandNo,
+          programNo: ts.programNo,
+          startTime: new Date(step.startTime.getTime() - 1000),
+          endTime: null,
+          stepStatus: 2,
+          isFinished: false,
+          theoreticDuration: ts.theoreticDuration,
+        } as ActualStepDetailed)))
+    }
+  }
+
+  // Find pending steps
+  const maxActualStep = actualSteps.length > 0 ? Math.max(...actualSteps.map(s => s.theoreticalStepNo)) : 0
+  const maxTheoricStep = theoricSteps.length > 0 ? Math.max(...theoricSteps.map(s => s.stepNo)) : 0
+  const pendingSteps: ActualStepDetailed[] = []
+
+  if (maxTheoricStep > maxActualStep) {
+    const maxStartTime = actualSteps.length > 0 ? new Date(Math.max(...actualSteps.map(s => s.startTime.getTime()))) : new Date()
+    pendingSteps.push(...theoricSteps
+      .filter(ts => ts.stepNo > maxActualStep)
+      .map(ts => ({
+        actualStepNo: -1,
+        theoreticalStepNo: ts.stepNo,
+        commandNo: ts.commandNo,
+        programNo: ts.programNo,
+        startTime: new Date(maxStartTime.getTime() + 1000),
+        endTime: null,
+        stepStatus: 2,
+        isFinished: false,
+        theoreticDuration: ts.theoreticDuration,
+      } as ActualStepDetailed)))
+  }
+
+  // Merge and sort all steps
+  const mergedSteps = [...actualSteps, ...skippedSteps, ...pendingSteps]
+    .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+
+  // Calculate actual duration and return formatted results
+  return mergedSteps.map(step => ({
+    step: Math.floor(step.theoreticalStepNo),
+    program: step.programNo,
+    command: step.commandNo,
+    startTime: step.startTime,
+    endTime: step.endTime,
+    theoreticalDuration: step.theoreticDuration || 0,
+    actualDuration: step.endTime ? Math.floor((step.endTime.getTime() - step.startTime.getTime()) / 1000) : 0,
+    stepStatus: step.stepStatus,
+    isFinished: step.isFinished,
+  }))
+}
+
+interface TheoreticalStep {
+  stepNo: number
+  programNo: number
+  programIndex: number
+  programStepNo: number
+  commandNo: number
+  theoreticDuration: number
+}
+
+interface ActualStepInternal {
+  actualStepNo: number
+  programNo: number
+  commandNo: number
+  startTime: Date
+  endTime: Date | null
+}
+
+interface ActualStepDetailed extends ActualStepInternal {
+  theoreticalStepNo: number
+  stepStatus: 0 | 1 | 2
+  isFinished: boolean
+  theoreticDuration: number
+}
+
+interface StepChange {
+  changeDate: Date
+  stepNo: number
+  commandNo: number
+  isInsert: boolean
+}
+
+async function getActiveBatchTheoreticalStepsInternal(machineId: number, programList: string): Promise<TheoreticalStep[]> {
+  const programNos = parseProgramListString(programList)
+  if (!programNos || !programNos.length)
+    return []
+
+  return await knex('BFMASTERSTEPS as S')
+    .join(knex.raw(`(VALUES ${programNos.map((p, i) => `(${p}, ${i})`).join(',')}) T(PROGNO, PROGINDEX)`), 'S.PROGNO', 'T.PROGNO')
+    .select({
+      stepNo: knex.raw('CAST(ROW_NUMBER() OVER (ORDER BY T.PROGINDEX, S.MAINSTEP) - 1 as INT)'),
+      programNo: 'S.PROGNO',
+      programIndex: 'T.PROGINDEX',
+      programStepNo: 'S.MAINSTEP',
+      commandNo: 'S.COMMANDNO',
+      theoreticDuration: 'S.THEORETICDURATION',
+    })
+    .where('S.MACHINEID', machineId)
+    .andWhere('S.PARALELSTEP', 0)
+    .orderBy('stepNo')
+}
+
+async function getArchivedBatchTheoreticalStepsInternal(machineId: number, programList: string, startTime: Date): Promise<TheoreticalStep[]> {
+  const programNos = parseProgramListString(programList)
+  if (!programNos || !programNos.length)
+    return []
+
+  return await knex
+    .with('V', qb => qb
+      .from('BAMASTERPRGHEADER as P')
+      .join(knex.raw(`(VALUES ${programNos.map((p, i) => `(${p}, ${i})`).join(',')}) T(PROGNO, PROGINDEX)`), 'P.PROGNO', 'T.PROGNO')
+      .select([
+        'P.PROGNO',
+        'P.MACHINEID',
+        'P.MACHINEPRGVERSIONNO',
+        'T.PROGINDEX',
+      ])
+      .where('P.MACHINEID', machineId)
+      .andWhere('P.RELEASEDATE', '<=', startTime)
+      .andWhere((qb) => {
+        qb.whereNull('P.RELEASEENDDATE')
+          .orWhere('P.RELEASEENDDATE', '>', startTime)
+      }))
+    .from('BAMASTERSTEPS as S')
+    .join('V', function () {
+      this.on('S.MACHINEID', 'V.MACHINEID')
+        .andOn('S.PROGNO', 'V.PROGNO')
+        .andOn('S.MACHINEPRGVERSIONNO', 'V.MACHINEPRGVERSIONNO')
+    })
+    .select({
+      stepNo: knex.raw('CAST(ROW_NUMBER() OVER (ORDER BY V.PROGINDEX, S.MAINSTEP) - 1 AS INT)'),
+      programNo: 'S.PROGNO',
+      programIndex: 'V.PROGINDEX',
+      programStepNo: 'S.MAINSTEP',
+      commandNo: 'S.COMMANDNO',
+      theoreticDuration: 'S.THEORETICDURATION',
+    })
+    .where('S.PARALELSTEP', 0)
+    .orderBy('stepNo')
+}
+
+async function getBatchActualStepsInternal(batchKey: number): Promise<ActualStepDetailed[]> {
+  const steps = await knex('BAACTUALPRGSTEPS')
+    .select({
+      actualStepNo: 'STEPNO',
+      programNo: 'PRGNO',
+      commandNo: 'COMMANDNO',
+      startTime: knex.raw(`DATEADD(MINUTE, ?, STARTTIME)`, [config.teleskopTimezoneOffset]),
+      endTime: knex.raw(`DATEADD(MINUTE, ?, ENDTIME)`, [config.teleskopTimezoneOffset]),
+    })
+    .where('BATCHKEY', batchKey)
+    .andWhere('PARALLELSTEPNO', 0)
+    .orderBy('STARTTIME')
+
+  if (steps.length === 0) {
+    return []
+  }
+
+  // Get machine ID from batch
+  const batch = await knex('BADATA')
+    .first('MACHINEID')
+    .where('BATCHKEY', batchKey)
+
+  if (!batch) {
+    throw new Error(`Batch with key ${batchKey} not found`)
+  }
+
+  // Get theoretical durations for actual steps from the correct machine
+  const stepDurations = await knex('BFMASTERSTEPS')
+    .select({
+      programNo: 'PROGNO',
+      commandNo: 'COMMANDNO',
+      stepNo: 'MAINSTEP',
+      theoreticDuration: 'THEORETICDURATION',
+    })
+    .where('MACHINEID', batch.MACHINEID)
+    .andWhere('PARALELSTEP', 0)
+    .andWhere((builder) => {
+      for (const step of steps) {
+        builder.orWhere((subBuilder) => {
+          subBuilder.where('PROGNO', step.programNo).andWhere('COMMANDNO', step.commandNo)
+        })
+      }
+    })
+
+  return steps.map(step => ({
+    ...step,
+    theoreticalStepNo: step.actualStepNo,
+    stepStatus: 0 as 0 | 1 | 2,
+    isFinished: true,
+    theoreticDuration: stepDurations.find(d => d.programNo === step.programNo && d.commandNo === step.commandNo)?.theoreticDuration || 0,
+  }))
+}
+
+async function getBatchStepChangesInternal(batchKey: number): Promise<StepChange[]> {
+  return await knex('BASTEPCHANGES')
+    .select({
+      stepNo: 'MAINSTEP',
+      commandNo: 'COMMANDNO',
+      changeDate: knex.raw(`DATEADD(MINUTE, ?, CHANGEDATE)`, [config.teleskopTimezoneOffset]),
+      isInsert: 'STEPADDED',
+    })
+    .where('BATCHKEY', batchKey)
+    .andWhere('PARALELSTEP', 0)
+    .orderBy('CHANGEDATE', 'desc')
+}

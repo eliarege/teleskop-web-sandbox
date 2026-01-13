@@ -60,7 +60,7 @@ function refreshData() {
 async function updateAutoAdd(value: boolean) {
   await kc.fetch('/api/autoAdd', {
     method: 'PUT',
-    body: { value }
+    body: { value },
   })
 }
 </script>

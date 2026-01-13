@@ -314,5 +314,21 @@
     "ontime": "Zamanında Tamamlandı",
     "late": "Geç Tamamlandı",
     "ongoing": "Devam Ediyor"
+  },
+  "stepWorkingTimes": {
+    "title": "Adım Çalışma Süreleri",
+    "step": "Adım",
+    "program": "Program",
+    "command": "Komut",
+    "startTime": "Başlama Zamanı",
+    "endTime": "Bitiş Zamanı",
+    "theoreticalDuration": "Teorik Süre",
+    "actualDuration": "Gerçekleşen Süre",
+    "colorCodes": "Parametreler için renk kodları",
+    "addedLater": "Sonradan eklenmiş adım",
+    "deletedOrSkipped": "Adım silinmiş veya atlanıldı",
+    "timeExceeded": "Zaman aşıldı",
+    "print": "Yazdır",
+    "ok": "Tamam"
   }
 }

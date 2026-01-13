@@ -5,6 +5,6 @@ export default defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   return await authFetch<boolean>(url, {
     method: 'PUT',
-    body
+    body,
   })
 })

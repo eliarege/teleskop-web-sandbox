@@ -26,6 +26,7 @@ import {
   getRecipe,
   getRequiredStartingParametersForPrograms,
   getStartingParametersWithValues,
+  getStepWorkingTimes,
   getTheoreticalDuration,
   getUnplannedColumns,
   getUnplannedEvents,
@@ -77,9 +78,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   )
   fastify.put(
     '/planning_board/auto_add',
-    async (request: FastifyRequest<{
-      Body: { value: boolean }
-    }>, reply) => {
+    async (request: FastifyRequest<{ Body: { value: boolean } }>, reply) => {
       try {
         const { value } = request.body
         await updateAutoAdd(value)
@@ -345,6 +344,18 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       } catch (err) {
         fastify.log.error(`An error occurred while fetching detailed program: ${err}`)
         return reply.code(500).send({ error: `An error occurred while fetching detailed program: ${err}` })
+      }
+    },
+  )
+  fastify.get(
+    '/planning_board/step-working-times',
+    async (request: FastifyRequest<{ Querystring: { batchKey: number } }>, reply) => {
+      try {
+        const { batchKey } = request.query
+        return await getStepWorkingTimes(batchKey)
+      } catch (err) {
+        fastify.log.error(`An error occurred while fetching step working times: ${err}`)
+        return reply.code(500).send({ error: `An error occurred while fetching step working times: ${err}` })
       }
     },
   )

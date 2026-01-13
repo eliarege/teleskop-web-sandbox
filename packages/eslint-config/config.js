@@ -24,6 +24,7 @@ export const workspaceEslintConfig = antfu(
       'style/brace-style': ['error', '1tbs'],
       'ts/consistent-type-definitions': 'off',
       'ts/method-signature-style': 'off',
+      'new-cap': ['error', { newIsCapExceptions: ['jsPDF'] }],
     },
   },
 )

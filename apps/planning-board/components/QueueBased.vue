@@ -207,6 +207,14 @@ function setMessageMachine(id: number, name: string) {
   machineMessageModal.currentMachine.id = id
   machineMessageModal.currentMachine.name = name
 }
+const stepWorkingTimesModal = reactive({
+  show: false,
+  batchKey: -1,
+})
+function setStepWorkingTimes(batchKey: number) {
+  stepWorkingTimesModal.show = true
+  stepWorkingTimesModal.batchKey = batchKey
+}
 // #endregion
 
 const sortIndex = Symbol('sortIndex')
@@ -633,6 +641,9 @@ onMounted(async () => {
       if (eventRecord.originalData.eventType === 'stop') {
         return false
       }
+      if (eventRecord.originalData.eventType === 'planned' || eventRecord.originalData.eventType === 'unplanned') {
+        items.stepWorkingTimes.hidden = true
+      }
       if (eventRecord.originalData.pinned) {
         items.pin.hidden = true
         items.unpin.hidden = false
@@ -863,6 +874,13 @@ onMounted(async () => {
               })
             },
           },
+          stepWorkingTimes: {
+            icon: 'b-fa-solid b-fa-clock',
+            text: t('queue-based.ctx-menu.step-working-times'),
+            onItem({ eventRecord }) {
+              setStepWorkingTimes(eventRecord.originalData.batchKey)
+            },
+          },
           sendToMachine: {
             icon: 'b-fa-solid b-fa-share',
             text: t('upload-joborder._'),
@@ -1090,6 +1108,17 @@ LocaleManager.applyLocale(capitalizeFirstLetter(bryntumLocale))
           :machine-id="machineMessageModal.currentMachine.id"
           :machine-name="machineMessageModal.currentMachine.name"
           @close="machineMessageModal.show = false"
+        />
+      </template>
+    </EliarModal>
+    <EliarModal
+      v-if="stepWorkingTimesModal.show"
+      @click.stop="stepWorkingTimesModal.show = false"
+    >
+      <template #default>
+        <StepWorkingTimes
+          :batch-key="stepWorkingTimesModal.batchKey"
+          @close="stepWorkingTimesModal.show = !stepWorkingTimesModal.show"
         />
       </template>
     </EliarModal>

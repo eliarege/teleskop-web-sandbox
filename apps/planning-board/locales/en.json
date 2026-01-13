@@ -313,5 +313,21 @@
     "ontime": "Finished On Time",
     "late": "Finished Late",
     "ongoing": "Ongoing"
+  },
+  "stepWorkingTimes": {
+    "title": "Step Working Times",
+    "step": "Step",
+    "program": "Program",
+    "command": "Command",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "theoreticalDuration": "Theoretical Duration",
+    "actualDuration": "Actual Time",
+    "colorCodes": "Color codes for parameters",
+    "addedLater": "Step added later",
+    "deletedOrSkipped": "Step deleted or skipped",
+    "timeExceeded": "Time exceeded",
+    "print": "Print",
+    "ok": "OK"
   }
 }
