@@ -1,5 +1,11 @@
 import type { DialogChainObject } from 'quasar'
-import FeedbackDialog from '../components/feedback/FeedbackDialog.vue'
+import FeedbackDialog from '../components/FeedbackDialog.vue'
+
+export interface FeedbackPlugin {
+  isAvailable: () => boolean
+  getUnavailableReason: () => string | null
+  showDialog: () => void
+}
 
 // Controls Feedback Dialog
 export default defineNuxtPlugin(() => {
@@ -14,7 +20,7 @@ export default defineNuxtPlugin(() => {
    * - If feedback is enabled, returns true.
    * - If feedback is disabled, returns localised reason.
    */
-  function isFeedbackEnabled(): string | true {
+  function validateFeedbackAccess(): string | true {
     const t = nuxt.$i18n.t
     if (!keycloak.enabled)
       return t('feedback.response.no-auth')
@@ -25,8 +31,20 @@ export default defineNuxtPlugin(() => {
     return true
   }
 
+  function isAvailable(): boolean {
+    return validateFeedbackAccess() === true
+  }
+
+  function getUnavailableReason(): string | null {
+    const enabledOrReason = validateFeedbackAccess()
+    if (typeof enabledOrReason === 'string') {
+      return enabledOrReason
+    }
+    return null
+  }
+
   function showDialog() {
-    const enabledOrReason = isFeedbackEnabled()
+    const enabledOrReason = validateFeedbackAccess()
     if (typeof enabledOrReason === 'string') {
       notify({
         message: enabledOrReason,
@@ -62,9 +80,10 @@ export default defineNuxtPlugin(() => {
   return {
     provide: {
       feedback: {
-        isEnabled: isFeedbackEnabled,
+        isAvailable,
+        getUnavailableReason,
         showDialog: showFeedbackDialog,
-      },
+      } as FeedbackPlugin,
     },
   }
 })

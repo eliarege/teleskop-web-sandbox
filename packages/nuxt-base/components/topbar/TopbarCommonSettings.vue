@@ -9,13 +9,13 @@ const props = defineProps<{
   disableTheme?: boolean
 }>()
 const { dark, dialog } = useQuasar()
-const nuxt = useNuxtApp()
+const feedback = useFeedback()
 
 const { t, locale, locales, setLocale } = useI18n()
 const tt = (key: string) => toRef(() => t(key))
 
-const feedbackEnabled = computed(() => nuxt.$feedback.isEnabled() === true)
-const feedbackDisableReason = computed(() => nuxt.$feedback.isEnabled())
+const feedbackAvailable = computed(() => feedback.isAvailable())
+const feedbackUnavailableReason = computed(() => feedback.getUnavailableReason())
 const appProps = useAppProps()
 const darkMode = useStorage<'auto' | boolean>(`${appProps.name}.theme`, false, localStorage, {
   serializer: StorageSerializers.any,
@@ -81,9 +81,9 @@ const items = [
       label: tt('base.sendFeedback'),
       icon: 'feedback',
       shortcut: 'F9',
-      disabled: () => !feedbackEnabled.value,
-      disableReason: feedbackDisableReason,
-      onClick: () => nuxt.$feedback.showDialog(),
+      disabled: () => !feedbackAvailable.value,
+      disableReason: feedbackUnavailableReason,
+      onClick: () => feedback.showDialog(),
     },
   ],
 ] as TopbarMenuItem[][]
