@@ -63,7 +63,7 @@ export interface RegisteredCommands {
   concatenatePrograms: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
   renameProgram: [ctx: any, machineId: number, programNo: number]
   changeProcessType: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
-  sendProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number]
+  sendProgram: [ctx: any, selectedRows: ProgramTableRow[], machineId: number, machineName: string]
   copyAndSend: [ctx: any, selectedRows: ProgramTableRow[]]
   showResultsDialog: [ctx: any, sourceMachine: { id: number, name: string }, results: CopyAndSendResult[]]
   getProgram: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
@@ -72,7 +72,7 @@ export interface RegisteredCommands {
   editProgramTypes: [ctx: any]
   editProgramIcons: [ctx: any]
   exportToExcel: [ctx: any]
-  refresh: [ctx: any, machineId: number]
+  refresh: [ctx: any, machineId: number, machineName: string]
   tempTimeGraph: [ctx: any, machine: Machine, program: Program, initialTemperature: number]
   stepCommandGraph: [ctx: any, machine: Machine, program: Program]
   newProgram: [ctx: any]
@@ -453,11 +453,11 @@ registerCommand(() => {
   const editor = useEditorStore()
   return {
     name: 'sendProgram',
-    async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number) {
+    async execute(ctx: any, selectedRows: ProgramTableRow[], machineId: number, machineName: string) {
       editor.isLoading = true
       try {
         const machineStatusStore = useMachineStatusStore()
-        const status = await machineStatusStore.checkMachineStatus(machineId)
+        const status = await machineStatusStore.checkMachineStatus(machineId, machineName)
         if (status) {
           await contextMenuStore.sendProgram(selectedRows, machineId)
           await editor.refreshAllPrograms()
@@ -740,12 +740,12 @@ registerCommand(() => {
 
   return {
     name: 'refresh',
-    async execute(ctx: any, machineId: number) {
+    async execute(ctx: any, machineId: number, machineName: string) {
       editor.isLoading = true
 
       try {
         const machineStatusStore = useMachineStatusStore()
-        const status = await machineStatusStore.checkMachineStatus(machineId)
+        const status = await machineStatusStore.checkMachineStatus(machineId, machineName)
         if (!status) {
           return false
         }
@@ -935,7 +935,7 @@ registerCommand(() => {
     async execute(ctx: any, machine: { id: number, name: string }) {
       const machineStatusStore = useMachineStatusStore()
 
-      const status = await machineStatusStore.checkMachineStatus(machine.id)
+      const status = await machineStatusStore.checkMachineStatus(machine.id, machine.name)
       if (!status) {
         return
       }
@@ -954,7 +954,7 @@ registerCommand(() => {
     async execute(ctx: any, machine: { id: number, name: string }) {
       const machineStatusStore = useMachineStatusStore()
 
-      const status = await machineStatusStore.checkMachineStatus(machine.id)
+      const status = await machineStatusStore.checkMachineStatus(machine.id, machine.name)
       if (!status) {
         return
       }

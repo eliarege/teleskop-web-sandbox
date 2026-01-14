@@ -143,8 +143,8 @@
   },
   "clickToRetry": "Tekrar denemek için tıklayın",
   "machine": {
-    "isOnline": "Makine çevrimiçi",
-    "isOffline": "Makine çevrimdışı",
+    "isOnline": "Makine {machineName} çevrimiçi",
+    "isOffline": "Makine {machineName} çevrimdışı",
     "connecting": "Bağlanılıyor...",
     "connectionSuccessful": "Makine bağlantısı başarılı",
     "connectionFailed": "Makine {machineId} bağlantısı başarısız",

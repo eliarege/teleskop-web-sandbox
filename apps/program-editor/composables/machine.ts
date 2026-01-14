@@ -7,6 +7,7 @@ export type MachineStatusStore = ReturnType<typeof useMachineStatusStore>
 
 export const useMachineStatusStore = defineStore('machine-status', () => {
   const offlineMachines = ref<Set<number>>(new Set())
+  const checkingMachines = ref<Set<number>>(new Set())
   const { notifySuccess, notifyError } = useNotify()
   const { t } = useI18n()
 
@@ -22,8 +23,13 @@ export const useMachineStatusStore = defineStore('machine-status', () => {
     return offlineMachines.value.has(machineId)
   }
 
+  function isChecking(machineId: number): boolean {
+    return checkingMachines.value.has(machineId)
+  }
+
   async function checkMachineStatus(
     machineId: number,
+    machineName: string,
     options: {
       notifyOnSuccess?: boolean
       notifyOnError?: boolean
@@ -32,18 +38,20 @@ export const useMachineStatusStore = defineStore('machine-status', () => {
     const { fetch } = useKeycloak()
     const { notifyOnSuccess = false, notifyOnError = true } = options
 
+    checkingMachines.value.add(machineId)
+
     try {
       const status = await fetch(`/api/machine/${machineId}/status`)
 
       if (status) {
         setOnline(machineId)
         if (notifyOnSuccess) {
-          notifySuccess(t('machine.isOnline'))
+          notifySuccess(t('machine.isOnline', { machineName }))
         }
       } else {
         setOffline(machineId)
         if (notifyOnError) {
-          notifyError(t('machine.isOffline'))
+          notifyError(t('machine.isOffline', { machineName }))
         }
       }
 
@@ -51,17 +59,21 @@ export const useMachineStatusStore = defineStore('machine-status', () => {
     } catch (error) {
       setOffline(machineId)
       if (notifyOnError) {
-        notifyError(t('machine.isOffline'))
+        notifyError(t('machine.isOffline', { machineName }))
       }
       return false
+    } finally {
+      checkingMachines.value.delete(machineId)
     }
   }
 
   return {
     offlineMachines,
+    checkingMachines,
     setOffline,
     setOnline,
     isOffline,
+    isChecking,
     checkMachineStatus,
   }
 })
