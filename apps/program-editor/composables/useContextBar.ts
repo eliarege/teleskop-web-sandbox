@@ -1,38 +1,28 @@
 import type { QBtnProps } from 'quasar'
 
-interface CustomQBtnProps extends QBtnProps {
+export interface CustomQBtnProps extends QBtnProps {
   tooltip?: string | number
   originalLabel?: string
   shortcut?: string
   visible?: boolean
 }
 
-const route = useRoute()
-const contextBarButtons = ref([] as CustomQBtnProps[])
+const contextBarButtons = ref<CustomQBtnProps[]>([])
 
-function update(entries: Array<QBtnProps>) {
-  contextBarButtons.value = entries
-}
-
-export function useContextBar(items: Ref<QBtnProps[]> | ComputedRef<QBtnProps[]> | null): void {
+export function useContextBar(
+  items: Ref<CustomQBtnProps[]> | ComputedRef<CustomQBtnProps[]>,
+) {
   watch(
-    () => route.path,
-    () => {
-      if (items?.value) {
-        update(items.value)
-      }
+    items,
+    (newItems) => {
+      contextBarButtons.value = newItems ?? []
     },
+    { immediate: true },
   )
-
-  watchEffect(() => {
-    if (items?.value) {
-      update(items.value)
-    }
-  })
 }
 
 export function useContextBarState() {
   return {
-    contextBarButtons,
+    contextBarButtons: readonly(contextBarButtons),
   }
 }
