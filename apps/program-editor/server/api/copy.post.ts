@@ -1,5 +1,6 @@
 import { machineStore } from '../classes/MachineStore'
 import { PError } from '../error'
+import { ProgramStatus } from '~/shared/constants'
 import type { CopyItem } from '~/shared/types'
 
 export default defineAuthEventHandler(async (event) => {
@@ -48,6 +49,10 @@ export default defineAuthEventHandler(async (event) => {
       if (program.newProgramNo) {
         fetchedProgram.programNo = program.newProgramNo
       }
+
+      fetchedProgram.isChanged = false
+      fetchedProgram.prgState = ProgramStatus.EXISTS_ONLY_ON_DATABASE
+      fetchedProgram.updatedAtTBB = fetchedProgram.updatedAt
 
       await toMachine.insertProgram(fetchedProgram)
     }
