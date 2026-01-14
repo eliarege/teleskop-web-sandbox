@@ -1,0 +1,10 @@
+{
+  "unsavedChanges": {
+    "retrySaveTitle": "Kaydetme Başarısız",
+    "retrySaveMessage": "Değişiklikler kaydedilemedi. Tekrar denemek ister misiniz?",
+    "retrySaveOk": "Tekrar Dene",
+    "retrySaveCancel": "İptal",
+    "save": "Kaydet",
+    "discard": "Vazgeç"
+  }
+}

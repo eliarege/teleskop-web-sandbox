@@ -1,0 +1,10 @@
+{
+  "unsavedChanges": {
+    "retrySaveTitle": "Save Failed",
+    "retrySaveMessage": "Failed to save changes. Would you like to retry?",
+    "retrySaveOk": "Retry",
+    "retrySaveCancel": "Cancel",
+    "save": "Save",
+    "discard": "Discard"
+  }
+}
