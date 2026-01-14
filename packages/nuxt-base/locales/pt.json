@@ -36,42 +36,10 @@
       "device": "Tema do dispositivo",
       "light": "Tema claro"
     },
-    "version": "Versão"
-  },
-  "feedback": {
-    "title": "Relatar um Feedback",
-    "response": {
-      "success": "Feedback enviado com sucesso.",
-      "send-fail": "Ocorreu um erro ao enviar o feedback.",
-      "not-configured": "Envio de Feedback não está configurado.",
-      "no-auth": "Autenticação não está configurada.",
-      "auth-required": "Você precisa fazer login para enviar feedback.",
-      "email-not-verified": "Você precisa verificar seu e-mail para enviar feedback.",
-      "screenshot-error": "Ocorreu um erro ao tirar uma captura de tela.",
-      "error-fallback": "Erro não identificado"
-    },
-    "username": "Nome de usuário",
-    "email": "E-mail",
-    "app-name": "Nome do aplicativo",
-    "description": "Descrição",
-    "reportType": {
-      "_": "Tipo de Relatório",
-      "bug": "Erro",
-      "feedback": "Feedback",
-      "suggestion": "Sugestão",
-      "other": "Outro"
-    },
-    "screenshot": {
-      "edit": "Editar",
-      "take-screenshot": "Tirar Captura de Tela"
-    },
-    "submit": "Enviar",
-    "cancel": "Cancelar",
-    "editor": {
-      "title": "Realce ou oculte informações em sua captura de tela",
-      "save": "Salvar",
-      "cancel": "Cancelar"
-    }
+    "version": "Versão",
+    "confirm": "Confirmar",
+    "confirmMessage": "Você tem certeza que deseja continuar?",
+    "cancel": "Cancelar"
   },
   "vnc": {
     "connecting": "Conectando",
