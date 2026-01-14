@@ -1495,6 +1495,11 @@ export class MachineController {
             logger.info(`Program ${programNo} created (new program)`)
           }
 
+          program.isChanged = false
+          program.prgState = ProgramStatus.EXISTS_ON_BOTH
+          program.updatedAtTBB = program.updatedAt
+          await this.updateProgramHeader(program)
+
           successCount++
         } catch (error) {
           errorCount++
@@ -1552,7 +1557,14 @@ export class MachineController {
           const { program } = await this.fetchProgram(programHeader.programNo)
 
           // Makineye yükle
-          await this.client.uploadProgram(program, commands)
+          const isUploaded = await this.client.uploadProgram(program, commands)
+          if (isUploaded) {
+            program.isChanged = false
+            program.prgState = ProgramStatus.EXISTS_ON_BOTH
+            program.updatedAtTBB = program.updatedAt
+            await this.updateProgramHeader(program)
+          }
+
           successCount++
 
           logger.info(`Program ${program.programNo} successfully uploaded to machine`)
