@@ -1,7 +1,7 @@
 import type { ValueOf } from '@teleskop/utils'
 
 export const PROGRAM_STATUS_COLORS = {
-  EXISTS_ONLY_ON_CONTROLLER: { light: '#bebebe', dark: '#d0d0d0' },
+  EXISTS_ONLY_ON_CONTROLLER: { light: '#bebebe', dark: '#a0a0a0' },
   EXISTS_ONLY_ON_DATABASE: { light: '#009900', dark: '#32cd32' },
   CHANGED_ON_TELESKOP: { light: '#0000ff', dark: '#1e90ff' },
   CHANGED_ON_MACHINE: { light: '#ff00ff', dark: '#ff00ff' },

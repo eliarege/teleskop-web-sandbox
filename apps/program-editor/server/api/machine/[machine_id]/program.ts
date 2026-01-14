@@ -25,10 +25,12 @@ export default defineAuthEventHandler(async (event) => {
   if (event.method === 'GET') {
     const programs = await machine.fetchAllProgramHeaders(query)
 
-    const programWithColors = programs.map((program: ProgramTableRow) => ({
-      ...program,
-      rowColor: calculateProgramRowColor(program),
-    }))
+    const programWithColors = programs
+      .sort((a, b) => a.programNo - b.programNo)
+      .map((program: ProgramTableRow) => ({
+        ...program,
+        rowColor: calculateProgramRowColor(program),
+      }))
 
     return programWithColors
   }
