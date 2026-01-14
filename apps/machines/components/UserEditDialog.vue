@@ -255,7 +255,7 @@ function handleCancel() {
     </q-card>
   </q-dialog>
 
-  <ConfirmDialog
+  <MaConfirmDialog
     v-model="confirmVisible"
     :title="t('unsavedChanges.title')"
     :message="t('unsavedChanges.message')"

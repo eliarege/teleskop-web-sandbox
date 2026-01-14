@@ -555,7 +555,7 @@ async function getVersionInfo(formData: Machine) {
         </FormKit>
       </q-card-section>
     </q-card>
-    <ConfirmDialog
+    <MaConfirmDialog
       v-model="confirmVisible"
       :title="t('unsavedChanges.title')"
       :message="t('unsavedChanges.message')"

@@ -2,7 +2,6 @@
 import { onMounted, ref } from 'vue'
 import UserEditDialog from '~/components/UserEditDialog.vue'
 import UserPermissionsDialog from '~/components/UserPermissionsDialog.vue'
-import ConfirmDialog from '~/components/ConfirmDialog.vue'
 import type { User } from '~/types'
 
 const { t } = useI18n()
@@ -199,7 +198,7 @@ onMounted(loadUsers)
         :user="editUser"
       />
 
-      <ConfirmDialog
+      <MaConfirmDialog
         v-model="confirmDialog"
         :title="t('confirmDelete')"
         :message="selected.length === 1
