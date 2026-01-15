@@ -23,7 +23,7 @@ type UnsavedDialogReturn = ReturnType<typeof useDialogPluginComponent> & {
   hasChanges: () => boolean
   markSaved: () => void
   showGuard: () => ReturnType<ReturnType<typeof useQuasar>['dialog']>
-  onDialogBeforeHide: (event: any) => void
+  onDialogBeforeHide: (event: Event) => void
 }
 
 /**
@@ -157,7 +157,7 @@ export function withUnsavedChangesDialogGuard<T>(
   })
 
   /** Should be attached to the dialog's before-hide event */
-  const onDialogBeforeHide = (event: Record<string, unknown>): void => {
+  const onDialogBeforeHide = (event: Event & { qPreventHide?: boolean }): void => {
     const guard = unsavedChangesGuard('dialog-close')
     if (!guard)
       return
