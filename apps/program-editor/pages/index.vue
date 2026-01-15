@@ -17,7 +17,9 @@ const sm = breakpoints.greaterOrEqual('sm')
 
 const editor = useEditorStore()
 const machine = useMachineStore()
+const { contextBarButtons } = useContextBarState()
 const teleskopSettings = useTeleskopSettingsStore()
+
 const { notifyError } = useNotify()
 
 editor.isLoading = true
@@ -31,7 +33,7 @@ const machineId = Number(isDef(route.params.machine_id))
 if (!machineId) {
   const redirected = await machine.selectFirstUsableMachine()
   if (!redirected) {
-    notifyError(t('machine.noUsableMachineFound'))
+    notifyError(t('noUsableMachineFound'))
   }
 }
 
@@ -342,7 +344,16 @@ const goRoot = computed(() => {
         <div
           class="flex sticky top-10 z-10 bg-light-7  dark:bg-dark-3"
         >
-          <ContextBar />
+          <ContextBar
+            v-model:left-drawer-open="editor.leftDrawerOpen"
+            v-model:right-drawer-open="editor.rightDrawerOpen"
+
+            :machine="machine.currentMachine"
+            :program="editor.program"
+
+            :initial-temperature="teleskopSettings.initialTemperature"
+            :context-bar-buttons="contextBarButtons"
+          />
         </div>
         <div>
           <NuxtPage />

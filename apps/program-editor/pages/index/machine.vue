@@ -8,7 +8,7 @@ import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ContextBarButtons, MachineInfo, PasteOptions, ProgramTableRow } from '~/shared/types'
-import { ADDITIONAL_PROCESS_CODE_ILAVE, ProgramStatus } from '~/shared/constants'
+import { ADDITIONAL_PROCESS_CODE_ILAVE, PROGRAM_STATUS_COLORS, ProgramStatus } from '~/shared/constants'
 import { formatDuration, useErrorStore } from '~/composables/utils'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
@@ -33,7 +33,11 @@ const machineStatusStore = useMachineStatusStore()
 
 const tableRef = ref()
 contextMenuStore.setCtx({ t, router })
+
 const machineId = Number(route.params.machine_id)
+const machineName = machine.currentMachine?.name || ''
+
+const isDark = computed(() => $q.dark.isActive)
 
 if (!machineId || !machine.hasMachine(machineId)) {
   if (machineId) {
@@ -129,7 +133,7 @@ onKeyStroke(['Enter'], (event: KeyboardEvent) => {
 onKeyStroke(['Delete'], (event: KeyboardEvent) => {
   if (!isActiveElementEditable()) {
     event.preventDefault()
-    $commandManager.executeCommand('deleteProgram', { $q }, sortedSelectedPrograms.value, machine.currentMachine.id)
+    $commandManager.executeCommand('deleteProgram', { $q }, sortedSelectedPrograms.value, machineId)
   }
 })
 
@@ -253,7 +257,7 @@ const buttons = computed<ContextBarButtons[]>(() => [
     icon: 'refresh',
     onClick() {
       // TODO: Context cannot be provided by executor
-      $commandManager.executeCommand('refresh', { $q }, machineId)
+      $commandManager.executeCommand('refresh', { $q }, machineId, machineName)
     },
   },
   {
@@ -581,6 +585,7 @@ const contextMenuOptions = computed(() => [
           { $q },
           sortedSelectedPrograms.value,
           machineId,
+          machineName,
         )
       },
     },
@@ -590,19 +595,19 @@ const contextMenuOptions = computed(() => [
       icon: '',
       disabled: hasOnlyOnController.value,
       onClick: () => {
-        const sourceMachine = { id: machine.currentMachine.id, name: machine.currentMachine.name }
+        const sourceMachine = { id: machineId, name: machineName }
         const selectedRows = editor.selectedPrograms
 
         $q.dialog({
           component: CMMachineListCopyAndSendDialog,
           componentProps: {
-            machineName: machine.currentMachine.name,
-            machineId: machine.currentMachine.id,
+            machineName,
+            machineId,
 
             allMachines: machine.allMachines,
             machineGroups: machine.machineGroups,
 
-            disabledMachineIds: [machine.currentMachine.id],
+            disabledMachineIds: [machineId],
           },
         }).onOk(async ({ machines: targetMachines, pasteOption }: { machines: MachineInfo[], pasteOption: PasteOptions }) => {
           await contextMenuStore.copyAndSendProgramsToMachines(selectedRows, sourceMachine, targetMachines, pasteOption)
@@ -736,8 +741,9 @@ async function onRowDoubleClick(event: Event, row: ProgramTableRow) {
   if (target.closest('.q-checkbox'))
     return
 
-  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE || row.prgState === ProgramStatus.EXISTS_ON_BOTH)
+  if (row.prgState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
     await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
+  }
 }
 
 function handleContextMenu(event: Event, row: ProgramTableRow) {
@@ -745,22 +751,14 @@ function handleContextMenu(event: Event, row: ProgramTableRow) {
   onRowClick(event, row)
 }
 
-function handleRowClass(row: ProgramTableRow): string {
-  if (row.isChanged)
-    return 'changed-on-teleskop'
-  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
-    return 'only-on-controller'
-  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
-    return 'only-on-teleskop'
-  if (row.prgState === ProgramStatus.EXISTS_ON_BOTH) {
-    if (row.updatedAtTBB && row.updatedAt) {
-      const diff = Math.abs(new Date(row.updatedAtTBB).getTime() - new Date(row.updatedAt).getTime())
-      if (diff < 1000)
-        return 'no-changes'
-      return row.updatedAtTBB > row.updatedAt ? 'changed-on-machine' : 'changed-on-teleskop'
-    }
+function getRowStyle(row: ProgramTableRow) {
+  const mode = isDark.value ? 'dark' : 'light'
+
+  return {
+    color:
+      PROGRAM_STATUS_COLORS[row.prgState]?.[mode]
+      ?? PROGRAM_STATUS_COLORS[ProgramStatus.EXISTS_ON_BOTH][mode],
   }
-  return 'no-changes'
 }
 
 onBeforeMount(async () => {
@@ -780,7 +778,7 @@ onBeforeMount(async () => {
     editor.isLoading = false
   })
 
-  machineStatusStore.checkMachineStatus(machineId, { notifyOnError: false })
+  machineStatusStore.checkMachineStatus(machineId, machineName, { notifyOnError: false })
 })
 
 onUnmounted(() => {
@@ -833,8 +831,7 @@ onUnmounted(() => {
         </template>
         <template #body-cell="{ value, row, col }">
           <QTd
-            :class="[handleRowClass(row), col.__tdClass?.(row)]"
-            :style="col.__tdStyle?.(row)"
+            :style="getRowStyle(row)"
           >
             <template v-if="typeof value === 'boolean'">
               <QIcon
@@ -862,7 +859,9 @@ onUnmounted(() => {
       </q-menu>
     </div>
 
-    <CMProgramStateDialog v-if="!route.params.program_no" />
+    <ProgramStatusPopup
+      :statuses="PROGRAM_STATUS_COLORS"
+    />
   </div>
 </template>
 

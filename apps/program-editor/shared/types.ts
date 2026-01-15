@@ -1,5 +1,5 @@
 import type { QBtnProps } from 'quasar'
-import type { CommandEligibility, ParameterTypeValue } from './constants'
+import type { CommandEligibility, ParameterTypeValue, ProgramStatus } from './constants'
 
 export interface ProgramInfo {
   programNo: number
@@ -30,7 +30,7 @@ export interface ProgramTableRow {
   versionNo: number
   updatedAt: Date
   createdAt: Date
-  prgState: number
+  prgState: ProgramStatus
   isChanged: boolean
   totalChemReq: number
   totalDyeReq: number

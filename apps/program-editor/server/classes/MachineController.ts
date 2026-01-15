@@ -300,21 +300,7 @@ export class MachineController {
         if (query?.processType)
           builder.where('H.PROCESSCODE', Number(query.processType))
       })
-  }
-
-  /**
-   * Makinenin tüm programlarının dizisini getirir
-   * @returns {Promise<{ programNo: number, name: string }[]>} - Makinenin tüm programlarının dizisi
-   */
-  @withTransaction
-  async getProgramHeadersAsList(): Promise<{ programNo: number, name: string }[]> {
-    return await this.trx
-      .select({
-        programNo: 'H.PROGNO',
-        name: 'H.NAME',
-      })
-      .from('BFMASTERPRGHEADER AS H')
-      .where('H.MACHINEID', this.id)
+      .orderBy('H.PROGNO')
   }
 
   /**
@@ -1195,7 +1181,7 @@ export class MachineController {
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
-      PRGSTATE: program.prgState ?? ProgramStatus.EXISTS_ONLY_ON_DATABASE,
+      PRGSTATE: Math.min(program.prgState ?? ProgramStatus.EXISTS_ONLY_ON_DATABASE, 2),
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: program.manChemReq + program.autoChemReq + program.saltReq + program.genericMat1Req + program.genericMat2Req,
@@ -1510,6 +1496,11 @@ export class MachineController {
             logger.info(`Program ${programNo} created (new program)`)
           }
 
+          program.isChanged = false
+          program.prgState = ProgramStatus.EXISTS_ON_BOTH
+          program.updatedAtTBB = program.updatedAt
+          await this.updateProgramHeader(program)
+
           successCount++
         } catch (error) {
           errorCount++
@@ -1567,7 +1558,14 @@ export class MachineController {
           const { program } = await this.fetchProgram(programHeader.programNo)
 
           // Makineye yükle
-          await this.client.uploadProgram(program, commands)
+          const isUploaded = await this.client.uploadProgram(program, commands)
+          if (isUploaded) {
+            program.isChanged = false
+            program.prgState = ProgramStatus.EXISTS_ON_BOTH
+            program.updatedAtTBB = program.updatedAt
+            await this.updateProgramHeader(program)
+          }
+
           successCount++
 
           logger.info(`Program ${program.programNo} successfully uploaded to machine`)

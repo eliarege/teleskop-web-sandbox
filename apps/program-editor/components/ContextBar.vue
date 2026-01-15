@@ -1,37 +1,58 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { QBtn, QTooltip } from 'quasar'
+import { computed, onMounted, ref, watch } from 'vue'
+import { QBtn, QIcon, QTooltip } from 'quasar'
 import { useResizeObserver } from '@vueuse/core'
+import type { CustomQBtnProps } from '../composables/useContextBar'
 import TBDurationErrorsDialog from './TBDurationErrorsDialog.vue'
-import { useContextBarState } from '~/composables/useContextBar'
 import { calculateProgramDuration } from '~/shared/formula'
+import type { Machine, Program } from '~/shared/types'
+
+const props = defineProps<{
+  machine: Machine
+  program: Program
+
+  initialTemperature: number
+  contextBarButtons: readonly CustomQBtnProps[]
+}>()
 
 const { t } = useI18n()
-const editor = useEditorStore()
-const machine = useMachineStore()
-const teleskopSettings = useTeleskopSettingsStore()
-const { contextBarButtons } = useContextBarState()
 
-const duration = computed(() => editor.program.duration)
+const leftDrawerOpen = defineModel<boolean>('leftDrawerOpen', { required: true })
+const rightDrawerOpen = defineModel<boolean>('rightDrawerOpen', { required: true })
+
+const duration = ref(props.program.duration ?? 0)
 const durationErrors = ref<string[][]>([])
 
 const visibleContextBarButtons = computed(() =>
-  contextBarButtons.value.filter(btn => btn.visible !== false),
+  props.contextBarButtons.filter(btn => btn.visible !== false),
 )
 
 function calcProgramDuration() {
-  const { duration, errors } = calculateProgramDuration(
-    editor.program,
-    machine.currentMachine,
-    teleskopSettings.initialTemperature,
+  const result = calculateProgramDuration(
+    props.program,
+    props.machine,
+    props.initialTemperature ?? 25,
   )
-  editor.program.duration = duration
-  durationErrors.value = errors
+
+  duration.value = result.duration
+  durationErrors.value = result.errors
 }
 
-// Button Label Auto-Hide Logic
-const container = useTemplateRef('container')
-const buttons = useTemplateRef('buttons')
+onMounted(calcProgramDuration)
+
+watch(
+  () => props.program.steps,
+  calcProgramDuration,
+  { deep: true },
+)
+
+watch(
+  () => props.initialTemperature,
+  calcProgramDuration,
+)
+
+const container = ref<HTMLElement | null>(null)
+const buttons = ref<HTMLElement | null>(null)
 
 const showLabels = ref(true)
 let openButtonWidth = 0
@@ -45,15 +66,6 @@ useResizeObserver(container, () => {
 
   showLabels.value = openButtonWidth < container.value.clientWidth
 })
-
-onMounted(() => {
-  calcProgramDuration()
-})
-
-watch(() => [
-  editor.program.steps,
-  teleskopSettings.initialTemperature,
-], calcProgramDuration, { deep: true })
 </script>
 
 <template>
@@ -66,27 +78,37 @@ watch(() => [
         icon="menu"
         square
         flat
-        @click="editor.leftDrawerOpen = !editor.leftDrawerOpen"
+        @click="leftDrawerOpen = !leftDrawerOpen"
       />
 
       <!-- Button Container -->
-      <div ref="container" class="flex flex-1 items-center overflow-hidden">
-        <div ref="buttons" class="flex items-center whitespace-nowrap">
+      <div
+        ref="container"
+        class="flex flex-1 items-center overflow-hidden"
+      >
+        <div
+          ref="buttons"
+          class="flex items-center whitespace-nowrap"
+        >
           <!-- Context Buttons -->
           <QBtn
-            v-for="(button, index) in visibleContextBarButtons"
-            :key="index"
+            v-for="button in visibleContextBarButtons"
+            :key="button.label || button.originalLabel"
             :disable="button.disable"
-            :label="showLabels ? button.label : undefined"
-            :dense="showLabels"
             :icon="button.icon"
-            class="mx-1 text-3"
+            :label="showLabels ? button.label : undefined"
+            :class="showLabels ? 'mx-0 px-2 ml-1' : 'mx-1 px-4'"
+            square
             flat
             @click="button.onClick"
           >
-            <QTooltip>
+            <QTooltip
+              v-if="button.tooltip || button.shortcut"
+            >
               {{ button.tooltip }}
-              <span v-if="button.shortcut">({{ button.shortcut }})</span>
+              <span v-if="button.shortcut">
+                ({{ button.shortcut }})
+              </span>
             </QTooltip>
           </QBtn>
         </div>
@@ -96,10 +118,10 @@ watch(() => [
     <!-- RIGHT SIDE -->
     <div class="flex items-center justify-end">
       <div
-        v-if="editor.program.programNo"
+        v-if="props.program.programNo"
         class="flex items-center px-2"
       >
-        <q-icon
+        <QIcon
           v-if="durationErrors.length > 0"
           name="warning"
           color="warning"
@@ -107,7 +129,7 @@ watch(() => [
           @click="$q.dialog({
             component: TBDurationErrorsDialog,
             componentProps: {
-              machine: machine.currentMachine,
+              machine: props.machine,
               errors: durationErrors,
             },
           })"
@@ -115,7 +137,8 @@ watch(() => [
           <QTooltip>
             {{ t('contextBar.durationErrorsTooltip') }}
           </QTooltip>
-        </q-icon>
+        </QIcon>
+
         {{ formatDuration(duration) }}
       </div>
 
@@ -125,7 +148,7 @@ watch(() => [
         icon="menu"
         square
         flat
-        @click="editor.rightDrawerOpen = !editor.rightDrawerOpen"
+        @click="rightDrawerOpen = !rightDrawerOpen"
       />
     </div>
   </div>
@@ -135,5 +158,14 @@ watch(() => [
 .q-btn {
   @apply text-transform: capitalize;
   @apply color-gray-7 dark:color-gray-3;
+  font-size: 14px !important;
+}
+
+:deep(.q-btn .q-icon) {
+  font-size: 18px !important; /* ikon boyutu */
+}
+
+:deep(.q-btn .on-left) {
+  margin-right: 4px !important;
 }
 </style>

@@ -33,20 +33,17 @@ function openMachineInNewTab(machineId: number) {
 
 const thumbStyle = { opacity: '0' }
 const currentMachine = ref()
-const retryingMachine = ref<number | null>(null)
 
 function isRetrying(machineId: number): boolean {
-  return retryingMachine.value === machineId
+  return machineStatusStore.isChecking(machineId)
 }
 
-async function retryMachineConnection(machineId: number, event: Event) {
+async function retryMachineConnection(machineId: number, machineName: string, event: Event) {
   if (isRetrying(machineId))
     return
 
   event.stopPropagation()
-  retryingMachine.value = machineId
-  await machineStatusStore.checkMachineStatus(machineId, { notifyOnSuccess: true })
-  retryingMachine.value = null
+  await machineStatusStore.checkMachineStatus(machineId, machineName, { notifyOnSuccess: true })
 }
 </script>
 
@@ -74,43 +71,43 @@ async function retryMachineConnection(machineId: number, event: Event) {
             dense
           >
             <QItem
-              v-for="machine in group.machines"
-              :key="machine.id"
+              v-for="machineItem in group.machines"
+              :key="machineItem.id"
               v-ripple
-              :active="route.params.machine_id === `${machine.id}`"
+              :active="route.params.machine_id === `${machineItem.id}`"
               active-class="e-selected"
               class="text-gray-8 dark:text-gray-3"
               borderless
               clickable
               dense
-              :disable="machine.disabled"
-              @click="onUpdateSelected(`${machine.groupId}-${machine.id}`)"
-              @contextmenu.prevent="currentMachine = machine"
-              @mousedown.middle="openMachineInNewTab(machine.id)"
+              :disable="machineItem.disabled"
+              @click="onUpdateSelected(`${machineItem.groupId}-${machineItem.id}`)"
+              @contextmenu.prevent="currentMachine = machineItem"
+              @mousedown.middle="openMachineInNewTab(machineItem.id)"
             >
               <q-tooltip
-                v-if="machine.disabled && machine.usability"
+                v-if="machineItem.disabled && machineItem.usability"
               >
-                {{ t(`machine.unusableReason.${machine.usability}`) }}
+                {{ t(`machine.unusableReason.${machineItem.usability}`) }}
               </q-tooltip>
 
               <QItemSection dense>
-                {{ machine.name }}
+                {{ machineItem.name }}
               </QItemSection>
               <QItemSection
-                v-if="machineStatusStore.isOffline(machine.id)"
+                v-if="machineStatusStore.isOffline(machineItem.id) || machineStatusStore.isChecking(machineItem.id)"
                 side
               >
                 <QIcon
-                  :name="isRetrying(machine.id) ? 'sync' : 'cloud_off'"
-                  :class="{ rotating: isRetrying(machine.id) }"
+                  :name="isRetrying(machineItem.id) ? 'sync' : 'cloud_off'"
+                  :class="{ rotating: isRetrying(machineItem.id) }"
                   color="warning"
                   size="16px"
                   class="cursor-pointer mr-1"
-                  @click="retryMachineConnection(machine.id, $event)"
+                  @click="retryMachineConnection(machineItem.id, machineItem.name, $event)"
                 >
                   <QTooltip>
-                    {{ isRetrying(machine.id)
+                    {{ isRetrying(machineItem.id)
                       ? t('machine.connecting')
                       : `${t('machine.connectionFailed')} - ${t('clickToRetry')}` }}
                   </QTooltip>
@@ -121,7 +118,7 @@ async function retryMachineConnection(machineId: number, event: Event) {
                 context-menu
               >
                 <MachineListContextMenu
-                  :machine
+                  :machine="machineItem"
                 />
               </QMenu>
             </QItem>

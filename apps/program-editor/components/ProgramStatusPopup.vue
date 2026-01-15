@@ -3,28 +3,28 @@ import { computed } from 'vue'
 import { useLocalStorage } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
 
+const props = defineProps<{
+  statuses: Readonly<Record<number, { light: string, dark: string }>>
+}>()
+
+const $q = useQuasar()
 const { t } = useI18n()
 const app = useAppProps()
+
+const isDark = computed(() => $q.dark.isActive)
+
 const showStatusColorPopup = useLocalStorage(`${app.name}.showPopup`, true)
 
 function togglePopup() {
   showStatusColorPopup.value = !showStatusColorPopup.value
 }
-
-const programStatus = computed(() => [
-  { label: t('programStatusInfo.noChanges'), className: 'no-changes' },
-  { label: t('programStatusInfo.onlyOnTeleskop'), className: 'only-on-teleskop' },
-  { label: t('programStatusInfo.onlyOnController'), className: 'only-on-controller' },
-  { label: t('programStatusInfo.changedOnTeleskop'), className: 'changed-on-teleskop' },
-  { label: t('programStatusInfo.changedOnMachine'), className: 'changed-on-machine' },
-])
 </script>
 
 <template>
   <div class="status-popup">
     <div class="status-header" @click="togglePopup()">
       <span class="font-size-4">
-        {{ t('programStatusInfo._') }}
+        {{ t('programStatusInfo.title') }}
       </span>
       <QIcon
         v-if="showStatusColorPopup"
@@ -35,13 +35,16 @@ const programStatus = computed(() => [
     </div>
 
     <div v-show="showStatusColorPopup" class="status-body">
-      <div class="flex flex-col">
+      <div class="flex flex-col gap-1">
         <div
-          v-for="status in programStatus"
-          :key="status.label"
+          v-for="(status, key) in props.statuses"
+          :key="key"
         >
-          <span :class="status.className">
-            {{ status.label }}
+          <span
+            class="inline-flex items-center"
+            :style="{ color: isDark ? status.dark : status.light }"
+          >
+            {{ t(`programStatusInfo.statuses.${key}`) }}
           </span>
         </div>
       </div>

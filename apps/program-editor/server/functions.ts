@@ -1,8 +1,8 @@
 import type { Knex } from 'knex'
-import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, MachineUnusableReason, ProcessType, TeleskopSettings, TreatmentGroup } from '../shared/types'
+import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, MachineUnusableReason, ProcessType, ProgramTableRow, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
-import { TeleskopSettingsIds } from '~/shared/constants'
+import { ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
 
 interface TransactionOptions {
   trx?: Knex.Transaction
@@ -331,4 +331,28 @@ export async function getTeleskopSettings(): Promise<TeleskopSettings> {
     selectedIcons,
     initialTemperature,
   }
+}
+
+export function calculateProgramStatus(row: ProgramTableRow): ProgramStatus {
+  if (row.isChanged)
+    return ProgramStatus.CHANGED_ON_TELESKOP
+
+  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
+    return ProgramStatus.EXISTS_ONLY_ON_CONTROLLER
+
+  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
+    return ProgramStatus.EXISTS_ONLY_ON_DATABASE
+
+  if (row.prgState === ProgramStatus.EXISTS_ON_BOTH) {
+    if (row.updatedAtTBB && row.updatedAt) {
+      const diff = Math.abs(new Date(row.updatedAtTBB).getTime() - new Date(row.updatedAt).getTime())
+      if (diff < 1000)
+        return ProgramStatus.EXISTS_ON_BOTH
+      return row.updatedAtTBB > row.updatedAt
+        ? ProgramStatus.CHANGED_ON_MACHINE
+        : ProgramStatus.CHANGED_ON_TELESKOP
+    }
+  }
+
+  return ProgramStatus.EXISTS_ON_BOTH
 }

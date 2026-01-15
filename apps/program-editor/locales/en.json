@@ -46,12 +46,14 @@
     "FORMULA_Y_FAILED": "Formula Y calculation failed"
   },
   "programStatusInfo": {
-    "_": "Program Status Colors",
-    "onlyOnController": "Program only exists on controller",
-    "onlyOnTeleskop": "New program (Program only exists on Teleskop)",
-    "changedOnMachine": "Program has changed on controller",
-    "changedOnTeleskop": "Program has changed on Teleskop",
-    "noChanges": "Program is the same on both"
+    "title": "Program Status Colors",
+    "statuses": {
+      "0": "Program only exists on controller",
+      "1": "New program (Program only exists on Teleskop)",
+      "2": "Program is the same on both",
+      "3": "Program has changed on Teleskop",
+      "4": "Program has changed on controller"
+    }
   },
   "menu": {
     "system": "System",
@@ -143,8 +145,8 @@
   },
   "clickToRetry": "Click to retry",
   "machine": {
-    "isOnline": "Machine is online",
-    "isOffline": "Machine is offline",
+    "isOnline": "Machine {machineName} is online",
+    "isOffline": "Machine {machineName} is offline",
     "connecting": "Connecting...",
     "unusableReason": {
       "NO_COMMANDS": "Machine has no commands defined. Please update commands from Machines application.",

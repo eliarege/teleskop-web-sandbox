@@ -1,19 +1,5 @@
 import type { ValueOf } from '@teleskop/utils'
 
-export const ProgramStateColors = {
-  EXISTS_ONLY_ON_CONTROLLER: '#bebebe',
-  EXISTS_ONLY_ON_DATABASE: '#009900',
-  CHANGED_ON_TELESKOP: '#0000ff',
-  CHANGED_ON_MACHINE: '#ff00ff',
-  NO_CHANGES: '#080808',
-
-  EXISTS_ONLY_ON_CONTROLLER_DARK: 'd0d0d0',
-  EXISTS_ONLY_ON_DATABASE_DARK: '#32cd32',
-  CHANGED_ON_TELESKOP_DARK: '#1e90ff',
-  CHANGED_ON_MACHINE_DARK: '#ff00ff',
-  NO_CHANGES_DARK: '#f5f5f5',
-} as const
-
 export enum TeleskopSettingsIds {
   OPTIMIZED_ENABLE = 3,
   OPTIMIZED_LIMIT = 11,
@@ -25,7 +11,17 @@ export enum ProgramStatus {
   EXISTS_ONLY_ON_CONTROLLER = 0,
   EXISTS_ONLY_ON_DATABASE = 1,
   EXISTS_ON_BOTH = 2,
+  CHANGED_ON_TELESKOP = 3,
+  CHANGED_ON_MACHINE = 4,
 }
+
+export const PROGRAM_STATUS_COLORS = {
+  [ProgramStatus.EXISTS_ONLY_ON_CONTROLLER]: { light: '#bebebe', dark: '#a0a0a0' },
+  [ProgramStatus.EXISTS_ONLY_ON_DATABASE]: { light: '#009900', dark: '#32cd32' },
+  [ProgramStatus.CHANGED_ON_TELESKOP]: { light: '#0000ff', dark: '#1e90ff' },
+  [ProgramStatus.CHANGED_ON_MACHINE]: { light: '#ff00ff', dark: '#ff00ff' },
+  [ProgramStatus.EXISTS_ON_BOTH]: { light: '#080808', dark: '#f5f5f5' },
+} as const
 
 export enum CommandEligibility {
   MAIN_OR_PARALLEL = 0,
