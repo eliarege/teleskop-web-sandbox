@@ -39,7 +39,7 @@
     "version": "Version",
     "confirm": "Onayla",
     "confirmMessage": "Devam etmek istediğinizden emin misiniz?",
-    "cancel": "İptal Et"
+    "cancel": "İptal"
   },
   "vnc": {
     "connecting": "Bağlantı kuruluyor",

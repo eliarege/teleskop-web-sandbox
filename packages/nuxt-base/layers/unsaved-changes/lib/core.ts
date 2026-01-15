@@ -82,18 +82,34 @@ export function createUnsavedChangesCore<T>(
    */
   const createUnsavedChangesGuard = (withSave: boolean, message?: string) => {
     const dialogOptions = toValue(options.dialog)
-    const saveAction = { label: dialogOptions?.saveLabel || t('unsavedChanges.save'), value: 'confirm' as const }
-    const discardAction = { label: dialogOptions?.discardLabel || t('unsavedChanges.discard'), value: 'discard' as const }
+    const saveAction = {
+      label: dialogOptions?.saveLabel || t('unsavedChanges.save'),
+      value: 'confirm' as const,
+    }
+    const discardAction = {
+      label: dialogOptions?.discardLabel || (
+        withSave
+          ? t('unsavedChanges.dontSave')
+          : t('unsavedChanges.leaveWithoutSaving')
+      ),
+      value: 'discard' as const,
+      props: { color: 'red-6' },
+    }
 
-    const actions = withSave ? [saveAction, discardAction] : [discardAction]
+    const actions = withSave ? [discardAction, saveAction] : [discardAction]
 
     return $q.dialog({
       component: ConfirmDialog,
       componentProps: {
-        title: dialogOptions?.title,
-        message: message || dialogOptions?.message,
+        title: dialogOptions?.title ?? t('unsavedChanges.dialogTitle'),
+        message: message ?? dialogOptions?.message ?? (
+          withSave
+            ? t('unsavedChanges.dialogMessageWithSave')
+            : t('unsavedChanges.dialogMessageWithoutSave')
+        ),
         okActions: actions,
         cancelLabel: dialogOptions?.cancelLabel,
+        noCloseButton: true,
         dialogProps: {
           transitionShow: 'fade',
           transitionHide: 'fade',
@@ -114,6 +130,7 @@ export function createUnsavedChangesCore<T>(
           message: t('unsavedChanges.retrySaveMessage'),
           okActions: [{ label: t('unsavedChanges.retrySaveOk'), value: 'ok' }],
           cancelLabel: t('unsavedChanges.retrySaveCancel'),
+          noCloseButton: true,
           dialogProps: {
             transitionShow: 'fade',
             transitionHide: 'fade',
