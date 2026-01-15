@@ -11,9 +11,6 @@ const props = defineProps<{
   machine: Machine
   program: Program
 
-  leftDrawerOpen: boolean
-  rightDrawerOpen: boolean
-
   initialTemperature: number
   contextBarButtons: readonly CustomQBtnProps[]
 }>()

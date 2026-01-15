@@ -345,17 +345,14 @@ const goRoot = computed(() => {
           class="flex sticky top-10 z-10 bg-light-7  dark:bg-dark-3"
         >
           <ContextBar
+            v-model:left-drawer-open="editor.leftDrawerOpen"
+            v-model:right-drawer-open="editor.rightDrawerOpen"
+
             :machine="machine.currentMachine"
             :program="editor.program"
 
-            :left-drawer-open="editor.leftDrawerOpen"
-            :right-drawer-open="editor.rightDrawerOpen"
-
             :initial-temperature="teleskopSettings.initialTemperature"
             :context-bar-buttons="contextBarButtons"
-
-            @update:left-drawer-open="val => editor.leftDrawerOpen = val"
-            @update:right-drawer-open="val => editor.rightDrawerOpen = val"
           />
         </div>
         <div>
