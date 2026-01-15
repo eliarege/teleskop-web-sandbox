@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useWindowSize } from '@vueuse/core'
 import type { FetchError } from 'ofetch'
-import type { Feedback } from '../../types'
-import { getBrowserInfo, getOSInfo } from '../../utils/userAgent'
-import { useAppProps } from '../../composables/useAppProps'
-import { convertElementToCanvas } from '../../utils/html2canvas'
-import { useAppList } from '../../composables/useAppList'
+import type { Feedback } from '../types/feedback'
+import { getBrowserInfo, getOSInfo } from '../../../utils/userAgent'
+import { useAppProps } from '../../../composables/useAppProps'
+import { convertElementToCanvas } from '../../../utils/html2canvas'
+import { useAppList } from '../../../composables/useAppList'
 import type { Rect } from './FeedbackScreenshotEditor.vue'
 
 defineEmits([...useDialogPluginComponent.emits])
@@ -15,9 +15,7 @@ const q = useQuasar()
 const appProps = useAppProps()
 const appList = useAppList()
 const { width, height } = useWindowSize()
-
 const { fetch: kcFetch, tokenParsed } = useKeycloak()
-
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const appOptions = appList.map(a => ({
