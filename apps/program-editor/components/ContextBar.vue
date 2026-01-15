@@ -18,29 +18,17 @@ const props = defineProps<{
   contextBarButtons: readonly CustomQBtnProps[]
 }>()
 
-const emit = defineEmits<{
-  (e: 'update:leftDrawerOpen', value: boolean): void
-  (e: 'update:rightDrawerOpen', value: boolean): void
-}>()
-
-const leftDrawerOpen = computed({
-  get: () => props.leftDrawerOpen,
-  set: v => emit('update:leftDrawerOpen', v),
-})
-
-const rightDrawerOpen = computed({
-  get: () => props.rightDrawerOpen,
-  set: v => emit('update:rightDrawerOpen', v),
-})
-
 const { t } = useI18n()
+
+const leftDrawerOpen = defineModel<boolean>('leftDrawerOpen', { required: true })
+const rightDrawerOpen = defineModel<boolean>('rightDrawerOpen', { required: true })
+
+const duration = ref(props.program.duration ?? 0)
+const durationErrors = ref<string[][]>([])
 
 const visibleContextBarButtons = computed(() =>
   props.contextBarButtons.filter(btn => btn.visible !== false),
 )
-
-const duration = ref(props.program.duration ?? 0)
-const durationErrors = ref<string[][]>([])
 
 function calcProgramDuration() {
   const result = calculateProgramDuration(
