@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { QBtnProps, QDialogProps } from 'quasar'
+import type { QBtnProps, QCard, QDialogProps } from 'quasar'
+import { useFocusTrap } from '@vueuse/integrations/useFocusTrap'
 
 type ButtonAction = {
   label: string
@@ -14,10 +15,19 @@ const props = defineProps<{
   cancelLabel?: string
   noTransition?: boolean
   dialogProps?: QDialogProps
+  noCloseButton?: boolean
 }>()
 defineEmits(useDialogPluginComponent.emits)
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginComponent()
+const card = useTemplateRef<InstanceType<typeof QCard>>('card')
+
+const { activate } = useFocusTrap(card)
+
+watch(card, async () => {
+  await nextTick()
+  activate()
+})
 
 const title = computed(() => props.title || t('base.confirm'))
 const message = computed(() => props.message || t('base.confirmMessage'))
@@ -32,12 +42,13 @@ const okActions = computed(() => props.okActions || [{ label: t('base.confirm'),
     v-bind="props.dialogProps"
     @hide="onDialogHide"
   >
-    <q-card class="q-dialog-plugin">
+    <q-card ref="card" class="q-dialog-plugin">
       <q-card-section>
         <div class="text-h6 flex">
           {{ title }}
           <q-space />
           <q-btn
+            v-if="!props.noCloseButton"
             class="text-gray-4 dark:text-gray-6"
             icon="close"
             flat
@@ -50,7 +61,16 @@ const okActions = computed(() => props.okActions || [{ label: t('base.confirm'),
       <q-card-section>
         {{ message }}
       </q-card-section>
+      <q-separator />
       <q-card-actions align="right">
+        <q-btn
+          no-caps
+          class="bg-gray-200"
+          unelevated
+          text-color="black"
+          :label="cancelLabel"
+          @click="onDialogCancel"
+        />
         <q-btn
           v-for="action in okActions"
           :key="action.value"
@@ -59,12 +79,6 @@ const okActions = computed(() => props.okActions || [{ label: t('base.confirm'),
           v-bind="action.props"
           :label="action.label"
           @click="onDialogOK(action.value)"
-        />
-        <q-btn
-          color="primary"
-          no-caps
-          :label="cancelLabel"
-          @click="onDialogCancel"
         />
       </q-card-actions>
     </q-card>
