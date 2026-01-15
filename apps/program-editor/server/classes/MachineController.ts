@@ -300,6 +300,7 @@ export class MachineController {
         if (query?.processType)
           builder.where('H.PROCESSCODE', Number(query.processType))
       })
+      .orderBy('H.PROGNO')
   }
 
   /**

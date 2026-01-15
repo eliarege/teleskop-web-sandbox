@@ -25,12 +25,10 @@ export default defineAuthEventHandler(async (event) => {
   if (event.method === 'GET') {
     const programs = await machine.fetchAllProgramHeaders(query)
 
-    return programs
-      .sort((a, b) => a.programNo - b.programNo)
-      .map((program: ProgramTableRow) => ({
-        ...program,
-        prgState: calculateProgramStatus(program),
-      }))
+    return programs.map((program: ProgramTableRow) => ({
+      ...program,
+      prgState: calculateProgramStatus(program),
+    }))
   }
 
   if (event.method === 'POST') {
