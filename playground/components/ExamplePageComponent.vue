@@ -24,10 +24,6 @@ const { saving: savingGuard, markSaved } = useUnsavedChangesGuard({
   getState: () => formData.value,
   saveState: data => save(data),
   onSaveError,
-  dialog: {
-    title: 'Unsaved Changes',
-    message: 'You have unsaved changes. What would you like to do?',
-  },
 })
 
 const saving = computed(() => savingLocal.value || savingGuard.value)
