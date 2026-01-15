@@ -1180,7 +1180,7 @@ export class MachineController {
       USERCOMMENT: program.comment,
       ISDELETED: 0,
       ISCHANGED: program.isChanged ? 1 : 0,
-      PRGSTATE: program.prgState ?? ProgramStatus.EXISTS_ONLY_ON_DATABASE,
+      PRGSTATE: Math.min(program.prgState ?? ProgramStatus.EXISTS_ONLY_ON_DATABASE, 2),
       TBBPRGCHANGEDEVENT: program.tbbProgramChangedEvent,
       SOURCEMACHID: 0,
       TotalChemReq: program.manChemReq + program.autoChemReq + program.saltReq + program.genericMat1Req + program.genericMat2Req,

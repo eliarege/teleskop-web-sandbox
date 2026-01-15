@@ -8,7 +8,7 @@ import { onKeyStroke } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { capitalize } from '~/shared/utils'
 import type { ContextBarButtons, MachineInfo, PasteOptions, ProgramTableRow } from '~/shared/types'
-import { ADDITIONAL_PROCESS_CODE_ILAVE, ProgramStatus } from '~/shared/constants'
+import { ADDITIONAL_PROCESS_CODE_ILAVE, PROGRAM_STATUS_COLORS, ProgramStatus } from '~/shared/constants'
 import { formatDuration, useErrorStore } from '~/composables/utils'
 import { useContextBar } from '~/composables/useContextBar'
 import { useEditorStore } from '~/composables/editor'
@@ -741,8 +741,9 @@ async function onRowDoubleClick(event: Event, row: ProgramTableRow) {
   if (target.closest('.q-checkbox'))
     return
 
-  if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE || row.prgState === ProgramStatus.EXISTS_ON_BOTH)
+  if (row.prgState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
     await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
+  }
 }
 
 function handleContextMenu(event: Event, row: ProgramTableRow) {
@@ -751,10 +752,13 @@ function handleContextMenu(event: Event, row: ProgramTableRow) {
 }
 
 function getRowStyle(row: ProgramTableRow) {
-  if (isDark.value)
-    return { color: row.rowColor.dark }
-  else
-    return { color: row.rowColor.light }
+  const mode = isDark.value ? 'dark' : 'light'
+
+  return {
+    color:
+      PROGRAM_STATUS_COLORS[row.prgState]?.[mode]
+      ?? PROGRAM_STATUS_COLORS[ProgramStatus.EXISTS_ON_BOTH][mode],
+  }
 }
 
 onBeforeMount(async () => {
@@ -855,7 +859,9 @@ onUnmounted(() => {
       </q-menu>
     </div>
 
-    <CMProgramStateDialog v-if="!route.params.program_no" />
+    <ProgramStatusPopup
+      :statuses="PROGRAM_STATUS_COLORS"
+    />
   </div>
 </template>
 

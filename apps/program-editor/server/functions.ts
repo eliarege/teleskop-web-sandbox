@@ -2,8 +2,7 @@ import type { Knex } from 'knex'
 import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, MachineUnusableReason, ProcessType, ProgramTableRow, TeleskopSettings, TreatmentGroup } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
-import type { ProgramRowColor } from '~/shared/constants'
-import { PROGRAM_STATUS_COLORS, ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
+import { ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
 
 interface TransactionOptions {
   trx?: Knex.Transaction
@@ -334,26 +333,26 @@ export async function getTeleskopSettings(): Promise<TeleskopSettings> {
   }
 }
 
-export function calculateProgramRowColor(row: Omit<ProgramTableRow, 'rowColor'>): ProgramRowColor {
+export function calculateProgramStatus(row: ProgramTableRow): ProgramStatus {
   if (row.isChanged)
-    return PROGRAM_STATUS_COLORS.CHANGED_ON_TELESKOP
+    return ProgramStatus.CHANGED_ON_TELESKOP
 
   if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER)
-    return PROGRAM_STATUS_COLORS.EXISTS_ONLY_ON_CONTROLLER
+    return ProgramStatus.EXISTS_ONLY_ON_CONTROLLER
 
   if (row.prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE)
-    return PROGRAM_STATUS_COLORS.EXISTS_ONLY_ON_DATABASE
+    return ProgramStatus.EXISTS_ONLY_ON_DATABASE
 
   if (row.prgState === ProgramStatus.EXISTS_ON_BOTH) {
     if (row.updatedAtTBB && row.updatedAt) {
       const diff = Math.abs(new Date(row.updatedAtTBB).getTime() - new Date(row.updatedAt).getTime())
       if (diff < 1000)
-        return PROGRAM_STATUS_COLORS.NO_CHANGES
+        return ProgramStatus.EXISTS_ON_BOTH
       return row.updatedAtTBB > row.updatedAt
-        ? PROGRAM_STATUS_COLORS.CHANGED_ON_MACHINE
-        : PROGRAM_STATUS_COLORS.CHANGED_ON_TELESKOP
+        ? ProgramStatus.CHANGED_ON_MACHINE
+        : ProgramStatus.CHANGED_ON_TELESKOP
     }
   }
 
-  return PROGRAM_STATUS_COLORS.NO_CHANGES
+  return ProgramStatus.EXISTS_ON_BOTH
 }

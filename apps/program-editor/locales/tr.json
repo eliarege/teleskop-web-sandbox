@@ -46,12 +46,14 @@
     "FORMULA_Y_FAILED": "Formül Y hesaplaması başarısız"
   },
   "programStatusInfo": {
-    "_": "Program Durum Renkleri",
-    "onlyOnController": "Program sadece cihazda",
-    "onlyOnTeleskop": "Yeni program (Program sadece Teleskop'ta)",
-    "changedOnMachine": "Program cihazda değiştirildi",
-    "changedOnTeleskop": "Program Teleskop'ta değiştirildi",
-    "noChanges": "Program iki tarafta da aynı"
+    "title": "Program Durum Renkleri",
+    "statuses": {
+      "0": "Program sadece cihazda",
+      "1": "Yeni program (Program sadece Teleskop'ta)",
+      "2": "Program iki tarafta da aynı",
+      "3": "Program Teleskop'ta değiştirildi",
+      "4": "Program cihazda değiştirildi"
+    }
   },
   "menu": {
     "system": "Sistem",

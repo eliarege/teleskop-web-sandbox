@@ -3,7 +3,7 @@ import type { Program, ProgramTableRow } from '~/shared/types'
 import { ProgramStatus } from '~/shared/constants'
 import { PError } from '~/server/error'
 import { ProgramEditorActivityCodes } from '~/server/constants'
-import { calculateProgramRowColor, logEditorOperation } from '~/server/functions'
+import { calculateProgramStatus, logEditorOperation } from '~/server/functions'
 import logger from '~/server/logger'
 import { checkPermission } from '~/server/utils/auth'
 import type { MachineController } from '~/server/classes/MachineController'
@@ -25,14 +25,12 @@ export default defineAuthEventHandler(async (event) => {
   if (event.method === 'GET') {
     const programs = await machine.fetchAllProgramHeaders(query)
 
-    const programWithColors = programs
+    return programs
       .sort((a, b) => a.programNo - b.programNo)
       .map((program: ProgramTableRow) => ({
         ...program,
-        rowColor: calculateProgramRowColor(program),
+        prgState: calculateProgramStatus(program),
       }))
-
-    return programWithColors
   }
 
   if (event.method === 'POST') {
