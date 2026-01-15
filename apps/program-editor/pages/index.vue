@@ -33,7 +33,7 @@ const machineId = Number(isDef(route.params.machine_id))
 if (!machineId) {
   const redirected = await machine.selectFirstUsableMachine()
   if (!redirected) {
-    notifyError(t('machine.noUsableMachineFound'))
+    notifyError(t('noUsableMachineFound'))
   }
 }
 
