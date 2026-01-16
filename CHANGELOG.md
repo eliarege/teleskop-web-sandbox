@@ -1,8 +1,36 @@
 # Changelog
 
+## 0.66.0 - 2026-01-16
+
+[Compare Changes](9b6c5dd270b0fff2318d587fb8e9d590f4713f8a...29718e9e9c4e12c999e0a3b55d21a630f7c0e12a)
+
+### 🚀 Features
+
+-  **PE**: The calculation of program status colors in the programs table has been moved to the backend. ([6ccabf2](6ccabf2170c6935a173dd33a7f104c99a4656f7e))
+-  **PE**: Enhance ContextBar integration with dynamic props and contextBarButtons state ([43d1504](43d1504f355654d6a13689b1347181f8df867636))
+-  **PE**: Refactor ContextBar to use props for program and machine data, enhancing reactivity and maintainability ([24e8f3c](24e8f3cef95f720c6e0eb5c814823a20338c6698))
+-  **PE**: Sort program headers by program number before assigning row colors ([2c275f6](2c275f60c63493e0edbf7a88d766e651b6eef2e9))
+-  **PE**: Update program state and header after successful upload ([a673087](a67308772d55d0b4e67691ce21f1f388d6c605f9))
+-  **PE**: Set program state and updated timestamp during program insertion ([7fb02e2](7fb02e2a8bb68db83e1414f5147fde30b742c7b2))
+-  **PE**: Enhance machine status handling with machine names and improve localization ([db40719](db40719d52c03c23b61a81829bf0f82436976adf))
+-  **PE**: Refactor ContextBar to use defineModel for drawer states and clean up emit logic ([448d1bc](448d1bc1288e0fdfb51a33eaf4ab54dc1902119c))
+-  **PE**: Implement ProgramStatusPopup component and update program status handling ([6440a57](6440a5712a5db35b88d277f9468106152cfc2053))
+-  **PE**: Optimize program retrieval by removing unnecessary sorting and adding orderBy clause ([637e120](637e120f88949e3cfe7f69fd1e28e75f58af43ef))
+
+### 🐛 Bug Fixes
+
+-  **PE**: The unused function was removed and prgState was set equal to the enum. ([5698c52](5698c524b236bcc7667eaf887c1503afc6fb217f))
+-  **PE**: Update error notification message for no usable machine found ([8f50899](8f508991ea6cd3195043e551a9119e1a479a5477))
+-  **MA**: Some tables not being updated during project upload process, closes #44 ([fcc7fef](fcc7fefa294fe8377724574c334707dcd9a9d077))
+-  **MA**: Fix layout of command-type-definitions page ([29718e9](29718e9e9c4e12c999e0a3b55d21a630f7c0e12a))
+
+### ♻️ Refactor
+
+-  **PE**: Simplify ContextBar props by using v-model for drawer states ([5f22ff6](5f22ff64534b111d342ad0bc0650a311792bff9d))
+
 ## 0.65.0 - 2026-01-13
 
-[Compare Changes](55190f45ad40ddafd3be701b20c4a71ae18e6cb6...0f7f0aa3a16abeaf84b27bbe02b6e1b6c259593d)
+[Compare Changes](55190f45ad40ddafd3be701b20c4a71ae18e6cb6...9b6c5dd270b0fff2318d587fb8e9d590f4713f8a)
 
 ### 🚀 Features
 
