@@ -86,207 +86,210 @@ declare module 'keycloak-js' {
   }
 }
 
-export default defineNuxtPlugin(() => {
-  const config = useRuntimeConfig()
-  const locale = useCookie('teleskop_locale')
-  const kcConfig = useAppConfig().keycloak
-  const kcEnabled = config.public.kcEnabled
-  const kcScope = 'openid profile email'
-  const keycloak = new Keycloak({
-    url: config.public.kcUrl,
-    realm: config.public.kcRealm,
-    clientId: config.public.kcClientId,
-  })
-  const ready = ref(false)
-  const didInitialise = ref(false)
-  const token = ref<string>()
-  const tokenParsed = ref<KeycloakTokenParsed>()
-  const authenticated = ref(false)
-  const userProfile = ref<KeycloakProfile>()
-  const userInfo = ref<Record<string, any>>()
+export default defineNuxtPlugin({
+  name: 'nuxt-base:keycloak',
+  setup() {
+    const config = useRuntimeConfig()
+    const locale = useCookie('teleskop_locale')
+    const kcConfig = useAppConfig().keycloak
+    const kcEnabled = config.public.kcEnabled
+    const kcScope = 'openid profile email'
+    const keycloak = new Keycloak({
+      url: config.public.kcUrl,
+      realm: config.public.kcRealm,
+      clientId: config.public.kcClientId,
+    })
+    const ready = ref(false)
+    const didInitialise = ref(false)
+    const token = ref<string>()
+    const tokenParsed = ref<KeycloakTokenParsed>()
+    const authenticated = ref(false)
+    const userProfile = ref<KeycloakProfile>()
+    const userInfo = ref<Record<string, any>>()
 
-  const userResourceRoles = computed(() =>
-    Object.entries(tokenParsed.value?.resource_access || {})
-      .flatMap(([client, { roles }]) => roles.map(role => ({ client, role }))),
-  )
+    const userResourceRoles = computed(() =>
+      Object.entries(tokenParsed.value?.resource_access || {})
+        .flatMap(([client, { roles }]) => roles.map(role => ({ client, role }))),
+    )
 
-  const onReady = createEventHook<boolean>()
-  const onAuthSuccess = createEventHook()
-  const onAuthError = createEventHook<KeycloakError>()
-  const onAuthRefreshSuccess = createEventHook()
-  const onAuthRefreshError = createEventHook()
-  const onAuthLogout = createEventHook()
-  const onTokenExpired = createEventHook()
-  const onActionUpdate = createEventHook<'success' | 'cancelled' | 'error'>()
+    const onReady = createEventHook<boolean>()
+    const onAuthSuccess = createEventHook()
+    const onAuthError = createEventHook<KeycloakError>()
+    const onAuthRefreshSuccess = createEventHook()
+    const onAuthRefreshError = createEventHook()
+    const onAuthLogout = createEventHook()
+    const onTokenExpired = createEventHook()
+    const onActionUpdate = createEventHook<'success' | 'cancelled' | 'error'>()
 
-  keycloak.onReady = (auth) => {
-    ready.value = true
-    onReady.trigger(auth ?? false)
-  }
-  keycloak.onAuthSuccess = () => {
-    authenticated.value = true
-    token.value = keycloak.token
-    tokenParsed.value = keycloak.tokenParsed
-    onAuthSuccess.trigger()
-  }
-  keycloak.onAuthError = err => onAuthError.trigger(err)
-  keycloak.onAuthRefreshSuccess = () => {
-    token.value = keycloak.token
-    onAuthRefreshSuccess.trigger()
-  }
-  keycloak.onAuthRefreshError = () => onAuthRefreshError.trigger()
-  keycloak.onAuthLogout = () => {
-    authenticated.value = false
-    token.value = undefined
-    tokenParsed.value = undefined
-    userInfo.value = undefined
-    userProfile.value = undefined
-    onAuthLogout.trigger()
-  }
-  keycloak.onTokenExpired = () => onTokenExpired.trigger()
-  keycloak.onActionUpdate = status => onActionUpdate.trigger(status)
-
-  if (kcEnabled) {
-    let initPromise: Promise<any>
-    const initOptions: KeycloakInitOptions = {
-      flow: 'standard',
-      scope: kcScope,
-      enableLogging: kcConfig?.enableLogging ?? import.meta.dev,
-      pkceMethod: 'S256',
+    keycloak.onReady = (auth) => {
+      ready.value = true
+      onReady.trigger(auth ?? false)
     }
-    if (kcConfig?.loginRequired) {
-      initPromise = keycloak.init({
-        ...initOptions,
-        onLoad: 'login-required',
-        locale: locale.value || 'en-US',
+    keycloak.onAuthSuccess = () => {
+      authenticated.value = true
+      token.value = keycloak.token
+      tokenParsed.value = keycloak.tokenParsed
+      onAuthSuccess.trigger()
+    }
+    keycloak.onAuthError = err => onAuthError.trigger(err)
+    keycloak.onAuthRefreshSuccess = () => {
+      token.value = keycloak.token
+      onAuthRefreshSuccess.trigger()
+    }
+    keycloak.onAuthRefreshError = () => onAuthRefreshError.trigger()
+    keycloak.onAuthLogout = () => {
+      authenticated.value = false
+      token.value = undefined
+      tokenParsed.value = undefined
+      userInfo.value = undefined
+      userProfile.value = undefined
+      onAuthLogout.trigger()
+    }
+    keycloak.onTokenExpired = () => onTokenExpired.trigger()
+    keycloak.onActionUpdate = status => onActionUpdate.trigger(status)
+
+    if (kcEnabled) {
+      let initPromise: Promise<any>
+      const initOptions: KeycloakInitOptions = {
+        flow: 'standard',
+        scope: kcScope,
+        enableLogging: kcConfig?.enableLogging ?? import.meta.dev,
+        pkceMethod: 'S256',
+      }
+      if (kcConfig?.loginRequired) {
+        initPromise = keycloak.init({
+          ...initOptions,
+          onLoad: 'login-required',
+          locale: locale.value || 'en-US',
+        })
+      } else {
+        initPromise = keycloak.init({
+          ...initOptions,
+          onLoad: 'check-sso',
+          checkLoginIframe: window.isSecureContext,
+          silentCheckSsoRedirectUri: withBase('/api/check-sso', withBase(config.app.baseURL, location.origin)),
+        })
+      }
+      initPromise.finally(() => {
+        didInitialise.value = true
+        // Supported parameters for standard flow: https://github.com/keycloak/keycloak-js/blob/52c8ad8f2e75123dfd1c5a4f6ef6c76ce2fd9be4/lib/keycloak.js#L1039
+        let cleanHash = location.hash
+          .replaceAll(/[#&](?:code|state|session_state|iss|kc_action(?:_status)?)=[^#&]*/g, '')
+
+        if (cleanHash.length && !cleanHash.startsWith('#')) {
+          cleanHash = `#${cleanHash}`
+        }
+        setTimeout(() => {
+          window.location.hash = cleanHash
+        }, 500)
       })
     } else {
-      initPromise = keycloak.init({
-        ...initOptions,
-        onLoad: 'check-sso',
-        checkLoginIframe: window.isSecureContext,
-        silentCheckSsoRedirectUri: withBase('/api/check-sso', withBase(config.app.baseURL, location.origin)),
-      })
-    }
-    initPromise.finally(() => {
+      ready.value = true
+      authenticated.value = true
       didInitialise.value = true
-      // Supported parameters for standard flow: https://github.com/keycloak/keycloak-js/blob/52c8ad8f2e75123dfd1c5a4f6ef6c76ce2fd9be4/lib/keycloak.js#L1039
-      let cleanHash = location.hash
-        .replaceAll(/[#&](?:code|state|session_state|iss|kc_action(?:_status)?)=[^#&]*/g, '')
+    }
 
-      if (cleanHash.length && !cleanHash.startsWith('#')) {
-        cleanHash = `#${cleanHash}`
-      }
-      setTimeout(() => {
-        window.location.hash = cleanHash
-      }, 500)
+    const noop = () => {}
+
+    const login = (options?: { redirectUri?: string }) => {
+      return navigateTo(
+        keycloak.createLoginUrl({
+          locale: locale.value || 'en',
+          redirectUri: options?.redirectUri,
+        }),
+        { external: true },
+      )
+    }
+
+    const logout = () => {
+      return navigateTo(
+        keycloak.createLogoutUrl(),
+        { external: true },
+      )
+    }
+
+    const register = () => {
+      return navigateTo(
+        keycloak.createRegisterUrl({
+          locale: locale.value || 'en',
+        }),
+        { external: true },
+      )
+    }
+
+    const updateToken = async (minimumTokenValidity?: number): Promise<boolean> => {
+      return keycloak.updateToken(minimumTokenValidity ?? kcConfig?.minimumTokenValidity)
+    }
+
+    const loadUserProfile = async () => {
+      await updateToken()
+      await keycloak.loadUserProfile()
+      userProfile.value = keycloak.profile
+    }
+
+    const loadUserInfo = async () => {
+      await updateToken()
+      await keycloak.loadUserInfo()
+      userInfo.value = keycloak.userInfo
+    }
+
+    const fetch = $fetch.create({
+      async onRequest(context) {
+        if (kcEnabled) {
+          if (!token.value && !didInitialise.value) {
+            await until(didInitialise).toBe(true)
+          }
+          if (token.value) {
+            await keycloak.updateToken(kcConfig?.minimumTokenValidity)
+            setHeader(context.options, 'Authorization', `Bearer ${token.value}`)
+          }
+        }
+      },
     })
-  } else {
-    ready.value = true
-    authenticated.value = true
-    didInitialise.value = true
-  }
 
-  const noop = () => {}
+    const hasRealmRole = (role: string) => {
+      return tokenParsed.value?.realm_access?.roles.includes(role) ?? false
+    }
 
-  const login = (options?: { redirectUri?: string }) => {
-    return navigateTo(
-      keycloak.createLoginUrl({
-        locale: locale.value || 'en',
-        redirectUri: options?.redirectUri,
-      }),
-      { external: true },
-    )
-  }
+    const hasResourceRole = (role: string, resource = config.public.kcClientId) => {
+      return tokenParsed.value?.resource_access?.[resource]?.roles.includes(role) ?? false
+    }
 
-  const logout = () => {
-    return navigateTo(
-      keycloak.createLogoutUrl(),
-      { external: true },
-    )
-  }
-
-  const register = () => {
-    return navigateTo(
-      keycloak.createRegisterUrl({
-        locale: locale.value || 'en',
-      }),
-      { external: true },
-    )
-  }
-
-  const updateToken = async (minimumTokenValidity?: number): Promise<boolean> => {
-    return keycloak.updateToken(minimumTokenValidity ?? kcConfig?.minimumTokenValidity)
-  }
-
-  const loadUserProfile = async () => {
-    await updateToken()
-    await keycloak.loadUserProfile()
-    userProfile.value = keycloak.profile
-  }
-
-  const loadUserInfo = async () => {
-    await updateToken()
-    await keycloak.loadUserInfo()
-    userInfo.value = keycloak.userInfo
-  }
-
-  const fetch = $fetch.create({
-    async onRequest(context) {
-      if (kcEnabled) {
-        if (!token.value && !didInitialise.value) {
-          await until(didInitialise).toBe(true)
-        }
-        if (token.value) {
-          await keycloak.updateToken(kcConfig?.minimumTokenValidity)
-          setHeader(context.options, 'Authorization', `Bearer ${token.value}`)
-        }
-      }
-    },
-  })
-
-  const hasRealmRole = (role: string) => {
-    return tokenParsed.value?.realm_access?.roles.includes(role) ?? false
-  }
-
-  const hasResourceRole = (role: string, resource = config.public.kcClientId) => {
-    return tokenParsed.value?.resource_access?.[resource]?.roles.includes(role) ?? false
-  }
-
-  return {
-    provide: {
-      keycloak: {
-        fetch,
-        enabled: kcEnabled,
-        ready: readonly(ready),
-        didInitialise: readonly(didInitialise),
-        token: readonly(token),
-        tokenParsed: readonly(tokenParsed),
-        authenticated: readonly(authenticated),
-        userProfile: readonly(userProfile),
-        userInfo: readonly(userInfo),
-        userResourceRoles,
-        login: kcEnabled ? login : noop,
-        logout: kcEnabled ? logout : noop,
-        register: kcEnabled ? register : noop,
-        onReady: onReady.on,
-        onAuthSuccess: onAuthSuccess.on,
-        onAuthError: onAuthError.on,
-        onAuthRefreshSuccess: onAuthRefreshSuccess.on,
-        onAuthRefreshError: onAuthRefreshError.on,
-        onAuthLogout: onAuthLogout.on,
-        onTokenExpired: onTokenExpired.on,
-        onActionUpdate: onActionUpdate.on,
-        hasRealmRole: kcEnabled ? hasRealmRole : () => true,
-        hasResourceRole: kcEnabled ? hasResourceRole : () => true,
-        isTokenExpired: kcEnabled ? keycloak.isTokenExpired : () => false,
-        updateToken: kcEnabled ? updateToken : noop,
-        // No need to wrap this since its already handled by `onAuthLogout` listener
-        clearToken: kcEnabled ? keycloak.clearToken : noop,
-        loadUserInfo: kcEnabled ? loadUserInfo : noop,
-        loadUserProfile: kcEnabled ? loadUserProfile : noop,
-        createAccountUrl: keycloak.createAccountUrl,
-      } as KeycloakPlugin,
-    },
-  }
+    return {
+      provide: {
+        keycloak: {
+          fetch,
+          enabled: kcEnabled,
+          ready: readonly(ready),
+          didInitialise: readonly(didInitialise),
+          token: readonly(token),
+          tokenParsed: readonly(tokenParsed),
+          authenticated: readonly(authenticated),
+          userProfile: readonly(userProfile),
+          userInfo: readonly(userInfo),
+          userResourceRoles,
+          login: kcEnabled ? login : noop,
+          logout: kcEnabled ? logout : noop,
+          register: kcEnabled ? register : noop,
+          onReady: onReady.on,
+          onAuthSuccess: onAuthSuccess.on,
+          onAuthError: onAuthError.on,
+          onAuthRefreshSuccess: onAuthRefreshSuccess.on,
+          onAuthRefreshError: onAuthRefreshError.on,
+          onAuthLogout: onAuthLogout.on,
+          onTokenExpired: onTokenExpired.on,
+          onActionUpdate: onActionUpdate.on,
+          hasRealmRole: kcEnabled ? hasRealmRole : () => true,
+          hasResourceRole: kcEnabled ? hasResourceRole : () => true,
+          isTokenExpired: kcEnabled ? keycloak.isTokenExpired : () => false,
+          updateToken: kcEnabled ? updateToken : noop,
+          // No need to wrap this since its already handled by `onAuthLogout` listener
+          clearToken: kcEnabled ? keycloak.clearToken : noop,
+          loadUserInfo: kcEnabled ? loadUserInfo : noop,
+          loadUserProfile: kcEnabled ? loadUserProfile : noop,
+          createAccountUrl: keycloak.createAccountUrl,
+        } as KeycloakPlugin,
+      },
+    }
+  },
 })

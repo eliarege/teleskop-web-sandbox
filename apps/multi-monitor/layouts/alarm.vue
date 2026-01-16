@@ -77,7 +77,7 @@ const filterModal = ref(false)
         </TopbarFilter>
         <TopbarAppGrid />
         <TopbarUser>
-          <TopbarPtCommonSettings disable-theme :items="commonSettingsItems" />
+          <TopbarCommonSettings disable-theme :items="commonSettingsItems" />
         </TopbarUser>
         <TopbarLoginButton />
       </QToolbar>

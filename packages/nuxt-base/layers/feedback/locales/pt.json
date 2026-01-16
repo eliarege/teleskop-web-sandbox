@@ -15,6 +15,7 @@
     "email": "E-mail",
     "app-name": "Nome do aplicativo",
     "description": "Descrição",
+    "sendFeedback": "Enviar Feedback",
     "reportType": {
       "_": "Tipo de Relatório",
       "bug": "Erro",

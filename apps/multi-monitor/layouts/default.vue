@@ -131,7 +131,7 @@ const machineData = computed(() => {
         <div class="flex-shrink-0">
           <TopbarAppGrid />
           <TopbarUser>
-            <TopbarPtCommonSettings disable-theme :extra-items="commonSettingsItems" />
+            <TopbarCommonSettings disable-theme :extra-items="commonSettingsItems" />
           </TopbarUser>
           <TopbarLoginButton />
         </div>

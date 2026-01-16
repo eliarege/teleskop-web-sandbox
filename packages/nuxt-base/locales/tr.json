@@ -29,7 +29,6 @@
     "profile": "Profil",
     "name": "İsim",
     "nodeVersion": "Node versiyonu",
-    "sendFeedback": "Geri bildirim gönder",
     "theme": {
       "_": "Tema",
       "dark": "Koyu tema",

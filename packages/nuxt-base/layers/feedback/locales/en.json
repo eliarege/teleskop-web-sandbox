@@ -17,6 +17,7 @@
     "appName": "App Name",
     "title": "Title",
     "description": "Description",
+    "sendFeedback": "Send Feedback",
     "reportType": {
       "_": "Report Type",
       "bug": "Bug",

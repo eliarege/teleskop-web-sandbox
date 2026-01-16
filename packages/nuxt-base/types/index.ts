@@ -12,6 +12,7 @@ export interface TopbarMenuProps {
 }
 
 export interface TopbarMenuItem {
+  name?: string
   label: MaybeRefOrGetter<string>
   to?: MaybeRefOrGetter<string>
   icon?: MaybeRefOrGetter<string>

@@ -29,7 +29,6 @@
     "profile": "Profile",
     "name": "Name",
     "nodeVersion": "Node version",
-    "sendFeedback": "Send feedback",
     "theme": {
       "_": "Theme",
       "dark": "Dark theme",

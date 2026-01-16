@@ -17,6 +17,7 @@
     "appName": "Uygulama İsmi",
     "title": "Başlık",
     "description": "Açıklama",
+    "sendFeedback": "Geri Bildirim Gönder",
     "reportType": {
       "_": "Rapor Tipi",
       "bug": "Hata",
