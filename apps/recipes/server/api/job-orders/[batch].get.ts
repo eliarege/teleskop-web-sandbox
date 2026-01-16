@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
 
     const recipeSteps = await dmsDB('BATCH_RECIPE_STEP')
       .where('plan_key', planKey)
-      .orderBy(['process_order', 'main_step', 'parallel_step'])
+      .orderBy(['prog_proc_no', 'main_step', 'parallel_step'])
 
     const jobOrders = await dmsDB('JOB_ORDER')
       .where({ batch_no: batchNo })
@@ -128,10 +128,10 @@ export default defineEventHandler(async (event) => {
         materialName: materialNameMap.get(step.material_code) || '',
         amount: materialRequest.real_amount,
         unit: materialRequest.unit,
-        orderNo: step.req_no_batch + 1,
+        orderNo: step.main_step,
         programIndex: step.main_step,
         type: step.recipe_type,
-        isManual: materialRequest.dispenser_id === null,
+        isManual: step.main_step === -1,
         calculated: materialRequest.recipe_amount,
       })
     }

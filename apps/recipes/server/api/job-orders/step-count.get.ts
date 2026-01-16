@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     .select('plan_key')
   const result = await dmsDB('BATCH_RECIPE_STEP')
     .where('plan_key', planKey)
-    .andWhere('process_order', recipeProcessNo)
+    .andWhere('prog_proc_no', recipeProcessNo)
     .countDistinct('main_step as count')
   return result[0].count
 })
