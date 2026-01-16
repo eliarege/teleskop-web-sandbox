@@ -1058,7 +1058,8 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
     }
 
     // Fetch current master data to snapshot
-    const masterCommands = await trx('BFMASTERCOMMANDS')
+
+    const commands = await trx('BFMASTERCOMMANDS')
       .where('MACHINEID', machineId)
       .select(
         'COMMANDNO',
@@ -1083,23 +1084,23 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
         'GROUPID',
       )
 
-    const alarms = await trx('BFMASTERCOMMANDSALARMS')
+    const cmdAlarms = await trx('BFMASTERCOMMANDSALARMS')
       .where('MACHINEID', machineId)
       .select('COMMANDNO', 'ALARMINDEX', 'ALARMNO', 'ALARM', 'UNIVERSALALARMNO')
 
-    const returnValues = await trx('BFMASTERCOMMANDRETURNVALUES')
+    const cmdReturnValues = await trx('BFMASTERCOMMANDRETURNVALUES')
       .where('MACHINEID', machineId)
       .select('COMMANDNO', 'RETURNVALUEINDEX', 'RETURNVALUENAME', 'CANSHOW', 'SPRELATION')
 
-    const commandIOs = await trx('BFCOMMANDINPUTOUTPUTS')
+    const cmdInputOutputs = await trx('BFCOMMANDINPUTOUTPUTS')
       .where('MACHINEID', machineId)
       .select('COMMANDNO', 'IOINDEX', 'IOID', 'IOTYPE', 'NAME')
 
-    const selectionList = await trx('BFCOMMANDSELECTIONLIST')
+    const cmdSelectionList = await trx('BFCOMMANDSELECTIONLIST')
       .where('MACHINEID', machineId)
       .select('COMMANDNO', 'IOINDEX', 'SELECTINDEX', 'IOTYPE', 'IOID', 'NAME', 'SELECTEDIOID', 'ISDEFAULT')
 
-    const parameters = await trx('BFCOMMANDPARAMETERS')
+    const cmdParameters = await trx('BFCOMMANDPARAMETERS')
       .where('MACHINEID', machineId)
       .select(
         'COMMANDNO',
@@ -1120,8 +1121,150 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
         'USEFORMULA',
       )
 
+    const machineParameters = await trx('BFMACHPARAMETERS')
+      .where('MACHINEID', machineId)
+      .select(
+        'MACHINEPARAMETERID',
+        'PARAMSTRING',
+        'PARAMLOWLIMIT',
+        'PARAMHIGHLIMIT',
+        'PARAMETERTYPE',
+        'SELECTIONLIST',
+        'UNITCODE',
+        'SELECTIONVALUES',
+        'ISDELETED',
+        'TBBCHANGETIME',
+        'CHANGETIME',
+        'DEFAULTVALUE',
+        'dmArea',
+        'consScreen',
+        'consFormat',
+        'consUnit',
+        'currentValue',
+      )
+
+    const machineBatchParameters = await trx('BFMACHBATCHPARAMETERS')
+      .where('MACHINEID', machineId)
+      .select(
+        'BATCHPARAMETERID',
+        'PARAMSTRING',
+        'PARAMLOWLIMIT',
+        'PARAMHIGHLIMIT',
+        'BATCHPLANNING',
+        'BATCHSTART',
+        'RECIPE',
+        'DEFAULTVALUE',
+        'PARAMETERTYPE',
+        'SELECTIONLIST',
+        'UNITCODE',
+        'SELECTIONVALUES',
+        'ISDELETED',
+        'TBBCHANGETIME',
+        'CHANGETIME',
+        'FORMAT',
+        'PARAMETERID',
+        'UNITTEXT',
+        'PARAMSTRINGEn',
+        'SELECTIONLISTDEFAULT',
+      )
+
+    const cmdFormulas = await trx('BFCOMMANDFORMULAS')
+      .where('machineId', machineId)
+      .select(
+        'formulaId',
+        'formula',
+        'commandNo',
+        'commandParameterNo',
+        'formulaName',
+      )
+
+    const machineAnalogInputs = await trx('BFMACHAIN')
+      .where('MACHINEID', machineId)
+      .select(
+        'ID',
+        'CARD',
+        'CANAL',
+        'NAME',
+        'ENABLED',
+        'ISDELETED',
+        'TBBCHANGETIME',
+        'CHANGETIME',
+        'MIMICID',
+        'CALIBTYPE',
+        'CALIBMAXVALUE',
+        'CALIBUNIT',
+        'CALIBLOWERLIMIT',
+        'CALIBUPPERLIMIT',
+      )
+
+    const machineAnalogOutputs = await trx('BFMACHAOUT')
+      .where('MACHINEID', machineId)
+      .select(
+        'ID',
+        'CARD',
+        'CANAL',
+        'NAME',
+        'DEFAULTVALUE',
+        'ENABLED',
+        'ISDELETED',
+        'TBBCHANGETIME',
+        'CHANGETIME',
+        'MIMICID',
+      )
+
+    const machineDigitalInputs = await trx('BFMACHDIN')
+      .where('MACHINEID', machineId)
+      .select(
+        'ID',
+        'CARD',
+        'CANAL',
+        'NAME',
+        'ENABLED',
+        'ISDELETED',
+        'TBBCHANGETIME',
+        'CHANGETIME',
+      )
+
+    const machineDigitalOutputs = await trx('BFMACHDOUT')
+      .where('MACHINEID', machineId)
+      .select(
+        'ID',
+        'CARD',
+        'CANAL',
+        'NAME',
+        'DEFAULTVALUE',
+        'ENABLED',
+        'ISDELETED',
+        'TBBCHANGETIME',
+        'CHANGETIME',
+      )
+
+    const machineCounters = await trx('BFMACHCOUNTER')
+      .where('MACHINEID', machineId)
+      .select(
+        'ID',
+        'CARD',
+        'CANAL',
+        'NAME',
+        'ENABLED',
+        'ISDELETED',
+        'TBBCHANGETIME',
+        'CHANGETIME',
+        'CALIBUNIT',
+      )
+
+    const machineVirtualInputs = await trx('BFMACHVIN')
+      .where('MACHINEID', machineId)
+      .select(
+        'ID',
+        'BUTTONTYPE',
+        'NAME',
+        'ENABLED',
+        'ISDELETED',
+      )
+
     // Prepare batch insert payloads
-    const masterCommandsInserts = masterCommands.map(mc => ({
+    const commandInserts = commands.map(mc => ({
       MACHINEID: machineId,
       MACHINECOMMANDSETNO: newVersion,
       RELEASEDATE: trxTime,
@@ -1148,7 +1291,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       GROUPID: mc.GROUPID,
     }))
 
-    const alarmsInserts = alarms.map(a => ({
+    const cmdAlarmInserts = cmdAlarms.map(a => ({
       MACHINEID: machineId,
       MACHINECOMMANDSETNO: newVersion,
       COMMANDNO: a.COMMANDNO,
@@ -1158,7 +1301,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       UNIVERSALALARMNO: a.UNIVERSALALARMNO,
     }))
 
-    const returnValuesInserts = returnValues.map(r => ({
+    const cmdReturnValueInserts = cmdReturnValues.map(r => ({
       MACHINEID: machineId,
       MACHINECOMMANDSETNO: newVersion,
       COMMANDNO: r.COMMANDNO,
@@ -1168,7 +1311,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       SPRELATION: r.SPRELATION,
     }))
 
-    const commandIOInserts = commandIOs.map(io => ({
+    const cmdInputOutputInserts = cmdInputOutputs.map(io => ({
       MACHINEID: machineId,
       MACHINECOMMANDSETNO: newVersion,
       COMMANDNO: io.COMMANDNO,
@@ -1178,7 +1321,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       NAME: io.NAME,
     }))
 
-    const selectionListInserts = selectionList.map(sl => ({
+    const cmdSelectionListInserts = cmdSelectionList.map(sl => ({
       MACHINEID: machineId,
       MACHINECOMMANDSETNO: newVersion,
       COMMANDNO: sl.COMMANDNO,
@@ -1191,7 +1334,7 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       ISDEFAULT: sl.ISDEFAULT,
     }))
 
-    const parametersInserts = parameters.map(p => ({
+    const cmdParameterInserts = cmdParameters.map(p => ({
       MACHINEID: machineId,
       MACHINECOMMANDSETNO: newVersion,
       COMMANDNO: p.COMMANDNO,
@@ -1212,19 +1355,179 @@ export async function updateArchives(machineId: number, tbb: TbbFtpClient, trx: 
       USEFORMULA: p.USEFORMULA,
     }))
 
+    const machineParameterInserts = machineParameters.map(mp => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      MACHINEPARAMETERID: mp.MACHINEPARAMETERID,
+      PARAMSTRING: mp.PARAMSTRING,
+      PARAMLOWLIMIT: mp.PARAMLOWLIMIT,
+      PARAMHIGHLIMIT: mp.PARAMHIGHLIMIT,
+      PARAMETERTYPE: mp.PARAMETERTYPE,
+      SELECTIONLIST: mp.SELECTIONLIST,
+      UNITCODE: mp.UNITCODE,
+      SELECTIONVALUES: mp.SELECTIONVALUES,
+      ISDELETED: mp.ISDELETED,
+      TBBCHANGETIME: mp.TBBCHANGETIME,
+      CHANGETIME: mp.CHANGETIME,
+      DEFAULTVALUE: mp.DEFAULTVALUE,
+      dmArea: mp.dmArea,
+      consScreen: mp.consScreen,
+      consFormat: mp.consFormat,
+      consUnit: mp.consUnit,
+      currentValue: mp.currentValue,
+    }))
+
+    const machineBatchParameterInserts = machineBatchParameters.map(mbp => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      BATCHPARAMETERID: mbp.BATCHPARAMETERID,
+      PARAMSTRING: mbp.PARAMSTRING,
+      PARAMLOWLIMIT: mbp.PARAMLOWLIMIT,
+      PARAMHIGHLIMIT: mbp.PARAMHIGHLIMIT,
+      BATCHPLANNING: mbp.BATCHPLANNING,
+      BATCHSTART: mbp.BATCHSTART,
+      RECIPE: mbp.RECIPE,
+      DEFAULTVALUE: mbp.DEFAULTVALUE,
+      PARAMETERTYPE: mbp.PARAMETERTYPE,
+      SELECTIONLIST: mbp.SELECTIONLIST,
+      UNITCODE: mbp.UNITCODE,
+      SELECTIONVALUES: mbp.SELECTIONVALUES,
+      ISDELETED: mbp.ISDELETED,
+      TBBCHANGETIME: mbp.TBBCHANGETIME,
+      CHANGETIME: mbp.CHANGETIME,
+      FORMAT: mbp.FORMAT,
+      PARAMETERID: mbp.PARAMETERID,
+      UNITTEXT: mbp.UNITTEXT,
+      PARAMSTRINGEn: mbp.PARAMSTRINGEn,
+      SELECTIONLISTDEFAULT: mbp.SELECTIONLISTDEFAULT,
+    }))
+
+    const cmdFormulaInserts = cmdFormulas.map(cf => ({
+      machineId,
+      machineCommandSetNo: newVersion,
+      formulaId: cf.formulaId,
+      formula: cf.formula,
+      commandNo: cf.commandNo,
+      commandParameterNo: cf.commandParameterNo,
+      formulaName: cf.formulaName,
+    }))
+
+    const machineAnalogInputInserts = machineAnalogInputs.map(ai => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      ID: ai.ID,
+      CARD: ai.CARD,
+      CANAL: ai.CANAL,
+      NAME: ai.NAME,
+      ENABLED: ai.ENABLED,
+      ISDELETED: ai.ISDELETED,
+      TBBCHANGETIME: ai.TBBCHANGETIME,
+      CHANGETIME: ai.CHANGETIME,
+      MIMICID: ai.MIMICID,
+      CALIBTYPE: ai.CALIBTYPE,
+      CALIBMAXVALUE: ai.CALIBMAXVALUE,
+      CALIBUNIT: ai.CALIBUNIT,
+      CALIBLOWERLIMIT: ai.CALIBLOWERLIMIT,
+      CALIBUPPERLIMIT: ai.CALIBUPPERLIMIT,
+    }))
+
+    const machineAnalogOutputInserts = machineAnalogOutputs.map(ao => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      ID: ao.ID,
+      CARD: ao.CARD,
+      CANAL: ao.CANAL,
+      NAME: ao.NAME,
+      DEFAULTVALUE: ao.DEFAULTVALUE,
+      ENABLED: ao.ENABLED,
+      ISDELETED: ao.ISDELETED,
+      TBBCHANGETIME: ao.TBBCHANGETIME,
+      CHANGETIME: ao.CHANGETIME,
+      MIMICID: ao.MIMICID,
+    }))
+
+    const machineDigitalInputInserts = machineDigitalInputs.map(di => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      ID: di.ID,
+      CARD: di.CARD,
+      CANAL: di.CANAL,
+      NAME: di.NAME,
+      ENABLED: di.ENABLED,
+      ISDELETED: di.ISDELETED,
+      TBBCHANGETIME: di.TBBCHANGETIME,
+      CHANGETIME: di.CHANGETIME,
+    }))
+
+    const machineDigitalOutputInserts = machineDigitalOutputs.map(dout => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      ID: dout.ID,
+      CARD: dout.CARD,
+      CANAL: dout.CANAL,
+      NAME: dout.NAME,
+      DEFAULTVALUE: dout.DEFAULTVALUE,
+      ENABLED: dout.ENABLED,
+      ISDELETED: dout.ISDELETED,
+      TBBCHANGETIME: dout.TBBCHANGETIME,
+      CHANGETIME: dout.CHANGETIME,
+    }))
+
+    const machineCounterInserts = machineCounters.map(c => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      ID: c.ID,
+      CARD: c.CARD,
+      CANAL: c.CANAL,
+      NAME: c.NAME,
+      ENABLED: c.ENABLED,
+      ISDELETED: c.ISDELETED,
+      TBBCHANGETIME: c.TBBCHANGETIME,
+      CHANGETIME: c.CHANGETIME,
+      CALIBUNIT: c.CALIBUNIT,
+    }))
+
+    const machineVirtualInputInserts = machineVirtualInputs.map(vi => ({
+      MACHINEID: machineId,
+      MACHINECOMMANDSETNO: newVersion,
+      ID: vi.ID,
+      BUTTONTYPE: vi.BUTTONTYPE,
+      NAME: vi.NAME,
+      ENABLED: vi.ENABLED,
+      ISDELETED: vi.ISDELETED,
+    }))
+
     // Perform batched inserts
-    if (masterCommandsInserts.length)
-      await insertBatch(trx, 'BAMASTERCOMMANDS', masterCommandsInserts)
-    if (alarmsInserts.length)
-      await insertBatch(trx, 'BAMASTERCOMMANDSALARMS', alarmsInserts)
-    if (returnValuesInserts.length)
-      await insertBatch(trx, 'BAMASTERCOMMANDRETURNVALUES', returnValuesInserts)
-    if (commandIOInserts.length)
-      await insertBatch(trx, 'BACOMMANDINPUTOUTPUTS', commandIOInserts)
-    if (selectionListInserts.length)
-      await insertBatch(trx, 'BACOMMANDSELECTIONLIST', selectionListInserts)
-    if (parametersInserts.length)
-      await insertBatch(trx, 'BACOMMANDPARAMETERS', parametersInserts)
+    if (commandInserts.length)
+      await insertBatch(trx, 'BAMASTERCOMMANDS', commandInserts)
+    if (cmdAlarmInserts.length)
+      await insertBatch(trx, 'BAMASTERCOMMANDSALARMS', cmdAlarmInserts)
+    if (cmdReturnValueInserts.length)
+      await insertBatch(trx, 'BAMASTERCOMMANDRETURNVALUES', cmdReturnValueInserts)
+    if (cmdInputOutputInserts.length)
+      await insertBatch(trx, 'BACOMMANDINPUTOUTPUTS', cmdInputOutputInserts)
+    if (cmdSelectionListInserts.length)
+      await insertBatch(trx, 'BACOMMANDSELECTIONLIST', cmdSelectionListInserts)
+    if (cmdParameterInserts.length)
+      await insertBatch(trx, 'BACOMMANDPARAMETERS', cmdParameterInserts)
+    if (machineParameterInserts.length)
+      await insertBatch(trx, 'BAMACHPARAMETERS', machineParameterInserts)
+    if (machineBatchParameterInserts.length)
+      await insertBatch(trx, 'BAMACHBATCHPARAMETERS', machineBatchParameterInserts)
+    if (cmdFormulaInserts.length)
+      await insertBatch(trx, 'BACOMMANDFORMULAS', cmdFormulaInserts)
+    if (machineAnalogInputInserts.length)
+      await insertBatch(trx, 'BAMACHAIN', machineAnalogInputInserts)
+    if (machineAnalogOutputInserts.length)
+      await insertBatch(trx, 'BAMACHAOUT', machineAnalogOutputInserts)
+    if (machineDigitalInputInserts.length)
+      await insertBatch(trx, 'BAMACHDIN', machineDigitalInputInserts)
+    if (machineDigitalOutputInserts.length)
+      await insertBatch(trx, 'BAMACHDOUT', machineDigitalOutputInserts)
+    if (machineCounterInserts.length)
+      await insertBatch(trx, 'BAMACHCOUNTER', machineCounterInserts)
+    if (machineVirtualInputInserts.length)
+      await insertBatch(trx, 'BAMACHVIN', machineVirtualInputInserts)
 
     return true
   } catch (error: any) {
