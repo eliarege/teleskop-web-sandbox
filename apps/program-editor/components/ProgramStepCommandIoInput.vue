@@ -49,100 +49,49 @@ const selectedOptionsText = computed(() => {
 
   return selected.length > 0 ? selected.join(', ').slice(0, 24) : t('noSelection')
 })
-
-const stepIndex = computed(() => editor.program.steps.findIndex(s => s.stepId === props.stepId))
-
-function handleFocus() {
-  const step = editor.program.steps[stepIndex.value]
-  if (step && !editor.isStepSelected(step.stepId)) {
-    editor.selectedSteps = [step]
-  }
-}
 </script>
 
 <template>
   <div class="inline-block align-top">
-    <div
-      class="q-input-border border-[rgba(0,0,0,0.24)] border-1 mr-1 mb-1"
-      :class="{ 'border-red border-2': props.ioError }"
-      @focusin="handleFocus"
+    <q-select
+      v-model="model"
+      class="io-select relative text-3 min-w-32 max-w-20 mr-2 mb-1"
+      :options="options"
+      multiple
+      emit-value
+      map-options
+      dense
+      outlined
+      stack-label
+      options-dense
+      hide-bottom-space
+      hide-dropdown-icon
+      :error="!!props.ioError"
+      :label="mt(props.io.name, machine.currentMachine.id)"
     >
-      <div class="relative pt-4 text-3 min-w-32 max-w-40">
-        <div class="q-input-text">
-          {{ mt(props.io.name, machine.currentMachine.id) }}
-        </div>
-        <div class="option-text">
+      <template #selected>
+        <span class="selected-text">
           {{ selectedOptionsText }}
-        </div>
-        <div
-          class="option-group"
+        </span>
+      </template>
+
+      <template #option="scope">
+        <QItem
+          v-bind="scope.itemProps"
+          dense
         >
-          <QOptionGroup
-            v-model="model"
-            :options="options"
-            type="checkbox"
-            class="pt-1"
-            dense
-          />
-        </div>
-      </div>
-    </div>
+          <QItemSection side>
+            <QCheckbox
+              :model-value="scope.selected"
+              dense
+              @update:model-value="scope.toggleOption(scope.opt)"
+            />
+          </QItemSection>
+          <QItemSection>
+            {{ scope.opt.label }}
+          </QItemSection>
+        </QItem>
+      </template>
+    </q-select>
   </div>
 </template>
-
-<style lang="postcss" scoped>
-/* Mock quasar css for q-field */
-.q-input-text {
-  transform: translateY(-30%) scale(0.75);
-  font-size: 14px;
-  left: 0px;
-  top: 10px;
-  color: rgba(0, 0, 0, 0.6);
-  position: absolute;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  line-height: 20px;
-  font-weight: 400;
-  letter-spacing: 0.00937em;
-  transform-origin: left top;
-}
-
-.q-input-border {
-  border-radius: 4px;
-  padding: 0 0.5rem 0.25rem 0.5rem;
-  position: relative;
-}
-
-.body--dark .q-input-text {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.body--dark .q-input-border {
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-.option-group {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  padding-right: 0.3rem;
-}
-
-.option-text {
-  max-height: 20px;
-  opacity: 1;
-}
-
-.q-input-border:hover .option-group,
-.q-input-border:focus-within .option-group {
-  max-height: 500px;
-  opacity: 1;
-}
-
-.q-input-border:hover .option-text,
-.q-input-border:focus-within .option-text {
-  max-height: 0;
-  visibility: hidden;
-}
-</style>
