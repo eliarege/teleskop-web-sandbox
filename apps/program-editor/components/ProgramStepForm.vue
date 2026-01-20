@@ -3,7 +3,6 @@ import { Sortable } from 'sortablejs-vue3'
 import type { SortableOptions } from 'sortablejs'
 import { isDef } from '@teleskop/utils'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
-import type { ProgramStep } from '~/shared/types'
 import { useErrorStore } from '~/composables/utils'
 
 const props = defineProps<{
