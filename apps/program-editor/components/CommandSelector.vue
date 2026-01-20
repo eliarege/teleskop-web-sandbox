@@ -99,13 +99,6 @@ async function updateStepCommand(commandNo: number) {
   }
 }
 
-function getCommandLabel(option: any) {
-  if (option.label)
-    return option.label
-  const command = machine.currentMachine.commands.get(option)
-  return command ? `${command.commandNo} ${mt(command.name, machine.currentMachine.id)}` : `${option} ${t('error.commandNotFound')}`
-}
-
 function isParallelCommandRestricted(commandNo: number): boolean {
   if (!isMainCommand.value) {
     const mainCommandNo = step.value.mainCommand.commandNo
@@ -131,11 +124,11 @@ function handleFocus() {
       :label="isDef(programCommand.commandNo) ? undefined : t('selectCommand')"
       :rules="rules"
       :for="id"
-      :option-label="getCommandLabel"
       :class="isParallelCommandRestricted(programCommand.commandNo) ? 'opacity-70 ' : ''"
+      option-label="label"
       option-value="value"
-      hide-bottom-space
       emit-value
+      map-options
       style="width: 250px"
       class="text-3 command-selector"
       options-dense
@@ -143,6 +136,7 @@ function handleFocus() {
       outlined
       filled
       dense
+      hide-bottom-space
       disable-down-open-menu
       @update:model-value="updateStepCommand"
       @focus="handleFocus"
