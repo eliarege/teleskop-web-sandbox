@@ -17,7 +17,6 @@ export const useEditorStore = defineStore('editor', () => {
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTableRow[]>([])
   const selectedSteps = ref<ProgramStep[]>([])
-  const allStepExpanded = ref<boolean>(false)
   const isLoading = ref<boolean>(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
@@ -884,6 +883,22 @@ export const useEditorStore = defineStore('editor', () => {
     machine.currentMachine.commandTypes = await kc.fetch<CommandTypes[]>(`/api/machine/${machineId}/command-types`)
   }
 
+  // Tüm adımların expanded olup olmadığını kontrol eden computed
+  const allStepExpanded = computed(() => {
+    return program.value.steps.length > 0 && program.value.steps.every(step => step.expanded === true)
+  })
+
+  // Tüm adımların expanded durumunu toggle et
+  function toggleAllStepsExpanded(): void {
+    const newValue = !allStepExpanded.value
+    program.value.steps.forEach(step => step.expanded = newValue)
+  }
+
+  // Tüm adımların expanded durumunu belirli bir değere ayarla
+  function setAllStepsExpanded(value: boolean): void {
+    program.value.steps.forEach(step => step.expanded = value)
+  }
+
   /**
    * Mevcut programı yazdırır.
    *
@@ -936,6 +951,8 @@ export const useEditorStore = defineStore('editor', () => {
     leftDrawerOpen,
     rightDrawerOpen,
     allStepExpanded,
+    toggleAllStepsExpanded,
+    setAllStepsExpanded,
     hasProgram,
     createEmptyStep,
     createEmptyCommand,
