@@ -3,7 +3,6 @@ import { Sortable } from 'sortablejs-vue3'
 import type { SortableOptions } from 'sortablejs'
 import { isDef } from '@teleskop/utils'
 import ProgramStepCommandForm from './ProgramStepCommandForm.vue'
-import type { ProgramStep } from '~/shared/types'
 import { useErrorStore } from '~/composables/utils'
 
 const props = defineProps<{
@@ -28,15 +27,12 @@ const stepIcons = computed(() => {
 
 const isLastStep = computed(() => editor.program.steps.length - 1 === stepIndex.value)
 
-const expanded = ref<boolean>(
-  errorStore.getStepErrors(machine.currentMachine.id, editor.program.programNo, step.stepId).length > 0
-  || editor.allStepExpanded,
-)
-const expandIcon = computed(() => expanded.value ? 'expand_less' : 'expand_more')
+// Initialize step.expanded if undefined
+if (step.expanded === undefined) {
+  step.expanded = errorStore.getStepErrors(machine.currentMachine.id, editor.program.programNo, step.stepId).length > 0
+}
 
-watch(() => editor.allStepExpanded, () => {
-  expanded.value = editor.allStepExpanded
-})
+const expandIcon = computed(() => step.expanded ? 'expand_less' : 'expand_more')
 
 const sortableOptions: SortableOptions = {
   sort: false,
@@ -71,7 +67,7 @@ function removeError(commandId: number) {
 <template>
   <div class="flex flex-nowrap">
     <div class="flex items-center min-w-6 mr-2">
-      <div v-show="!expanded" class="space-y-1">
+      <div v-show="!step.expanded" class="space-y-1">
         <div
           v-for="(icon, key) in stepIcons"
           :key="key"
@@ -95,22 +91,26 @@ function removeError(commandId: number) {
       flat
       dense
       tabindex="-1"
-      @click="expanded = !expanded"
-    />
+      @click="step.expanded = !step.expanded"
+    >
+      <q-tooltip>
+        {{ `${step.expanded ? t('collapse') : t('expand')} (Ctrl+E)` }}
+      </q-tooltip>
+    </QBtn>
 
     <div @click="removeError(step.mainCommand.commandId)">
       <ProgramStepCommandForm
         class="flex-1"
         :step-id="step.stepId"
         :parallel-index="-1"
-        :expanded
+        :expanded="step.expanded"
         :command-error="getCommandError(step.mainCommand.commandId)"
       />
     </div>
   </div>
   <div v-if="!machine.isTonello">
     <div
-      v-show="expanded"
+      v-show="step.expanded"
       class="e-border-color border-(t x-0) pl-16"
     >
       <Sortable
@@ -135,7 +135,7 @@ function removeError(commandId: number) {
               <ProgramStepCommandForm
                 :step-id="step.stepId"
                 :parallel-index="index"
-                :expanded
+                :expanded="step.expanded"
                 :command-error="getCommandError(step.parallelCommands[index].commandId)"
               />
             </div>

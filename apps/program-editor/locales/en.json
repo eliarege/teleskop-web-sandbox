@@ -27,6 +27,8 @@
   "machineNotUsable": "Machine {machineId} is not usable.",
   "noUsableMachineFound": "No usable machine found. Please check the status of machines from Machines application.",
   "programNotFound": "Program {programNo} not found on machine {machineId}.",
+  "expand": "Expand",
+  "collapse": "Collapse",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",

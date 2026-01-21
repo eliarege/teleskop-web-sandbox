@@ -27,6 +27,8 @@
   "machineNotUsable": "Makine {machineId} kullanılabilir değil.",
   "noUsableMachineFound": "Kullanılabilir makine bulunamadı. Lütfen makineler uygulamasından makinelerin durumunu kontrol ediniz.",
   "programNotFound": "Program {programNo} makine {machineId} üzerinde bulunamadı.",
+  "expand": "Genişlet",
+  "collapse": "Daralt",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",

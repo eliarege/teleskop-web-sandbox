@@ -77,6 +77,16 @@ function onDragEnd(event: SortableEvent) {
       </QItem>
     </template>
   </Sortable>
+
+  <!--
+    Focus Sentinel:
+    Focus olduğunda programın sonuna otomatik olarak yeni bir adım ekler.
+  -->
+  <div
+    tabindex="0"
+    class="opacity-0 w-0 h-0"
+    @focus="editor.addStepToEnd(null)"
+  />
 </template>
 
 <style lang="postcss" scoped>

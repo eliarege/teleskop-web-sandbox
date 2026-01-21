@@ -207,6 +207,7 @@ export interface ProgramStep {
   stepId: number
   mainCommand: ProgramStepCommand
   parallelCommands: ProgramStepCommand[]
+  expanded?: boolean
 }
 
 export interface ProgramStepCommand {

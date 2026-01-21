@@ -34,6 +34,7 @@ if (!machineId || !machine.hasMachine(machineId)) {
 }
 
 const ctrl = useKeyModifier('Control')
+const alt = useKeyModifier('Alt')
 
 definePageMeta({
   path: '/machine/:machine_id/program/:program_no',
@@ -194,12 +195,12 @@ const buttons = computed<ContextBarButtons[]>(() => [
     label: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
     originalLabel: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
     tooltip: editor.allStepExpanded ? t('menu.collapseAll') : t('menu.expandAll'),
-    shortcut: '',
+    shortcut: 'Ctrl+Alt+E',
     icon: editor.allStepExpanded ? 'expand_less' : 'expand_more',
     disable: editor.isLoading,
     visible: !machine.isTonello,
     onClick() {
-      editor.allStepExpanded = !editor.allStepExpanded
+      editor.toggleAllStepsExpanded()
     },
   },
 ])
@@ -288,6 +289,21 @@ onKeyStroke(['ArrowDown'], (event: KeyboardEvent) => {
     return
 
   editor.selectStep(false, nextStep.stepId)
+})
+
+onKeyStroke(['E', 'e'], (event: KeyboardEvent) => {
+  if (ctrl.value && alt.value) {
+    event.preventDefault()
+    editor.toggleAllStepsExpanded()
+    return
+  }
+
+  if (ctrl.value) {
+    event.preventDefault()
+    editor.selectedSteps.forEach((step) => {
+      step.expanded = !step.expanded
+    })
+  }
 })
 
 onKeyStroke(['S', 's'], async (event: KeyboardEvent) => {
