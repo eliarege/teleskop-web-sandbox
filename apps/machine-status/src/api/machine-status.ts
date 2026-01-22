@@ -21,12 +21,12 @@ const erpParameterCache = new LRUCache<string, Record<string, any>>({
   max: 1000,
 })
 const machineStatusCache = new LRUCache<string, MachineStatus[]>({
+  max: 1,
   ttl: config.machineStatusMaxAge,
-  ttlAutopurge: false,
 })
 const machineParameterNameCache = new LRUCache<string, { machineId: number, parameterName: string | null }[]>({
+  max: 1,
   ttl: config.machineParameterNamesMaxAge,
-  ttlAutopurge: false,
 })
 
 const fetchMachineStatus = pMemoize(async (teleskop: Kysely<TeleskopDatabase>): Promise<MachineStatus[]> => {
@@ -199,7 +199,9 @@ const route: FastifyPluginAsync = async (fastify) => {
   aliases.forEach(alias =>
     fastify.get(alias, async function () {
       const { teleskop } = this
+      this.log.debug('Fetching machine statuses')
       const machineStatuses = await fetchMachineStatus(teleskop)
+      this.log.debug('Fetching weight parameter names')
       const weightParameterNames = await fetchWeightParameterNames(teleskop)
       const machineIdToWeightParamName: Record<number, string | null> = {}
       for (const item of weightParameterNames) {
@@ -208,6 +210,7 @@ const route: FastifyPluginAsync = async (fastify) => {
 
       for (const status of machineStatuses) {
         if (status.runningJobOrder && status.runningBatchKey && status.runningBatchKey > 0) {
+          this.log.debug(`Fetching ERP parameters for job order ${status.runningJobOrder} (batch key: ${status.runningBatchKey})`)
           status.erp = await fetchJobOrderErpParameters(
             teleskop,
             status.runningJobOrder,
