@@ -1,8 +1,28 @@
 diff --git a/dist/quasar.client.js b/dist/quasar.client.js
-index efe39d03a7204fcd5b478749465d71221077137f..dcb935e199a47c7bee3f21effc4f3f319c6d48ee 100644
+index efe39d03a7204fcd5b478749465d71221077137f..16c5f63a18cb9c3fab3613f96c22fb7b06458e65 100644
 --- a/dist/quasar.client.js
 +++ b/dist/quasar.client.js
-@@ -20767,7 +20767,8 @@ var QSelect_default = createComponent({
+@@ -3428,11 +3428,16 @@ function use_model_toggle_default({
+   function processHide(evt) {
+     if (showing.value === false) return;
+     showing.value = false;
+-    emit("beforeHide", evt);
++    const event = evt ?? new Event('custom');
++    emit("beforeHide", event);
++    if (event.qPreventHide) {
++      showing.value = true;
++      return;
++    }
+     if (handleHide !== void 0) {
+-      handleHide(evt);
++      handleHide(event);
+     } else {
+-      emit("hide", evt);
++      emit("hide", event);
+     }
+   }
+   function processModelChange(val) {
+@@ -20767,7 +20772,8 @@ var QSelect_default = createComponent({
      // override of useVirtualScrollProps > virtualScrollItemSize (no default)
      virtualScrollItemSize: useVirtualScrollProps.virtualScrollItemSize.type,
      onNewValue: Function,
@@ -12,7 +32,7 @@ index efe39d03a7204fcd5b478749465d71221077137f..dcb935e199a47c7bee3f21effc4f3f31
    },
    emits: [
      ...useFieldEmits,
-@@ -21158,7 +21159,7 @@ var QSelect_default = createComponent({
+@@ -21158,7 +21164,7 @@ var QSelect_default = createComponent({
          return;
        }
        if (e.target === void 0 || e.target.id !== state.targetUid.value || state.editable.value !== true) return;
@@ -21,7 +41,7 @@ index efe39d03a7204fcd5b478749465d71221077137f..dcb935e199a47c7bee3f21effc4f3f31
          stopAndPrevent(e);
          showPopup();
          return;
-@@ -21187,7 +21188,7 @@ var QSelect_default = createComponent({
+@@ -21187,7 +21193,7 @@ var QSelect_default = createComponent({
          );
          moveOptionSelection(e.keyCode === 33 ? 1 : -1, props4.multiple);
        }
@@ -76,3 +96,30 @@ index b0d922f75b8850275ab4d5426774e9e8f8d92437..39dba48f2e402c2eb1d2de10b4354ff1
          stopAndPrevent(e)
          moveOptionSelection(e.keyCode === 38 ? -1 : 1, props.multiple)
        }
+diff --git a/src/composables/private.use-model-toggle/use-model-toggle.js b/src/composables/private.use-model-toggle/use-model-toggle.js
+index 672ff183796fda899c0565f1e20c2006adfebbed..ec124f02ba84ed7db7f5c329420ff9aee09b7040 100644
+--- a/src/composables/private.use-model-toggle/use-model-toggle.js
++++ b/src/composables/private.use-model-toggle/use-model-toggle.js
+@@ -103,13 +103,19 @@ export default function ({
+ 
+     showing.value = false
+ 
+-    emit('beforeHide', evt)
++    const event = evt ?? new Event('custom')
++    emit('beforeHide', event)
++
++    if (event.qPreventHide) {
++      showing.value = true
++      return
++    }
+ 
+     if (handleHide !== void 0) {
+-      handleHide(evt)
++      handleHide(event)
+     }
+     else {
+-      emit('hide', evt)
++      emit('hide', event)
+     }
+   }
+ 

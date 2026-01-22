@@ -259,7 +259,7 @@ const contextMenuOptions = computed(() => [
       </q-card>
     </q-dialog>
 
-    <ConfirmDialog
+    <MaConfirmDialog
       v-model="addConfirmVisible"
       :title="t('unsavedChanges.title')"
       :message="t('unsavedChanges.message')"
@@ -269,7 +269,7 @@ const contextMenuOptions = computed(() => [
       @confirm="confirmAddDiscard"
       @cancel="keepAddEditing"
     />
-    <ConfirmDialog
+    <MaConfirmDialog
       v-model="editConfirmVisible"
       :title="t('unsavedChanges.title')"
       :message="t('unsavedChanges.message')"

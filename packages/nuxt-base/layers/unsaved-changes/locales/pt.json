@@ -1,0 +1,14 @@
+{
+  "unsavedChanges": {
+    "dialogTitle": "Alterações Não Salvas",
+    "dialogMessageWithoutSave": "Se você sair agora, suas alterações serão perdidas.",
+    "dialogMessageWithSave": "Você tem alterações não salvas. O que você gostaria de fazer?",
+    "retrySaveTitle": "Falha ao Salvar",
+    "retrySaveMessage": "Falha ao salvar as alterações. Deseja tentar novamente?",
+    "retrySaveOk": "Tentar Novamente",
+    "retrySaveCancel": "Cancelar",
+    "save": "Salvar",
+    "dontSave": "Não Salvar",
+    "leaveWithoutSaving": "Sair Sem Salvar"
+  }
+}

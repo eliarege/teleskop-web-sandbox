@@ -1,0 +1,14 @@
+{
+  "unsavedChanges": {
+    "dialogTitle": "Unsaved Changes",
+    "dialogMessageWithoutSave": "If you leave now, your changes will be lost.",
+    "dialogMessageWithSave": "You have unsaved changes. What would you like to do?",
+    "retrySaveTitle": "Save Failed",
+    "retrySaveMessage": "Failed to save changes. Would you like to retry?",
+    "retrySaveOk": "Retry",
+    "retrySaveCancel": "Cancel",
+    "save": "Save",
+    "dontSave": "Don't Save",
+    "leaveWithoutSaving": "Leave Without Saving"
+  }
+}

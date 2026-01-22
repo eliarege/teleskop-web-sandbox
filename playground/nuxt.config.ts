@@ -23,4 +23,13 @@ export default defineNuxtConfig({
       minify: false,
     },
   },
+  quasar: {
+    components: {
+      defaults: {
+        QBtn: {
+          noCaps: true,
+        },
+      },
+    },
+  },
 })

@@ -115,7 +115,7 @@ const { data: state } = useAuthFetch('/api/ptStatus')
         <div class="space-x-1">
           <TopbarAppGrid />
           <TopbarUser>
-            <TopbarPtCommonSettings disable-theme />
+            <TopbarCommonSettings disable-theme />
           </TopbarUser>
           <TopbarLoginButton />
         </div>

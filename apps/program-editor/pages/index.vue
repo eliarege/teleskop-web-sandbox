@@ -323,7 +323,7 @@ const goRoot = computed(() => {
           <TopbarFullscreenButton />
           <TopbarAppGrid />
           <TopbarUser>
-            <TopbarPtCommonSettings />
+            <TopbarCommonSettings />
           </TopbarUser>
           <TopbarLoginButton />
         </div>

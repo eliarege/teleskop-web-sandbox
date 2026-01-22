@@ -4,7 +4,11 @@ import { resolve } from 'node:path'
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2024-11-12',
-  extends: ['./layers/task-stream'],
+  extends: [
+    './layers/task-stream',
+    './layers/unsaved-changes',
+    './layers/feedback',
+  ],
   runtimeConfig: {
     public: {
       appList: '',

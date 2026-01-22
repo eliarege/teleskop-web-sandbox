@@ -1,0 +1,40 @@
+{
+  "feedback": {
+    "dialogTitle": "Report a Feedback",
+    "response": {
+      "success": "Feedback sent successfully.",
+      "send-fail": "An error occurred while sending feedback.",
+      "not-configured": "Send Feedback is not configured.",
+      "no-auth": "Authentication is not configured.",
+      "auth-required": "You need to log in to send feedback.",
+      "email-not-verified": "You need to verify your e-mail to send feedback.",
+      "screenshot-error": "An error occured while taking a screenshot.",
+      "bad-image": "Invalid image format.",
+      "error-fallback": "Unidentified error."
+    },
+    "username": "Username",
+    "email": "Email",
+    "appName": "App Name",
+    "title": "Title",
+    "description": "Description",
+    "sendFeedback": "Send Feedback",
+    "reportType": {
+      "_": "Report Type",
+      "bug": "Bug",
+      "feedback": "Feedback",
+      "suggestion": "Suggestion",
+      "other": "Other"
+    },
+    "screenshot": {
+      "edit": "Edit",
+      "takeScreenshot": "Take Screenshot"
+    },
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "editor": {
+      "title": "Highlight or hide information in your screenshot",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  }
+}

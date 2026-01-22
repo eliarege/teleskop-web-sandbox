@@ -1,0 +1,14 @@
+{
+  "unsavedChanges": {
+    "dialogTitle": "Kaydedilmemiş Değişiklikler",
+    "dialogMessageWithoutSave": "Şimdi ayrılırsanız, değişiklikleriniz kaybolacak.",
+    "dialogMessageWithSave": "Kaydedilmemiş değişiklikleriniz var. Ne yapmak istersiniz?",
+    "retrySaveTitle": "Kaydetme Başarısız",
+    "retrySaveMessage": "Değişiklikler kaydedilemedi. Tekrar denemek ister misiniz?",
+    "retrySaveOk": "Tekrar Dene",
+    "retrySaveCancel": "İptal",
+    "save": "Kaydet",
+    "dontSave": "Kaydetme",
+    "leaveWithoutSaving": "Kaydetmeden Çık"
+  }
+}
