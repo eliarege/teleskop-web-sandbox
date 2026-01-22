@@ -1,8 +1,42 @@
 # Changelog
 
+## 0.67.0 - 2026-01-22
+
+[Compare Changes](ba8d00367e8eb3d9b981ef10bc3c095ce04be388...3bbb8991de88d886ecee1d4ff3805edac9491342)
+
+### 🚀 Features
+
+-  **PE**: Add focus sentinel to automatically append a step at the end of the program ([ea33578](ea33578f484b6e9455380e898646be9c19ba9906))
+-  **PE**: Add expand/collapse functionality for program steps and improve state management ([924b639](924b63999eebd42ecc6e9ac5880395d25eadfdde))
+- **docker**: Add healthcheck for nuxt apps ([ca5034c](ca5034c3ce3bb65fba7bba638a8990a8426e5e6d))
+- **playground**: Implement unsaved changes dialog guard and related components ([4da4d0f](4da4d0ffca1a5a4250509770fcd94713b04cf4b7))
+- **nuxt-base**: Add ConfirmDialog component for user confirmation dialogs ([ba644b4](ba644b48200d4538afbc81373e500f972c93c23a))
+- **nuxt-base**: Unsaved-changes layer ([7f4e4b5](7f4e4b58702bef32d1ccd83891730ee05fccc53e))
+- **nuxt-base**: Enhance unsaved changes dialog with improved messages and actions ([6bc76b1](6bc76b18587690bc3d27ef2da52d91d389533e0c))
+- **nuxt-base**: Enhance ConfirmDialog with focus trap and customizable close button, move cancel button to left ([d0bcf33](d0bcf338ddd3c9e166721bc3953c903e4919c25c))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Enhance QSelect component with custom selection display and focus handling ([d7e7b2d](d7e7b2df52ff27b27455bc4111448fa1fda47c27))
+- **nuxt-base**: Correct import paths for FeedbackDialog component ([5c01b6d](5c01b6d378b4ec1e021a99926286a924f1372671))
+- **quasar**: Always pass Event object to dialog `beforeHide` and `hide` events ([77375e4](77375e41d6d6ea9b6b62b062aa79274f4217abfd))
+
+### ♻️ Refactor
+
+-  **PE**: Simplify command label retrieval and update QSelect options ([0f3fbba](0f3fbbad2a3d3e4a9d774e327b411faa5934044a))
+-  **MA**: Rename `ConfirmDialog` to `MaConfirmDialog` to avoid confusion with the `nuxt-base` variant ([8e55b05](8e55b056104af92717f5a82de29b27fdb416c484))
+- **nuxt-base**: Move feedback related functionality to a separate layer, add `useFeedback` composable ([bd09e88](bd09e88f2b1169f0eee20bf03bca8a272e8767fb))
+- Topbar setting items are managed via registry ([ab278fc](ab278fc1c787ae5f5902ae4a8fe15f0973922f74))
+
+### 🔧 Miscellaneous Tasks
+
+- **nuxt-base**: Remove localization messages now defined in layers ([fc3d134](fc3d1345e815d33dc2cd2c5a55d5183bf5904e90))
+- **playground**: Remove unsaved-changes components and composables from playground ([d4d5d70](d4d5d70496644d8b7490e7326dd33bf0c0692f54))
+- Update lockfile ([b158efc](b158efc0bec533033bc919bc0914eddb224e659b))
+
 ## 0.66.0 - 2026-01-16
 
-[Compare Changes](9b6c5dd270b0fff2318d587fb8e9d590f4713f8a...29718e9e9c4e12c999e0a3b55d21a630f7c0e12a)
+[Compare Changes](9b6c5dd270b0fff2318d587fb8e9d590f4713f8a...ba8d00367e8eb3d9b981ef10bc3c095ce04be388)
 
 ### 🚀 Features
 
