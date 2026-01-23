@@ -1,7 +1,17 @@
 <script setup lang="ts">
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import { RecipeType } from '~/shared/constants'
 import { useStateStore } from '~/store/State'
 import type { JobOrderParams, Machine, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
+
+type ImageAsset = {
+  dataUrl: string
+  format: 'PNG' | 'JPEG'
+}
+
+type JobInfoCell = { entry: { label: string, value: string }, valueLines: string[], height: number }
+type JobInfoRow = { cells: JobInfoCell[], rowHeight: number }
 
 const props = defineProps({
   batchNo: {
@@ -25,14 +35,29 @@ const props = defineProps({
     required: false,
   },
 })
+const pdfTheme = {
+  text: [31, 41, 55] as const,
+  muted: [107, 114, 128] as const,
+  accent: [16, 185, 129] as const,
+  panelBackground: [248, 250, 252] as const,
+  divider: [229, 231, 235] as const,
+  highlight: [236, 253, 245] as const,
+  warningBackground: [254, 243, 199] as const,
+}
+type PdfTheme = typeof pdfTheme
+
+const robotoRegularUrl = new URL('../../assets/fonts/Roboto-Regular.ttf', import.meta.url).href
+const robotoBoldUrl = new URL('../../assets/fonts/Roboto-Bold.ttf', import.meta.url).href
+
+let cachedFontData: { regular?: string, bold?: string } = {}
+
 const { t, d } = useI18n()
 const route = useRoute()
 const stateStore = useStateStore()
-const companyInfo = ref(null)
+const companyInfo = ref<Record<string, any> | null>(null)
 const currentUser = ref('Default User')
 const currentTime = ref(new Date().toLocaleString())
 
-// Reactive state for fetched data
 const fetchedSteps = ref<RecipeMasterStep[]>([])
 const fetchedRecipeParams = ref<RecipeProgramMaster | null>(null)
 const fetchedParams = ref<JobOrderParams | null>(null)
@@ -40,24 +65,36 @@ const fetchedMachines = ref<Machine[]>([])
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
-// Computed properties that use either props or fetched data
 const actualSteps = computed(() => props.steps || fetchedSteps.value)
 const actualRecipeParams = computed(() => props.recipeParams || fetchedRecipeParams.value)
 const actualParams = computed(() => props.params || fetchedParams.value)
 const actualMachines = computed(() => props.machines || fetchedMachines.value)
 
-const jobNumbers = computed(() => {
+const jobIdentifierList = computed(() => {
   if (!actualParams.value)
-    return ''
+    return [] as string[]
 
-  const result = []
-  const baseJobNo = actualParams.value.jobNo
   const numberOfJobs = actualParams.value.numberOfJobs || 1
+  const rawJobNo = actualParams.value.jobNo ? String(actualParams.value.jobNo) : ''
 
-  for (let i = 0; i < numberOfJobs; i++) {
-    result.push(Number(baseJobNo) + i)
-  }
-  return result.join(', ')
+  if (!rawJobNo)
+    return numberOfJobs > 1 ? Array.from({ length: numberOfJobs }, (_, idx) => `JOB_${idx + 1}`) : []
+
+  if (numberOfJobs <= 1)
+    return [rawJobNo]
+
+  const prefixMatch = rawJobNo.match(/(.+)_\d+$/)
+  const prefix = prefixMatch ? prefixMatch[1] : rawJobNo
+  return Array.from({ length: numberOfJobs }, (_, idx) => `${prefix}_${idx + 1}`)
+})
+
+const jobNumbers = computed(() => {
+  const identifiers = jobIdentifierList.value
+  if (!identifiers.length)
+    return ''
+  if (identifiers.length === 1)
+    return identifiers[0]
+  return `${identifiers[0]} - ${identifiers[identifiers.length - 1]}`
 })
 
 const hasManyJobs = computed(() => {
@@ -66,26 +103,77 @@ const hasManyJobs = computed(() => {
   return (actualParams.value.numberOfJobs || 1) > 3
 })
 
-const barcodeUrl = computed(() => {
-  if (!actualParams.value)
+const barcodeValue = computed(() => {
+  const identifiers = jobIdentifierList.value
+  if (!identifiers.length)
     return ''
+  if (identifiers.length === 1)
+    return identifiers[0]
+  return `${identifiers[0]} - ${identifiers[identifiers.length - 1]}`
+})
 
-  if (hasManyJobs.value) {
-    const baseJobNo = actualParams.value.jobNo
-    const lastJobNo = Number(baseJobNo) + Number(actualParams.value.numberOfJobs) - 1
-    return `https://barcode.tec-it.com/barcode.ashx?data=${baseJobNo}-${lastJobNo}&code=Code128&translate-esc=false`
-  }
-  return `https://barcode.tec-it.com/barcode.ashx?data=${jobNumbers.value}&code=Code128&translate-esc=false`
+const barcodeUrl = computed(() => {
+  if (!barcodeValue.value)
+    return ''
+  return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(barcodeValue.value)}&code=Code128&translate-esc=false`
 })
 
 const batchNoToUse = computed(() => props.batchNo || (route.query.batchNo as string | undefined))
+const jobOrderShowPrefs = computed(() => {
+  const show = stateStore.jobOrderPrefs?.show || {}
+  return {
+    orderNo: show.orderNo,
+    PartyNo: show.PartyNo,
+    yarn: show.yarn,
+    ASNo: show.ASNo,
+  }
+})
 
-// Fetch data if batchNo is provided (via prop or query) but other props are not
+const pdfObjectUrl = ref<string | null>(null)
+const pdfError = ref<string | null>(null)
+const isGeneratingPdf = ref(false)
+const pdfReady = computed(() => Boolean(pdfObjectUrl.value))
+const pdfFileName = computed(() => {
+  if (!actualParams.value)
+    return 'job-order.pdf'
+  return `job-order-${actualParams.value.jobNo}.pdf`
+})
+const isClient = import.meta.client
+let currentPdfDoc: jsPDF | null = null
+let pdfGenerationCounter = 0
+
 onMounted(async () => {
   if (batchNoToUse.value && !props.steps && !props.recipeParams && !props.params && !props.machines) {
     await fetchJobOrderData()
   }
 })
+
+onBeforeUnmount(() => {
+  resetPdfPreview()
+})
+
+watch(
+  () => ({
+    steps: actualSteps.value,
+    recipe: actualRecipeParams.value,
+    params: actualParams.value,
+    machines: actualMachines.value,
+    company: companyInfo.value,
+    prefs: jobOrderShowPrefs.value,
+  }),
+  async ({ recipe, params }) => {
+    if (!isClient)
+      return
+
+    if (!recipe || !params) {
+      resetPdfPreview()
+      return
+    }
+
+    await generatePdfDocument()
+  },
+  { immediate: true },
+)
 
 async function fetchJobOrderData() {
   if (!batchNoToUse.value)
@@ -100,7 +188,6 @@ async function fetchJobOrderData() {
     fetchedRecipeParams.value = data.recipeParams
     fetchedParams.value = data.params
     fetchedMachines.value = data.machines
-    // Prefer backend request time if provided
     if (data.requestTime) {
       currentTime.value = d(new Date(data.requestTime), 'datetime') as unknown as string
     }
@@ -113,28 +200,68 @@ async function fetchJobOrderData() {
 }
 
 fetchCompanyInfo()
-function getAllMaterialsFromSteps(program: RecipeMasterStep) {
-  // Get regular step materials
-  const regularMaterials = program.steps.flatMap(step =>
+
+async function registerPdfFonts(doc: jsPDF) {
+  if (!cachedFontData.regular || !cachedFontData.bold)
+    await preloadPdfFonts()
+
+  if (cachedFontData.regular) {
+    doc.addFileToVFS('Roboto-Regular.ttf', cachedFontData.regular)
+    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal')
+  }
+  if (cachedFontData.bold) {
+    doc.addFileToVFS('Roboto-Bold.ttf', cachedFontData.bold)
+    doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold')
+  }
+  doc.setFont('Roboto', 'normal')
+}
+
+async function preloadPdfFonts() {
+  const [regular, bold] = await Promise.all([
+    cachedFontData.regular ? Promise.resolve(cachedFontData.regular) : fetchFontAsBase64(robotoRegularUrl),
+    cachedFontData.bold ? Promise.resolve(cachedFontData.bold) : fetchFontAsBase64(robotoBoldUrl),
+  ])
+  cachedFontData = { regular, bold }
+}
+
+async function fetchFontAsBase64(url: string) {
+  const response = await fetch(url)
+  if (!response.ok)
+    throw new Error(`Failed to load font: ${url}`)
+  const buffer = await response.arrayBuffer()
+  return arrayBufferToBase64(buffer)
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+  let binary = ''
+  const bytes = new Uint8Array(buffer)
+  const chunkSize = 0x8000
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize)
+    binary += String.fromCharCode(...chunk)
+  }
+  return btoa(binary)
+}
+
+function collectMaterialsFromProgram(program: RecipeMasterStep) {
+  const regularMaterials = (program.steps || []).flatMap(step =>
     step.materials.map(material => ({
       ...material,
-      calculated: computed(() => calculateAmount(material, program)),
+      calculated: calculateAmount(material, program),
       isIntermediateStep: false,
     })),
   )
 
-  // Get manual step materials (intermediate steps)
   const manualMaterials = (program.manualSteps || []).flatMap(manualStep =>
     manualStep.materials.map(material => ({
       ...material,
-      calculated: computed(() => calculateAmount(material, program)),
+      calculated: calculateAmount(material, program),
       isIntermediateStep: true,
       nextStep: manualStep.nextStep,
-      displayOrderNo: manualStep.nextStep, // For sorting: place before or after regular steps
+      displayOrderNo: manualStep.nextStep,
     })),
   )
 
-  // Combine and sort: regular materials by orderNo, manual materials placed before their nextStep
   const allMaterials = [...regularMaterials, ...manualMaterials]
   return allMaterials.sort((a, b) => {
     const aOrder = a.isIntermediateStep ? a.displayOrderNo - 0.5 : a.orderNo
@@ -142,375 +269,667 @@ function getAllMaterialsFromSteps(program: RecipeMasterStep) {
     return aOrder - bOrder
   })
 }
+
 function calculateAmount(row: any, program: any) {
   if (!actualParams.value)
     return '0'
 
   if (row.type === RecipeType.DYE) {
-    if (row.unit === 0) {
+    if (row.unit === 0)
       return `${row.amount * program.totalWeight * 10} g`
-    } else if (row.unit === 1) {
+    else if (row.unit === 1)
       return `${row.amount * program.flotte} g`
-    } else if (row.unit === 2) {
+    else if (row.unit === 2)
       return `${row.amount * program.flotte} cc`
-    } else {
+    else
       return `${row.amount} ${t(`units.${row.unit}`)}`
-    }
   } else {
-    if (row.unit === 0) {
+    if (row.unit === 0)
       return `${row.amount * actualParams.value.totalWeight * 10} g`
-    } else if (row.unit === 1) {
+    else if (row.unit === 1)
       return `${row.amount * actualParams.value.flotte} g`
-    } else if (row.unit === 2) {
+    else if (row.unit === 2)
       return `${row.amount * actualParams.value.flotte} cc`
-    } else {
+    else
       return `${row.amount} ${t(`units.${row.unit}`)}`
-    }
   }
 }
 
 async function fetchCompanyInfo() {
   try {
     companyInfo.value = await $fetch('/api/company/info')
-  } catch (error) {
-    console.error('Failed to fetch company logo:', error)
+  } catch (fetchError) {
+    console.error('Failed to fetch company logo:', fetchError)
   }
 }
-const columns = [
-  { name: 'orderNo', label: t('recipeFields.OrderNo'), align: 'center', field: 'orderNo' },
-  { name: 'isManual', label: t('recipeFields.AutoMan'), align: 'center', field: 'isManual' },
-  { name: 'materialCode', label: t('materialFields.Code'), align: 'center', field: 'materialCode' },
-  { name: 'materialName', label: t('materialFields.Name'), align: 'center', field: 'materialName', style: 'max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' },
-  { name: 'amount', label: t('weighingFields.RecipeAmount'), align: 'center', field: 'amount' },
-  { name: 'unit', label: t('Unit'), align: 'center', field: 'unit' },
-  { name: 'calculated', label: t('jobOrderParams.Calculated'), align: 'center', field: 'calculated' },
-]
 
-function printPage() {
-  window.print()
+function resetPdfPreview() {
+  if (!isClient)
+    return
+  if (pdfObjectUrl.value)
+    URL.revokeObjectURL(pdfObjectUrl.value)
+  pdfObjectUrl.value = null
+  currentPdfDoc = null
+}
+
+async function generatePdfDocument(): Promise<jsPDF | null> {
+  if (!actualRecipeParams.value || !actualParams.value)
+    return null
+
+  const requestId = ++pdfGenerationCounter
+  isGeneratingPdf.value = true
+  pdfError.value = null
+
+  try {
+    const doc = await constructJobOrderPdf()
+
+    if (requestId !== pdfGenerationCounter)
+      return doc
+
+    currentPdfDoc = doc
+    if (isClient) {
+      const blob = doc.output('blob')
+      if (pdfObjectUrl.value)
+        URL.revokeObjectURL(pdfObjectUrl.value)
+      pdfObjectUrl.value = URL.createObjectURL(blob)
+    }
+
+    return doc
+  } catch (err: any) {
+    if (requestId === pdfGenerationCounter)
+      pdfError.value = err?.message || 'Failed to generate PDF'
+    console.error('Failed to generate job order PDF:', err)
+    return null
+  } finally {
+    if (requestId === pdfGenerationCounter)
+      isGeneratingPdf.value = false
+  }
+}
+
+async function constructJobOrderPdf() {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+  await registerPdfFonts(doc)
+
+  const marginLeft = 18
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const contentWidth = pageWidth - marginLeft * 2
+  let cursorY = 16
+  const company = companyInfo.value
+  const theme = pdfTheme
+
+  doc.setTextColor(...theme.text)
+
+  const logoAsset = company?.logoPath ? await loadImageAsset(company.logoPath) : null
+  const barcodePayload = getBarcodePayload()
+  const barcodeAsset = barcodePayload ? (await generateBarcodeAsset(barcodePayload)) : null
+
+  const headerTop = cursorY
+  let headerBottom = headerTop
+
+  if (logoAsset)
+    doc.addImage(logoAsset.dataUrl, logoAsset.format, marginLeft, headerTop - 3, 24, 24)
+
+  if (barcodeAsset) {
+    const barcodeWidth = 70
+    headerBottom = Math.max(
+      headerBottom,
+      drawBarcodePanel(
+        doc,
+        barcodeAsset,
+        getBarcodeLabel(),
+        marginLeft + contentWidth - barcodeWidth,
+        headerTop,
+        barcodeWidth,
+        theme,
+      ),
+    )
+  }
+
+  const headerX = marginLeft + (logoAsset ? 28 : 0)
+  doc.setFont('Roboto', 'bold')
+  doc.setFontSize(15)
+  doc.text(company?.name || t('BatchRecipeSystem'), headerX, headerTop, { baseline: 'top' })
+  doc.setFont('Roboto', 'normal')
+  doc.setFontSize(8.5)
+  doc.setTextColor(...theme.muted)
+  doc.text(`${t('jobOrderParams.PreparedBy')}: ${currentUser.value}`, headerX, headerTop + 4.2, { baseline: 'top' })
+  doc.text(`${t('jobOrderParams.PreparationDate')}: ${currentTime.value}`, headerX, headerTop + 7.8, { baseline: 'top' })
+  doc.setFont('Roboto', 'bold')
+  doc.setFontSize(10)
+  doc.setTextColor(...theme.text)
+  doc.text(`${t('jobOrderParams.IDs')}: ${jobNumbers.value || '-'}`, headerX, headerTop + 11.5, { baseline: 'top' })
+  headerBottom = Math.max(headerBottom, headerTop + 16)
+  cursorY = headerBottom + 4
+
+  cursorY = drawSectionDivider(doc, marginLeft, contentWidth, cursorY, theme)
+
+  cursorY = drawJobInfoPanel(doc, getJobInfoEntries(), marginLeft, cursorY, contentWidth, theme)
+
+  if (actualParams.value?.notes)
+    cursorY = drawNotesPanel(doc, actualParams.value.notes, marginLeft, cursorY, contentWidth, theme)
+
+  cursorY = drawSectionDivider(doc, marginLeft, contentWidth, cursorY, theme)
+
+  for (const program of actualSteps.value || []) {
+    if (cursorY > doc.internal.pageSize.getHeight() - 60) {
+      doc.addPage()
+      cursorY = 20
+      doc.setTextColor(...theme.text)
+    }
+
+    doc.setFillColor(...theme.highlight)
+    doc.setDrawColor(...theme.highlight)
+    doc.roundedRect(marginLeft, cursorY, contentWidth, 10, 2, 2, 'FD')
+    doc.setFont('Roboto', 'bold')
+    doc.setFont('Roboto', 'bold')
+    doc.setFontSize(11.5)
+    doc.setTextColor(...theme.text)
+    doc.text(`${program.programNo ?? '-'} — ${program.programName ?? '-'}`, marginLeft + 4, cursorY + 4.5, { baseline: 'top' })
+    cursorY += 14
+
+    doc.setFont('Roboto', 'normal')
+    doc.setFontSize(9.5)
+    doc.setTextColor(...theme.muted)
+    const metaLine = [
+      `${t('jobOrderParams.FlotteRatio')}: ${program.flotteRatio ?? '-'}`,
+      `${t('jobOrderParams.DyeWeight')}: ${program.totalWeight ?? '-'}`,
+      `${t('jobOrderParams.Flotte')}: ${program.flotte ?? '-'}`,
+    ].join('   •   ')
+    const metaLines = doc.splitTextToSize(metaLine, contentWidth)
+    doc.text(metaLines, marginLeft, cursorY, { baseline: 'top' })
+    cursorY += metaLines.length * 4.2 + 2
+
+    const materials = collectMaterialsFromProgram(program)
+    if (!materials.length) {
+      cursorY += 8
+      cursorY = drawSectionDivider(doc, marginLeft, contentWidth, cursorY, theme)
+      continue
+    }
+
+    const calculationsColumnWidth = Math.max(32, contentWidth - (16 + 16 + 28 + 56 + 24 + 18))
+
+    autoTable(doc, {
+      head: [[
+        t('recipeFields.OrderNo'),
+        t('recipeFields.AutoMan'),
+        t('materialFields.Code'),
+        t('materialFields.Name'),
+        t('weighingFields.RecipeAmount'),
+        t('Unit'),
+        t('jobOrderParams.Calculated'),
+      ]],
+      body: materials.map(material => [
+        getOrderLabel(material),
+        getAutoManualLabel(material),
+        material.materialCode || '',
+        material.materialName || '',
+        formatAmount(material.amount),
+        getUnitLabel(material.unit),
+        material.calculated,
+      ]),
+      startY: cursorY,
+      tableWidth: contentWidth,
+      margin: { left: marginLeft, right: marginLeft },
+      styles: {
+        font: 'Roboto',
+        fontSize: 8.5,
+        cellPadding: 2.2,
+        halign: 'center',
+        valign: 'middle',
+        lineWidth: 0.1,
+        textColor: [...theme.text],
+      },
+      headStyles: {
+        fontStyle: 'bold',
+        fillColor: [234, 236, 240],
+        textColor: [45, 55, 72],
+      },
+      alternateRowStyles: {
+        fillColor: [252, 252, 253],
+      },
+      columnStyles: {
+        0: { cellWidth: 16 },
+        1: { cellWidth: 16 },
+        2: { cellWidth: 28 },
+        3: { cellWidth: 56, halign: 'left' },
+        4: { cellWidth: 24 },
+        5: { cellWidth: 18 },
+        6: { cellWidth: calculationsColumnWidth, halign: 'left' },
+      },
+      tableLineColor: [...theme.divider],
+      tableLineWidth: 0.1,
+      didParseCell: (data: any) => {
+        if (data.section !== 'body')
+          return
+        const material = materials[data.row.index]
+        if (material?.isIntermediateStep)
+          data.cell.styles.fillColor = [...theme.warningBackground]
+        if (material?.type === RecipeType.DYE)
+          data.cell.styles.fontStyle = 'bold'
+      },
+    })
+
+    cursorY = ((doc as any).lastAutoTable?.finalY || cursorY) + 8
+    cursorY = drawSectionDivider(doc, marginLeft, contentWidth, cursorY, theme)
+  }
+
+  return doc
+}
+
+function getJobInfoEntries() {
+  if (!actualRecipeParams.value || !actualParams.value)
+    return []
+
+  const entries: Array<{ label: string, value: string }> = []
+
+  entries.push({
+    label: `${t('jobOrderParams.ID')} / ${t('jobOrderParams.IDs')}`,
+    value: jobNumbers.value || '-',
+  })
+  entries.push({
+    label: `${t('recipeFields.ID')} (${t('RecipeVariant')})`,
+    value: `${actualRecipeParams.value.recipeId || '-'}${actualRecipeParams.value.variantName ? ` (${actualRecipeParams.value.variantName})` : ''}`,
+  })
+  entries.push({
+    label: t('jobOrderParams.TotalWeight'),
+    value: actualParams.value.totalWeight != null ? `${actualParams.value.totalWeight} kg` : '-',
+  })
+  entries.push({
+    label: t('jobOrderParams.Flotte'),
+    value: actualParams.value.flotte != null ? String(actualParams.value.flotte) : '-',
+  })
+  entries.push({
+    label: `${t('Machine')} / ${t('Machines')}`,
+    value: formatMachineSummary(),
+  })
+  entries.push({
+    label: `${t('jobOrderParams.ColorCode')} / ${t('jobOrderParams.ColorName')}`,
+    value: `${actualRecipeParams.value.colorCode || '-'} / ${actualRecipeParams.value.colorName || '-'}`,
+  })
+  entries.push({ label: t('Customer'), value: actualParams.value.customerName || '-' })
+  entries.push({ label: t('FabricType'), value: actualParams.value.fabricType || '-' })
+
+  if (jobOrderShowPrefs.value.orderNo)
+    entries.push({ label: t('jobOrderParams.OrderNo'), value: actualParams.value.orderNo || '-' })
+  if (jobOrderShowPrefs.value.PartyNo === undefined || jobOrderShowPrefs.value.PartyNo)
+    entries.push({ label: t('jobOrderParams.PartyNo'), value: actualParams.value.partyNo || '-' })
+  if (jobOrderShowPrefs.value.yarn)
+    entries.push({ label: t('jobOrderParams.Yarn'), value: actualParams.value.yarn || '-' })
+  if (jobOrderShowPrefs.value.ASNo)
+    entries.push({ label: t('jobOrderParams.ASNo'), value: actualParams.value.ASNo || '-' })
+
+  entries.push({ label: t('jobOrderParams.PreparedBy'), value: currentUser.value })
+  entries.push({ label: t('jobOrderParams.PreparationDate'), value: currentTime.value })
+  entries.push({ label: t('Programs'), value: formatProgramsSummary() })
+
+  return entries
+}
+
+function drawJobInfoPanel(doc: jsPDF, entries: Array<{ label: string, value: string }>, startX: number, startY: number, availableWidth: number, theme: PdfTheme) {
+  if (!entries.length)
+    return startY
+
+  const columns = Math.min(4, Math.max(2, entries.length))
+  const gutter = 6
+  const columnWidth = (availableWidth - gutter * (columns - 1)) / columns
+  const paddingX = 3.5
+  const paddingY = 3.5
+  const rowSpacing = 1.2
+  const labelHeight = 2.2
+  const valueLineHeight = 3.2
+
+  const rowBlocks: JobInfoRow[] = []
+  let panelHeight = paddingY * 2
+
+  for (let i = 0; i < entries.length; i += columns) {
+    const rowEntries = entries.slice(i, i + columns)
+    const cells = rowEntries.map((entry) => {
+      const valueLines = doc.splitTextToSize(entry.value || '-', columnWidth - paddingX * 2)
+      const height = labelHeight + valueLines.length * valueLineHeight + 2
+      return { entry, valueLines, height }
+    })
+    const rowHeight = Math.max(...cells.map(cell => cell.height))
+    rowBlocks.push({ cells, rowHeight })
+    panelHeight += rowHeight
+    if (i + columns < entries.length)
+      panelHeight += rowSpacing
+  }
+
+  doc.setFillColor(...theme.panelBackground)
+  doc.setDrawColor(...theme.divider)
+  doc.roundedRect(startX, startY, availableWidth, panelHeight, 3, 3, 'FD')
+
+  let currentY = startY + paddingY
+  rowBlocks.forEach((block, blockIndex) => {
+    block.cells.forEach((cell, cellIndex) => {
+      const columnX = startX + cellIndex * (columnWidth + gutter) + paddingX
+      doc.setFont('Roboto', 'normal')
+      doc.setFontSize(6.5)
+      doc.setTextColor(...theme.muted)
+      doc.text(String(cell.entry.label || '').toUpperCase(), columnX, currentY, { baseline: 'top' })
+      doc.setFont('Roboto', 'bold')
+      doc.setFontSize(8.2)
+      doc.setTextColor(...theme.text)
+      doc.text(cell.valueLines, columnX, currentY + 2.8, { baseline: 'top' })
+    })
+    currentY += block.rowHeight
+    if (blockIndex < rowBlocks.length - 1)
+      currentY += rowSpacing
+  })
+
+  return startY + panelHeight + 4
+}
+
+function drawSectionDivider(doc: jsPDF, startX: number, availableWidth: number, startY: number, theme: PdfTheme) {
+  doc.setDrawColor(...theme.divider)
+  doc.setLineWidth(0.3)
+  doc.line(startX, startY, startX + availableWidth, startY)
+  return startY + 5
+}
+
+function drawBarcodePanel(doc: jsPDF, asset: ImageAsset, label: string, startX: number, startY: number, width: number, theme: PdfTheme) {
+  const panelWidth = Math.min(width, 92)
+  const panelX = startX
+  const paddingX = 6
+  const paddingY = 4
+  const barcodeHeight = 16
+  const panelHeight = barcodeHeight + paddingY * 2 + 8
+
+  doc.setFillColor(255, 255, 255)
+  doc.setDrawColor(...theme.divider)
+  doc.roundedRect(panelX, startY, panelWidth, panelHeight, 3, 3, 'FD')
+
+  doc.setFont('Roboto', 'normal')
+  doc.setFontSize(7.5)
+  doc.setTextColor(...theme.muted)
+  doc.text(label, panelX + paddingX, startY + paddingY, { baseline: 'top' })
+
+  doc.addImage(
+    asset.dataUrl,
+    asset.format,
+    panelX + paddingX,
+    startY + paddingY + 5,
+    panelWidth - paddingX * 2,
+    barcodeHeight,
+  )
+
+  return startY + panelHeight + 4
+}
+
+function drawNotesPanel(doc: jsPDF, notes: string, startX: number, startY: number, width: number, theme: PdfTheme) {
+  const noteLines = doc.splitTextToSize(notes, width - 12)
+  const blockHeight = noteLines.length * 4 + 18
+
+  doc.setFillColor(255, 255, 255)
+  doc.setDrawColor(...theme.divider)
+  doc.roundedRect(startX, startY, width, blockHeight, 3, 3, 'FD')
+
+  doc.setFont('Roboto', 'normal')
+  doc.setFontSize(8)
+  doc.setTextColor(...theme.muted)
+  doc.text(t('Notes'), startX + 6, startY + 6, { baseline: 'top' })
+
+  doc.setFont('Roboto', 'bold')
+  doc.setFontSize(10)
+  doc.setTextColor(...theme.text)
+  doc.text(noteLines, startX + 6, startY + 12, { baseline: 'top' })
+
+  return startY + blockHeight + 8
+}
+
+function formatMachineSummary() {
+  if (!actualMachines.value || !actualMachines.value.length)
+    return '-'
+  return actualMachines.value
+    .map((machine, idx) => `${idx + 1}. ${machine.machineId}${machine.machineName ? ` - ${machine.machineName}` : ''}`)
+    .join('; ')
+}
+
+function formatProgramsSummary() {
+  if (!actualSteps.value || !actualSteps.value.length)
+    return '-'
+  return actualSteps.value.map(program => program.programNo).filter(Boolean).join(', ')
+}
+
+function formatAmount(value: number | string) {
+  if (value === undefined || value === null)
+    return '-'
+  return String(value)
+}
+
+function getUnitLabel(unit: number | string) {
+  if (unit === undefined || unit === null)
+    return '-'
+  return t(`units.${unit}`)
+}
+
+function getAutoManualLabel(material: any) {
+  if (material.isIntermediateStep)
+    return t('Man')
+  return material.isManual ? t('Man') : t('Auto')
+}
+
+function getOrderLabel(material: any) {
+  if (material.isIntermediateStep)
+    return t('Man')
+  return material.orderNo != null ? String(material.orderNo) : '-'
+}
+
+function getColorComponents(colorCode?: number | null) {
+  if (typeof colorCode !== 'number')
+    return null
+  const r = (colorCode >> 16) & 255
+  const g = (colorCode >> 8) & 255
+  const b = colorCode & 255
+  return [r, g, b] as const
+}
+
+function getBarcodeLabel() {
+  const identifiers = jobIdentifierList.value
+  if (!identifiers.length)
+    return ''
+  if (identifiers.length === 1)
+    return `${t('jobOrderParams.ID')}: ${identifiers[0]}`
+  return `${t('jobOrderParams.IDRange')}: ${identifiers[0]} - ${identifiers[identifiers.length - 1]}`
+}
+
+function getBarcodePayload() {
+  if (!barcodeValue.value)
+    return null
+  return barcodeValue.value
+}
+
+async function loadImageAsset(url: string | null | undefined): Promise<ImageAsset | null> {
+  if (!url)
+    return null
+  try {
+    const response = await fetch(url)
+    if (!response.ok)
+      return null
+    const blob = await response.blob()
+    const format = blob.type.includes('png') ? 'PNG' : 'JPEG'
+    const dataUrl = await new Promise<string | null>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : null)
+      reader.onerror = () => reject(reader.error)
+      reader.readAsDataURL(blob)
+    })
+    if (!dataUrl)
+      return null
+    return { dataUrl, format: format as 'PNG' | 'JPEG' }
+  } catch (err) {
+    console.warn('Failed to load image asset for PDF', err)
+    return null
+  }
+}
+
+let barcodeRenderer: ((element: HTMLCanvasElement, payload: string, options: Record<string, any>) => void) | null = null
+
+async function generateBarcodeAsset(payload: string | null): Promise<ImageAsset | null> {
+  if (!payload || !isClient)
+    return null
+
+  try {
+    const canvas = document.createElement('canvas')
+    if (!barcodeRenderer) {
+      const module = await import('jsbarcode')
+      barcodeRenderer = (module as any).default || module
+    }
+    barcodeRenderer(canvas, payload, {
+      format: 'CODE128',
+      displayValue: false,
+      margin: 0,
+      width: 0.85,
+      height: 24,
+    })
+    return { dataUrl: canvas.toDataURL('image/png'), format: 'PNG' as const }
+  } catch (err) {
+    console.warn('Failed to render barcode locally:', err)
+    if (barcodeUrl.value)
+      return await loadImageAsset(barcodeUrl.value)
+    return null
+  }
+}
+
+async function refreshPdf() {
+  if (!isClient)
+    return
+  await generatePdfDocument()
+}
+
+async function downloadPdf() {
+  if (!isClient)
+    return
+  if (!pdfReady.value)
+    await generatePdfDocument()
+  if (currentPdfDoc)
+    currentPdfDoc.save(pdfFileName.value)
+}
+
+async function printPdf() {
+  if (!isClient)
+    return
+  if (!pdfReady.value)
+    await generatePdfDocument()
+  if (currentPdfDoc) {
+    currentPdfDoc.autoPrint()
+    currentPdfDoc.output('dataurlnewwindow')
+  }
 }
 </script>
 
 <template>
-  <div class="printable-page">
-    <div v-if="isLoading" class="text-center p-4">
+  <div class="job-order-overview">
+    <div v-if="isLoading" class="status-message">
       {{ t('Loading...') }}
     </div>
-    <div v-else-if="error" class="text-center p-4 text-red-500">
+    <div v-else-if="error" class="status-message status-message--error">
       {{ error }}
     </div>
     <template v-else-if="actualParams && actualRecipeParams">
-      <div class="print-button-container">
-        <QBtn icon="print" @click="printPage">
-          {{ t('Print') }}
-        </QBtn>
+      <div class="job-order-overview__toolbar">
+        <QBtn
+          outline
+          color="primary"
+          icon="refresh"
+          label="Refresh PDF"
+          :loading="isGeneratingPdf"
+          @click="refreshPdf"
+        />
+        <QBtn
+          color="primary"
+          icon="download"
+          label="Download PDF"
+          :disable="!pdfReady"
+          :loading="isGeneratingPdf && !pdfReady"
+          @click="downloadPdf"
+        />
+        <QBtn
+          color="primary"
+          icon="print"
+          :label="t('Print')"
+          :disable="!pdfReady"
+          :loading="isGeneratingPdf && !pdfReady"
+          @click="printPdf"
+        />
       </div>
 
-      <header>
-        <div class="logo-and-title">
-          <div class="company-logo">
-            <img
-              v-if="companyInfo"
-              :src="(companyInfo as any).logoPath"
-              alt="Company Logo"
-              class="logo-img"
-              h-20
-              w-20
-            >
-          </div>
-          <div v-if="companyInfo">
-            <strong>{{ (companyInfo as any).name }}</strong>
-          </div>
-          <h1>{{ t('BatchRecipeSystem') }}</h1>
-        </div>
-      </header>
+      <div v-if="pdfError" class="status-message status-message--error">
+        {{ pdfError }}
+      </div>
 
-      <section class="job-info" :class="{ 'with-barcode-row': hasManyJobs }">
-        <div class="info-grid" :class="{ 'full-width': hasManyJobs }">
-          <div class="info-item">
-            <span>{{ t('jobOrderParams.ID') }} / {{ t('jobOrderParams.IDs') }}: </span>
-            <strong>{{ jobNumbers }}</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('recipeFields.ID') }} ({{ t('RecipeVariant') }}): </span>
-            <strong>{{ actualRecipeParams.recipeId }} {{ actualRecipeParams.variantName ? `(${actualRecipeParams.variantName})` : '' }}</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('jobOrderParams.TotalWeight') }}: </span>
-            <strong>{{ actualParams.totalWeight }} kg</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('jobOrderParams.Flotte') }}: </span>
-            <strong>{{ actualParams.flotte }}</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('Machine') }} / {{ t('Machines') }}:</span>
-            <strong v-for="(machine, idx) in actualMachines" :key="idx">  {{ idx + 1 }}. {{ t('JobOrder') }}: {{ machine.machineId }}.{{ machine.machineName }}, </strong>
-          </div>
-          <div class="info-item">
-            <span>{{ `${t('jobOrderParams.ColorCode')} / ${t('jobOrderParams.ColorName')}` }}:</span>
-            <strong :style="`color: ${colorCodeToRGB(actualRecipeParams.colorCode)}` ">{{ actualRecipeParams.colorCode }} / {{ actualRecipeParams.colorName }}</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('Customer') }}:</span>
-            <strong>{{ actualParams.customerName }}</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('FabricType') }}:</span>
-            <strong>{{ actualParams.fabricType }}</strong>
-          </div>
-          <div v-if="stateStore.jobOrderPrefs.show.orderNo" class="info-item">
-            <span>{{ t('jobOrderParams.OrderNo') }}:</span>
-            <strong>{{ actualParams.orderNo }}</strong>
-          </div>
-          <div v-if="(stateStore.jobOrderPrefs.show.PartyNo === undefined || stateStore.jobOrderPrefs.show.PartyNo)" class="info-item">
-            <span>{{ t('jobOrderParams.PartyNo') }}:</span>
-            <strong>{{ actualParams.partyNo }}</strong>
-          </div>
-          <div v-if="stateStore.jobOrderPrefs.show.yarn" class="info-item">
-            <span>{{ t('jobOrderParams.Yarn') }}:</span>
-            <strong>{{ actualParams.yarn }}</strong>
-          </div>
-          <div v-if="stateStore.jobOrderPrefs.show.ASNo" class="info-item">
-            <span>{{ t('jobOrderParams.ASNo') }}:</span>
-            <strong>{{ actualParams.ASNo }}</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('jobOrderParams.PreparedBy') }}: </span>
-            <strong>{{ currentUser }}</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('jobOrderParams.PreparationDate') }}: </span>
-            <strong>{{ currentTime }}</strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('Programs') }}:</span>
-            <strong v-for="(program, idx) in actualSteps" :key="idx">{{ program.programNo }}, </strong>
-          </div>
-          <div class="info-item">
-            <span>{{ t('jobOrderParams.Notes') }}: </span>
-            <p>{{ actualParams.notes }}</p>
-          </div>
+      <div class="pdf-preview">
+        <div v-if="isGeneratingPdf && !pdfObjectUrl" class="pdf-preview__placeholder">
+          <QSpinner color="primary" size="40px" />
+          <span>Generating PDF...</span>
         </div>
-
-        <div v-if="!hasManyJobs" class="barcode">
-          <img :src="barcodeUrl" alt="Barcode">
+        <iframe
+          v-else-if="pdfObjectUrl"
+          :src="pdfObjectUrl"
+          class="pdf-preview__frame"
+          title="Job order PDF"
+        />
+        <div v-else class="pdf-preview__placeholder">
+          No PDF preview available yet.
         </div>
-      </section>
-
-      <section v-if="hasManyJobs" class="barcode-row">
-        <div class="barcode-container">
-          <div class="barcode-label">
-            {{ t('jobOrderParams.IDRange') }}: {{ actualParams.jobNo }} - {{ Number(actualParams.jobNo) + Number(actualParams.numberOfJobs) - 1 }}
-          </div>
-          <img :src="barcodeUrl" alt="Barcode">
-        </div>
-      </section>
-
-      <section class="recipe">
-        <div class="col-8">
-          <div
-            v-for="(program, programIndex) in actualSteps"
-            :key="program.programNo"
-            border-gray
-            border-2
-            class="row"
-          >
-            <div class="col">
-              <div class="row flex-center justify-evenly">
-                <h3 flex-center>
-                  {{ program.programName }}
-                </h3>
-                <div class="row">
-                  <div mr-2>
-                    <span class="item-label">{{ t('jobOrderParams.FlotteRatio') }}: </span>
-                    <strong> {{ program.flotteRatio }}</strong>
-                  </div>
-                  <div mr-2>
-                    <span class="item-label">{{ t('jobOrderParams.DyeWeight') }}: </span>
-                    <strong> {{ program.totalWeight }}</strong>
-                  </div>
-                  <div>
-                    <span class="item-label">{{ t('jobOrderParams.Flotte') }}: </span>
-                    <strong> {{ program.flotte }}</strong>
-                  </div>
-                </div>
-              </div>
-              <QTable
-                :rows="getAllMaterialsFromSteps(program)"
-                :rows-per-page-options="[0]"
-                dense
-                hide-bottom
-                flat
-                :columns
-                mb-5
-              >
-                <template #body="props">
-                  <QTr :class="{ 'font-bold': props.row.type === 1, 'intermediate-step-row': props.row.isIntermediateStep }">
-                    <QTd
-                      v-for="col in props.cols"
-                      :key="col.name"
-                      :props="props"
-                      :style="props.row.isIntermediateStep ? 'background-color: #fef3c7; color: #78350f;' : ''"
-                    >
-                      <span v-if="col.field === 'unit'">
-                        {{ t(`units.${props.row.unit}`) }}
-                      </span>
-                      <span v-else-if="col.field === 'isManual'">
-                        {{ props.row.isIntermediateStep ? t('Man') : (props.row.isManual ? t('Man') : t('Auto')) }}
-                      </span>
-                      <span v-else-if="col.field === 'orderNo'">
-                        {{ props.row.isIntermediateStep ? t('Man') : props.row.orderNo }}
-                      </span>
-                      <span v-else>
-                        {{ props.row[col.field] }}
-                      </span>
-                    </QTd>
-                  </QTr>
-                </template>
-              </QTable>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
     </template>
   </div>
 </template>
 
 <style scoped>
-.printable-page {
-  background: white;
-  color: black;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  width: 210mm;
-  height: 297mm;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-.company-logo img {
-  height: 50px;
-  width: auto;
-}
-.company-logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.job-info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.job-info.with-barcode-row {
-  flex-direction: column;
-}
-
-.info-grid {
-  width: 70%;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.info-grid.full-width {
-  width: 100%;
-}
-
-.info-item {
-  padding: 5px;
-  border: 1px solid #ddd;
-}
-
-.notes p {
-  margin: 0;
-  font-style: italic;
-}
-
-.barcode {
-  text-align: center;
-}
-
-.barcode-row {
-  margin: 15px 0;
-  padding: 10px;
-  border: 1px solid #ddd;
-  text-align: center;
-}
-
-.barcode-container {
+.job-order-overview {
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 12px;
 }
 
-.barcode-label {
-  font-weight: bold;
-  margin-bottom: 5px;
+.job-order-overview__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.recipe {
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  border: 1px solid black;
-  text-align: center;
-  padding: 8px;
-}
-
-.print-button-container {
-  text-align: right;
-  margin-bottom: 10px;
-}
-
-.print-button-container button {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  cursor: pointer;
+.status-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: #f3f4f6;
+  color: #111827;
   font-size: 14px;
 }
 
-.print-button-container button:hover {
-  background: #0056b3;
+.status-message--error {
+  background-color: #fee2e2;
+  color: #b91c1c;
 }
 
-.font-bold {
-  font-weight: bold;
+.pdf-preview {
+  min-height: 600px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.intermediate-step-row {
-  font-weight: 600;
+.pdf-preview__frame {
+  width: 100%;
+  border: none;
+  min-height: 780px;
 }
 
-@media print {
-  .print-button-container {
-    display: none;
-  }
-
-  .printable-page {
-    width: 100%;
-    height: auto;
-    padding: 0;
-  }
-
-  body {
-    background: white !important;
-    margin: 0;
-    padding: 0;
-  }
+.pdf-preview__placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #6b7280;
 }
 </style>

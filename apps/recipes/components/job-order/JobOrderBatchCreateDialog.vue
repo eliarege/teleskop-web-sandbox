@@ -571,6 +571,7 @@ async function onSave() {
         stateStore.isLoading = false
         onDialogOK({
           print: printWhenDone.value,
+          batchNo: jobOrderParams.value.jobNo,
           materials: printWhenDone.value ? selectedRecipe.value : undefined,
           machines: selectedMachines.value.slice(0, jobOrderParams.value.numberOfJobs),
           params: printWhenDone.value ? { ...jobOrderParams.value, flotte: flotte.value } : undefined,
@@ -595,6 +596,7 @@ async function onSave() {
     dataStore.newJobOrders = true
     onDialogOK({
       print: printWhenDone.value,
+      batchNo: jobOrderParams.value.jobNo,
       materials: printWhenDone.value ? selectedRecipe.value : undefined,
       machines: selectedMachines.value.slice(0, jobOrderParams.value.numberOfJobs),
       params: printWhenDone.value ? { ...jobOrderParams.value, flotte: flotte.value } : undefined,

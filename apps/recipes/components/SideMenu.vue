@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { withBase} from 'ufo'
+import { withBase } from 'ufo'
 import { QTree, useQuasar } from 'quasar'
 import JobOrderBatchCreateDialog from './job-order/JobOrderBatchCreateDialog.vue'
 import JobOrderContinueCreateDialog from './job-order/JobOrderContinueCreateDialog.vue'
@@ -114,14 +114,11 @@ function openNewBatchJobOrderDialog() {
   q.dialog({
     component: JobOrderBatchCreateDialog,
   }).onOk(async (payload: any) => {
-    if (payload.print) {
-      sessionStorage.setItem('jobOrderMaterials', JSON.stringify(payload.materials))
-      sessionStorage.setItem('jobOrderParams', JSON.stringify(payload.params))
-      sessionStorage.setItem('jobOrderMachines', JSON.stringify(payload.machines))
-      sessionStorage.setItem('jobOrderRecipeParams', JSON.stringify(payload.recipeParams))
+    if (payload.print && payload.batchNo) {
       const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
       await navigateTo({
         path: correctPath,
+        query: { batchNo: String(payload.batchNo) },
       }, {
         open: {
           target: '_blank',

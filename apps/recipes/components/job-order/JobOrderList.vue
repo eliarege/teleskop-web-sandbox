@@ -248,10 +248,10 @@ async function showJobOrderOverview() {
   if (!selectedRow.value)
     return
 
-  sessionStorage.setItem('jobOrderBatchNo', JSON.stringify(selectedRow.value.batchNo))
   const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
   await navigateTo({
     path: correctPath,
+    query: { batchNo: String(selectedRow.value.batchNo) },
   }, {
     open: {
       target: '_blank',
@@ -275,14 +275,11 @@ async function openBatchCreateFromSelected() {
         initialParams: data?.params,
       },
     }).onOk(async (payload: any) => {
-      if (payload.print) {
-        sessionStorage.setItem('jobOrderMaterials', JSON.stringify(payload.materials))
-        sessionStorage.setItem('jobOrderParams', JSON.stringify(payload.params))
-        sessionStorage.setItem('jobOrderMachines', JSON.stringify(payload.machines))
-        sessionStorage.setItem('jobOrderRecipeParams', JSON.stringify(payload.recipeParams))
+      if (payload.print && payload.batchNo) {
         const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
         await navigateTo({
           path: correctPath,
+          query: { batchNo: String(payload.batchNo) },
         }, {
           open: {
             target: '_blank',
@@ -328,14 +325,11 @@ function newBatchJobOrder() {
   q.dialog({
     component: JobOrderBatchCreateDialog,
   }).onOk(async (payload: any) => {
-    if (payload.print) {
-      sessionStorage.setItem('jobOrderMaterials', JSON.stringify(payload.materials))
-      sessionStorage.setItem('jobOrderParams', JSON.stringify(payload.params))
-      sessionStorage.setItem('jobOrderMachines', JSON.stringify(payload.machines))
-      sessionStorage.setItem('jobOrderRecipeParams', JSON.stringify(payload.recipeParams))
+    if (payload.print && payload.batchNo) {
       const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
       await navigateTo({
         path: correctPath,
+        query: { batchNo: String(payload.batchNo) },
       }, {
         open: {
           target: '_blank',
