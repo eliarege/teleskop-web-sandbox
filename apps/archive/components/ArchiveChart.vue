@@ -728,12 +728,22 @@ onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
 
 onKeyStroke('ArrowRight', (event: KeyboardEvent) => {
   event.preventDefault()
-  selectedTime.value = addMinutes(selectedTime.value, 1)
+  const newTime = addMinutes(selectedTime.value, 1)
+  if (newTime <= endTime.value) {
+    selectedTime.value = newTime
+  } else {
+    selectedTime.value = endTime.value
+  }
 })
 
 onKeyStroke('ArrowLeft', (event: KeyboardEvent) => {
   event.preventDefault()
-  selectedTime.value = addMinutes(selectedTime.value, -1)
+  const newTime = addMinutes(selectedTime.value, -1)
+  if (newTime >= startTime.value) {
+    selectedTime.value = newTime
+  } else {
+    selectedTime.value = startTime.value
+  }
 })
 function formatDurationHHMMSS(startDate, endDate) {
   // Calculate the difference in milliseconds
