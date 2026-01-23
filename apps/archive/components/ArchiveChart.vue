@@ -763,6 +763,11 @@ onKeyStroke('ArrowRight', (event: KeyboardEvent) => {
   const newTime = addMinutes(selectedTime.value, 1)
   if (newTime <= endTime.value) {
     selectedTime.value = newTime
+
+    const currentViewDuration = differenceInMinutes(xExtendEndTime.value, xExtendStartTime.value)
+    const halfDuration = currentViewDuration / 2
+    xExtendStartTime.value = addMinutes(newTime, -halfDuration)
+    xExtendEndTime.value = addMinutes(newTime, halfDuration)
   } else {
     selectedTime.value = endTime.value
   }
@@ -773,6 +778,11 @@ onKeyStroke('ArrowLeft', (event: KeyboardEvent) => {
   const newTime = addMinutes(selectedTime.value, -1)
   if (newTime >= startTime.value) {
     selectedTime.value = newTime
+
+    const currentViewDuration = differenceInMinutes(xExtendEndTime.value, xExtendStartTime.value)
+    const halfDuration = currentViewDuration / 2
+    xExtendStartTime.value = addMinutes(newTime, -halfDuration)
+    xExtendEndTime.value = addMinutes(newTime, halfDuration)
   } else {
     selectedTime.value = startTime.value
   }
