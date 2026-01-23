@@ -725,6 +725,16 @@ onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
     printChartSVG()
   }
 })
+
+onKeyStroke('ArrowRight', (event: KeyboardEvent) => {
+  event.preventDefault()
+  selectedTime.value = addMinutes(selectedTime.value, 1)
+})
+
+onKeyStroke('ArrowLeft', (event: KeyboardEvent) => {
+  event.preventDefault()
+  selectedTime.value = addMinutes(selectedTime.value, -1)
+})
 function formatDurationHHMMSS(startDate, endDate) {
   // Calculate the difference in milliseconds
   const ms = differenceInMilliseconds(endDate, startDate)
