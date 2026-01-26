@@ -583,9 +583,41 @@ watch(visibleAxises, async (newval) => {
   })
   updateYAxises()
 })
+
+// fix(AR): TW-178
 watch(selectedTime, () => {
+  const visibleStart = xExtendStartTime.value.getTime()
+  const visibleEnd = xExtendEndTime.value.getTime()
+  const needleTime = selectedTime.value.getTime()
+
+  if (needleTime < visibleStart || needleTime > visibleEnd) {
+    const needle = differenceInMinutes(xExtendEndTime.value, xExtendStartTime.value)
+
+    let minute = 0
+    if (needleTime < visibleStart) {
+      minute = differenceInMinutes(xExtendStartTime.value, selectedTime.value)
+    } else {
+      minute = differenceInMinutes(selectedTime.value, xExtendEndTime.value)
+    }
+
+    if (minute < needle / 2) {
+      if (needleTime < visibleStart) {
+        const shift = minute
+        xExtendStartTime.value = addMinutes(xExtendStartTime.value, -shift)
+        xExtendEndTime.value = addMinutes(xExtendEndTime.value, -shift)
+      } else {
+        const shift = minute
+        xExtendStartTime.value = addMinutes(xExtendStartTime.value, shift)
+        xExtendEndTime.value = addMinutes(xExtendEndTime.value, shift)
+      }
+    } else {
+      resetZoom()
+    }
+  }
+
   drawSelectedTimeLine()
 })
+
 function handleChartClick(event: MouseEvent) {
   const rect = chartEl.value?.getBoundingClientRect()
   if (!rect)
@@ -723,6 +755,36 @@ onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
     event.preventDefault()
     resetZoom()
     printChartSVG()
+  }
+})
+
+onKeyStroke('ArrowRight', (event: KeyboardEvent) => {
+  event.preventDefault()
+  const newTime = addMinutes(selectedTime.value, 1)
+  if (newTime <= endTime.value) {
+    selectedTime.value = newTime
+
+    const currentViewDuration = differenceInMinutes(xExtendEndTime.value, xExtendStartTime.value)
+    const halfDuration = currentViewDuration / 2
+    xExtendStartTime.value = addMinutes(newTime, -halfDuration)
+    xExtendEndTime.value = addMinutes(newTime, halfDuration)
+  } else {
+    selectedTime.value = endTime.value
+  }
+})
+
+onKeyStroke('ArrowLeft', (event: KeyboardEvent) => {
+  event.preventDefault()
+  const newTime = addMinutes(selectedTime.value, -1)
+  if (newTime >= startTime.value) {
+    selectedTime.value = newTime
+
+    const currentViewDuration = differenceInMinutes(xExtendEndTime.value, xExtendStartTime.value)
+    const halfDuration = currentViewDuration / 2
+    xExtendStartTime.value = addMinutes(newTime, -halfDuration)
+    xExtendEndTime.value = addMinutes(newTime, halfDuration)
+  } else {
+    selectedTime.value = startTime.value
   }
 })
 function formatDurationHHMMSS(startDate, endDate) {
