@@ -134,7 +134,6 @@
   "Confirm": "Confirm",
   "Material": "Material",
   "Materials": "Materials",
-  "MaterialRequests": "Material Requests",
   "SelectedMaterials": "{count} Selected",
   "SelectType": "Select Type",
   "AlreadyExists": "Already Exists",
@@ -163,6 +162,7 @@
     "TotalWeight": "Total Weight (kg)",
     "FlotteRatio": "Flotte Ratio (kg/lt)",
     "DyeWeight": "Dye Calculation Weight (kg)",
+    "RecipeAmount": "Recipe Amount",
     "Unit": "Calculation Unit",
     "PartyNo": "Party No",
     "OrderNo": "Work Order",
@@ -276,22 +276,6 @@
     "ParamName": "Parameter Name",
     "Value": "Value",
     "Unit": "Unit"
-  },
-  "weighingFields": {
-    "Info": "Weighing Information",
-    "Auto": "Automatic Weighing Info",
-    "Manual": "Manual Weighing Info",
-    "MainStep": "Main Step",
-    "ParallelStep": "Parallel Step",
-    "RecipeAmount": "Recipe Amount",
-    "ActualAmount": "Actual Amount",
-    "RequestTime": "Request Time",
-    "CompletedTime": "Completed Time",
-    "Interval": "Time Passed",
-    "Hour": "Hour(s)",
-    "Minute": "Minute(s)",
-    "Second": "Second(s)",
-    "No": "Weighing No"
   },
   "machineFields": {
     "ID": "Machine ID",

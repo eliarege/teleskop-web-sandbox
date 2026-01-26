@@ -134,7 +134,6 @@
   "Confirm": "Onayla",
   "Material": "Malzeme",
   "Materials": "Malzemeler",
-  "MaterialRequests": "Malzeme İstekleri",
   "SelectedMaterials": "{count} Seçili",
   "SelectType": "Tür Seçiniz",
   "AlreadyExists": "Zaten Mevcut",
@@ -163,6 +162,7 @@
     "TotalWeight": "Toplam Ağırlık (kg)",
     "FlotteRatio": "Flotte Oranı (kg/lt)",
     "DyeWeight": "Boya Hesap Ağırlığı (kg)",
+    "RecipeAmount": "Reçete Miktarı",
     "Unit": "Hesap Birimi",
     "PartyNo": "Parti Numarası",
     "OrderNo": "Sipariş Numarası",
@@ -276,22 +276,6 @@
     "ParamName": "Parametre Adı",
     "Value": "Değer",
     "Unit": "Birim"
-  },
-  "weighingFields": {
-    "Info": "Tartım Bilgisi",
-    "Auto": "Otomatik Tartım Bilgisi",
-    "Manual": "Manuel Tartım Bilgisi",
-    "MainStep": "Ana Adım",
-    "ParallelStep": "Paralel Adım",
-    "RecipeAmount": "Reçete Miktarı",
-    "ActualAmount": "Gerçek Miktar",
-    "RequestTime": "İstek Zamanı",
-    "CompletedTime": "Bitiş Zamanı",
-    "Interval": "Geçen Zaman",
-    "Hour": "Saat",
-    "Minute": "Dakika",
-    "Second": "Saniye",
-    "No": "Tartım Numarası"
   },
   "machineFields": {
     "ID": "Makine Numarası",

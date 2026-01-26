@@ -454,7 +454,7 @@ async function constructJobOrderPdf() {
         t('recipeFields.AutoMan'),
         t('materialFields.Code'),
         t('materialFields.Name'),
-        t('weighingFields.RecipeAmount'),
+        t('jobOrderParams.RecipeAmount'),
         t('Unit'),
         t('jobOrderParams.Calculated'),
       ]],
