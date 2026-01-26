@@ -42,8 +42,7 @@ async function insertRecipeMaterials(
     programOrder,
     parallelCounters,
   } = context
-  const intermediateDisplayOrder = (material as any).displayOrderNo
-  const mainStepOrder = material.orderNo ?? intermediateDisplayOrder ?? step.orderNo ?? step.stepNo + 1
+  const mainStepOrder = step.stepNo + 1
   const parallelKey = `${program.programNo}-${mainStepOrder}`
   const parallelStep = (parallelCounters.get(parallelKey) ?? 0) + 1
   parallelCounters.set(parallelKey, parallelStep)
