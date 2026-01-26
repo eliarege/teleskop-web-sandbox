@@ -1,4 +1,3 @@
-import type { Knex } from 'knex'
 import { dmsDB } from '~/server/connectionPool'
 import type { JobOrderParams, Machine, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
 
@@ -27,9 +26,15 @@ export default defineEventHandler(async (event) => {
 
     const planKey = batchPlan.plan_key
 
-    const batchHeaders = await dmsDB('BATCH_HEADER')
-      .where('plan_key', planKey)
-      .orderBy('recipe_index')
+    const batchHeaders = await dmsDB('BATCH_HEADER as h')
+      .leftJoin('PROGRAM_HEADER as ph', (join) => {
+        join
+          .on('h.program_no', 'ph.program_no')
+          .andOn('ph.machine_id', '=', batchPlan.planned_machine)
+      })
+      .where('h.plan_key', planKey)
+      .orderBy('h.recipe_index')
+      .select('h.*', 'ph.program_name as program_name')
 
     const recipeSteps = await dmsDB('BATCH_RECIPE_STEP')
       .where('plan_key', planKey)
@@ -58,7 +63,7 @@ export default defineEventHandler(async (event) => {
         programsMap.set(programNo, {
           recipeId: 0,
           programNo,
-          programName: '',
+          programName: header.program_name || '',
           stepNo: header.recipe_index,
           machineId: batchPlan.planned_machine,
           flotteRatio: header.flotte_ratio,
