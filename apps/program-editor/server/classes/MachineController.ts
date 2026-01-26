@@ -262,8 +262,8 @@ export class MachineController {
         name: 'H.NAME',
         duration: 'H.DURATION',
         stepCount: 'H.TOTALSTEP',
-        type: 'H.PROCESSCODE',
-        additionalType: 'H.ADDITIONALPROCESSCODE',
+        typeId: 'H.PROCESSCODE',
+        additionalTypeId: 'H.ADDITIONALPROCESSCODE',
         operator: 'H.TBBPRGCHANGEDEVENT',
         updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CHANGEDATE)`),
         createdAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CREATIONDATE)`),
@@ -1609,17 +1609,10 @@ export class MachineController {
   async fetchAllHeadersOfArchivedProgram(programNo: number): Promise<ProgramHeaderArchive[]> {
     return await this.trx
       .select({
-        programNo: 'H.PROGNO',
         name: 'H.NAME',
         version: 'H.MACHINEPRGVERSIONNO',
         stepCount: 'H.TOTALSTEP',
-        type: 'PT.PROCESSNAME',
-        // additionalType: 'APT.PROCESSNAME',
         updatedAt: 'H.CHANGEDATE',
-        // updatedAtTBB: 'H.TBBCHANGEDATE',
-        // prgState: 'H.PRGSTATE',
-        // isChanged: 'H.ISCHANGED',
-        // tbbProgramChangedEvent: 'H.TBBPRGCHANGEDEVENT',
       })
       .from('BAMASTERPRGHEADER AS H')
       .join('BFPROCESSTYPES AS PT', 'PT.PROCESSCODE', 'H.PROCESSCODE')

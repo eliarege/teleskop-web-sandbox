@@ -179,7 +179,15 @@ const hasOnlyOnController = computed(() => sortedSelectedPrograms.value.some(
 const searchFilter = ref('')
 const debouncedFilter = refDebounced(searchFilter, 250)
 
-const { results: filterResults } = useFuse(debouncedFilter, () => editor.allPrograms, {
+// Process type filtresini uygula
+const processTypeFilteredPrograms = computed(() => {
+  if (!filter.existingFilter.processType) {
+    return editor.allPrograms
+  }
+  return editor.allPrograms.filter(p => p.typeId === filter.existingFilter.processType?.value)
+})
+
+const { results: filterResults } = useFuse(debouncedFilter, processTypeFilteredPrograms, {
   matchAllWhenSearchEmpty: true,
   fuseOptions: {
     keys: ['programNo', 'name', 'type'],
