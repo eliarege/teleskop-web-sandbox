@@ -387,5 +387,32 @@
     "1": "Dağıtıcıya bağlantı yok",
     "2": "Dağıtıcı erişim yoluna ulaşılamıyor",
     "3": "Dağıtım Yöneticisi Çalışmıyor"
+  },
+  "transferredJobOrders": {
+    "_": "Transfer Edilen İş Emirleri",
+    "operationType": "İşlem Tipi",
+    "date": "Tarih",
+    "machine": "Makine",
+    "correction": "Düzeltme",
+    "detail": "Detay",
+    "detailDialog": {
+      "title": "Transfer Detayları",
+      "descriptions": "Detay Açıklamaları"
+    },
+    "transferType": {
+      "append": "Yeni",
+      "update": "Güncellendi",
+      "deleted": "Silindi"
+    },
+    "transferStatus": {
+      "success": "Başarılı",
+      "successWithoutRecipe": "Reçetesiz Başarılı",
+      "failed": "Başarısız"
+    },
+    "transferSource": {
+      "file": "Dosya",
+      "exchange": "Exchange",
+      "dms": "DMS"
+    }
   }
 }

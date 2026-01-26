@@ -388,5 +388,32 @@
     "1": "No connection",
     "2": "Dispener's path is not accesible",
     "3": "Dispensing manager service is not working."
+  },
+  "transferredJobOrders": {
+    "_": "Transferred Job Orders",
+    "operationType": "Operation Type",
+    "date": "Date",
+    "machine": "Machine",
+    "correction": "Correction",
+    "detail": "Detail",
+    "detailDialog": {
+      "title": "Transfer Details",
+      "descriptions": "Detail Descriptions"
+    },
+    "transferType": {
+      "append": "Appended",
+      "update": "Updated",
+      "deleted": "Deleted"
+    },
+    "transferStatus": {
+      "success": "Success",
+      "successWithoutRecipe": "Success Without Recipe",
+      "failed": "Failed"
+    },
+    "transferSource": {
+      "file": "File",
+      "exchange": "Exchange",
+      "dms": "DMS"
+    }
   }
 }
