@@ -415,5 +415,19 @@
       "exchange": "Exchange",
       "dms": "DMS"
     }
+  },
+  "consumption": {
+    "title": "Job Order Consumptions",
+    "last12Hours": "Last 12 Hours",
+    "recordDate": "Record Date",
+    "recipeName": "Recipe Name",
+    "recipeAmount": "Recipe Amount",
+    "amount": "Actual Amount",
+    "dispenserId": "Dispenser ID",
+    "machineId": "Machine ID",
+    "lotNo": "Lot Number",
+    "isManuel": "Is Manual",
+    "weighingStartTime": "Weighing Start Time",
+    "cost": "Cost"
   }
 }

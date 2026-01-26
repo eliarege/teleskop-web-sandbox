@@ -414,5 +414,19 @@
       "exchange": "Exchange",
       "dms": "DMS"
     }
+  },
+  "consumption": {
+    "title": "İş Emri Tüketimleri",
+    "last12Hours": "Son 12 Saat",
+    "recordDate": "Kayıt Tarihi",
+    "recipeName": "Reçete Adı",
+    "recipeAmount": "Reçete Miktarı",
+    "amount": "Gerçek Miktar",
+    "dispenserId": "Dağıtıcı ID",
+    "machineId": "Makine ID",
+    "lotNo": "Lot No",
+    "isManuel": "Manuel mi",
+    "weighingStartTime": "Tartım Başlangıç Zamanı",
+    "cost": "Maliyet"
   }
 }
