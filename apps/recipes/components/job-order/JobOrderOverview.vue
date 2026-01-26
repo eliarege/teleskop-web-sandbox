@@ -791,12 +791,6 @@ async function generateBarcodeAsset(payload: string | null): Promise<ImageAsset 
   }
 }
 
-async function refreshPdf() {
-  if (!isClient)
-    return
-  await generatePdfDocument()
-}
-
 async function downloadPdf() {
   if (!isClient)
     return
@@ -829,17 +823,9 @@ async function printPdf() {
     <template v-else-if="actualParams && actualRecipeParams">
       <div class="job-order-overview__toolbar">
         <QBtn
-          outline
-          color="primary"
-          icon="refresh"
-          label="Refresh PDF"
-          :loading="isGeneratingPdf"
-          @click="refreshPdf"
-        />
-        <QBtn
           color="primary"
           icon="download"
-          label="Download PDF"
+          :label="t('jobOrderPdf.Download')"
           :disable="!pdfReady"
           :loading="isGeneratingPdf && !pdfReady"
           @click="downloadPdf"
@@ -861,16 +847,16 @@ async function printPdf() {
       <div class="pdf-preview">
         <div v-if="isGeneratingPdf && !pdfObjectUrl" class="pdf-preview__placeholder">
           <QSpinner color="primary" size="40px" />
-          <span>Generating PDF...</span>
+          <span>{{ t('jobOrderPdf.Generating') }}</span>
         </div>
         <iframe
           v-else-if="pdfObjectUrl"
           :src="pdfObjectUrl"
           class="pdf-preview__frame"
-          title="Job order PDF"
+          :title="t('jobOrderPdf.Title')"
         />
         <div v-else class="pdf-preview__placeholder">
-          No PDF preview available yet.
+          {{ t('jobOrderPdf.NoPreview') }}
         </div>
       </div>
     </template>

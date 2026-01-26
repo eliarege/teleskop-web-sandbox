@@ -8,6 +8,8 @@
   "No": "Hayır",
   "Man": "Man",
   "Auto": "Oto",
+  "Loading...": "Yükleniyor...",
+  "Print": "Yazdır",
   "AddNew": "Yeni Dağıtıcı / Makine Ekle",
   "AddNewDispenser": "Yeni Dağıtıcı Ekle",
   "AddNewMachine": "Yeni Makine Ekle",
@@ -145,6 +147,12 @@
     "Retry": "Seçili İsteği Tekrarla",
     "Cancel": "Seçili İsteği İptal Et",
     "Complete": "Seçili İsteği Tamamlandı Yap"
+  },
+  "jobOrderPdf": {
+    "Download": "PDF İndir",
+    "Generating": "PDF oluşturuluyor...",
+    "NoPreview": "Henüz kullanılabilir bir PDF önizlemesi yok.",
+    "Title": "İş emri PDF'i"
   },
   "jobOrderParams": {
     "ID": "İş Emri Numarası",

@@ -8,6 +8,8 @@
   "No": "No",
   "Man": "Man",
   "Auto": "Auto",
+  "Loading...": "Loading...",
+  "Print": "Print",
   "AddNew": "Add New Dispenser / Machine",
   "AddNewDispenser": "Add New Dispenser",
   "AddNewMachine": "Add New Machine",
@@ -145,6 +147,12 @@
     "Retry": "Repeat Selected Request",
     "Cancel": "Cancel Selected Request",
     "Complete": "Make Selected Request Completed"
+  },
+  "jobOrderPdf": {
+    "Download": "Download PDF",
+    "Generating": "Generating PDF...",
+    "NoPreview": "No PDF preview available yet.",
+    "Title": "Job order PDF"
   },
   "jobOrderParams": {
     "ID": "Job Order No",
