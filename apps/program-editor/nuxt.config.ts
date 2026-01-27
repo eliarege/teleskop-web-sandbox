@@ -1,6 +1,3 @@
-import Base64Loader from './vite/base64'
-import Nearley from './vite/nearley'
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: false },
@@ -37,10 +34,6 @@ export default defineNuxtConfig({
     ],
   },
   nitro: {
-    rollupConfig: {
-      // @ts-expect-error Infinite type inference
-      plugins: [Nearley()],
-    },
     typescript: {
       tsConfig: {
         compilerOptions: {
@@ -60,10 +53,6 @@ export default defineNuxtConfig({
     },
   },
   vite: {
-    plugins: [
-      Nearley(),
-      Base64Loader(),
-    ],
     worker: {
       format: 'es',
     },

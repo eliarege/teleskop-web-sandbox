@@ -3,16 +3,19 @@ import nearley from 'nearley'
 import compile from 'nearley/lib/compile'
 import generate from 'nearley/lib/generate'
 import nearleyGrammar from 'nearley/lib/nearley-language-bootstrapped'
+import type { Plugin as RollupPlugin } from 'rollup'
 
 const { Grammar, Parser } = nearley
 const grammar = Grammar.fromCompiled(nearleyGrammar)
 
 /**
- * Importable nearley grammar files
+ * Rollup plugin to compile Nearley grammar files (.ne) into JavaScript modules
+ *
+ * Usage: `import grammar from './path/to/grammar.ne'`
  */
-export function Nearley() {
+export function nearleyLoader(): RollupPlugin {
   return {
-    name: 'vite-plugin-nearley',
+    name: 'rollup-plugin-nearley',
     load(id) {
       if (!/\.ne$/.test(id))
         return
@@ -33,4 +36,4 @@ export function Nearley() {
   }
 }
 
-export default Nearley
+export default nearleyLoader

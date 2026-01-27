@@ -54,7 +54,7 @@ function getRowClass(row: any) {
 
 async function printTable() {
   // This was originally Roboto-Bold
-  const font = await import('~/assets/Roboto-Bold.ttf?base64')
+  const font = await import('@teleskop/nuxt-base/assets/fonts/Roboto-Bold.ttf?base64')
 
   const doc = new jsPDF({
     orientation: 'landscape',

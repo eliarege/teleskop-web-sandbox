@@ -1,6 +1,6 @@
 import nearley from 'nearley'
 import type { BatchCommand, Machine, MachineBatchParameter, MachineCommand, MachineCommandFormula, MachineCommandParameter, MachineConstant, Program, ProgramStep, TheoreticalProgram } from '../types/archive'
-import { grammar } from './grammar'
+import grammar from './grammar.ne'
 
 /**
  * Lütfen bu sayafadaki herhangi bir değişiklikten önce @egeiliklier 'e danışınız
@@ -34,10 +34,7 @@ export const ParameterType = {
 // }
 let errors: { code: string, message: string, params?: any }[] = []
 /**
- * Programın teorik süresini hesaplar.
- * @param program - Program
- * @param machine - Machine
- * @returns {number} Program duration
+ * Programların teorik süresini hesaplar. Formüllerde hata varsa errors dizisine ekler.
  */
 export function calculateProgramTheoreticalTemperature(startTime: string | Date, initialTemp: number, programs: Program[], machine: Machine) {
   let time = new Date(startTime)

@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
-import RobotoBold from '~/assets/fonts/Roboto-Bold.ttf?base64'
-import RobotoRegular from '~/assets/fonts/Roboto-Regular.ttf?base64'
+import RobotoBold from '@teleskop/nuxt-base/assets/fonts/Roboto-Bold.ttf?base64'
+import RobotoRegular from '@teleskop/nuxt-base/assets/fonts/Roboto-Regular.ttf?base64'
 import type { CommandIOSelection, MachineCommand, ProcessType, Program, ProgramDetailPDFData, ProgramPDFMessage, ProgramStep, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 
 function formatDuration(duration: number): string {
@@ -44,7 +44,7 @@ function formatDate(date: string | Date | null, locale: string): string {
 }
 
 function createDocument(): jsPDF {
-  const doc = new jsPDF() // eslint-disable-line new-cap
+  const doc = new jsPDF()
   doc.addFileToVFS('Roboto-Regular.ttf', RobotoRegular)
   doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal')
   doc.addFileToVFS('Roboto-Bold.ttf', RobotoBold)
@@ -347,7 +347,6 @@ interface ProgramListPDFData {
 }
 
 function generateProgramListPDF(data: ProgramListPDFData): jsPDF {
-  // eslint-disable-next-line new-cap
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'mm',

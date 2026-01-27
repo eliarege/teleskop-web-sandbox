@@ -1,4 +1,6 @@
 import { resolve } from 'node:path'
+import { base64Loader } from './build/plugins/base64'
+import { nearleyLoader } from './build/plugins/nearley'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -83,10 +85,15 @@ export default defineNuxtConfig({
       { code: 'pt', name: 'Português', file: 'pt.json' },
     ],
   },
+
   vite: {
     build: {
       assetsInlineLimit: 0,
     },
+    plugins: [
+      base64Loader(),
+      nearleyLoader(),
+    ],
     vue: {
       template: {
         transformAssetUrls: {
@@ -103,6 +110,12 @@ export default defineNuxtConfig({
       },
     },
   },
+  nitro: {
+    rollupConfig: {
+      plugins: [nearleyLoader()],
+    },
+  },
+
   hooks: {
     'schema:extend': (schemas) => {
       schemas.push({

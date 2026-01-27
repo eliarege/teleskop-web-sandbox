@@ -240,7 +240,7 @@ export function setAxisVisibility(keyParam: string, changeTo: boolean) {
   const { t } = useNuxtApp().$i18n
   const settingsStore = userSettingsStore()
   let count = 0
-  settingsStore.axises.forEach((axis, key) => {
+  settingsStore.axises.forEach((axis) => {
     if (axis.visible && !axis.isDefault)
       count += 1
   })
