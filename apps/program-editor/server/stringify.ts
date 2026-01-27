@@ -120,5 +120,5 @@ export function stringifyProgram(program: Program, machine: Pick<Machine, 'comma
     lines.push(END_TAGS)
   }
 
-  return lines.join('\n')
+  return `${lines.join('\n')}\n`
 }
