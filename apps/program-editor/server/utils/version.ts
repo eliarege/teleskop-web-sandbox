@@ -18,6 +18,8 @@ function compareVersions(v1: number[], v2: number[]): number {
   return 0
 }
 
+const lowStandard = '0.0.0'
+const lowSmart = '0.0.0-Smart0'
 /**
  * Belirtilen versiyonun hedef versiyondan yüksek veya eşit olup olmadığını kontrol eder.
  * @param version - Kontrol edilecek versiyon (örn: '3.22.118-Smart62')
@@ -26,9 +28,11 @@ function compareVersions(v1: number[], v2: number[]): number {
  * @param target.smartVersion - Hedef Smart versiyon (örn: '3.22.7-Smart62')
  * @returns version >= target ise true, değilse false
  */
-export function isVersionAbove(version: string, target: { standardVersion: string, smartVersion: string }): boolean {
+export function isVersionAbove(version: string, target: { standardVersion?: string, smartVersion?: string }): boolean {
   const isSmartVersion = version.includes('Smart')
-  const targetVersion = isSmartVersion ? target.smartVersion : target.standardVersion
+  const targetVersion = isSmartVersion
+    ? (target.smartVersion ?? lowSmart)
+    : (target.standardVersion ?? lowStandard)
 
   const currentVer = parseVersion(version)
   const targetVer = parseVersion(targetVersion)

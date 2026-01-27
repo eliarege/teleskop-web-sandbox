@@ -7,6 +7,7 @@ describe('isVersionAbove', () => {
       expectStandard('3.22.120').toBeHigherOrEqual('3.22.118')
       expectStandard('3.23.1').toBeHigherOrEqual('3.22.999')
       expectStandard('4.0.0').toBeHigherOrEqual('3.99.99')
+      expectStandard('3.17').toBeHigherOrEqual('3.17')
     })
 
     it('should return false when numeric version is lower', () => {
@@ -14,6 +15,7 @@ describe('isVersionAbove', () => {
       expectStandard('3.21').toBeLower('3.22')
       expectStandard('2.9.9').toBeLower('3.0.0')
       expectStandard('3.22.1').toBeLower('3.22.1.4')
+      expectStandard('3.7.5.4').toBeLower('3.17')
     })
 
     it('should return true when numeric versions are equal', () => {

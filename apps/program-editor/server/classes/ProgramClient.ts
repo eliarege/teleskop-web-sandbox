@@ -102,15 +102,21 @@ export class T7ProgramClient implements ProgramClient {
     const programPath = `/tbb6500/data/programs/program/${program.programNo}`
     const machineInfo = await fetchMachineDetails(this.id)
 
+    // Determine if we need to include tags based on machine version
+    const includeTags = isVersionAbove(machineInfo.version, { standardVersion: '3.17' })
+
     // Determine if we need to include additional process code based on machine version
-    const includeAdditionalProcessCode = isVersionAbove(
+    const includeAdditionalProcessCode = includeTags && isVersionAbove(
       machineInfo.version,
       { standardVersion: '3.22.118', smartVersion: '3.22.7-Smart62' },
     )
 
     const programData = stringifyProgram(program, {
       commands: this.commandArrayToMap(commands),
-    }, { includeAdditionalProcessCode })
+    }, {
+      includeTags,
+      includeAdditionalProcessCode,
+    })
 
     await this.ftp.upload(programPath, programData)
 
