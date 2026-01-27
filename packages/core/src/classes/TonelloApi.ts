@@ -30,8 +30,8 @@ export class TonelloApi {
     return new TonelloApi(baseURL)
   }
 
-  async fetchDatetime(): Promise<TonelloResponse<{ dateTime: string }>> {
-    return await this.fetch('/api/v1/getDateTime')
+  async fetchDatetime(timeout = 5000): Promise<TonelloResponse<{ dateTime: string }>> {
+    return await this.fetch('/api/v1/getDateTime', { timeout })
   }
 
   async updateDatetime(dateTime: Date): Promise<TonelloResponse<void>> {

@@ -33,9 +33,15 @@ export class T7ProgramClient implements ProgramClient {
   }
 
   async ping(): Promise<boolean> {
-    await this.ftp.connect()
-    this.ftp.close()
-    return true
+    try {
+      const pingFtp = new TbbFtpClient(this.host, { timeout: 5000 })
+      await pingFtp.connect()
+      pingFtp.close()
+
+      return true
+    } catch (error) {
+      return false
+    }
   }
 
   async connect(): Promise<void> {
@@ -128,8 +134,12 @@ export class TonelloProgramClient implements ProgramClient {
   }
 
   async ping(): Promise<boolean> {
-    await this.api.fetchDatetime()
-    return true
+    try {
+      await this.api.fetchDatetime()
+      return true
+    } catch (error) {
+      return false
+    }
   }
 
   async connect(): Promise<void> {

@@ -566,27 +566,16 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
-   * Tüm programları getirir ve isteğe bağlı olarak filtreler uygular.
+   * Tüm programları getirir.
    *
-   * @returns {Promise<void>} Programlar başarıyla getirildikten sonra `Promise` döner.
+   * @returns {Promise<ProgramTableRow[]>} Programlar başarıyla getirildikten sonra `Promise` döner.
    *
-   * @description Bu fonksiyon, API üzerinden tüm programları çeker. Eğer filtre parametreleri verilmişse, yalnızca verilen filtrelere uyan programlar getirilir.
-   * Filtre parametreleri, program numarası (programNo), program adı (programName) ve işlem tipi (processType) gibi alanları içerebilir.
-   * Filtre verilmediği takdirde tüm programlar getirilir ve `allPrograms` değişkenine atanır.
+   * @description Bu fonksiyon, API üzerinden tüm programları çeker ve döndürür.
+   * Filtreleme işlemi frontend'de yapılır.
    */
   async function fetchAllPrograms(machineId: number): Promise<ProgramTableRow[]> {
-    const filter = useProgramFilterStore()
-    const query = filter.hasFilter()
-      ? {
-          programNo: filter.existingFilter.programNo,
-          programName: filter.existingFilter.programName,
-          processType: filter.existingFilter.processType?.value,
-        }
-      : undefined
-
     return await kc.fetch<ProgramTableRow[]>(
       `/api/machine/${machineId}/program`,
-      { query },
     )
   }
 
