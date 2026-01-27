@@ -1,5 +1,4 @@
 import nearley from 'nearley'
-// @ts-expect-error TODO: Add shims for nearley files
 import { isDef } from '@teleskop/utils'
 import grammar from './grammar.ne'
 import { ParameterType } from './constants'

@@ -117,6 +117,9 @@ export default defineNuxtConfig({
   },
 
   hooks: {
+    'prepare:types': ({ references }) => {
+      references.push({ path: resolve(__dirname, './types/shims.d.ts') })
+    },
     'schema:extend': (schemas) => {
       schemas.push({
         appConfig: {

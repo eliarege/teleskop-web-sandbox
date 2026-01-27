@@ -1,17 +1,18 @@
 import { readFile } from 'node:fs/promises'
-import type { Plugin as RollupPlugin } from 'rollup'
+import type { Plugin as VitePlugin } from 'vite'
 
 const base64Re = /(\?|&)base64(?:&|$)/
 
 /**
- * Rollup plugin to load files as base64-encoded strings
+ * Vite plugin to load files as base64-encoded strings
  * Files must have a `?base64` query string to be processed
  * Example: import font from '~/assets/fonts/roboto.ttf?base64'
  *
  */
-export function base64Loader(): RollupPlugin {
+export function base64Loader(): VitePlugin {
   return {
-    name: 'rollup-plugin-base64-loader',
+    name: 'vite-plugin-base64-loader',
+    enforce: 'pre',
 
     async load(id) {
       // Only process files with ?base64 query string
