@@ -54,11 +54,12 @@ const appButtons = appList
         <QBtn
           v-for="(app, index) in appButtons"
           :key="index"
+          type="a"
           class="topbar-app-grid__btn py-2 px-5 rounded-lg h-20 max-w-20"
           dense
           flat
           no-caps
-          @click="navigateTo(app.url, { external: true })"
+          :href="app.url"
         >
           <QImg
             class="block"
