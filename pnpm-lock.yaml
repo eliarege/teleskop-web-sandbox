@@ -11,6 +11,9 @@ patchedDependencies:
   '@nuxtjs/i18n':
     hash: eba71082aa649df3e352c8c13969dea0b77d0ddb47d7a131c4812beaabfb35cb
     path: patches/@nuxtjs__i18n.patch
+  '@types/nearley':
+    hash: 43e1068305a8c8092cf641a90d2195c7f3c815fe8a8ab63fa3303717e8248056
+    path: patches/@types__nearley.patch
   httpxy:
     hash: b368a8dd810663a4b97ecfbaa010178cc1cf4644f16a8ad8f5573a7dfda092bb
     path: patches/httpxy.patch
@@ -79,7 +82,7 @@ importers:
         version: link:../../packages/nuxt-base
       '@types/nearley':
         specifier: 2.11.5
-        version: 2.11.5
+        version: 2.11.5(patch_hash=43e1068305a8c8092cf641a90d2195c7f3c815fe8a8ab63fa3303717e8248056)
       eslint:
         specifier: 9.14.0
         version: 9.14.0(jiti@2.4.0)
@@ -811,7 +814,7 @@ importers:
         version: 0.5.9
       '@types/nearley':
         specifier: 2.11.5
-        version: 2.11.5
+        version: 2.11.5(patch_hash=43e1068305a8c8092cf641a90d2195c7f3c815fe8a8ab63fa3303717e8248056)
       '@types/sortablejs':
         specifier: 1.15.8
         version: 1.15.8
@@ -863,6 +866,15 @@ importers:
       execa:
         specifier: 9.5.1
         version: 9.5.1
+      jsbarcode:
+        specifier: 3.11.6
+        version: 3.11.6
+      jspdf:
+        specifier: 3.0.4
+        version: 3.0.4
+      jspdf-autotable:
+        specifier: 5.0.2
+        version: 5.0.2(jspdf@3.0.4)
       klona:
         specifier: 2.0.6
         version: 2.0.6
@@ -894,6 +906,9 @@ importers:
       '@teleskop/nuxt-base':
         specifier: workspace:*
         version: link:../../packages/nuxt-base
+      '@types/jsbarcode':
+        specifier: 3.11.4
+        version: 3.11.4
       '@types/node':
         specifier: 22.9.0
         version: 22.9.0
@@ -1302,6 +1317,9 @@ importers:
       klona:
         specifier: 2.0.6
         version: 2.0.6
+      nearley:
+        specifier: 2.20.1
+        version: 2.20.1
       nodemailer:
         specifier: 6.9.16
         version: 6.9.16
@@ -1339,6 +1357,9 @@ importers:
         specifier: 3.25.76
         version: 3.25.76
     devDependencies:
+      '@types/nearley':
+        specifier: 2.11.5
+        version: 2.11.5(patch_hash=43e1068305a8c8092cf641a90d2195c7f3c815fe8a8ab63fa3303717e8248056)
       '@types/node':
         specifier: 22.9.0
         version: 22.9.0
@@ -3335,6 +3356,9 @@ packages:
 
   '@types/inquirer@6.5.0':
     resolution: {integrity: sha512-rjaYQ9b9y/VFGOpqBEXRavc3jh0a+e6evAbI31tMda8VlPaSy0AZJfXsvmIe3wklc7W6C3zCSfleuMXR7NOyXw==}
+
+  '@types/jsbarcode@3.11.4':
+    resolution: {integrity: sha512-VBcpTAnEMH0Gbh8JpV14CgOtJjCYjsvR2FoDRyoYPE0gUxtApf8N4c+HKEOyz/iiIZkMzqrzBA3XX7+KgKxxsA==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -6306,6 +6330,9 @@ packages:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
     hasBin: true
 
+  jsbarcode@3.11.6:
+    resolution: {integrity: sha512-G5TKGyKY1zJo0ZQKFM1IIMfy0nF2rs92BLlCz+cU4/TazIc4ZH+X1GYeDRt7TKjrYqmPfTjwTBkU/QnQlsYiuA==}
+
   jsdoc-type-pratt-parser@4.0.0:
     resolution: {integrity: sha512-YtOli5Cmzy3q4dP26GraSOeAhqecewG04hoO8DY56CH4KJ9Fvv5qKWUCCo3HZob7esJQHCv6/+bnTy72xZZaVQ==}
     engines: {node: '>=12.0.0'}
@@ -8324,6 +8351,7 @@ packages:
   tar@6.2.1:
     resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exhorbitant rates) by contacting i@izs.me
 
   tarn@3.0.2:
     resolution: {integrity: sha512-51LAVKUSZSVfI05vjPESNc5vwqqZpbXCsU+/+wxlOrUjk2SnFTt97v9ZgQrD4YmxYW1Px6w2KjaDitCfkvgxMQ==}
@@ -11267,6 +11295,10 @@ snapshots:
       '@types/through': 0.0.33
       rxjs: 6.6.7
 
+  '@types/jsbarcode@3.11.4':
+    dependencies:
+      '@types/node': 22.9.0
+
   '@types/json-schema@7.0.15': {}
 
   '@types/lodash-es@4.17.12':
@@ -11293,7 +11325,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@types/nearley@2.11.5': {}
+  '@types/nearley@2.11.5(patch_hash=43e1068305a8c8092cf641a90d2195c7f3c815fe8a8ab63fa3303717e8248056)': {}
 
   '@types/node@14.18.63': {}
 
@@ -14832,6 +14864,8 @@ snapshots:
   js-yaml@4.1.0:
     dependencies:
       argparse: 2.0.1
+
+  jsbarcode@3.11.6: {}
 
   jsdoc-type-pratt-parser@4.0.0: {}
 

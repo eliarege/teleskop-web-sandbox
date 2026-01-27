@@ -118,46 +118,6 @@ export interface Material {
   isManual: boolean
   connectedDispensers: Dispenser[] | null
 }
-export interface MaterialRequest {
-  jobId: number
-  materialCode: string
-  materialName: string
-  recipeAmount: number
-  realAmount: number
-  mainStep: number
-  parallelStep: number
-  dispenserId: number
-  status: number
-  unit: number
-}
-export interface WeighingAuto {
-  jobId: number
-  programNo: string
-  machineName: string
-  dispenserId: number
-  processOrder: number
-  mainStep: number
-  parallelStep: number
-  materialCode: number
-  materialName: string
-  recipeAmount: number
-  actualAmount: number
-  status: number
-  requestTime: Date
-  completedTime: Date
-  interval: number
-}
-export interface WeighingManual {
-  batchNo: string
-  correctionNo: number
-  weighingNumber: number
-  recipeType: number
-  materialCode: string
-  materialName: string
-  actualAmount: number
-  status: number
-  requestTime: Date
-}
 export interface MaterialGroup {
   materialGroupNo: number
   materialGroupName: string

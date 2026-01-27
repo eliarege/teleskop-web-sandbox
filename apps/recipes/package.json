@@ -24,6 +24,9 @@
     "chart.js": "4.4.6",
     "chartjs-plugin-datalabels": "2.2.0",
     "execa": "9.5.1",
+    "jsbarcode": "3.11.6",
+    "jspdf": "3.0.4",
+    "jspdf-autotable": "5.0.2",
     "klona": "2.0.6",
     "knex": "3.1.0",
     "pg": "8.13.1",
@@ -36,6 +39,7 @@
   },
   "devDependencies": {
     "@teleskop/nuxt-base": "workspace:*",
+    "@types/jsbarcode": "3.11.4",
     "@types/node": "22.9.0",
     "@types/pg": "8.11.10",
     "nuxt": "3.14.159",

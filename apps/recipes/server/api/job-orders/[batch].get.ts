@@ -1,4 +1,3 @@
-import type { Knex } from 'knex'
 import { dmsDB } from '~/server/connectionPool'
 import type { JobOrderParams, Machine, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
 
@@ -27,13 +26,19 @@ export default defineEventHandler(async (event) => {
 
     const planKey = batchPlan.plan_key
 
-    const batchHeaders = await dmsDB('BATCH_HEADER')
-      .where('plan_key', planKey)
-      .orderBy('recipe_index')
+    const batchHeaders = await dmsDB('BATCH_HEADER as h')
+      .leftJoin('PROGRAM_HEADER as ph', (join) => {
+        join
+          .on('h.program_no', 'ph.program_no')
+          .andOn('ph.machine_id', '=', batchPlan.planned_machine)
+      })
+      .where('h.plan_key', planKey)
+      .orderBy('h.recipe_index')
+      .select('h.*', 'ph.program_name as program_name')
 
     const recipeSteps = await dmsDB('BATCH_RECIPE_STEP')
       .where('plan_key', planKey)
-      .orderBy(['process_order', 'main_step', 'parallel_step'])
+      .orderBy(['prog_proc_no', 'main_step', 'parallel_step'])
 
     const jobOrders = await dmsDB('JOB_ORDER')
       .where({ batch_no: batchNo })
@@ -58,7 +63,7 @@ export default defineEventHandler(async (event) => {
         programsMap.set(programNo, {
           recipeId: 0,
           programNo,
-          programName: '',
+          programName: header.program_name || '',
           stepNo: header.recipe_index,
           machineId: batchPlan.planned_machine,
           flotteRatio: header.flotte_ratio,
@@ -128,10 +133,10 @@ export default defineEventHandler(async (event) => {
         materialName: materialNameMap.get(step.material_code) || '',
         amount: materialRequest.real_amount,
         unit: materialRequest.unit,
-        orderNo: step.req_no_batch + 1,
+        orderNo: step.main_step,
         programIndex: step.main_step,
         type: step.recipe_type,
-        isManual: materialRequest.dispenser_id === null,
+        isManual: step.main_step === -1,
         calculated: materialRequest.recipe_amount,
       })
     }

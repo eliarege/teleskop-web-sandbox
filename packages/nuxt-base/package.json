@@ -32,6 +32,7 @@
     "html2canvas-pro": "1.5.8",
     "keycloak-js": "25.0.6",
     "klona": "2.0.6",
+    "nearley": "2.20.1",
     "nodemailer": "6.9.16",
     "nuxt-quasar-ui": "2.1.7",
     "pinia": "2.2.6",
@@ -46,6 +47,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@types/nearley": "2.11.5",
     "@types/node": "22.9.0",
     "@types/nodemailer": "6.4.16",
     "nuxt": "3.14.159",

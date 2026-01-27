@@ -2,9 +2,7 @@
 import type { QTableProps } from 'quasar'
 import { withBase } from 'ufo'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import WeighingInfoDialog from '../WeighingInfoDialog.vue'
 import BatchParametersInfoDialog from '../BatchParametersInfoDialog.vue'
-import MaterialRequestsDialog from '../material/MaterialRequestsDialog.vue'
 import JobOrderBatchCreateDialog from './JobOrderBatchCreateDialog.vue'
 import JobOrderContinueCreateDialog from './JobOrderContinueCreateDialog.vue'
 import JobOrderContinueInfoDialog from './JobOrderContinueInfoDialog.vue'
@@ -205,9 +203,7 @@ const filteredColumns = computed(() => {
 })
 
 const buttonProps = ref([
-  { name: 'materialRequests', label: t('MaterialRequests'), link: 'material', icon: 'science', batch: true, continue: true },
   { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description', batch: true, continue: true },
-  { name: 'weighingInfo', label: t('weighingFields.Info'), link: 'weighing', icon: 'balance', batch: true, continue: false },
   { name: 'parameters', label: t('batchPlanParameterFields.Title'), link: 'parameters', icon: 'format_list_numbered', batch: true, continue: false },
   { name: 'info', label: t('Info'), link: 'info', icon: 'info', batch: false, continue: true },
   { name: 'reuseRequest', label: t('ReuseRequest'), link: 'reuse', icon: 'restart_alt', batch: true, continue: true },
@@ -225,12 +221,7 @@ function onRowClick(row: JobOrder, isContextMenu: boolean) {
 }
 function onButtonClicked(link: string) {
   const jobOrder = selectedRow.value
-  if (link === 'material') {
-    q.dialog({
-      component: MaterialRequestsDialog,
-      componentProps: { jobOrder },
-    })
-  } else if (link === 'recipe') {
+  if (link === 'recipe') {
     navigateTo({
       path: `${route.path}/recipe`,
       query: {
@@ -238,11 +229,6 @@ function onButtonClicked(link: string) {
         correctionNo: jobOrder!.batchCorrectionNo,
         machineId: jobOrder!.machineId,
       },
-    })
-  } else if (link === 'weighing') {
-    q.dialog({
-      component: WeighingInfoDialog,
-      componentProps: { jobOrder },
     })
   } else if (link === 'parameters') {
     q.dialog({
@@ -262,10 +248,10 @@ async function showJobOrderOverview() {
   if (!selectedRow.value)
     return
 
-  sessionStorage.setItem('jobOrderBatchNo', JSON.stringify(selectedRow.value.batchNo))
   const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
   await navigateTo({
     path: correctPath,
+    query: { batchNo: String(selectedRow.value.batchNo) },
   }, {
     open: {
       target: '_blank',
@@ -289,14 +275,11 @@ async function openBatchCreateFromSelected() {
         initialParams: data?.params,
       },
     }).onOk(async (payload: any) => {
-      if (payload.print) {
-        sessionStorage.setItem('jobOrderMaterials', JSON.stringify(payload.materials))
-        sessionStorage.setItem('jobOrderParams', JSON.stringify(payload.params))
-        sessionStorage.setItem('jobOrderMachines', JSON.stringify(payload.machines))
-        sessionStorage.setItem('jobOrderRecipeParams', JSON.stringify(payload.recipeParams))
+      if (payload.print && payload.batchNo) {
         const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
         await navigateTo({
           path: correctPath,
+          query: { batchNo: String(payload.batchNo) },
         }, {
           open: {
             target: '_blank',
@@ -342,14 +325,11 @@ function newBatchJobOrder() {
   q.dialog({
     component: JobOrderBatchCreateDialog,
   }).onOk(async (payload: any) => {
-    if (payload.print) {
-      sessionStorage.setItem('jobOrderMaterials', JSON.stringify(payload.materials))
-      sessionStorage.setItem('jobOrderParams', JSON.stringify(payload.params))
-      sessionStorage.setItem('jobOrderMachines', JSON.stringify(payload.machines))
-      sessionStorage.setItem('jobOrderRecipeParams', JSON.stringify(payload.recipeParams))
+    if (payload.print && payload.batchNo) {
       const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
       await navigateTo({
         path: correctPath,
+        query: { batchNo: String(payload.batchNo) },
       }, {
         open: {
           target: '_blank',

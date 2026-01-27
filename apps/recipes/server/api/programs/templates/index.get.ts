@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
         .andOn('t.machine_id', 'p.machine_id')
     })
     .distinct('t.program_no')
+    .whereNotNull('p.program_name')
     .orderBy('t.program_no')
   return res
 })

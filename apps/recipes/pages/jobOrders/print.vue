@@ -1,27 +1,32 @@
 <script setup lang="ts">
-const jobOrderMaterials = ref(JSON.parse(sessionStorage.getItem('jobOrderMaterials') || 'null'))
-const jobOrderParams = ref(JSON.parse(sessionStorage.getItem('jobOrderParams') || 'null'))
-const jobOrderMachines = ref(JSON.parse(sessionStorage.getItem('jobOrderMachines') || 'null'))
-const jobOrderRecipeParams = ref(JSON.parse(sessionStorage.getItem('jobOrderRecipeParams') || 'null'))
-const jobOrderBatchNo = ref(JSON.parse(sessionStorage.getItem('jobOrderBatchNo') || 'null'))
+const route = useRoute()
 
-sessionStorage.removeItem('jobOrderMaterials')
-sessionStorage.removeItem('jobOrderParams')
-sessionStorage.removeItem('jobOrderMachines')
-sessionStorage.removeItem('jobOrderRecipeParams')
-sessionStorage.removeItem('jobOrderBatchNo')
+const batchNo = computed(() => {
+  const value = route.query.batchNo
+  if (Array.isArray(value))
+    return value[0] || null
+  return typeof value === 'string' ? value : null
+})
 </script>
 
 <template>
   <JobOrderOverview
-    v-if="jobOrderMaterials"
-    :steps="jobOrderMaterials"
-    :params="jobOrderParams"
-    :machines="jobOrderMachines"
-    :recipe-params="jobOrderRecipeParams"
+    v-if="batchNo"
+    :batch-no="batchNo"
   />
-  <JobOrderOverview
-    v-else-if="jobOrderBatchNo"
-    :batch-no="jobOrderBatchNo"
-  />
+  <div v-else class="print-view__missing">
+    <p>No job order reference was provided. Please reopen this page from a job order action.</p>
+  </div>
 </template>
+
+<style scoped>
+.print-view__missing {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: #4b5563;
+}
+</style>

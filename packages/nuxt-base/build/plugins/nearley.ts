@@ -15,7 +15,7 @@ const grammar = Grammar.fromCompiled(nearleyGrammar)
  */
 export function nearleyLoader(): RollupPlugin {
   return {
-    name: 'rollup-plugin-nearley',
+    name: 'rollup-plugin-nearley-loader',
     load(id) {
       if (!/\.ne$/.test(id))
         return

@@ -12,7 +12,7 @@ async function insertRecipeMaterials(
     machineId: number
     program: any
     step: any
-    processIndex: number
+    programOrder: number
     materialIndex: number
     counter: number
     callOff: number
@@ -21,6 +21,7 @@ async function insertRecipeMaterials(
     tankNo: number
     priority: number
     dmExchangeDB: Knex<any, never[]>
+    parallelCounters: Map<string, number>
   },
 ) {
   const {
@@ -31,7 +32,6 @@ async function insertRecipeMaterials(
     program,
     step,
     materialIndex,
-    processIndex,
     counter,
     callOff,
     callOffManual,
@@ -39,18 +39,25 @@ async function insertRecipeMaterials(
     tankNo,
     priority,
     dmExchangeDB,
+    programOrder,
+    parallelCounters,
   } = context
+  const mainStepOrder = step.stepNo + 1
+  const parallelKey = `${program.programNo}-${mainStepOrder}`
+  const parallelStep = (parallelCounters.get(parallelKey) ?? 0) + 1
+  parallelCounters.set(parallelKey, parallelStep)
   await dmsDB('BATCH_RECIPE_STEP').insert({
     plan_key: planKey,
     material_code: material.materialCode,
     amount: material.amount,
+    unit: material.unit,
     batch_order: batchNo,
     recipe_type: step.type,
-    main_step: step.stepNo,
-    parallel_step: materialIndex,
-    req_no_batch: materialIndex,
-    process_order: processIndex,
-    prog_proc_no: processIndex,
+    main_step: mainStepOrder,
+    parallel_step: parallelStep,
+    req_no_batch: counter,
+    process_order: programOrder + 1,
+    prog_proc_no: callOff,
   })
 
   const connectedDispenser = await dmsDB('DISPENSER_MATERIAL_CONNECTION')
@@ -72,7 +79,7 @@ async function insertRecipeMaterials(
     type: 1,
     recipe_process_no: step.stepNo,
     recipe_step_no: program.stepNo,
-    step_no: step.stepNo,
+    step_no: mainStepOrder,
   }).returning('job_id')
 
   await dmsDB('MATERIAL_REQUEST').insert({
@@ -83,8 +90,8 @@ async function insertRecipeMaterials(
     unit: material.unit,
     ...(connectedDispenser?.dispenserId && { dispenser_id: connectedDispenser.dispenserId }),
     real_amount: material.amount,
-    main_step: step.orderNo,
-    parallel_step: materialIndex,
+    main_step: mainStepOrder,
+    parallel_step: parallelStep,
   })
   await dmExchangeDB('Dyelot_Recipe').insert({
     Dyelot: batchNo,
@@ -132,7 +139,7 @@ async function processProgramSteps(
   if (chemRequests.length > 0) {
     await dmsDB('BATCH_HEADER').insert({
       plan_key: planKey,
-      recipe_index: index,
+      recipe_index: index + 1,
       program_no: program.programNo,
       recipe_type: 0,
       flotte: program.flotte,
@@ -144,7 +151,7 @@ async function processProgramSteps(
   if (dyeRequests.length > 0) {
     await dmsDB('BATCH_HEADER').insert({
       plan_key: planKey,
-      recipe_index: index,
+      recipe_index: index + 1,
       program_no: program.programNo,
       recipe_type: 1,
       flotte: program.flotte,
@@ -184,6 +191,7 @@ async function processProgramSteps(
     })
 
   counterState.callOffManual = 0
+  const parallelCounters = new Map<string, number>()
 
   for (let i = 0; i < allMaterials.length; i++) {
     const material = allMaterials[i]
@@ -205,11 +213,12 @@ async function processProgramSteps(
       program,
       step: material.step,
       materialIndex: material.materialIndex,
-      processIndex: material.stepIndex,
+      programOrder: index,
       counter: counterState.counter,
       callOff: currentCallOff,
       callOffManual: counterState.callOffManual,
       isIntermediateStep: material.isIntermediateStep,
+      parallelCounters,
     })
   }
 }

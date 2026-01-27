@@ -49,7 +49,6 @@ export default defineEventHandler(async (event) => {
     })
     .leftJoin('MATERIAL as m', 'm.material_code', '=', 'r.material_code')
     .whereNotNull('req_no_batch')
-    .orderBy(['r.process_order', 'r.prog_proc_no', 'r.parallel_step'])
-
+    .orderBy(['r.process_order', 'r.prog_proc_no', 'r.req_no_batch', 'r.main_step'])
   return res
 })
