@@ -46,11 +46,6 @@ const pdfTheme = {
 }
 type PdfTheme = typeof pdfTheme
 
-const robotoRegularUrl = new URL('../../assets/fonts/Roboto-Regular.ttf', import.meta.url).href
-const robotoBoldUrl = new URL('../../assets/fonts/Roboto-Bold.ttf', import.meta.url).href
-
-let cachedFontData: { regular?: string, bold?: string } = {}
-
 const { t, d } = useI18n()
 const route = useRoute()
 const stateStore = useStateStore()
@@ -202,45 +197,16 @@ async function fetchJobOrderData() {
 fetchCompanyInfo()
 
 async function registerPdfFonts(doc: jsPDF) {
-  if (!cachedFontData.regular || !cachedFontData.bold)
-    await preloadPdfFonts()
 
-  if (cachedFontData.regular) {
-    doc.addFileToVFS('Roboto-Regular.ttf', cachedFontData.regular)
-    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal')
-  }
-  if (cachedFontData.bold) {
-    doc.addFileToVFS('Roboto-Bold.ttf', cachedFontData.bold)
-    doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold')
-  }
+  const robotoRegular = await import('@teleskop/nuxt-base/assets/fonts/Roboto-Regular.ttf?base64')
+  const robotoBold = await import('@teleskop/nuxt-base/assets/fonts/Roboto-Bold.ttf?base64')
+
+  doc.addFileToVFS('Roboto-Regular.ttf', robotoRegular.default)
+  doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal')
+  doc.addFileToVFS('Roboto-Bold.ttf', robotoBold.default)
+  doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold')
+
   doc.setFont('Roboto', 'normal')
-}
-
-async function preloadPdfFonts() {
-  const [regular, bold] = await Promise.all([
-    cachedFontData.regular ? Promise.resolve(cachedFontData.regular) : fetchFontAsBase64(robotoRegularUrl),
-    cachedFontData.bold ? Promise.resolve(cachedFontData.bold) : fetchFontAsBase64(robotoBoldUrl),
-  ])
-  cachedFontData = { regular, bold }
-}
-
-async function fetchFontAsBase64(url: string) {
-  const response = await fetch(url)
-  if (!response.ok)
-    throw new Error(`Failed to load font: ${url}`)
-  const buffer = await response.arrayBuffer()
-  return arrayBufferToBase64(buffer)
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer) {
-  let binary = ''
-  const bytes = new Uint8Array(buffer)
-  const chunkSize = 0x8000
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    const chunk = bytes.subarray(i, i + chunkSize)
-    binary += String.fromCharCode(...chunk)
-  }
-  return btoa(binary)
 }
 
 function collectMaterialsFromProgram(program: RecipeMasterStep) {
