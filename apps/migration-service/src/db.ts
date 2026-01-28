@@ -1,7 +1,7 @@
-import Knex from 'knex'
+import knex from 'knex'
 import { config } from './config'
 
-export const db = Knex({
+export const db = knex({
   client: 'mssql',
   connection: {
     host: config.teleskopHost,
