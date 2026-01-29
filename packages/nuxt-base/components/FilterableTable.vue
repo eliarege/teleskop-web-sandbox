@@ -374,8 +374,8 @@ function onRequest(pagination: QTableProps['pagination']) {
       <template #top>
         <div class="flex w-full flex-nowrap">
           <div
-            class="filter-border-dense flex-center"
-            :class="showVisibilityMenu ? '' : ''"
+            class="flex-center"
+            :class="dense ? 'filter-border-dense' : 'filter-border'"
           >
             <div
               class="filter-icon"
