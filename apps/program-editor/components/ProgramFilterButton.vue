@@ -37,12 +37,12 @@ function focusNumberInput() {
 
       <QMenu
         v-model="filter.showFilterPopup"
-
         transition-show="scale"
         transition-hide="scale"
         anchor="bottom right"
         self="top right"
         class="rounded-md"
+        :transition-duration="0"
         @show="focusNumberInput"
       >
         <div class="q-pa-sm select-none" style="width: 350px;">
@@ -99,7 +99,6 @@ function focusNumberInput() {
               <QCheckbox
                 v-model="filter.existingFilter.clearOnChange"
                 :label="t('filter.clearFilterOnChange')"
-                color="gray-8"
                 dense
               />
               <div class="flex justify-end">

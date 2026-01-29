@@ -119,11 +119,20 @@ function isMachineSelected(machineId: number): boolean {
                   </QIcon>
                 </QItemSection>
 
-                <q-tooltip
+                <QTooltip
                   v-if="machineItem.disabled && machineItem.usability"
                 >
                   {{ t(`machine.unusableReason.${machineItem.usability}`) }}
-                </q-tooltip>
+                </QTooltip>
+
+                <QMenu
+                  touch-position
+                  context-menu
+                >
+                  <MachineListContextMenu
+                    :machine="machineItem"
+                  />
+                </QMenu>
               </template>
 
               <!-- Process Types -->
