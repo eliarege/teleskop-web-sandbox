@@ -401,13 +401,12 @@
       "descriptions": "Detail Descriptions"
     },
     "transferType": {
-      "append": "Appended",
-      "update": "Updated",
+      "append": "New",
       "deleted": "Deleted"
     },
     "transferStatus": {
       "success": "Success",
-      "successWithoutRecipe": "Success Without Recipe",
+      "successWithoutRecipe": "Success (Without Recipe)",
       "failed": "Failed"
     },
     "transferSource": {
@@ -417,6 +416,7 @@
     }
   },
   "consumption": {
+    "_": "Consumption Information",
     "title": "Job Order Consumptions",
     "last12Hours": "Last 12 Hours",
     "recordDate": "Record Date",
@@ -428,6 +428,7 @@
     "lotNo": "Lot Number",
     "isManuel": "Is Manual",
     "weighingStartTime": "Weighing Start Time",
-    "cost": "Cost"
+    "cost": "Cost",
+    "machineName": "Machine Name"
   }
 }

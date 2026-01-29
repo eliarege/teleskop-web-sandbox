@@ -7,22 +7,17 @@ export default useBase('/api/transfer', router.handler)
 
 const selectParameters = {
   id: 'ti.ID',
-  joborder: 'ti.JOBORDER',
+  jobOrder: 'ti.JOBORDER',
   correctionNo: 'ti.CORRECTIONNUMBER',
-  machineid: 'ti.MACHINEID',
-  machinecode: 'm.MACHINECODE',
+  machineId: 'ti.MACHINEID',
+  machineCode: 'm.MACHINECODE',
   transferDate: 'ti.TRANSFERDATE',
   transferType: 'ti.TRANSFERTYPE',
   transferStatus: 'ti.TRANSFERSTATUS',
   transferSource: 'ti.TRANSFERSOURCE',
 }
 
-router.get('/transfer-count', defineAuthEventHandler(async (_event) => {
-  return (await knex('DYBFBATCHTRANSFERINFO')
-    .count('* as count').first())!.count
-}))
-
-router.post('/transfers', defineAuthEventHandler(async (event) => {
+router.post('/list', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const knexInstance: any = knex('DYBFBATCHTRANSFERINFO as ti')
     .join('BFMACHINES as m', 'ti.MACHINEID', 'm.MACHINEID')
@@ -52,7 +47,7 @@ router.post('/transfers', defineAuthEventHandler(async (event) => {
   return { rows: await knexInstance, count }
 }))
 
-router.get('/transfer-details/:id', defineAuthEventHandler(async (event) => {
+router.get('/:id/details', defineAuthEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 
   const details = await knex('DYBFBATCHTRANSFERINFODETAIL')

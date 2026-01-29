@@ -8,12 +8,12 @@ const router = createRouter()
 export default useBase('/api/consumption', router.handler)
 
 router.get('/theoretical', defineAuthEventHandler(async (event) => {
-  const { joborder, correctionNo } = getQuery(event)
+  const { jobOrder, correctionNo } = getQuery(event)
 
   const query = await knex
     .select({
       processNo: 'B.PROGRAMNO',
-      machinename: 'M.MACHINENAME',
+      machineName: 'M.MACHINENAME',
       tankNo: 'A.DISPENSERID',
       processIndex: 'B.RECIPEINDEX',
       mainStep: 'A.MAINSTEP',
@@ -25,7 +25,7 @@ router.get('/theoretical', defineAuthEventHandler(async (event) => {
       status: 'A.STATUS',
       requestTime: 'B.REQUESTTIME',
       completedTime: 'B.COMPLETEDTIME',
-      machineid: 'B.MACHINEID',
+      machineId: 'B.MACHINEID',
       interval: knex.raw('DATEDIFF(minute, B.REQUESTTIME, B.COMPLETEDTIME)'),
       otoMan: 'B.AUTO',
     },
@@ -34,18 +34,18 @@ router.get('/theoretical', defineAuthEventHandler(async (event) => {
     .join('DYTFCHEMREQUESTS as B', 'A.REQNUMBER', '=', 'B.REQNUMBER')
     .join('DYTFMACHINES as M', 'B.MACHINEID', 'M.MACHINEID')
     .join('DYTFMATERIAL as C', 'A.CHEMCODE', '=', 'C.MATERIALCODE')
-    .where('B.BATCHNO', joborder)
+    .where('B.BATCHNO', jobOrder)
     .andWhere('B.BATCHCORRECTIONNO', correctionNo)
     .orderBy(['B.REQUESTTIME', 'A.PARALLELSTEP'])
   return query
 }))
 
 router.get('/manual', defineAuthEventHandler(async (event) => {
-  const { joborder, correctionNo } = getQuery(event)
+  const { jobOrder, correctionNo } = getQuery(event)
 
   const query = await knex('DYTFDUSTMATERIALSREQ as A')
     .select({
-      joborder: 'A.BATCHNO',
+      jobOrder: 'A.BATCHNO',
       correctionNo: 'A.CORRECTIONNO',
       weighingNumber: 'A.QUEUENO',
       recipeType: 'A.RECIPETYPE',
@@ -57,7 +57,7 @@ router.get('/manual', defineAuthEventHandler(async (event) => {
     })
     .join('DYTFDUSTMATERIALS as B', 'A.REQNUMBER', 'B.REQNUMBER')
     .join('DYTFMATERIAL as C', 'B.CODE', 'C.MATERIALCODE')
-    .where('A.BATCHNO', joborder)
+    .where('A.BATCHNO', jobOrder)
     .andWhere('A.CORRECTIONNO', correctionNo)
   return query
 }))
@@ -70,11 +70,11 @@ const selectParametersConsumption = {
   isManuel: 'd.ISMANUEL',
   correction: 'd.CORRECTION',
   system: 'd.SYSTEM',
-  machineid: 'd.MACHINEID',
-  machinecode: 'm.MACHINECODE',
+  machineId: 'd.MACHINEID',
+  machineCode: 'm.MACHINECODE',
   isTransferred: 'd.ISTRANSFERRED',
   materialCode: 'd.MATERIALCODE',
-  joborderCode: 'd.JOBORDERCODE',
+  jobOrderCode: 'd.JOBORDERCODE',
   consumptionCode: 'd.CONSUMPTIONCODE',
   cost: 'd.COST',
   water: 'd.WATER',
@@ -98,7 +98,6 @@ router.post('/consumptions', defineAuthEventHandler(async (event) => {
     .select(selectParametersConsumption)
     .leftJoin('BFMACHINES as m', 'd.MACHINEID', 'm.MACHINEID')
     .where('d.DISPENSERID', '!=', -1)
-    // .where('RECORDDATE', '>=', knex.raw('DATEADD(hour, -12, GETDATE())'))
     .orderBy('RECORDDATE', 'desc')
 
   if (filters && filters.length > 0) {
@@ -119,11 +118,4 @@ router.post('/consumptions', defineAuthEventHandler(async (event) => {
     rows,
     count,
   }
-}))
-
-router.get('/consumption-count', defineAuthEventHandler(async () => {
-  const result = await knex('DYTACONSUMPTION')
-    // .where('RECORDDATE', '>=', knex.raw('DATEADD(hour, -12, GETDATE())'))
-    .count('* as count')
-  return result[0].count
 }))

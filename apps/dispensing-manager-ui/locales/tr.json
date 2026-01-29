@@ -401,12 +401,11 @@
     },
     "transferType": {
       "append": "Yeni",
-      "update": "Güncellendi",
       "deleted": "Silindi"
     },
     "transferStatus": {
       "success": "Başarılı",
-      "successWithoutRecipe": "Reçetesiz Başarılı",
+      "successWithoutRecipe": "Başarılı (Kimyasal Reçetesiz)",
       "failed": "Başarısız"
     },
     "transferSource": {
@@ -416,6 +415,7 @@
     }
   },
   "consumption": {
+    "_": "Tüketim Bilgileri",
     "title": "İş Emri Tüketimleri",
     "last12Hours": "Son 12 Saat",
     "recordDate": "Kayıt Tarihi",
@@ -427,6 +427,7 @@
     "lotNo": "Lot No",
     "isManuel": "Manuel mi",
     "weighingStartTime": "Tartım Başlangıç Zamanı",
-    "cost": "Maliyet"
+    "cost": "Maliyet",
+    "machineName": "Makine Adı"
   }
 }

@@ -1,5 +1,5 @@
 export interface RecipeLatest {
-  joborder: number | null
+  jobOrder: number | null
   recipeType: number | null
   processOrder: number | null
   ISN: number | null
@@ -37,10 +37,10 @@ export enum TransferType {
 // Transfer interfaces
 export interface BatchTransferInfo {
   id: number
-  joborder: number
+  jobOrder: number
   correctionNo: number
-  machineid: number
-  machinecode?: string
+  machineId: number
+  machineCode?: string
   transferDate: Date
   transferType: TransferType
   transferStatus: TransferStatus

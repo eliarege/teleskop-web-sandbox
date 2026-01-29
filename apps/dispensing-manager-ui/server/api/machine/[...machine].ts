@@ -7,8 +7,9 @@ export default useBase('/api/machine', router.handler)
 router.get('/machines', defineAuthEventHandler(async (event) => {
   const machines = await knex('DYTFMACHINES')
     .select({
-      machinename: 'MACHINENAME',
-      machineid: 'MACHINEID',
+      machineName: 'MACHINENAME',
+      machineId: 'MACHINEID',
+      machineCode: 'MACHINENAME',
       controllerType: 'CONTROLLERTYPE',
     })
     .orderBy('MACHINEID')
@@ -16,35 +17,35 @@ router.get('/machines', defineAuthEventHandler(async (event) => {
 }))
 
 router.get('/machine', defineAuthEventHandler(async (event) => {
-  const { joborder, correctionNo } = getQuery(event)
-  const machineid = knex('DYBFBATCHPLAN')
+  const { jobOrder, correctionNo } = getQuery(event)
+  const machineId = knex('DYBFBATCHPLAN')
     .select('PLANNEDMACHINE')
-    .where('JOBORDER', joborder)
+    .where('JOBORDER', jobOrder)
     .andWhere('CORRECTIONNUMBER', correctionNo)
 
   const machine = await knex('DYTFMACHINES')
     .select({
-      machinename: 'MACHINENAME',
-      machineid: 'MACHINEID',
+      machineName: 'MACHINENAME',
+      machineId: 'MACHINEID',
       controllerType: 'CONTROLLERTYPE',
     })
-    .where('MACHINEID', machineid)
+    .where('MACHINEID', machineId)
   return machine[0]
 }))
 
-router.get('/machineid', defineAuthEventHandler(async (event) => {
+router.get('/machineId', defineAuthEventHandler(async (event) => {
   const { plankey } = getQuery(event)
-  const machineid = await knex('DYBFBATCHPLAN')
+  const machineId = await knex('DYBFBATCHPLAN')
     .select('PLANNEDMACHINE')
     .where('PLANKEY', Number(plankey))
 
-  return machineid
+  return machineId
 }))
 
-router.post('/control-dispenser-type-by-machineid', defineAuthEventHandler(async (event) => {
+router.post('/control-dispenser-type-by-machineId', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const dispensers = await knex('DYTFMACHDISPCONNECTION as M')
-    .where('M.MACHINEID', body.machineid)
+    .where('M.MACHINEID', body.machineId)
     .andWhere('D.DISPENSERTYPENO', body.dispenserType)
     .leftJoin('DYTFDISPENSERSETTINGS as D', 'M.DISPENSERID', 'D.DISPENSERID')
 
