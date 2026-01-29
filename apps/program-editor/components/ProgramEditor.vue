@@ -6,6 +6,7 @@ import type { AutoScrollOptions } from 'sortablejs/plugins'
 import ProgramStepForm from './ProgramStepForm.vue'
 import { useEditorStore } from '~~/composables/editor'
 import type { ProgramStep } from '~/shared/types'
+import { contextMenuStore } from '~/utils/context-menu'
 
 const editor = useEditorStore()
 const steps = computed<ProgramStep[]>(() => editor.program?.steps || [])
@@ -35,6 +36,12 @@ function onDragEnd(event: SortableEvent) {
     dragged = null
   }
 }
+
+function handleContextMenu(stepId: number) {
+  if (!editor.isStepSelected(stepId)) {
+    editor.selectStep(false, stepId)
+  }
+}
 </script>
 
 <template>
@@ -45,22 +52,24 @@ function onDragEnd(event: SortableEvent) {
     :options="sortableOptions"
     @start="onDragStart"
     @end="onDragEnd"
-    @click="editor.selectedSteps = []"
   >
     <template #item="{ index, element: step }: { index: number; element: ProgramStep }">
       <QItem
         dense
+        clickable
         class="program-step"
-        :class="{ __selected: editor.isStepSelected(step.stepId) }"
-        @click.stop
+        :active="editor.isStepSelected(step.stepId)"
+        active-class="__selected"
+        @click="editor.selectStep(($event as PointerEvent).ctrlKey, step.stepId)"
+        @contextmenu="handleContextMenu(step.stepId)"
       >
-        <QItemSection side @click.stop="editor.selectStep($event.ctrlKey, step.stepId)">
+        <QItemSection side>
           <QItemLabel class="w-5">
             {{ index + 1 }}
           </QItemLabel>
         </QItemSection>
 
-        <QItemSection class="pl-2" @click.stop="editor.selectStep($event.ctrlKey, step.stepId)">
+        <QItemSection>
           <div :id="`step-${step.stepId}`">
             <ProgramStepForm :step-id="step.stepId" />
           </div>
@@ -97,8 +106,6 @@ function onDragEnd(event: SortableEvent) {
 .program-step {
   @apply select-none;
   @apply transition-none;
-  @apply hover:(bg-gray-1 text-black dark:bg-dark-2 dark:text-white);
-  @apply dark:(hover:(bg-dark-4 text-white));
 }
 
 .program-step.__selected {

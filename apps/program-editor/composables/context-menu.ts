@@ -79,6 +79,9 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
 
     const adaptedSteps = copiedStepValues.value.map(step => adaptStepToMachine(step, sourceMachineCommands.value, isSameMachine))
     editor.program.steps.splice(stepIndex, 0, ...adaptedSteps)
+
+    // yapıştırma sonrası seçimleri güncelle
+    editor.selectedSteps = adaptedSteps.map(step => ({ ...step }))
   }
 
   function getCopiedStepsValues(): ProgramStep[] | undefined {

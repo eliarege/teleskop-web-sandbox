@@ -62,6 +62,12 @@ function removeError(commandId: number) {
   errorStore.clearCommandErrors(editor.program.programNo, step.stepId, commandId)
   editor.errorIds.delete(`${step.stepId}-${commandId}`)
 }
+
+function handleContextMenu(stepId: number, commandId: number) {
+  if (!editor.isStepSelected(stepId, commandId)) {
+    editor.selectStep(false, stepId, commandId)
+  }
+}
 </script>
 
 <template>
@@ -114,38 +120,50 @@ function removeError(commandId: number) {
       class="e-border-color border-(t x-0) pl-16"
     >
       <Sortable
-        class="parallel-commands"
-        item-key="commandId"
+        class="parallel-commands e-div-y"
         :list="step.parallelCommands"
+        item-key="commandId"
         :options="sortableOptions"
-        :data-index="stepIndex"
       >
         <template #header>
           <span
             v-if="step.parallelCommands.length === 0"
             class="py-10 inline-block e-text-dim"
-          >{{ t('noParallelStep') }}</span>
-        </template>
-        <template #item="{ index }">
-          <div
-            class="step-parallel-command"
-            @click="removeError(step.parallelCommands[index].commandId)"
           >
-            <div>
+            {{ t('noParallelStep') }}
+          </span>
+        </template>
+
+        <template #item="{ index, element: command }">
+          <QItem
+            dense
+            clickable
+            class="step-parallel-command"
+            :active="editor.isStepSelected(step.stepId, command.commandId)"
+            active-class="__selected"
+            @click.stop="{
+              removeError(command.commandId);
+              editor.selectStep(false, step.stepId, command.commandId)
+            }"
+            @contextmenu="handleContextMenu(step.stepId, command.commandId)"
+          >
+            <QItemSection>
               <ProgramStepCommandForm
                 :step-id="step.stepId"
                 :parallel-index="index"
                 :expanded="step.expanded"
-                :command-error="getCommandError(step.parallelCommands[index].commandId)"
+                :command-error="getCommandError(command.commandId)"
               />
-            </div>
-            <QSpace />
-            <QIcon
-              class="icon cursor-pointer delete-btn"
-              name="close"
-              @click.stop="deleteParallelStep(stepIndex, index)"
-            />
-          </div>
+            </QItemSection>
+
+            <QItemSection side>
+              <QIcon
+                class="icon cursor-pointer delete-btn"
+                name="close"
+                @click.stop="deleteParallelStep(stepIndex, index)"
+              />
+            </QItemSection>
+          </QItem>
         </template>
       </Sortable>
     </div>
@@ -153,6 +171,36 @@ function removeError(commandId: number) {
 </template>
 
 <style lang="postcss" scoped>
+.step-parallel-command {
+  @apply select-none;
+}
+
+.step-parallel-command.__selected {
+  @apply bg-blue-2 text-black;
+  @apply dark:(bg-dark-2 text-white);
+}
+
+.step-parallel-command:hover .delete-btn {
+  @apply !text-(black opacity-60) !dark:(text-(white opacity-60));
+}
+
+.delete-btn {
+  @apply !text-(black opacity-0) !dark:(text-(white opacity-0));
+}
+
+.expand-btn {
+  @apply text-gray-4;
+}
+
+.error {
+  @apply bg-red-2;
+}
+
+/*
+.command-drag-handle {
+  @apply opacity-60;
+}
+
 .step-parallel-command {
   @apply flex flex-row items-center w-full pl-4;
   @apply border-b border-black border-opacity-20;
@@ -187,5 +235,5 @@ function removeError(commandId: number) {
 
 .error {
   @apply bg-red-2;
-}
+} */
 </style>
