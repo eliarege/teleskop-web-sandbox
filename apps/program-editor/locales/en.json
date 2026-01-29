@@ -544,13 +544,29 @@
     "stepEnd": "End Step"
   },
   "machineContextMenu": {
-    "sendAllPrograms": "Send All Programs",
-    "getAllPrograms": "Get All Programs",
-    "copy": "Copy Programs",
-    "paste": "Paste Programs",
-    "findChange": "Find - Change",
-    "compareAllPrograms": "Compare All Programs",
-    "goToMachineApp": "Go to Machine App"
+    "group": {
+      "sendAllPrograms": "Send all programs to {name} group",
+      "getAllPrograms": "Get all programs from {name} group",
+      "sendSuccess": "All programs successfully sent to {name} group",
+      "sendFailed": "Error sending programs to {name} group",
+      "getSuccess": "All programs successfully retrieved from {name} group",
+      "getFailed": "Error retrieving programs from {name} group"
+    },
+    "machine": {
+      "sendAllPrograms": "Send all programs to {name} machine",
+      "getAllPrograms": "Get all programs from {name} machine",
+      "copy": "Copy Programs",
+      "paste": "Paste Programs",
+      "goToMachineApp": "Go to Machine App",
+      "noProgram": "No programs found on {name} machine"
+    },
+    "processType": {
+      "sendPrograms": "Send {name} type programs",
+      "getPrograms": "Get {name} type programs",
+      "copy": "Copy {name} type programs",
+      "paste": "Paste programs to {name} type",
+      "noPrograms": "No {name} type programs found"
+    }
   },
   "comparisonTable": {
     "programName": "Program Name",
