@@ -1,8 +1,61 @@
 # Changelog
 
+## 0.68.0 - 2026-01-29
+
+[Compare Changes](c2b0d3d0eabaef083a4424d7b874aac6129c3e22...d33649f3a8ff7ca0d57145909a320db762a7511f)
+
+### 🚀 Features
+
+-  **AR**: Add keyboard navigation for time selection in ArchiveChart ([89aa3ad](89aa3ad550ddd9a0518f918c0998fd092ff68fc2))
+-  **AR**: TW-177 enhance keyboard navigation for time selection limits in ArchiveChart ([7b23058](7b23058c6a868c6864fb32483aa62a2382c52a3b))
+-  **AR**: Update time selection behavior to adjust view duration on keyboard navigation in ArchiveChart ([7e83f28](7e83f28416db205fc8386145f2cddd96363192fe))
+-  **PE**: Add machine process accordion and improve machine list styling ([293c1d5](293c1d535b3c0119aa6140dcd516918f21e1b29a))
+- **recipes**: JobOrderOverview revamp ([b3f0192](b3f01927cb7ae736bd7a25f9c6c4028182590570))
+-  **PE**: Implement context menu for program steps and enhance step selection functionality ([63e778b](63e778bf55cf7c44672bde69fbac94f5b6715c5e))
+-  **DM**: TW-180 add transferred job orders feature with API integration and UI components ([c4671cb](c4671cb2350aa3bea042c3053960abcaeee20933))
+-  **DM**: TW-181 add consumption page with API integration and localization support ([c5e48f7](c5e48f76725d93cc858c8a67b855a5935ff87319))
+-  **PE**: Enhance drag-and-drop functionality for machine commands and parallel steps ([942c37a](942c37abd935fe55458d3cd4eaef729adcfd61b4))
+-  **PE**: Enhance machine context menu with group and process type functionalities ([8283259](8283259e7a6b14313930b9b664071f599dba8d1e))
+
+### 🐛 Bug Fixes
+
+-  **AR**: TW-178 adjust time selection behavior in ArchiveChart to handle out-of-bounds selections ([c497290](c49729083b4149e40d236442bb35480544832b54))
+- **recipes**: Recipe fields consistency fixes ([2dca47f](2dca47fa5c6245a0f397423b39c078960fea0a8d))
+- **recipes**: ProgramName not appearing in recipe screens ([9d6ff49](9d6ff49fbf537bc7f03fda3cb850ecf706f3ab38))
+- **recipes**: Null program name error ([65383e8](65383e879b6d8ba899f98c2f776a3e69846a9670))
+- **recipes**: Manual material main_step value ([006bfc8](006bfc80f85744d6d706f1a27d36478489d6fa77))
+-  **PE**: Avoid sending START_TAGS if machine version is lower than 3.17 ([b347828](b347828ff2ea7f0092db82040803f2c4eae98dd4))
+-  **PE**: Ensure newline at the end of the program string ([1d36984](1d369842f383adc833979a2a4df81b07db95aa56))
+- **nuxt-base**: Update app grid button to use href for navigation instead of click event ([91115ae](91115ae68388028aaf4602afbcf146d17b320de6))
+- **migrations**: Handle initial migrations ([e854486](e85448622fa88b2c6b6e3c71558b919ca74a51b8))
+-  **AR**: Water type labels should be fetched from BFWaterTypes ([21cc47a](21cc47a7c92b32934d7ffa1ac859f3a10b553a0b))
+-  **PE**: Always navigate to machine list when a machine is clicked if a user is on program-editor page ([e968dcd](e968dcd942b8f97bba447dd0b61c63d44ce29d02))
+-  **PE**: Context menu not being shown when right-clicked on a machine in MachineList ([6d74a26](6d74a26008bcab2d7a8b6585d34d0e22311f6517))
+-  **PE**: Program table cells not respecting the configured align property ([785aa44](785aa44f99d31792afd6bca3c4f2d7d75f01e0e2))
+-  **PE**: Uncomment fetchCommandTypes call in onBeforeMount lifecycle hook ([2e3aaf4](2e3aaf425c83a3b5ac6713acb85e135e245cd0b8))
+-  **PE**: Update q-select class for improved styling and error handling ([ed5e77a](ed5e77a455e2e8f35a66e23e72b7fea684f6abad))
+- **nuxt-base**: Update visibility menu class for better styling ([85e6b34](85e6b34053a017c1f7aa14a3884e32755cd3232a))
+-  **DM**: Update transferType handling to include conditional logic for filtering ([2126809](21268096023d09a6c2a88d6f044e2758ca0e33cd))
+
+### ♻️ Refactor
+
+-  **MS**: Update LRUCache configurations and add debug logging for machine status fetching ([8caf64a](8caf64ade88c2d2153a98978554379c977894959))
+- Move `base64` and `nearley` plugins to `nuxt-base` ([b8abe2f](b8abe2f9291835b070a14cc172b15ebd07061737))
+-  **PE**: Improve ping method implementation in T7ProgramClient and TonelloProgramClient ([1af9e5e](1af9e5ea4d3e3a0d163908eb703e4721fc682d55))
+- **recipes**: Streamline PDF font handling by importing fonts as base64 ([3090438](30904382371abf27582fca6cc7233fc2e7bc44c3))
+-  **DM**: Remove job order logs page and enhance recipe page with detailed functionality ([2baa8d4](2baa8d419b8c5131e938c20a016d7775009cbf5d))
+-  **DM**: Standardize naming conventions for jobOrder, machineId, and related fields across API and localization files ([774f405](774f405bedeec4191128c9254e05415ec073fd59))
+
+### 🔧 Miscellaneous Tasks
+
+- **recipes**: Removed WeighingInfoDialog and MaterialRequestsDialog from JobOrderList ([c9b1cb8](c9b1cb800bce7b520af0e2e66832ff26c531ddb9))
+- **recipes**: Cleaned up unused WeighingInfo and MaterialRequests components ([d80500d](d80500dd0e659b49171eb21438e4a92107dbc2d6))
+- **recipes**: Localizations ([6f3eaf1](6f3eaf177ff8ddb149a29f6abe7d974a9a67b587))
+- Remove unused font files and shims, update nearley integration ([cdab750](cdab750b4ad40875302e32dabc8e367079c0a083))
+
 ## 0.67.0 - 2026-01-22
 
-[Compare Changes](ba8d00367e8eb3d9b981ef10bc3c095ce04be388...3bbb8991de88d886ecee1d4ff3805edac9491342)
+[Compare Changes](ba8d00367e8eb3d9b981ef10bc3c095ce04be388...c2b0d3d0eabaef083a4424d7b874aac6129c3e22)
 
 ### 🚀 Features
 
