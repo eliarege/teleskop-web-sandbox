@@ -12,7 +12,7 @@ const selectParameters = {
   machineId: 'ti.MACHINEID',
   machineCode: 'm.MACHINECODE',
   transferDate: 'ti.TRANSFERDATE',
-  transferType: 'ti.TRANSFERTYPE',
+  transferType: knex.raw('CASE WHEN ti.TRANSFERTYPE = 1 THEN 0 ELSE ti.TRANSFERTYPE END'),
   transferStatus: 'ti.TRANSFERSTATUS',
   transferSource: 'ti.TRANSFERSOURCE',
 }
@@ -23,6 +23,14 @@ router.post('/list', defineAuthEventHandler(async (event) => {
     .join('BFMACHINES as m', 'ti.MACHINEID', 'm.MACHINEID')
 
   if (body.filters && body.filters?.length > 0) {
+    const transferTypeFilterIndex = body.filters.findIndex((f: any) => f.name === 'transferType')
+    if (transferTypeFilterIndex !== -1) {
+      const transferTypeFilter = body.filters[transferTypeFilterIndex]
+      if (transferTypeFilter.value?.option?.includes(0)) {
+        knexInstance.whereIn('ti.TRANSFERTYPE', [0, 1])
+        body.filters = body.filters.filter((_: any, index: number) => index !== transferTypeFilterIndex)
+      }
+    }
     filtersToKnex(body.filters, selectParameters, knexInstance)
   }
 
