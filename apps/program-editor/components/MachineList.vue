@@ -33,7 +33,6 @@ async function onMachineClick(machineInfo: MachineInfo, processType?: ProcessTyp
 }
 
 const thumbStyle = { opacity: '0' }
-const currentMachine = ref<MachineInfo | null>(null)
 
 function isRetrying(machineId: number): boolean {
   return machineStatusStore.isChecking(machineId)
@@ -75,6 +74,19 @@ function isMachineSelected(machineId: number): boolean {
             borderless
             dense
           >
+            <template #header>
+              <QItemSection class="text-bold">
+                {{ group.name }}
+              </QItemSection>
+
+              <QMenu touch-position context-menu>
+                <MachineListContextMenu
+                  type="group"
+                  :group="group"
+                />
+              </QMenu>
+            </template>
+
             <QExpansionItem
               v-for="machineItem in group.machines"
               :key="machineItem.id"
@@ -87,7 +99,6 @@ function isMachineSelected(machineId: number): boolean {
               expand-icon-toggle
               borderless
               dense
-              @contextmenu.prevent="currentMachine = machineItem"
             >
               <template #header>
                 <QItemSection
@@ -125,11 +136,9 @@ function isMachineSelected(machineId: number): boolean {
                   {{ t(`machine.unusableReason.${machineItem.usability}`) }}
                 </QTooltip>
 
-                <QMenu
-                  touch-position
-                  context-menu
-                >
+                <QMenu touch-position context-menu>
                   <MachineListContextMenu
+                    type="machine"
                     :machine="machineItem"
                   />
                 </QMenu>
@@ -151,15 +160,15 @@ function isMachineSelected(machineId: number): boolean {
                 <QItemSection dense>
                   {{ processType.label }}
                 </QItemSection>
+
+                <QMenu touch-position context-menu>
+                  <MachineListContextMenu
+                    type="processType"
+                    :machine="machineItem"
+                    :process-type="processType"
+                  />
+                </QMenu>
               </QItem>
-              <QMenu
-                touch-position
-                context-menu
-              >
-                <MachineListContextMenu
-                  :machine="machineItem"
-                />
-              </QMenu>
             </QExpansionItem>
           </QExpansionItem>
         </template>
