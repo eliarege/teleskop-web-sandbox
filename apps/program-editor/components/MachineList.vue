@@ -14,13 +14,19 @@ const machine = useMachineStore()
 const machineStatusStore = useMachineStatusStore()
 const filter = useProgramFilterStore()
 
-async function onMachineClick(machineId: number, processType?: ProcessType) {
+async function onMachineClick(machineInfo: MachineInfo, processType?: ProcessType) {
+  if (machineInfo.disabled)
+    return
+
+  const machineId = machineInfo.id
   // Process type filtresini güncelle
   filter.existingFilter.processType = processType ?? undefined
 
-  // Farklı bir makineye geçiş yapılıyorsa navigasyon yap
   const currentMachineId = Number(route.params.machine_id)
-  if (currentMachineId !== machineId) {
+  const machinePath = /^\/machine\/(\d+)$/
+
+  // Makineler sayfasında değilse veya farklı makine seçildiyse makineyi değiştir
+  if (!machinePath.test(route.path) || currentMachineId !== machineId) {
     await machine.changeMachine(machineId)
     editor.resetProgram()
   }
@@ -88,8 +94,7 @@ function isMachineSelected(machineId: number): boolean {
                   clickable
                   dense
                   class="cursor-pointer"
-
-                  @click.stop="onMachineClick(machineItem.id)"
+                  @click.stop="onMachineClick(machineItem)"
                 >
                   {{ machineItem.name }}
                 </QItemSection>
@@ -132,13 +137,12 @@ function isMachineSelected(machineId: number): boolean {
                 borderless
                 clickable
                 dense
-                @click="onMachineClick(machineItem.id, processType)"
+                @click="onMachineClick(machineItem, processType)"
               >
                 <QItemSection dense>
                   {{ processType.label }}
                 </QItemSection>
               </QItem>
-
               <QMenu
                 touch-position
                 context-menu
