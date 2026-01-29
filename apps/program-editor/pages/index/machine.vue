@@ -356,7 +356,7 @@ const columns = computed<ProgramTableColumn[]>(() =>
       label: t('program.type'),
       field: (row: ProgramTableRow) => getProcessTypeName(row.typeId),
       sortable: true,
-      align: 'center',
+      align: 'left',
       hidden: machine.isTonello,
     },
     {
@@ -369,7 +369,7 @@ const columns = computed<ProgramTableColumn[]>(() =>
         return ''
       },
       sortable: true,
-      align: 'center',
+      align: 'left',
       hidden: machine.isTonello,
     },
     {
@@ -837,22 +837,23 @@ onUnmounted(() => {
           <QSpace />
           <ProgramFilterButton />
         </template>
-        <template #body-cell="{ value, row, col }">
+        <template #body-cell="props">
           <QTd
-            :style="getRowStyle(row)"
+            :props="props"
+            :style="getRowStyle(props.row)"
           >
-            <template v-if="typeof value === 'boolean'">
+            <template v-if="typeof props.value === 'boolean'">
               <QIcon
-                :name="value ? 'check' : ''"
+                :name="props.value ? 'check' : ''"
                 color="positive"
                 size="xs"
               />
             </template>
             <template v-else>
-              {{ value }}
+              {{ props.value }}
             </template>
-            <QTooltip v-if="col.tooltip">
-              {{ formatTooltip(row, col) }}
+            <QTooltip v-if="props.col.tooltip">
+              {{ formatTooltip(props.row, props.col) }}
             </QTooltip>
           </QTd>
         </template>
