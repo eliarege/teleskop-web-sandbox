@@ -19,7 +19,7 @@ function getTransferTypeLabel(type: TransferType): string {
   if (type === TransferType.Delete) {
     return t('transferredJobOrders.transferType.deleted')
   }
-  return t('transferredJobOrders.transferType.update')
+  return t('transferredJobOrders.transferType.append')
 }
 
 function getTransferTypeColor(type: TransferType): string {
@@ -65,7 +65,7 @@ function getTransferStatusColor(status: TransferStatus): string {
           <div class="row">
             <div class="col-6">
               <strong>{{ t('joborder') }}:</strong>
-              {{ transfer.joborder }}
+              {{ transfer.jobOrder }}
             </div>
             <div class="col-6">
               <strong>{{ t('transferredJobOrders.correction') }}:</strong>
@@ -75,7 +75,7 @@ function getTransferStatusColor(status: TransferStatus): string {
           <div class="row">
             <div class="col-6">
               <strong>{{ t('transferredJobOrders.machine') }}:</strong>
-              {{ transfer.machinecode }}
+              {{ transfer.machineCode }}
             </div>
             <div class="col-6">
               <strong>{{ t('status') }}:</strong>
@@ -98,7 +98,11 @@ function getTransferStatusColor(status: TransferStatus): string {
               bordered
               separator
             >
-              <q-item v-for="(detail, index) in details" :key="index">
+              <q-item
+                v-for="(detail, index) in details"
+                :key="index"
+                dense
+              >
                 <q-item-section>
                   {{ detail.explanation }}
                 </q-item-section>

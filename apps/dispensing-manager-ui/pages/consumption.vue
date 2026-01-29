@@ -7,11 +7,34 @@ import { colors } from '~/shared/constants'
 const { t, d } = useI18n()
 const keycloak = useKeycloak()
 
-const externalFilterSlots = useStorage('consumptionFilterSlots', [], sessionStorage)
-const rowsNumber = await keycloak.fetch('/api/consumption/consumption-count')
-const pagination = ref({ rowsPerPage: 25, page: 1, rowsNumber } as QTableProps['pagination'])
+function getDefaultFilter() {
+  const now = new Date()
+  const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000)
+  return [
+    {
+      label: `${t('consumption.recordDate')} ${t('consumption.last12Hours')}`,
+      field: 'recordDate',
+      filterType: 'date',
+      value: {
+        from: twelveHoursAgo.toISOString(),
+        to: now.toISOString(),
+      },
+    },
+  ]
+}
+
+const externalFilterSlots = useStorage('consumptionFilterSlots', getDefaultFilter(), sessionStorage)
+const pagination = ref({ rowsPerPage: 25, page: 1, rowsNumber: 0 } as QTableProps['pagination'])
 const visibleLoading = ref(true)
 const consumptions = ref<any[]>([])
+
+// Set default filter if empty or not set
+onMounted(() => {
+  if (!externalFilterSlots.value || externalFilterSlots.value.length === 0) {
+    externalFilterSlots.value = getDefaultFilter()
+  }
+  console.log('externalFilterSlots', externalFilterSlots.value)
+})
 
 async function fetchData() {
   visibleLoading.value = true
@@ -90,9 +113,9 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
     filterType: 'comparison',
   },
   {
-    name: 'machinecode',
-    label: t('consumption.machinename'),
-    field: 'machinecode',
+    name: 'machineCode',
+    label: t('consumption.machineName'),
+    field: 'machineCode',
     filterable: true,
     filterType: 'comparison',
   },
