@@ -22,6 +22,14 @@ const items = [
     to: '/registered-job-orders',
   },
   {
+    label: tt('transferredJobOrders._'),
+    to: '/transferred-job-orders',
+  },
+  {
+    label: tt('consumption._'),
+    to: '/consumption',
+  },
+  {
     label: tt('settings._'),
     to: '/settings',
   },

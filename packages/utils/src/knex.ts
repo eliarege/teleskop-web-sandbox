@@ -28,7 +28,6 @@ export function filtersToKnex(filters: Filter[], attributes: any, knexInstance: 
       filters.forEach((filter) => {
         const attName = filter.optionValue ? filter.optionValue : filter.field
         const DBName = attributes[attName]
-
         if (filter.isOrderFilter) {
           // Ordering is an optional for backend. Its not implemented right now.
         } else if (filter.filterType === 'select' || filter.filterType === 'multiselect') {

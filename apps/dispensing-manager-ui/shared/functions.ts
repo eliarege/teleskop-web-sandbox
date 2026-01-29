@@ -1,6 +1,6 @@
 import type { Knex } from 'knex'
 import { Notify } from 'quasar'
-import type { FilterSlot } from './types'
+import { type FilterSlot, TransferStatus } from './types'
 import { colors } from './constants'
 
 export async function navigateToPage(page: string) {
@@ -93,4 +93,17 @@ export function onPastePreventNonNumerical(event) {
 
 export function onDrop(event) {
   event.preventDefault()
+}
+export function getTransferStatusLabel(status: TransferStatus): string {
+  const { $i18n } = useNuxtApp()
+  switch (status) {
+    case TransferStatus.Success:
+      return $i18n.t('transferredJobOrders.transferStatus.success')
+    case TransferStatus.SuccessWithoutRecipe:
+      return $i18n.t('transferredJobOrders.transferStatus.successWithoutRecipe')
+    case TransferStatus.Failed:
+      return $i18n.t('transferredJobOrders.transferStatus.failed')
+    default:
+      return ''
+  }
 }

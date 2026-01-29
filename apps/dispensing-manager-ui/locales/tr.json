@@ -387,5 +387,47 @@
     "1": "Dağıtıcıya bağlantı yok",
     "2": "Dağıtıcı erişim yoluna ulaşılamıyor",
     "3": "Dağıtım Yöneticisi Çalışmıyor"
+  },
+  "transferredJobOrders": {
+    "_": "Transfer Edilen İş Emirleri",
+    "operationType": "İşlem Tipi",
+    "date": "Tarih",
+    "machine": "Makine",
+    "correction": "Düzeltme",
+    "detail": "Detay",
+    "detailDialog": {
+      "title": "Transfer Detayları",
+      "descriptions": "Detay Açıklamaları"
+    },
+    "transferType": {
+      "append": "Yeni",
+      "deleted": "Silindi"
+    },
+    "transferStatus": {
+      "success": "Başarılı",
+      "successWithoutRecipe": "Başarılı (Kimyasal Reçetesiz)",
+      "failed": "Başarısız"
+    },
+    "transferSource": {
+      "file": "Dosya",
+      "exchange": "Exchange",
+      "dms": "DMS"
+    }
+  },
+  "consumption": {
+    "_": "Tüketim Bilgileri",
+    "title": "İş Emri Tüketimleri",
+    "last12Hours": "Son 12 Saat",
+    "recordDate": "Kayıt Tarihi",
+    "recipeName": "Reçete Adı",
+    "recipeAmount": "Reçete Miktarı",
+    "amount": "Gerçek Miktar",
+    "dispenserId": "Dağıtıcı ID",
+    "machineId": "Makine ID",
+    "lotNo": "Lot No",
+    "isManuel": "Manuel mi",
+    "weighingStartTime": "Tartım Başlangıç Zamanı",
+    "cost": "Maliyet",
+    "machineName": "Makine Adı"
   }
 }

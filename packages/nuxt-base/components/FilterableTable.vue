@@ -14,6 +14,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  dense: {
+    type: Boolean,
+    default: false,
+  },
   columns: {
     type: Array<FilterableTableColumn>,
     required: true,
@@ -356,6 +360,7 @@ function onRequest(pagination: QTableProps['pagination']) {
       :filter-method="customFilterMethod"
       :filter="tableFilter"
       flat
+      :dense
       bordered
       :virtual-scroll="isVirtualScroll"
       :virtual-scroll-sticky-size-start="48"
@@ -369,14 +374,17 @@ function onRequest(pagination: QTableProps['pagination']) {
       <template #top>
         <div class="flex w-full flex-nowrap">
           <div
-            class="filter-border flex-center"
-            :class="showVisibilityMenu ? '' : ''"
+            class="flex-center"
+            :class="dense ? 'filter-border-dense' : 'filter-border'"
           >
             <div
               class="filter-icon"
               @click="showVisibilityMenu = !showVisibilityMenu"
             >
-              <q-icon name="filter_alt" size="1.5rem" />
+              <q-icon
+                name="filter_alt"
+                :size="dense ? '1rem' : '1.5rem'"
+              />
             </div>
             <q-input
               v-show="showVisibilityMenu"
@@ -810,6 +818,14 @@ function onRequest(pagination: QTableProps['pagination']) {
   padding: 0.25rem;
   border-radius: 0.25rem;
   width: max-content;
+}
+.filter-border-dense {
+  border: 1px solid black;
+  height: 2rem;
+  gap: 1rem;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  width: min-content;
 }
 .body--dark .filter-border {
   border: 1px solid white;

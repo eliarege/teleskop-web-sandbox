@@ -388,5 +388,47 @@
     "1": "No connection",
     "2": "Dispener's path is not accesible",
     "3": "Dispensing manager service is not working."
+  },
+  "transferredJobOrders": {
+    "_": "Transferred Job Orders",
+    "operationType": "Operation Type",
+    "date": "Date",
+    "machine": "Machine",
+    "correction": "Correction",
+    "detail": "Detail",
+    "detailDialog": {
+      "title": "Transfer Details",
+      "descriptions": "Detail Descriptions"
+    },
+    "transferType": {
+      "append": "New",
+      "deleted": "Deleted"
+    },
+    "transferStatus": {
+      "success": "Success",
+      "successWithoutRecipe": "Success (Without Recipe)",
+      "failed": "Failed"
+    },
+    "transferSource": {
+      "file": "File",
+      "exchange": "Exchange",
+      "dms": "DMS"
+    }
+  },
+  "consumption": {
+    "_": "Consumption Information",
+    "title": "Job Order Consumptions",
+    "last12Hours": "Last 12 Hours",
+    "recordDate": "Record Date",
+    "recipeName": "Recipe Name",
+    "recipeAmount": "Recipe Amount",
+    "amount": "Actual Amount",
+    "dispenserId": "Dispenser ID",
+    "machineId": "Machine ID",
+    "lotNo": "Lot Number",
+    "isManuel": "Is Manual",
+    "weighingStartTime": "Weighing Start Time",
+    "cost": "Cost",
+    "machineName": "Machine Name"
   }
 }
