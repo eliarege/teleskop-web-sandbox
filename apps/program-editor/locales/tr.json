@@ -227,7 +227,7 @@
   "error": {
     "commandNotFound": "Komut Bulunamadı!",
     "machineCommandNotFound": "{commandNo} numaralı komut {machineId} numaralı makinede bulunamadı",
-    "cannotMainCommand": "{commandNo} numaralı komut ana komut olamaz",
+    "cannotBeMainStep": "{commandNo} numaralı komut ana adım olamaz",
     "notSameCommand": "Bir adımda aynı komut iki kere kullanılamaz"
   },
   "warning": {
@@ -341,6 +341,22 @@
     "addToComparison": "Karşılaştırma Listesine Ekle",
     "compareWith": "Bununla Karşılaştır",
     "clearComparisonBasket": "Karşılaştırma Listesini Temizle",
+
+    "addMainStep": "Ana Adım Ekle",
+    "addParallelStep": "Paralel Adım Ekle",
+    "newStepBetween": "Araya Yeni Adım Ekle",
+    "deleteStep": "Adımı Sil",
+    "makeMainStep": "Ana Adım Yap",
+    "makeMainStepAtBeginning": "Başına",
+    "makeMainStepAtEnd": "Sonuna",
+    "copyStep": "Adımı Kopyala",
+    "pasteStep": "Adımı Yapıştır",
+    "moveParallelStep": "Paralel Adımı Taşı",
+    "deleteParallelStep": "Paralel Adımı Sil",
+    "programDetails": "Program Detayları",
+    "versionDetails": "Versiyon Detayları",
+    "commandDetails": "Komut Detayları",
+
     "deleteProgramDialog": {
       "title": "Programı Sil",
       "message": "{programNo} numaralı program silinecek! Devam etmek istediğinize emin misiniz? | {programNo} numaralı programlar silinecek! Devam etmek istediğinize emin misiniz?",

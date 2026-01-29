@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import type { Machine, ProgramStep } from '~/shared/types'
+import type { MachineCommand, ProgramStep } from '~/shared/types'
 
 const props = defineProps<{
-  machine: Machine
+  machine: {
+    id: number
+    name: string
+    commands: Map<number, MachineCommand>
+  }
   program: {
     programNo: number
     name: string
@@ -79,10 +83,10 @@ function handleDialogOK() {
           />
         </div>
         <div class="text-h8 text-gray-6 dark:text-gray-4">
-          {{ machine.id }} - {{ machine.name }}
+          {{ props.machine.id }} - {{ props.machine.name }}
         </div>
         <div class="text-h8 text-gray-6 dark:text-gray-4">
-          {{ program.programNo }} - {{ program.name }}
+          {{ props.program.programNo }} - {{ props.program.name }}
         </div>
       </q-card-section>
 

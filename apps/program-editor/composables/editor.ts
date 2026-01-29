@@ -17,6 +17,7 @@ export const useEditorStore = defineStore('editor', () => {
   const allProcessTypes = ref<ProcessType[]>([])
   const allPrograms = ref<ProgramTableRow[]>([])
   const selectedSteps = ref<ProgramStep[]>([])
+  const selectedParallelStep = ref<{ stepId: number, commandId: number } | null>(null)
   const isLoading = ref<boolean>(false)
   const leftDrawerOpen = ref(true)
   const rightDrawerOpen = ref(false)
@@ -109,7 +110,7 @@ export const useEditorStore = defineStore('editor', () => {
 
       // Komut tipi paralel ise hata ver
       if (machineCommand.commandType === CommandEligibility.PARALLEL_ONLY) {
-        return notifyError(t('error.cannotMainCommand', { commandNo }))
+        return notifyError(t('error.cannotBeMainStep', { commandNo }))
       }
 
       // Komut bilgilerini tanıma göre güncelle
@@ -757,15 +758,35 @@ export const useEditorStore = defineStore('editor', () => {
    *
    * @param {boolean} ctrlKey - `ctrl` tuşu basılmış mı?.
    * @param {number} stepId - Seçilen adımın id'si.
+   * @param {number} [commandId] - Seçilen paralel komutun id'si (opsiyonel). Eğer belirtilmezse ana adım seçilir.
    *
    * @returns {void} Fonksiyon herhangi bir değer döndürmez.
    *
    * @description Bu fonksiyon, verilen adım indeksine göre ilgili adımı seçer veya seçimden çıkarır. Seçilen adımlar `selectedSteps` dizisinde saklanır ve sıralanır.
+   * Eğer commandId belirtilirse paralel adım seçilir ve ana adım da otomatik olarak seçilir.
    */
-  function selectStep(ctrlKey: boolean, stepId: number): void {
+  function selectStep(ctrlKey: boolean, stepId: number, commandId?: number): void {
     const step = program.value.steps.find(step => step.stepId === stepId)
     if (!step)
       return
+
+    // Paralel adım seçimi
+    if (isDef(commandId)) {
+      // Paralel komutun var olduğunu kontrol et
+      const parallelCommand = step.parallelCommands.find(cmd => cmd.commandId === commandId)
+      if (!parallelCommand)
+        return
+
+      // Ana adımı seç (paralel adım seçildiğinde ana adım da seçili olmalı)
+      selectedSteps.value = [step]
+      // Paralel adımı seç
+      selectedParallelStep.value = { stepId, commandId }
+      focusCommandSelector(stepId)
+      return
+    }
+
+    // Ana adım seçimi - paralel seçimi sıfırla
+    selectedParallelStep.value = null
 
     if (ctrlKey && !isStepSelected(stepId)) {
       selectedSteps.value.push(step)
@@ -775,9 +796,9 @@ export const useEditorStore = defineStore('editor', () => {
         const indexB = program.value.steps.findIndex(x => x.stepId === b.stepId)
         return indexA - indexB
       })
-    } else if (ctrlKey && isStepSelected(stepId))
+    } else if (ctrlKey && isStepSelected(stepId)) {
       selectedSteps.value = selectedSteps.value.filter(step => step.stepId !== stepId)
-    else {
+    } else {
       selectedSteps.value = [step]
     }
 
@@ -793,10 +814,26 @@ export const useEditorStore = defineStore('editor', () => {
     selector?.focus()
   }
 
-  function isStepSelected(stepId: number): boolean {
+  /**
+   * Belirtilen adımın veya paralel adımın seçili olup olmadığını kontrol eder.
+   *
+   * @param {number} stepId - Kontrol edilecek adımın ID'si.
+   * @param {number} [commandId] - Kontrol edilecek paralel komutun ID'si (opsiyonel).
+   *
+   * @returns {boolean} Adım seçili ise `true`, değilse `false` döner.
+   */
+  function isStepSelected(stepId: number, commandId?: number): boolean {
     if (!isDef(stepId))
       return false
 
+    // Paralel adım kontrolü
+    if (isDef(commandId)) {
+      return selectedParallelStep.value !== null
+        && selectedParallelStep.value.stepId === stepId
+        && selectedParallelStep.value.commandId === commandId
+    }
+
+    // Ana adım kontrolü
     return selectedSteps.value.some(step => step && step.stepId === stepId)
   }
 
@@ -926,11 +963,90 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  /**
+   * Seçili paralel adımı ana adım yapar.
+   *
+   * @param {boolean} [before] - true ise mevcut adımın öncesine, false ise sonrasına ekler. Varsayılan: false
+   */
+  function makeMainStep(before: boolean = false): void {
+    if (!selectedParallelStep.value) {
+      return notifyWarning(t('warning.noParallelStepSelected'))
+    }
+
+    const { stepId, commandId } = selectedParallelStep.value
+    const currentIdx = program.value.steps.findIndex(s => s.stepId === stepId)
+    if (currentIdx === -1) {
+      return notifyWarning(t('warning.mainStepNotFound'))
+    }
+
+    const step = program.value.steps[currentIdx]
+    const parallelIdx = step.parallelCommands.findIndex(cmd => cmd.commandId === commandId)
+    if (parallelIdx === -1) {
+      return notifyWarning(t('warning.parallelStepNotFound'))
+    }
+
+    const parallelCmd = step.parallelCommands[parallelIdx]
+    const machineCmd = machine.currentMachine.commands.get(parallelCmd.commandNo)
+    if (!machineCmd) {
+      return notifyError(t('error.machineCommandNotFound', { machineId: machine.currentMachine.id, commandNo: parallelCmd.commandNo }))
+    }
+
+    if (machineCmd.commandType === CommandEligibility.PARALLEL_ONLY) {
+      return notifyError(t('error.cannotBeMainStep', { commandNo: parallelCmd.commandNo }))
+    }
+
+    // Paralel komutu mevcut step'ten kaldır
+    step.parallelCommands.splice(parallelIdx, 1)
+
+    // Yeni adımı oluştur ve bir önceki adımın paralel komutlarını kopyala
+    const insertIdx = before ? currentIdx : currentIdx + 1
+    const newStep = createEmptyStep()
+    newStep.mainCommand = { ...parallelCmd, commandId: 0 }
+
+    // Bir önceki adımın paralel komutlarını kopyala
+    const previousIdx = insertIdx - 1
+    if (previousIdx >= 0 && program.value.steps[previousIdx]) {
+      const parallelCommands = program.value.steps[previousIdx].parallelCommands || []
+      const settings = useProgramWriteSettings()
+
+      for (const command of parallelCommands) {
+        const cmd = machine.currentMachine.commands.get(command.commandNo)
+        if (!cmd)
+          continue
+
+        if (cmd.moveParallel === MoveParallel.MOVE && settings.value.addParallelCommandsFromPreviousStep) {
+          newStep.parallelCommands.push(klona(command))
+        } else if (cmd.moveParallel === MoveParallel.MOVE_UNTIL_DISABLED) {
+          const dontUseList = cmd.dontUseList || []
+          if (!dontUseList.includes(command.commandNo) && settings.value.addParallelCommandsFromPreviousStep) {
+            newStep.parallelCommands.push(klona(command))
+          }
+        }
+      }
+    }
+
+    // Paralel komutların ID'sini güncelle
+    let cmdId = 1
+    newStep.parallelCommands.forEach(command => command.commandId = cmdId++)
+
+    // Yeni step'i ekle
+    program.value.steps.splice(insertIdx, 0, newStep)
+
+    // Seçimi güncelle
+    selectedParallelStep.value = null
+    selectedSteps.value = [newStep]
+
+    nextTick(() => {
+      scrollPage(newStep.stepId, true)
+    })
+  }
+
   return {
     program,
     originalProgram,
     selectedPrograms,
     selectedSteps,
+    selectedParallelStep,
     isLoading,
     errorIds,
     allProcessTypes,
@@ -975,5 +1091,6 @@ export const useEditorStore = defineStore('editor', () => {
     isStepSelected,
     getStepIndex,
     printProgram,
+    makeMainStep,
   }
 })

@@ -7,6 +7,7 @@ import { useEditorStore } from '~/composables/editor'
 import { useContextBar } from '~/composables/useContextBar'
 import { contextMenuStore } from '~/utils/context-menu'
 import type { ContextBarButtons, ProgramStep } from '~/shared/types'
+import ProgramContextMenu from '~/components/ProgramContextMenu.vue'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -332,7 +333,11 @@ onKeyStroke(['C', 'c'], (event: KeyboardEvent) => {
     $q.dialog({
       component: CMCopyStepDialog,
       componentProps: {
-        machine,
+        machine: {
+          id: machine.currentMachine.id,
+          name: machine.currentMachine.name,
+          commands: machine.currentMachine.commands,
+        },
         program: {
           programNo: program.programNo,
           name: program.name,
@@ -352,6 +357,28 @@ onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
   }
 })
 
+/**
+ * Seçili komutun commandNo'sunu döndürür.
+ * Eğer paralel adım seçiliyse paralel komutun commandNo'sunu,
+ * değilse ana komutun commandNo'sunu döndürür.
+ */
+const selectedCommandNo = computed(() => {
+  const selectedStep = editor.selectedSteps[0]
+  if (!selectedStep)
+    return null
+
+  // Paralel adım seçiliyse paralel komutun commandNo'sunu döndür
+  if (editor.selectedParallelStep) {
+    const { commandId } = editor.selectedParallelStep
+    const parallelCommand = selectedStep.parallelCommands.find(cmd => cmd.commandId === commandId)
+    if (parallelCommand)
+      return parallelCommand.commandNo
+  }
+
+  // Ana komutun commandNo'sunu döndür
+  return selectedStep.mainCommand.commandNo
+})
+
 // onKeyStroke(['R', 'r'], (event: KeyboardEvent) => {
 //   if (ctrl.value) {
 //     event.preventDefault()
@@ -361,6 +388,172 @@ onKeyStroke(['V', 'v'], (event: KeyboardEvent) => {
 //       $commandManager.executeCommand('discardChanges', { $q })
 //   }
 // })
+
+const contextMenuOptions = computed(() => [
+  [
+    {
+      label: t('contextMenu.addMainStep'),
+      shortcut: 'F2',
+      icon: 'add_box',
+      disabled: false,
+      onClick: () => {
+        editor.addStepToEnd(null)
+      },
+    },
+    {
+      label: t('contextMenu.addParallelStep'),
+      shortcut: 'Insert',
+      icon: 'vertical_align_center',
+      disabled: !editor.selectedSteps.length,
+      onClick: () => {
+        editor.newParallelStep()
+      },
+    },
+    {
+      label: t('contextMenu.newStepBetween'),
+      shortcut: 'F3',
+      icon: 'queue',
+      disabled: editor.isLoading,
+      visible: !machine.isTonello,
+      onClick: () => {
+        editor.addStepBeforeSelection(null)
+      },
+    },
+    {
+      label: t('contextMenu.deleteStep'),
+      shortcut: 'Del',
+      icon: 'delete',
+      disabled: editor.isLoading || !editor.selectedSteps.length,
+      onClick: () => {
+        editor.deleteStep()
+      },
+    },
+  ],
+  [
+    { // ana adım yap
+      label: t('contextMenu.makeMainStep'),
+      // icon: 'subdirectory_arrow_right',
+      disabled: !editor.selectedParallelStep,
+      subMenu: {
+        items: [
+          [
+            {
+              label: t('contextMenu.makeMainStepAtBeginning'),
+              shortcut: '',
+              icon: 'first_page',
+              onClick: () => {
+                editor.makeMainStep(true)
+              },
+            },
+            {
+              label: t('contextMenu.makeMainStepAtEnd'),
+              shortcut: '',
+              icon: 'last_page',
+              onClick: () => {
+                editor.makeMainStep(false)
+                // paralel adımlar eklenecek
+              },
+            },
+          ],
+        ],
+      },
+    },
+  ],
+  [
+    {
+      label: t('contextMenu.copyStep'),
+      shortcut: 'Ctrl+C',
+      icon: 'content_copy',
+      disabled: !editor.selectedSteps.length,
+      onClick: () => {
+        const { program, selectedSteps } = editor
+
+        $q.dialog({
+          component: CMCopyStepDialog,
+          componentProps: {
+            machine: {
+              id: machine.currentMachine.id,
+              name: machine.currentMachine.name,
+              commands: machine.currentMachine.commands,
+            },
+            program: {
+              programNo: program.programNo,
+              name: program.name,
+            },
+            selectedSteps,
+          },
+        }).onOk((chosenProgramSteps: ProgramStep[]) => {
+          contextMenuStore.copyStep(machine.currentMachine, chosenProgramSteps)
+        })
+      },
+    },
+    {
+      label: t('contextMenu.pasteStep'),
+      shortcut: 'Ctrl+V',
+      icon: 'content_paste',
+      disabled: !contextMenuStore.getCopiedStepsValues()?.length,
+      onClick: () => {
+        contextMenuStore.pasteStep()
+      },
+    },
+  ],
+  [
+    {
+      label: t('contextMenu.moveParallelStep'),
+      shortcut: '',
+      icon: 'open_with',
+      disabled: !selectedCommandNo.value,
+      onClick: () => {
+        if (selectedCommandNo.value)
+          $commandManager.executeCommand('moveParallelStep', { $q }, 'add', selectedCommandNo.value)
+      },
+    },
+    {
+      label: t('contextMenu.deleteParallelStep'),
+      shortcut: '',
+      icon: 'delete',
+      disabled: !selectedCommandNo.value,
+      onClick: () => {
+        if (selectedCommandNo.value)
+          $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', selectedCommandNo.value)
+      },
+    },
+  ],
+  [
+    {
+      label: t('contextMenu.programDetails'),
+      shortcut: '',
+      icon: 'info',
+      disabled: false,
+      onClick: () => {
+        $commandManager.executeCommand('renameProgram', { $q }, machine.currentMachine.id, editor.program.programNo)
+      },
+    },
+    {
+      label: t('contextMenu.versionDetails'),
+      shortcut: '',
+      icon: 'info',
+      disabled: false,
+      onClick: () => {
+        $commandManager.executeCommand('programVersionInfo', { $q }, {
+          programNo: editor.program.programNo,
+          name: editor.program.name,
+        })
+      },
+    },
+    {
+      label: t('contextMenu.commandDetails'),
+      shortcut: '',
+      icon: 'info',
+      disabled: !selectedCommandNo.value,
+      onClick: () => {
+        if (selectedCommandNo.value) {
+          $commandManager.executeCommand('commandDetails', { $q }, selectedCommandNo.value)
+        }
+      },
+    },
+  ],
+])
 
 watch(locale, () => {
   form.value?.validate()
@@ -377,7 +570,7 @@ onBeforeMount(async () => {
   }
 
   await machine.loadMachine(machineId)
-  await editor.fetchCommandTypes(machineId)
+  // await editor.fetchCommandTypes(machineId)
   await editor.refreshAllPrograms()
 
   if (!programNo || !editor.hasProgram(programNo)) {
@@ -398,6 +591,14 @@ onBeforeMount(async () => {
     <QForm ref="form">
       <ProgramEditor />
     </QForm>
+
+    <q-menu
+      touch-position
+      context-menu
+      :transition-duration="0"
+    >
+      <ProgramContextMenu :items="contextMenuOptions" />
+    </q-menu>
   </div>
 </template>
 
