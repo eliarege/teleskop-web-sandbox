@@ -55,7 +55,7 @@ const selectedOptionsText = computed(() => {
   <div class="inline-block align-top">
     <q-select
       v-model="model"
-      class="io-select relative text-3 min-w-32 max-w-20 mr-2 mb-1"
+      class="text-3 min-w-32 max-w-20 mr-2 mb-1 overflow-hidden whitespace-nowrap"
       :options="options"
       multiple
       emit-value
@@ -64,6 +64,7 @@ const selectedOptionsText = computed(() => {
       outlined
       stack-label
       options-dense
+      no-error-icon
       hide-bottom-space
       hide-dropdown-icon
       :error="!!props.ioError"
