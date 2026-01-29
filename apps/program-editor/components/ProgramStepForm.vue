@@ -40,7 +40,7 @@ const sortableOptions: SortableOptions = {
   group: {
     name: 'parallel-command',
     pull: false,
-    put: true,
+    put: ['machine-command-list'],
   },
 }
 
@@ -124,6 +124,7 @@ function handleContextMenu(stepId: number, commandId: number) {
         :list="step.parallelCommands"
         item-key="commandId"
         :options="sortableOptions"
+        :data-index="stepIndex"
       >
         <template #header>
           <span
@@ -194,6 +195,11 @@ function handleContextMenu(stepId: number, commandId: number) {
 
 .error {
   @apply bg-red-2;
+}
+
+/* Parallel commands drop area */
+.parallel-commands {
+  @apply min-h-10;
 }
 
 /*

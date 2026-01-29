@@ -6,7 +6,6 @@ import type { AutoScrollOptions } from 'sortablejs/plugins'
 import ProgramStepForm from './ProgramStepForm.vue'
 import { useEditorStore } from '~~/composables/editor'
 import type { ProgramStep } from '~/shared/types'
-import { contextMenuStore } from '~/utils/context-menu'
 
 const editor = useEditorStore()
 const steps = computed<ProgramStep[]>(() => editor.program?.steps || [])
@@ -18,7 +17,7 @@ const sortableOptions: SortableOptions & AutoScrollOptions = {
   group: {
     name: 'program-editor',
     pull: false,
-    put: true,
+    put: ['machine-command-list'],
   },
 }
 
