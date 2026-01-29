@@ -570,7 +570,7 @@ onBeforeMount(async () => {
   }
 
   await machine.loadMachine(machineId)
-  // await editor.fetchCommandTypes(machineId)
+  await editor.fetchCommandTypes(machineId)
   await editor.refreshAllPrograms()
 
   if (!programNo || !editor.hasProgram(programNo)) {
