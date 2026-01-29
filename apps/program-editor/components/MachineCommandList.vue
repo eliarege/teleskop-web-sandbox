@@ -14,6 +14,8 @@ const { $commandManager } = useNuxtApp()
 
 const sortableOptions = computed<SortableOptions>(() => ({
   sort: false,
+  forceFallback: true,
+  fallbackClass: 'sortable-fallback',
   group: {
     name: 'machine-command-list',
     pull: 'clone',
@@ -57,16 +59,16 @@ function onDragStart(event: SortableEvent) {
 
 function onDragEnd(event: SortableEvent) {
   if (event.pullMode === 'clone' && isDef(event.newIndex) && event.to !== event.from && draggedCommand) {
-    const parent = event.item.parentElement!
-    parent.removeChild(event.item)
+    // Remove cloned element from target
+    event.to.removeChild(event.item)
 
-    const isParallelCommand = parent.classList.contains('parallel-commands') || false
+    const isParallelCommand = event.to.classList.contains('parallel-commands')
     if (isParallelCommand) {
-      const index = Number.parseInt(parent.getAttribute('data-index') || '-1')
-      if (index > -1) {
-        const res = validateParallelCommands(index)
-        if (!res) {
-          editor.newParallelStepCommand(draggedCommand.commandNo, index)
+      const stepIndex = Number.parseInt(event.to.getAttribute('data-index') || '-1')
+      if (stepIndex > -1) {
+        const isDuplicate = validateParallelCommands(stepIndex)
+        if (!isDuplicate) {
+          editor.newParallelStepCommand(draggedCommand.commandNo, stepIndex, event.newIndex)
           $commandManager.executeCommand('moveParallelStep', { $q }, 'add', draggedCommand.commandNo)
         } else {
           notifyError(t('error.notSameCommand'))
@@ -146,9 +148,6 @@ function validateParallelCommands(stepIndex: number): boolean {
 .program-editor .machine-command-icon {
   @apply hidden;
 }
-.parallel-commands .machine-command {
-  @apply hidden;
-}
 .sticky-input {
   @apply sticky;
   top: 0;
@@ -165,5 +164,10 @@ function validateParallelCommands(stepIndex: number): boolean {
   @apply flex-1;
   @apply overflow-auto;
   @apply h-full;
+}
+
+/* Drag fallback element (the element being dragged) */
+:global(.sortable-fallback) {
+  @apply opacity-90 shadow-lg;
 }
 </style>

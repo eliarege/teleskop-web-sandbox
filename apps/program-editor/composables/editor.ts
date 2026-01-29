@@ -280,7 +280,7 @@ export const useEditorStore = defineStore('editor', () => {
    * @description Bu fonksiyon, belirtilen adımın paralel komutlar listesine yeni bir komut ekler.
    * Yeni komut, `createEmptyCommand` fonksiyonu ile oluşturulur ve `updateCommand` fonksiyonu ile güncellenir.
    */
-  function newParallelStepCommand(commandNo: number, stepIndex: number): void {
+  function newParallelStepCommand(commandNo: number, stepIndex: number, position?: number): void {
     const machineCommand = machine.currentMachine.commands.get(commandNo)
     if (!machineCommand) {
       return notifyError(t('error.machineCommandNotFound', { commandNo }))
@@ -289,7 +289,15 @@ export const useEditorStore = defineStore('editor', () => {
     const newCommand = createEmptyCommand()
     newCommand.commandId = generateParallelStepId(stepIndex)
     updateStepCommandFromDefinition(machineCommand, newCommand)
-    program.value?.steps[stepIndex].parallelCommands.push(newCommand)
+
+    const parallelCommands = program.value?.steps[stepIndex].parallelCommands
+    if (parallelCommands) {
+      if (position !== undefined && position >= 0 && position < parallelCommands.length) {
+        parallelCommands.splice(position, 0, newCommand)
+      } else {
+        parallelCommands.push(newCommand)
+      }
+    }
   }
 
   /**
