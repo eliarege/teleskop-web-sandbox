@@ -4,7 +4,7 @@ import type { BasicProgram, BatchInfo } from '~/types/archive'
 
 defineProps<{
   recipe: any
-  joborderInfo: BatchInfo
+  jobOrderInfo: BatchInfo
   programs: BasicProgram[]
 }>()
 const { t } = useNuxtApp().$i18n
@@ -13,8 +13,8 @@ const { t } = useNuxtApp().$i18n
 <template>
   <div class="container">
     <div class="section">
-      <div>{{ `${t('joborder')}: ${joborderInfo.joborder}` }}</div>
-      <div>{{ `${t('machine')}: ${joborderInfo.machineId} - ${joborderInfo.machineName}` }}</div>
+      <div>{{ `${t('jobOrder')}: ${jobOrderInfo.jobOrder}` }}</div>
+      <div>{{ `${t('machine')}: ${jobOrderInfo.machineId} - ${jobOrderInfo.machineName}` }}</div>
       <div>{{ `${t('kg')}: ` }}</div>
       <div>{{ `${t('flotte')}: ` }}</div>
     </div>
@@ -24,8 +24,8 @@ const { t } = useNuxtApp().$i18n
         {{ program.programName }}
       </div>
       <div>
-        {{ `${t('startTime')}: ${format(joborderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
-        {{ `${t('endTime')}: ${format(joborderInfo.endTime!, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
+        {{ `${t('startTime')}: ${format(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
+        {{ `${t('endTime')}: ${format(jobOrderInfo.endTime!, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
       </div>
     </div>
     <hr>

@@ -31,7 +31,7 @@
   "materialCode": "Materyal Kodu",
   "materialName": "Materyal Adı",
   "programName": "Program Adı",
-  "joborder": "İş Emri",
+  "jobOrder": "İş Emri",
   "collectionNo": "Parti Numarası",
   "process": "İşlem",
   "theoreticalDuration": "Teorik Süre",
@@ -60,11 +60,8 @@
   "addRemoveAxis": "Eksen Ekle/Kaldır",
   "reelDataDialog": "Kule Tur/Zaman Tablosu",
   "noAlarm": "Seçili Zamanda Alarm Bulunamadı",
-  "joborderSummary": {
-    "waterType1": "Soğuk Su",
-    "waterType2": "Sıcak Su",
-    "waterType3": "Ozmoz Suyu",
-    "waterType4": "...",
+  "processGroup": "İşlem Grubu",
+  "jobOrderSummary": {
     "waterTotal": "Toplam Su",
     "electricity": "Elektrik",
     "steam": "Buhar",
@@ -81,7 +78,7 @@
     "enterName": "Eksene isim veriniz",
     "axisNameAlreadyExists": "Eksen ismi mevcut."
   },
-  "joborderSummarySettings": {
+  "jobOrderSummarySettings": {
     "_": "İş Emri Özet Raporu Ayarları",
     "description": "İş emri özet raporunda görünmesini istediğiniz ERP parametrelerini seçiniz."
   },
@@ -102,7 +99,7 @@
     "cycleTimes": "Tur Süreleri",
     "calculatedValues": "Hesaplanmış Değerler"
   },
-  "joborderTable": {
+  "jobOrderTable": {
     "batchStatus": {
       "_": "İş Emri Durumu",
       "active": "Aktif",
@@ -175,9 +172,9 @@
     "report": {
       "_": "Rapor",
       "batchSum": "Batch Özeti (Grafik)",
-      "joborderSum": "İş Emri Özeti",
-      "joborderSumSettings": "İş Emri Özet Raporu Ayarları",
-      "joborderRecipe": "İş Emri Reçetesi"
+      "jobOrderSum": "İş Emri Özeti",
+      "jobOrderSumSettings": "İş Emri Özet Raporu Ayarları",
+      "jobOrderRecipe": "İş Emri Reçetesi"
     },
     "options": {
       "_": "Seçenekler",
@@ -226,7 +223,7 @@
     "theoreticalCharge": "Teorik Şarj",
     "capacity": "Kapasite",
     "operator": "Operatör",
-    "joborder": "İş Emri",
+    "jobOrder": "İş Emri",
     "startTime": "Başlama",
     "endTime": "Bitiş",
     "cancelTime": "İptal",

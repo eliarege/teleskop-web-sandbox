@@ -1,11 +1,11 @@
 <!-- eslint-disable vue/no-use-v-if-with-v-for -->
 <script setup lang="ts">
-import { format } from 'date-fns'
+import type { ConsumptionKey } from '~/types/archive'
 import { formatDuration } from '~/utils/functions'
 
 const props = defineProps<{
   machine: any
-  joborderData: any
+  jobOrderData: any
   actualDuration: number
   startParameters: any
   svgChartContent: any
@@ -13,6 +13,7 @@ const props = defineProps<{
   consumptionUnits: any
   programInfo: Array<any>
   totalManualDelay: number
+  waterTypes: Record<string, string | null>
 }>()
 const { t, d } = useNuxtApp().$i18n
 // FIXME: Selman abi BADATA.STOP_DURATION_OPER  BADATA  .STOP_DURATION_ALR  BADATA.STOP_DURATION_WARNING_ALR
@@ -142,6 +143,38 @@ const pieData = computed(() => {
   })
 })
 
+const WATER_KEY_RE = /^waterType\d$/
+
+function isWaterKey(key: string): boolean {
+  return WATER_KEY_RE.test(key)
+}
+
+const consumptionCells = computed(() => {
+  return Object.entries(props.consumptions).map(([key, value]) => {
+    let name = ''
+    if (isWaterKey(key) && props.waterTypes[key]) {
+      name = props.waterTypes[key]!
+    } else if (!isWaterKey(key)) {
+      name = t(`jobOrderSummary.${key}`)
+    }
+    return {
+      name,
+      amount: Number(value).toFixed(2),
+      unit: props.consumptionUnits[key as ConsumptionKey],
+    }
+  }).filter(row => row.name !== '')
+})
+
+const cellsPerRow = 5
+
+const consumptionRows = computed(() => {
+  const rows = []
+  for (let i = 0; i < consumptionCells.value.length; i += cellsPerRow) {
+    rows.push(consumptionCells.value.slice(i, i + cellsPerRow))
+  }
+  return rows
+})
+
 // Convert polar coordinates (angle, radius) to Cartesian coordinates (x, y)
 function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
   const angleInRadians = (angleInDegrees + 120) * (Math.PI / 180)
@@ -202,12 +235,12 @@ const legends = [
         <thead>
           <tr>
             <th colspan="2">
-              {{ `${t('batchSummary.joborder')} - ${joborderData.joborder}` }}
+              {{ `${t('batchSummary.jobOrder')} - ${jobOrderData.jobOrder}` }}
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(value, key) in joborderData" :key="key">
+          <tr v-for="(value, key) in jobOrderData" :key="key">
             <td class="info-table-td">
               {{ t(`batchSummary.${key}`) }}
             </td>
@@ -220,7 +253,7 @@ const legends = [
               {{ t(`batchSummary.status`) }}
             </td>
             <td class="info-table-td bold-red-th">
-              {{ joborderData.theoreticalDuration > joborderData.actualDuration ? t('batchSummary.fast') : t('batchSummary.slow') }}
+              {{ jobOrderData.theoreticalDuration > jobOrderData.actualDuration ? t('batchSummary.fast') : t('batchSummary.slow') }}
             </td>
           </tr>
         </tbody>
@@ -296,39 +329,13 @@ const legends = [
     <div class="text-section">
       <table class="info-table-consumptions">
         <tbody>
-          <tr>
-            <template
-              v-for="(value, key, index1) in consumptions"
-              :key="`row1-${index1}`"
-            >
-              <td
-                v-if="Number(index1) < 5"
-                class="info-table-consumptions-bold"
-              >
-                {{ t(`joborderSummary.${key}`) }}
+          <tr v-for="(row, rowIndex) in consumptionRows" :key="`consumption-row-${rowIndex}`">
+            <template v-for="(cell, cellIndex) in row" :key="`consumption-cell-${rowIndex}-${cellIndex}`">
+              <td class="info-table-consumptions-bold">
+                {{ cell.name }}
               </td>
-              <td
-                v-if="Number(index1) < 5"
-              >
-                {{ Number(value).toFixed(2) }} {{ consumptionUnits[key] }}
-              </td>
-            </template>
-          </tr>
-          <tr>
-            <template
-              v-for="(value, key, index2) in consumptions"
-              :key="`row2-${index2}`"
-            >
-              <td
-                v-if="Number(index2) >= 5"
-                class="info-table-consumptions-bold"
-              >
-                {{ t(`joborderSummary.${key}`) }}
-              </td>
-              <td
-                v-if="Number(index2) >= 5"
-              >
-                {{ Number(value).toFixed(2) }} {{ consumptionUnits[key] }}
+              <td class="info-table-consumptions">
+                {{ cell.amount }} {{ cell.unit }}
               </td>
             </template>
           </tr>

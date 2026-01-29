@@ -37,10 +37,10 @@ const buttons = [
       <q-card-section>
         <div>
           <div class="text-2xl">
-            {{ t('joborderSummarySettings._') }}
+            {{ t('jobOrderSummarySettings._') }}
           </div>
           <div class="text-lg whitespace-normal mt-5 w-140">
-            {{ t('joborderSummarySettings.description') }}
+            {{ t('jobOrderSummarySettings.description') }}
           </div>
         </div>
       </q-card-section>

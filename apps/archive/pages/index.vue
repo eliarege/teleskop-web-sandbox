@@ -13,16 +13,16 @@ const externalFilterSlots = useStorage('filterSlots', [], sessionStorage)
 const { data: machines } = await useFetch('/api/machine')
 const pagination = ref({ rowsPerPage: 50, page: 1 } as QTableProps['pagination'])
 
-const joborders = ref([] as any[])
+const jobOrders = ref([] as any[])
 async function fetchData() {
   loading.show()
-  const response = await $fetch<{ rows: any[], count: number }>('/api/joborder/joborders', {
+  const response = await $fetch<{ rows: any[], count: number }>('/api/job-order', {
     method: 'POST',
     body: { pagination: pagination.value, filters: externalFilterSlots.value },
   }).finally(() => {
     loading.hide()
   })
-  joborders.value = response.rows
+  jobOrders.value = response.rows
   pagination.value!.rowsNumber = response.count
 }
 
@@ -36,23 +36,23 @@ const { data: theoreticalPrograms } = await useFetch('/api/theoretical-programs'
 const columns = computed(() => [
   {
     name: 'batchStatus',
-    label: t('joborderTable.batchStatus._'),
+    label: t('jobOrderTable.batchStatus._'),
     field: 'batchStatus',
     filterable: true,
     filterType: 'boolean',
-    trueLabel: t('joborderTable.batchStatus.active'),
-    falseLabel: t('joborderTable.batchStatus.completed'),
+    trueLabel: t('jobOrderTable.batchStatus.active'),
+    falseLabel: t('jobOrderTable.batchStatus.completed'),
   },
   {
-    name: 'joborder',
-    label: t('joborderTable.jobOrder'),
-    field: 'joborder',
+    name: 'jobOrder',
+    label: t('jobOrderTable.jobOrder'),
+    field: 'jobOrder',
     filterable: true,
     filterType: 'comparison',
   },
   {
     name: 'machineName',
-    label: t('joborderTable.machineName'),
+    label: t('jobOrderTable.machineName'),
     field: 'machineName',
     filterable: true,
     filterType: 'select',
@@ -62,7 +62,7 @@ const columns = computed(() => [
   },
   {
     name: 'startTime',
-    label: t('joborderTable.startTime'),
+    label: t('jobOrderTable.startTime'),
     field: 'startTime',
     filterable: true,
     filterType: 'date',
@@ -70,7 +70,7 @@ const columns = computed(() => [
   },
   {
     name: 'endTime',
-    label: t('joborderTable.endTime'),
+    label: t('jobOrderTable.endTime'),
     field: 'endTime',
     filterable: true,
     filterType: 'date',
@@ -78,7 +78,7 @@ const columns = computed(() => [
   },
   {
     name: 'cancelTime',
-    label: t('joborderTable.cancelTime'),
+    label: t('jobOrderTable.cancelTime'),
     field: 'cancelTime',
     filterable: true,
     filterType: 'date',
@@ -130,7 +130,7 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
         enable-key-strokes
         dense
         row-key="batchKey"
-        :rows="joborders"
+        :rows="jobOrders"
         :columns="columns"
         :filter-slots="externalFilterSlots"
         @row-dblclick="row => handleRowDblClick(row.batchKey)"
@@ -144,7 +144,7 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
             size="1.5rem"
           >
             <q-tooltip :delay="500">
-              {{ props.value ? t('joborderTable.batchStatus.active') : t('joborderTable.batchStatus.completed') }}
+              {{ props.value ? t('jobOrderTable.batchStatus.active') : t('jobOrderTable.batchStatus.completed') }}
             </q-tooltip>
           </q-icon>
         </template>

@@ -1,16 +1,39 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
-import type { BasicProgram, BatchInfo, ERPParameter } from '~/types/archive'
+import type { BasicProgram, BatchInfo, ConsumptionKey, ConsumptionUnits, Consumptions, ERPParameter } from '~/types/archive'
 
-defineProps<{
-  consumptions: any
-  joborderInfo: BatchInfo
+const props = defineProps<{
+  consumptions: Consumptions
+  jobOrderInfo: BatchInfo
   programs: BasicProgram[]
-  consumptionUnits: Array<any>
-  erpParameters: Array<ERPParameter>
+  consumptionUnits: ConsumptionUnits
+  erpParameters: ERPParameter[]
+  waterTypes: Record<string, string | null>
 }>()
 
 const { t } = useNuxtApp().$i18n
+
+const WATER_KEY_RE = /^waterType\d$/
+
+function isWaterKey(key: string): boolean {
+  return WATER_KEY_RE.test(key)
+}
+
+const consumptionRows = computed(() => {
+  return Object.entries(props.consumptions).map(([key, value]) => {
+    let name = ''
+    if (isWaterKey(key) && props.waterTypes[key]) {
+      name = props.waterTypes[key]!
+    } else if (!isWaterKey(key)) {
+      name = t(`jobOrderSummary.${key}`)
+    }
+    return {
+      name,
+      amount: Number(value).toFixed(2),
+      unit: props.consumptionUnits[key as ConsumptionKey],
+    }
+  }).filter(row => row.name !== '')
+})
 </script>
 
 <template>
@@ -20,8 +43,8 @@ const { t } = useNuxtApp().$i18n
       <div> - </div>
     </div>
     <div class="section">
-      <div>{{ `${t('joborder')}: ${joborderInfo.joborder}` }}</div>
-      <div>{{ `${t('machine')}: ${joborderInfo.machineId} - ${joborderInfo.machineName}` }}</div>
+      <div>{{ `${t('jobOrder')}: ${jobOrderInfo.jobOrder}` }}</div>
+      <div>{{ `${t('machine')}: ${jobOrderInfo.machineId} - ${jobOrderInfo.machineName}` }}</div>
     </div>
     <div class="section">
       <div>{{ t('process') }}</div>
@@ -30,17 +53,17 @@ const { t } = useNuxtApp().$i18n
       </div>
     </div>
     <div class="section">
-      <div>İşlem Grubu: (DYEING)</div>
+      <div>{{ t('processGroup') }} (DYEING)</div>
       <div>
-        {{ `${t('startTime')}: ${format(joborderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
-        {{ `${t('endTime')}: ${format(joborderInfo.endTime!, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
+        {{ `${t('startTime')}: ${format(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
+        {{ `${t('endTime')}: ${format(jobOrderInfo.endTime!, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
       </div>
     </div>
     <div class="section">
-      {{ `${t('theoreticalDuration')}: ${format(joborderInfo.theoreticalDuration, 'HH:mm:ss')}` }} <br>
-      {{ `${t('actualDuration')}: ${format(joborderInfo.actualDuration!, 'HH:mm:ss')}` }} <br>
+      {{ `${t('theoreticalDuration')}: ${format(jobOrderInfo.theoreticalDuration, 'HH:mm:ss')}` }} <br>
+      {{ `${t('actualDuration')}: ${format(jobOrderInfo.actualDuration!, 'HH:mm:ss')}` }} <br>
       <div class="highlight-red">
-        {{ `${t('deviation')}: ${format(joborderInfo.deviation!, 'HH:mm:ss')}` }}
+        {{ `${t('deviation')}: ${format(jobOrderInfo.deviation!, 'HH:mm:ss')}` }}
       </div>
     </div>
     <hr>
@@ -56,10 +79,10 @@ const { t } = useNuxtApp().$i18n
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(value, key) in consumptions" :key="key">
-          <td>{{ t(`joborderSummary.${key}`) }}</td>
-          <td>{{ Number(value).toFixed(2) }}</td>
-          <td>{{ consumptionUnits[key] }}</td>
+        <tr v-for="(value, key) in consumptionRows" :key="key">
+          <td>{{ value.name }}</td>
+          <td>{{ value.amount }}</td>
+          <td>{{ value.unit }}</td>
         </tr>
       </tbody>
     </table>

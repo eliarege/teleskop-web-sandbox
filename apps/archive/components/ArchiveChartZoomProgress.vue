@@ -33,10 +33,10 @@ const innerRect = computed(() => {
 })
 
 const xExtent = computed(() => {
-  const start = new Date(props.batch.joborderInfo.startTime),
-  const end = props.batch.joborderInfo.endTime
-    ? new Date(props.batch.joborderInfo.endTime)
-    : addMinutes(new Date(props.batch.joborderInfo.startTime), 15),
+  const start = new Date(props.batch.jobOrderInfo.startTime),
+  const end = props.batch.jobOrderInfo.endTime
+    ? new Date(props.batch.jobOrderInfo.endTime)
+    : addMinutes(new Date(props.batch.jobOrderInfo.startTime), 15),
   return [
     start,
     end,

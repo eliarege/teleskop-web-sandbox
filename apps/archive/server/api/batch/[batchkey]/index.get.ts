@@ -23,8 +23,8 @@ const tasks: Array<{ message: string, method: (event: H3Event, result: any) => P
   {
     message: 'loadingJobOrderInfo',
     method: async (event, result) => {
-      const joborderInfo = await batchInfoGet(event)
-      result.joborderInfo = joborderInfo
+      const jobOrderInfo = await batchInfoGet(event)
+      result.jobOrderInfo = jobOrderInfo
     },
   },
   {

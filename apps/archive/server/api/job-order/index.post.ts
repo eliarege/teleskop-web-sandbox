@@ -13,7 +13,7 @@ const selectParameters = {
   batchReference: 'B.BATCHREFERENCE',
   machineId: 'B.MACHINEID',
   machineName: 'B.MACHINECODE',
-  joborder: 'B.JOBORDER',
+  jobOrder: 'B.JOBORDER',
   startTime: db.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , B.STARTTIME)`),
   endTime: db.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , B.ENDTIME)`),
   cancelTime: db.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , B.CANCELTIME)`),

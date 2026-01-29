@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   const batchKey = getBatchKeyParam(event)
 
   // AlarmNo 6000 or 5000
-  const joborderStopAlarms = await db('BAALARM')
+  const jobOrderStopAlarms = await db('BAALARM')
     .select({
       programNo: 'PROGNO',
       startTime: 'STARTTIME',
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
 
   // const totalManualDelayDurations: Array<{ programNo: number, totalDuration: number }> = []
   const programManualData: Array<{ programNo: number, intersection: number, duration: number }> = []
-  if (!joborderStopAlarms.length) {
+  if (!jobOrderStopAlarms.length) {
     if (manualModeAlarms.length) {
       for (const manualAlarm of manualModeAlarms) {
         manualAlarm.startTime = new Date(manualAlarm.startTime)
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
       }
     }
   } else {
-    for (const stopAlarm of joborderStopAlarms) {
+    for (const stopAlarm of jobOrderStopAlarms) {
       stopAlarm.startTime = new Date(stopAlarm.startTime)
       stopAlarm.endTime = new Date(stopAlarm.endTime)
       if (!programManualData.includes(int => int.programNo !== stopAlarm.programNo))

@@ -9,13 +9,13 @@ const { t } = useI18n()
 
 const keyLabels = computed(() => {
   return {
-    machineName: t('joborderTable.machineName'),
-    machineModel: t('joborderTable.model'),
-    operatorName: t('joborderTable.operator'),
-    joborder: t('joborderTable.jobOrder'),
-    startTime: t('joborderTable.startTime'),
-    endTime: props.jobOrderInfo.isCancelled ? t('joborderTable.cancelTime') : t('joborderTable.endTime'),
-    theoreticalEndTime: t('joborderTable.theoreticalEndTime'),
+    machineName: t('jobOrderTable.machineName'),
+    machineModel: t('jobOrderTable.model'),
+    operatorName: t('jobOrderTable.operator'),
+    jobOrder: t('jobOrderTable.jobOrder'),
+    startTime: t('jobOrderTable.startTime'),
+    endTime: props.jobOrderInfo.isCancelled ? t('jobOrderTable.cancelTime') : t('jobOrderTable.endTime'),
+    theoreticalEndTime: t('jobOrderTable.theoreticalEndTime'),
   }
 })
 
@@ -26,7 +26,7 @@ const theoreticalEndTime = computed(() => new Date((new Date(props.jobOrderInfo.
   <div class="border wh-full overflow-y-auto text-xs h-full table-container">
     <table class="table w-full">
       <tbody>
-        <tr v-for="(value, key) in keyLabels" :key="`joborderInfo${key}`">
+        <tr v-for="(value, key) in keyLabels" :key="`jobOrderInfo${key}`">
           <td class="px-2 py-0.5 text-left">
             {{ value }}
           </td>

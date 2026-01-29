@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
       machineId: 'B.MACHINEID',
       machineName: 'B.MACHINECODE',
       machineModel: 'M.TBBMODEL',
-      joborder: 'B.JOBORDER',
+      jobOrder: 'B.JOBORDER',
       startTime: db.raw(`DATEADD(MINUTE, ?, B.STARTTIME)`, config.teleskopTimezoneOffset),
       endTime: db.raw(`DATEADD(MINUTE, ?, COALESCE(B.ENDTIME, B.CANCELTIME))`, config.teleskopTimezoneOffset),
       programCount: 'B.PRGCOUNT',

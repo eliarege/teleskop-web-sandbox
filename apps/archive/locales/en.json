@@ -29,7 +29,7 @@
   "materialCode": "Material Code",
   "materialName": "Material Name",
   "programName": "Program Name",
-  "joborder": "Job Order",
+  "jobOrder": "Job Order",
   "collectionNo": "Party No",
   "process": "Process",
   "theoreticalDuration": "Theoretical Duration",
@@ -60,7 +60,8 @@
   "updateAxises": "Update Axises",
   "addRemoveAxis": "Add/Remove Axis",
   "noAlarm": "No Alarm At Selected Time",
-  "joborderSummarySettings": {
+  "processGroup": "Process Group",
+  "jobOrderSummarySettings": {
     "_": "Job Order Summary Report Settings",
     "description": "Please select the ERP parameters wanted to show on job order summary report."
   },
@@ -73,11 +74,7 @@
     "enterName": "Plase name the axis",
     "axisNameAlreadyExists": "Axis name already exists."
   },
-  "joborderSummary": {
-    "waterType1": "Cold Water",
-    "waterType2": "Hot Water",
-    "waterType3": "Osmosis Water",
-    "waterType4": "...",
+  "jobOrderSummary": {
     "waterTotal": "Total Water",
     "electricity": "Electricity",
     "steam": "steam",
@@ -102,7 +99,7 @@
     "cycleTimes": "Cycle Times",
     "calculatedValues": "Calculated Values"
   },
-  "joborderTable": {
+  "jobOrderTable": {
     "batchStatus": {
       "_": "Batch Status",
       "active": "Active",
@@ -177,9 +174,9 @@
     "report": {
       "_": "Report",
       "batchSum": "Batch Summary(Graph)",
-      "joborderSum": "Job Order Summary",
-      "joborderSumSettings": "Job Order Summary Report Settings",
-      "joborderRecipe": "Job Order Recipe"
+      "jobOrderSum": "Job Order Summary",
+      "jobOrderSumSettings": "Job Order Summary Report Settings",
+      "jobOrderRecipe": "Job Order Recipe"
     },
     "options": {
       "_": "Options",
@@ -229,7 +226,7 @@
     "theoreticalCharge": "Theoretical Charge",
     "capacity": "Capacity",
     "operator": "Operator",
-    "joborder": "Job Order",
+    "jobOrder": "Job Order",
     "startTime": "Start Time",
     "endTime": "End Time",
     "cancelTime": "Cancel Time",

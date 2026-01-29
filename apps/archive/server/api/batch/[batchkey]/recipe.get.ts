@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   return await db('dbo.DYBFBATCHORDERRECIPESTEPS as r')
     .where('r.PLANKEY', planKey)
     .select({
-      joborder: 'r.JOBORDER',
+      jobOrder: 'r.JOBORDER',
       recipeType: 'r.RECIPETYPE',
       processOrder: 'r.RCPINDEX',
       ISN: 'r.REQNO_BATCH',

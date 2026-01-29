@@ -1,15 +1,17 @@
 import { db } from '~/server/database'
+import type { Consumptions } from '~/types/archive'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<Consumptions> => {
   const batchKey = getBatchKeyParam(event)
-
-  return await db
+  const consumptions = await db
     .from('BACONSUMPTION as C')
     .first({
       waterType1: 'C.WaterType1',
       waterType2: 'C.WaterType2',
       waterType3: 'C.WaterType3',
       waterType4: 'C.WaterType4',
+      waterType5: 'C.WaterType5',
+      waterType6: 'C.WaterType6',
       waterTotal: 'C.WaterTotal',
       electricity: 'C.ELECTRICITY',
       steam: 'C.STEAM',
@@ -21,4 +23,23 @@ export default defineEventHandler(async (event) => {
     .join('BADATA as D', function () {
       this.on('D.BATCHKEY', '=', 'C.BATCHKEY')
     })
+
+  if (!consumptions) {
+    return {
+      waterType1: 0,
+      waterType2: 0,
+      waterType3: 0,
+      waterType4: 0,
+      waterType5: 0,
+      waterType6: 0,
+      waterTotal: 0,
+      electricity: 0,
+      steam: 0,
+      steamPerWeight: 0,
+      electricityPerWeight: 0,
+      totalWaterPerWeight: 0,
+    }
+  } else {
+    return consumptions
+  }
 })

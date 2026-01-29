@@ -1,10 +1,10 @@
 import { renderToString } from '@vue/server-renderer'
 import { Notify } from 'quasar'
 import { format } from 'date-fns'
-import JoborderSummary from '~/components/JoborderSummary.vue'
+import JobOrderSummary from '~/components/JobOrderSummary.vue'
 import RecipeSummary from '~/components/RecipeSummary.vue'
 import BatchSummary from '~/components/BatchSummary.vue'
-import type { AnalogInputOutputType, BasicProgram, BatchInfo, BatchParameters, CalculatedValue, Counter, DigitalInputOutputType, ERPParameter, Machine, Program } from '~/types/archive'
+import type { AnalogInputOutputType, BasicProgram, BatchInfo, BatchParameters, CalculatedValue, ConsumptionUnits, Counter, DigitalInputOutputType, ERPParameter, Machine, Program } from '~/types/archive'
 import type { DDate } from '~/types/utils'
 
 export function formatDuration(sec: number): string {
@@ -104,10 +104,10 @@ function formatSecondsToHHMMSS(sec: number) {
   )
 }
 
-export async function printJoborderRecipe(batchKey: number, joborderInfo: BatchInfo, programs: BasicProgram[]) {
+export async function printJoborderRecipe(batchKey: number, jobOrderInfo: BatchInfo, programs: BasicProgram[]) {
   const recipe = await $fetch(`/api/batch/${batchKey}/recipe`)
 
-  const appContent = await renderToString(h(RecipeSummary, { recipe, joborderInfo, programs }))
+  const appContent = await renderToString(h(RecipeSummary, { recipe, jobOrderInfo, programs }))
 
   // Create a new window or document for printing
   const printWindow = window.open('', '_blank', 'left=100,top=100,width=1200,height=800')
@@ -169,12 +169,21 @@ export async function printJoborderRecipe(batchKey: number, joborderInfo: BatchI
   // Trigger print dialog after content is loaded
   printWindow.print()
 }
-export async function printJoborderSummary(batchKey: number, joborderInfo: BatchInfo, programs: BasicProgram[]) {
+export async function printJobOrderSummary(batchKey: number, jobOrderInfo: BatchInfo, programs: BasicProgram[]) {
   const consumptions = await $fetch(`/api/batch/${batchKey}/consumptions`)
-  const consumptionUnits = await $fetch(`/api/batch/${batchKey}/consumption-units`)
-  const erpParameters: ERPParameter[] = await $fetch(`/api/batch/${batchKey}/erp-parameters-value`)
+  const consumptionUnits = await $fetch<ConsumptionUnits>(`/api/batch/${batchKey}/consumption-units`)
+  const erpParameters = await $fetch<ERPParameter[]>(`/api/batch/${batchKey}/erp-parameters-value`)
+  const waterTypes = await $fetch<Record<string, string | null>>(`/api/water-types`)
+  console.log(consumptions, consumptionUnits, erpParameters, waterTypes)
   // Render the component as HTML using Vue's server renderer
-  const appContent = await renderToString(h(JoborderSummary, { consumptions, joborderInfo, programs, consumptionUnits, erpParameters }))
+  const appContent = await renderToString(h(JobOrderSummary, {
+    consumptions,
+    jobOrderInfo,
+    programs,
+    consumptionUnits,
+    erpParameters,
+    waterTypes,
+  }))
 
   // Create a new window or document for printing
   const printWindow = window.open('', '_blank', 'left=100,top=100,width=1200,height=800')
@@ -331,8 +340,8 @@ export async function printBatchSummary(
     capacity: machineInfo.capacity,
     operator: jobOrderInfo.operatorName,
   }
-  const joborderData = {
-    joborder: jobOrderInfo.joborder,
+  const jobOrderData = {
+    jobOrder: jobOrderInfo.jobOrder,
     startTime: format(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy'),
     endTime: jobOrderInfo.isCancelled ? '-' : jobOrderInfo.endTime ? format(jobOrderInfo.endTime, 'HH:mm:ss dd/MM/yyyy') : '-',
     cancelTime: jobOrderInfo.isCancelled && jobOrderInfo.endTime ? format(jobOrderInfo.endTime, 'HH:mm:ss dd/MM/yyyy') : '-',
@@ -359,18 +368,20 @@ export async function printBatchSummary(
   const consumptions = await $fetch(`/api/batch/${batchKey}/consumptions`)
   const consumptionUnits = await $fetch(`/api/batch/${batchKey}/consumption-units`)
   const { programInfo, totalManualDelay } = await $fetch(`/api/batch/${batchKey}/batch-summary`)
+  const waterTypes = await $fetch<Record<string, string | null>>(`/api/water-types`)
 
   // Render the BatchSummary component
   const appContent = await renderToString(
     h(BatchSummary, {
       machine,
-      joborderData,
-      actualDuration: jobOrderInfo.actualDuration,
+      jobOrderData,
+      actualDuration: jobOrderInfo.actualDuration || 0,
       startParameters,
       svgChartContent,
       consumptions,
       consumptionUnits,
       programInfo,
+      waterTypes,
       totalManualDelay,
     }),
   )

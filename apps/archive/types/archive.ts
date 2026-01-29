@@ -5,7 +5,7 @@ export interface Batch {
   active: boolean
   lastRecordDate: Date
   machine: Machine
-  joborderInfo: BatchInfo
+  jobOrderInfo: BatchInfo
   batchParameters: BatchParameters[]
   interventions: BatchIntervention[]
   alarms: BatchAlarm[]
@@ -246,7 +246,7 @@ export interface BatchInfo {
   machineId: number
   machineName: string
   machineModel: string
-  joborder: string
+  jobOrder: string
   startTime: string
   endTime: string | null
   programCount: number
@@ -369,6 +369,28 @@ export interface ArchivedReelCycleTime {
   /** Cycle duration. */
   cycleTime: number
   cycleDate: DDate
+}
+
+export type ConsumptionKey =
+  | 'waterType1'
+  | 'waterType2'
+  | 'waterType3'
+  | 'waterType4'
+  | 'waterType5'
+  | 'waterType6'
+  | 'waterTotal'
+  | 'electricity'
+  | 'steam'
+  | 'steamPerWeight'
+  | 'electricityPerWeight'
+  | 'totalWaterPerWeight'
+
+export type Consumptions = {
+  [key in ConsumptionKey]: number
+}
+
+export type ConsumptionUnits = {
+  [key in ConsumptionKey]: string
 }
 
 export interface TaskStatus {

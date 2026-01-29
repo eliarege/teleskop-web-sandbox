@@ -45,10 +45,10 @@ import TheoreticalPrograms from '~/components/TheoreticalPrograms.vue'
 import Chart from '~/components/Chart.vue'
 import ActualSteps from '~/components/ActualSteps.vue'
 import TheoreticalSteps from '~/components/TheoreticalSteps.vue'
-import { printJoborderRecipe, printJoborderSummary } from '~/utils/functions'
+import { printJoborderRecipe, printJobOrderSummary } from '~/utils/functions'
 import ArchiveChart from '~/components/ArchiveChart.vue'
 import InterventionsDialog from '~/components/InterventionsDialog.vue'
-import JoborderSummarySettingsDialog from '~/components/JoborderSummarySettingsDialog.vue'
+import JobOrderSummarySettingsDialog from '~/components/JobOrderSummarySettingsDialog.vue'
 import CycleTimes from '~/components/CycleTimes.vue'
 import { insertBatchValues } from '~/shared/io'
 
@@ -87,7 +87,7 @@ async function scheduleBatchFetch(batch: DuoAny<Batch>, seconds: number) {
     if (incomingValues.active) {
       scheduleBatchFetch(batch, seconds)
     } else {
-      batch.joborderInfo = await $fetch<BatchInfo>(`/api/batch/${batchKey}/info`)
+      batch.jobOrderInfo = await $fetch<BatchInfo>(`/api/batch/${batchKey}/info`)
     }
   }, seconds * 1000)
 }
@@ -254,9 +254,9 @@ batchData.value?.calculatedValues.forEach((command) => {
 const mergedCommandsWithNames = computed(() => getCommandsWithNames())
 // Teorik sıcaklık hesaplama kısmı için lütfen herhangi bir şey değiştirmeden önce
 // @egeiliklier 'e danışınız.
-const theoreticalCommands = calculateTheoreticalCommands(batchData.value?.joborderInfo.startTime, 25, batchData.value?.theoreticalPrograms, batchData.value?.machine)
+const theoreticalCommands = calculateTheoreticalCommands(batchData.value?.jobOrderInfo.startTime, 25, batchData.value?.theoreticalPrograms, batchData.value?.machine)
 const { theoreticalPrograms, errors } = calculateProgramTheoreticalTemperature(
-  batchData.value?.joborderInfo.startTime,
+  batchData.value?.jobOrderInfo.startTime,
   25, // Flat 25 normalde DB'den alınacak. TODO:
   batchData.value?.theoreticalPrograms,
   batchData.value?.machine,
@@ -311,7 +311,7 @@ const chart = ref<InstanceType<typeof ArchiveChart>>()
 const components: Record<string, () => any> = {
   JobOrderInfo: () =>
     h(JobOrderInfo, {
-      jobOrderInfo: batchData.value?.joborderInfo as BatchInfo,
+      jobOrderInfo: batchData.value?.jobOrderInfo as BatchInfo,
     }),
   StartParameters: () =>
     h(StartParameters, {
@@ -740,10 +740,10 @@ function showInterventionsDialog() {
     updateSelectedTime(data)
   })
 }
-async function showJoborderSummarySettingsDialog() {
+async function showJobOrderSummarySettingsDialog() {
   const erpParameters = await $fetch(`/api/batch/${batchKey}/erp-parameters`)
   $q.dialog({
-    component: JoborderSummarySettingsDialog,
+    component: JobOrderSummarySettingsDialog,
     componentProps: {
       erpParameters,
     },
@@ -767,14 +767,14 @@ const items = [
         [
           {
             label: tt('topbar.report.batchSum'),
-            // disabled: !batchData.value?.joborderInfo.endTime,
+            // disabled: !batchData.value?.jobOrderInfo.endTime,
             onClick: async () => {
               chart.value?.resetZoom()
               await nextTick()
               printBatchSummary(
                 batchKey,
                 batchData.value!.machine,
-                batchData.value!.joborderInfo,
+                batchData.value!.jobOrderInfo,
                 batchData.value!.batchParameters,
               )
             },
@@ -782,26 +782,26 @@ const items = [
         ],
         [
           {
-            label: tt('topbar.report.joborderSum'),
+            label: tt('topbar.report.jobOrderSum'),
             onClick: () =>
-              printJoborderSummary(
+              printJobOrderSummary(
                 Number(batchKey),
-                batchData.value!.joborderInfo,
+                batchData.value!.jobOrderInfo,
                 actualPrograms.value,
               ),
           },
           {
-            label: tt('topbar.report.joborderSumSettings'),
-            onClick: () => showJoborderSummarySettingsDialog(),
+            label: tt('topbar.report.jobOrderSumSettings'),
+            onClick: () => showJobOrderSummarySettingsDialog(),
           },
         ],
         [
           {
-            label: tt('topbar.report.joborderRecipe'),
+            label: tt('topbar.report.jobOrderRecipe'),
             onClick: () =>
               printJoborderRecipe(
                 Number(batchKey),
-                batchData.value!.joborderInfo,
+                batchData.value!.jobOrderInfo,
                 actualPrograms.value,
               ),
           },

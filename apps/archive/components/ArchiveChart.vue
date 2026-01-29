@@ -60,12 +60,12 @@ defineExpose({ resetZoom })
 // Start time - end time initleri burada başka bir yerde modifiye etmeyiniz
 const settingsStore = userSettingsStore()
 const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
-const startTime = ref(new Date(props.batch.joborderInfo.startTime))
+const startTime = ref(new Date(props.batch.jobOrderInfo.startTime))
 function getLastDate() {
   const possibleEndTimes: number[] = [
     new Date(theoreticalTemperatures[theoreticalTemperatures.length - 1].time).getTime(),
     new Date(props.batch.lastRecordDate).getTime(),
-    new Date(props.batch.joborderInfo.endTime!).getTime(),
+    new Date(props.batch.jobOrderInfo.endTime!).getTime(),
   ]
   const maxDateMs = possibleEndTimes.reduce<number>((max: number, value: number) => {
     if (!value)
@@ -145,9 +145,9 @@ const xExtent = computed(() => {
   const a = [
     new Date(xExtendStartTime.value),
     new Date(xExtendEndTime.value),
-    // props.batch.joborderInfo.endTime
-    //   ? new Date(props.batch.joborderInfo.endTime)
-    //   : joborderEndTime.value,
+    // props.batch.jobOrderInfo.endTime
+    //   ? new Date(props.batch.jobOrderInfo.endTime)
+    //   : jobOrderEndTime.value,
   ] as [Date, Date]
   return a
 })
@@ -175,7 +175,7 @@ const colorTransitionPortions: number[] = []
  * Teorik sıcaklı grafigindeki renk değişimlerini (program değişince renk değişir)
  * göstermek için yapılmış bir implementation. Değiştirilmesini önermem.
  */
-const joborderDurationTheoreticalDuration
+const jobOrderDurationTheoreticalDuration
   = new Date(
     theoreticalTemperatures[theoreticalTemperatures.length - 1].time,
   ).getTime() - startTime.value.getTime()
@@ -189,10 +189,10 @@ theoreticalTemperatures.forEach((io, index) => {
         = new Date(theoreticalTemperatures[index - 1].time).getTime()
         - startTime.value.getTime()
       colorTransitionPortions.push(
-        durationUntilStart / joborderDurationTheoreticalDuration,
+        durationUntilStart / jobOrderDurationTheoreticalDuration,
       )
       colorTransitionPortions.push(
-        durationUntilStart / joborderDurationTheoreticalDuration,
+        durationUntilStart / jobOrderDurationTheoreticalDuration,
       )
     }
   }
@@ -1134,7 +1134,7 @@ const selectedCommand = computed(() => {
             y="60"
           >
             {{ t("tooltipOptions.activeUser") }}:
-            {{ batch.joborderInfo.operatorName }}
+            {{ batch.jobOrderInfo.operatorName }}
           </text>
           <text
             v-if="selectedCommand"

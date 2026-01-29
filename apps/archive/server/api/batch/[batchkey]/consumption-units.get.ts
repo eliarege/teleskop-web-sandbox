@@ -31,6 +31,8 @@ export default defineEventHandler(async (event) => {
     waterType2: waterUnit?.unit || 'lt',
     waterType3: waterUnit?.unit || 'lt',
     waterType4: waterUnit?.unit || 'lt',
+    waterType5: waterUnit?.unit || 'lt',
+    waterType6: waterUnit?.unit || 'lt',
     waterTotal: waterUnit?.unit || 'lt',
     electricity: 'kWh',
     steam: steamUnit?.unit || 'kg',
