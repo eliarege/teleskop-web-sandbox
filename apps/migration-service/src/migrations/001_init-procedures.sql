@@ -2402,7 +2402,7 @@ END;
 IF OBJECT_ID('splitListToTable', 'TF') IS NULL
 BEGIN
   EXEC('
-CREATE FUNCTION [dbo].[splitListToTable] (@list nvarchar(MAX), @delimiter nchar(1) = N'','') RETURNS @tbl TABLE (value int NOT NULL) AS
+CREATE FUNCTION [dbo].[splitListToTable] (@list nvarchar(MAX), @delimiter nchar(1) = N'''','''') RETURNS @tbl TABLE (value int NOT NULL) AS
  BEGIN
  	DECLARE @endpos   int,
              @startpos int,
@@ -2444,6 +2444,7 @@ CREATE FUNCTION [dbo].[splitListToTable] (@list nvarchar(MAX), @delimiter nchar(
  	RETURN
  END;
   ');
+END;
 
 IF OBJECT_ID('spUpdateMachineStatus', 'P') IS NULL
 BEGIN
