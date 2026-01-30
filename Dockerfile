@@ -69,18 +69,18 @@ ARG APP_VERSION
 ARG APP_BUILD_DATE
 ARG APP_COMMIT_HASH
 
+ENV NUXT_APP_BASE_URL=""
+ENV NITRO_PORT=3000
+
 ENV NUXT_TW_NAME=${APP_NAME}
 ENV NUXT_TW_VERSION=${APP_VERSION}
 ENV NUXT_TW_BUILD_DATE=${APP_BUILD_DATE}
 ENV NUXT_TW_COMMIT_HASH=${APP_COMMIT_HASH}
 
-EXPOSE 3000
-
 USER node
 
-
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+  CMD curl -f "http://localhost:${NITRO_PORT}$(echo "${NUXT_APP_BASE_URL}" | sed 's/^\/$//')/api/health" || exit 1
 
 ENTRYPOINT [ "node", "./server/index.mjs" ]
 
