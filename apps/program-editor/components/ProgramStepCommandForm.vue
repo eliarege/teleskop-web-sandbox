@@ -72,12 +72,12 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
     }
 
     $commandManager.executeCommand(
-      'moveParallelStep',
+      'applyParallelCommand',
       { $q },
       'changeParameter',
       programCommand.commandNo,
-      parameter,
       stepIndex.value + 1,
+      parameter,
       oldValue,
     )
   }

@@ -19,8 +19,13 @@ const { mt } = useProjectTranslations()
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent()
 
 const commandName = computed(() => mt(props.commandName, machine.currentMachine.id))
-const startIndex = ref(props.stepIndex)
+
+const startIndex = ref(props.stepIndex + 1)
 const endIndex = ref(props.stepsLength)
+
+const stepOptions = computed(() =>
+  Array.from({ length: props.stepsLength - startIndex.value + 1 }, (_, i) => startIndex.value + i),
+)
 
 const commandIcon = computed(() => machine.getCommandIcon(props.commandNo))
 const commandParameter = computed(() => machine.currentMachine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index))
@@ -33,11 +38,14 @@ const parameterName = computed(() => {
   return parameter ? mt(parameter.name, machine.currentMachine.id) : ''
 })
 
-const stepOptions = computed(() => Array.from({ length: props.stepsLength }, (_, i) => i + 1))
-
 const isChangeParameter = computed(() => props.type === 'changeParameter' && props.parameter)
 
+const isValidRange = computed(() => startIndex.value <= endIndex.value)
+
 function onOk() {
+  if (!isValidRange.value)
+    return
+
   onDialogOK({
     type: props.type,
     commandNo: props.commandNo,
@@ -201,7 +209,7 @@ function onOk() {
         <q-btn
           :label="t(`moveParallelStep.${props.type}.operate`)"
           :color="props.type === 'remove' ? 'negative' : 'primary'"
-          :disable="startIndex > endIndex"
+          :disable="!isValidRange"
           unelevated
           @click="onOk"
         />

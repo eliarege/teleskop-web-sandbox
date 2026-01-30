@@ -505,7 +505,7 @@ const contextMenuOptions = computed(() => [
       disabled: !selectedCommandNo.value,
       onClick: () => {
         if (selectedCommandNo.value)
-          $commandManager.executeCommand('moveParallelStep', { $q }, 'add', selectedCommandNo.value)
+          $commandManager.executeCommand('applyParallelCommand', { $q }, 'add', selectedCommandNo.value, editor.program.steps.indexOf(editor.selectedSteps[0]))
       },
     },
     {
@@ -515,7 +515,7 @@ const contextMenuOptions = computed(() => [
       disabled: !selectedCommandNo.value,
       onClick: () => {
         if (selectedCommandNo.value)
-          $commandManager.executeCommand('moveParallelStep', { $q }, 'remove', selectedCommandNo.value)
+          $commandManager.executeCommand('applyParallelCommand', { $q }, 'remove', selectedCommandNo.value, editor.program.steps.indexOf(editor.selectedSteps[0]))
       },
     },
   ],

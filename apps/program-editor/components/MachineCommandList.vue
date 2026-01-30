@@ -69,7 +69,7 @@ function onDragEnd(event: SortableEvent) {
         const isDuplicate = validateParallelCommands(stepIndex)
         if (!isDuplicate) {
           editor.newParallelStepCommand(draggedCommand.commandNo, stepIndex, event.newIndex)
-          $commandManager.executeCommand('moveParallelStep', { $q }, 'add', draggedCommand.commandNo)
+          $commandManager.executeCommand('applyParallelCommand', { $q }, 'add', draggedCommand.commandNo, stepIndex)
         } else {
           notifyError(t('error.notSameCommand'))
         }

@@ -94,8 +94,10 @@ async function updateStepCommand(commandNo: number) {
   editor.updateStepCommandFromDefinition(command, programCommand.value)
 
   if (!isMainCommand.value && !isLastStep.value && isNewCommand) {
-    if (settings.value.confirmAddParallelCommandToSteps)
-      $commandManager.executeCommand('moveParallelStep', { $q }, 'add', commandNo)
+    if (settings.value.confirmAddParallelCommandToSteps) {
+      const stepIndex = editor.program.steps.indexOf(step.value)
+      $commandManager.executeCommand('applyParallelCommand', { $q }, 'add', commandNo, stepIndex)
+    }
   }
 }
 
