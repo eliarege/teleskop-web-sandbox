@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { determineTextColor } from '@teleskop/utils'
+import { determineTextColor, formatDuration } from '@teleskop/utils'
 import { useStorage } from '@vueuse/core'
-import { format } from 'date-fns'
 import { AlarmStatus, AutoManualStatus, BatchStatus, ConnectionStatus, RequestStatus } from '~/shared/enums'
 import type { MachineData } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
-
 interface CardInfoProps {
   colors: {
     backGround: string
@@ -43,13 +41,13 @@ function reqStatus(params: number) {
 const stopReasonElapsedTime = computed(() => {
   const givenDate = new Date(props.machine.stopReasonDateTime)
   const elapsed = Date.now() - givenDate.getTime()
-  return format(elapsed, 'HH:mm:ss')
+  return formatDuration(elapsed)
 })
 
 const manualReasonElapsedTime = computed(() => {
   const givenDate = new Date(props.machine.manualReasonDateTime)
   const elapsed = Date.now() - givenDate.getTime()
-  return format(elapsed, 'HH:mm:ss')
+  return formatDuration(elapsed)
 })
 
 const infoTextColor = computed(() => {
