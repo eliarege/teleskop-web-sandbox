@@ -1,8 +1,24 @@
 # Changelog
 
+## 0.69.0 - 2026-01-30
+
+[Compare Changes](0e34d813e525fe53407c391b5e1058729eb60ea9...dfcbabba0fde1e782b1480da530b97af4621e8cf)
+
+### 🚀 Features
+
+-  **MM**: Introduce `formatDuration` utility and migrate `MachineCard/Info.vue` to use it for displaying elapsed times. ([b14ab39](b14ab39dc5b46b1fb042f663ccc2469d3485db92))
+
+### 🐛 Bug Fixes
+
+-  **AR**: Replace time formatting with formatDuration utility ([9788083](9788083ab04999417a3d0b7ff9ccf467a252989b))
+
+### ♻️ Refactor
+
+- **utils**: Rename `formatDuration.ts` to `format.ts` ([d9dbebd](d9dbebd2bc47712237e8b6eeabf05f66e0dfc6e1))
+
 ## 0.68.2 - 2026-01-30
 
-[Compare Changes](b100cdf9c6a8b9a7e9876f69fedeaecc2e817226...2384d30f0b15d581d6c87f991c6bbd5373ee2eca)
+[Compare Changes](b100cdf9c6a8b9a7e9876f69fedeaecc2e817226...0e34d813e525fe53407c391b5e1058729eb60ea9)
 
 ### 🐛 Bug Fixes
 
