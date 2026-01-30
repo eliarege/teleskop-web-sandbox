@@ -1,8 +1,18 @@
 # Changelog
 
+## 0.68.1 - 2026-01-30
+
+[Compare Changes](cd8d83d4c31b9446a0f3f28595d970c1d4fcefe3...3c177278022eb52c7ec93aa9553c205d69a74434)
+
+### 🐛 Bug Fixes
+
+- **Dockerfile**: Add curl to base image for healthcheck functionality ([40779f1](40779f16bd505e09578b076427a434177dfabc38))
+- **migrations**: Correct delimiter syntax in splitListToTable function definition, add missing `END` statement at splitListToTable function ([009895d](009895d005030e1e92d5b822493b7df1439817bb))
+-  **AR**: Correct translation for 'startParameters' in Turkish locale ([3c17727](3c177278022eb52c7ec93aa9553c205d69a74434))
+
 ## 0.68.0 - 2026-01-29
 
-[Compare Changes](c2b0d3d0eabaef083a4424d7b874aac6129c3e22...d33649f3a8ff7ca0d57145909a320db762a7511f)
+[Compare Changes](c2b0d3d0eabaef083a4424d7b874aac6129c3e22...cd8d83d4c31b9446a0f3f28595d970c1d4fcefe3)
 
 ### 🚀 Features
 
