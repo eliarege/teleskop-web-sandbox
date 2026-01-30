@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
+import { formatDuration } from '@teleskop/utils'
 import type { BasicProgram, BatchInfo, ConsumptionKey, ConsumptionUnits, Consumptions, ERPParameter } from '~/types/archive'
 
 const props = defineProps<{
@@ -60,10 +61,10 @@ const consumptionRows = computed(() => {
       </div>
     </div>
     <div class="section">
-      {{ `${t('theoreticalDuration')}: ${format(jobOrderInfo.theoreticalDuration, 'HH:mm:ss')}` }} <br>
-      {{ `${t('actualDuration')}: ${format(jobOrderInfo.actualDuration!, 'HH:mm:ss')}` }} <br>
+      {{ `${t('theoreticalDuration')}: ${formatDuration(jobOrderInfo.theoreticalDuration)}` }} <br>
+      {{ `${t('actualDuration')}: ${formatDuration(jobOrderInfo.actualDuration!)}` }} <br>
       <div class="highlight-red">
-        {{ `${t('deviation')}: ${format(jobOrderInfo.deviation!, 'HH:mm:ss')}` }}
+        {{ `${t('deviation')}: ${formatDuration(jobOrderInfo.deviation!)}` }}
       </div>
     </div>
     <hr>
