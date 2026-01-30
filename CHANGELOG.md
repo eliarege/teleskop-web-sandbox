@@ -1,8 +1,16 @@
 # Changelog
 
+## 0.68.2 - 2026-01-30
+
+[Compare Changes](b100cdf9c6a8b9a7e9876f69fedeaecc2e817226...2384d30f0b15d581d6c87f991c6bbd5373ee2eca)
+
+### 🐛 Bug Fixes
+
+- **Dockerfile**: Update healthcheck command to use dynamic port and base URL ([2384d30](2384d30f0b15d581d6c87f991c6bbd5373ee2eca))
+
 ## 0.68.1 - 2026-01-30
 
-[Compare Changes](cd8d83d4c31b9446a0f3f28595d970c1d4fcefe3...3c177278022eb52c7ec93aa9553c205d69a74434)
+[Compare Changes](cd8d83d4c31b9446a0f3f28595d970c1d4fcefe3...b100cdf9c6a8b9a7e9876f69fedeaecc2e817226)
 
 ### 🐛 Bug Fixes
 

@@ -1,7 +1,7 @@
 {
   "name": "multi-monitor",
   "type": "module",
-  "version": "0.68.1",
+  "version": "0.68.2",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
