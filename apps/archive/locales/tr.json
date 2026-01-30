@@ -84,7 +84,7 @@
   },
   "panels": {
     "jobOrderInfo": "İş Emri Bilgi",
-    "startParameters": "Başlangıç Parametreleri",
+    "startParameters": "Başlatma Parametreleri",
     "actualPrograms": "Çalışan",
     "theoricPrograms": "Teorik",
     "AIN": "AIN",
