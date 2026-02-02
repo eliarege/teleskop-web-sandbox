@@ -62,9 +62,9 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
     format: val => d(val, 'datetime'),
   },
   {
-    name: 'joborderCode',
+    name: 'jobOrderCode',
     label: t('joborder'),
-    field: 'joborderCode',
+    field: 'jobOrderCode',
     filterable: true,
     filterType: 'includes',
   },
