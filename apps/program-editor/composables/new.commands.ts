@@ -82,10 +82,10 @@ export interface RegisteredCommands {
   programVersionInfo: [ctx: any, program: { programNo: number, name: string }]
   allCommandsList: [ctx: any]
   commandDetails: [ctx: any, commandNo: number]
-  moveParallelStep:
-    | [ctx: any, type: 'add', commandNo: number]
-    | [ctx: any, type: 'remove', commandNo: number]
-    | [ctx: any, type: 'changeParameter', commandNo: number, parameter: ParameterItem, stepIndex: number, oldValue: any]
+  applyParallelCommand:
+    | [ctx: any, type: 'add', commandNo: number, stepIndex: number]
+    | [ctx: any, type: 'remove', commandNo: number, stepIndex: number]
+    | [ctx: any, type: 'changeParameter', commandNo: number, stepIndex: number, parameter: ParameterItem, oldValue: number | string]
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
   checkErrors: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
@@ -781,79 +781,97 @@ registerCommand(() => {
   }
 })
 
-function moveParallelStepExecute(ctx: any, type: 'add', commandNo: number): boolean
-function moveParallelStepExecute(ctx: any, type: 'remove', commandNo: number): boolean
-function moveParallelStepExecute(ctx: any, type: 'changeParameter', commandNo: number, parameter: ParameterItem, stepIndex: number, oldValue: any): boolean
-function moveParallelStepExecute(
+function applyParallelCommandExecute(ctx: any, type: 'add', commandNo: number, stepIndex: number): boolean
+function applyParallelCommandExecute(ctx: any, type: 'remove', commandNo: number, stepIndex: number): boolean
+function applyParallelCommandExecute(ctx: any, type: 'changeParameter', commandNo: number, stepIndex: number, parameter: ParameterItem, oldValue: any): boolean
+function applyParallelCommandExecute(
   ctx: any,
   type: 'add' | 'remove' | 'changeParameter',
   commandNo: number,
+  stepIndex: number,
   parameter?: ParameterItem,
-  stepIndex?: number,
   oldValue?: any,
 ): boolean {
   const editor = useEditorStore()
   const machine = useMachineStore()
 
-  const commandName = machine.currentMachine.commands.get(commandNo)?.name
-  const currentStepIndex = stepIndex || editor.program.steps.indexOf(editor.selectedSteps[0]) + 1
+  const machineCommand = machine.currentMachine.commands.get(commandNo)
+  if (!machineCommand) {
+    console.warn(`Command not found: commandNo=${commandNo}`)
+    return false
+  }
+
+  const stepsLength = editor.program.steps.length
+
+  // Son adımda ekleme işlemi yapılamaz (sonraki adım yok)
+  if (type === 'add' && stepIndex >= stepsLength - 1) {
+    return false
+  }
 
   ctx.$q.dialog({
     component: CMMoveParallelStepDialog,
     componentProps: {
       type,
       commandNo,
-      commandName,
-      stepIndex: currentStepIndex,
-      stepsLength: editor.program.steps.length,
+      commandName: machineCommand.name,
+      stepIndex,
+      stepsLength,
       parameter,
       oldValue,
     },
-  }).onOk(async (command: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
-    if (command.type === 'add') {
-      for (let index = command.startIndex; index <= command.endIndex; index++) {
-        const step = editor.program.steps[index]
+  }).onOk((result: { type: string, commandNo: number, startIndex: number, endIndex: number }) => {
+    const { startIndex, endIndex } = result
 
-        // Eklenen adıma tekrar ekleme, sadece yoksa ekle
-        if (currentStepIndex !== index + 1) {
-          const parallelCommands = step.parallelCommands
-          const alreadyExists = parallelCommands.some(cmd => cmd.commandNo === command.commandNo)
-          if (!alreadyExists) {
-            editor.newParallelStepCommand(command.commandNo, index)
-          }
+    if (result.type === 'add') {
+      // Paralel komutu belirtilen aralıktaki adımlara ekle
+      for (let index = startIndex; index <= endIndex; index++) {
+        const step = editor.program.steps[index]
+        if (!step)
+          continue
+
+        // Aynı komut zaten varsa ekleme
+        const alreadyExists = step.parallelCommands.some(cmd => cmd.commandNo === commandNo)
+        if (!alreadyExists) {
+          editor.newParallelStepCommand(commandNo, index)
         }
       }
-    } else if (command.type === 'remove') {
-      for (let index = command.startIndex; index <= command.endIndex; index++) {
+    } else if (result.type === 'remove') {
+      // Paralel komutu belirtilen aralıktaki adımlardan sil
+      for (let index = startIndex; index <= endIndex; index++) {
         const step = editor.program.steps[index]
+        if (!step)
+          continue
 
-        step.parallelCommands.forEach((command, parallelIndex) => {
-          if (command.commandNo === commandNo)
-            step.parallelCommands.splice(parallelIndex, 1)
-        })
+        step.parallelCommands = step.parallelCommands.filter(
+          cmd => cmd.commandNo !== commandNo,
+        )
       }
-    } else if (command.type === 'changeParameter') {
-      for (let index = command.startIndex; index <= command.endIndex; index++) {
+    } else if (result.type === 'changeParameter' && parameter) {
+      // Paralel komutun parametresini belirtilen aralıkta değiştir
+      for (let index = startIndex; index <= endIndex; index++) {
         const step = editor.program.steps[index]
+        if (!step)
+          continue
 
-        step.parallelCommands.forEach((parallelCommand) => {
-          if (parallelCommand.commandNo === commandNo && parameter) {
-            const param = parallelCommand.parameters.find(param => param.index === parameter.index)
+        for (const parallelCommand of step.parallelCommands) {
+          if (parallelCommand.commandNo === commandNo) {
+            const param = parallelCommand.parameters.find(p => p.index === parameter.index)
             if (param) {
               param.value = parameter.value
             }
           }
-        })
+        }
       }
     }
   })
+
   return true
 }
 
 registerCommand(() => {
   return {
-    name: 'moveParallelStep',
-    execute: moveParallelStepExecute,
+    name: 'applyParallelCommand',
+    execute: applyParallelCommandExecute,
   }
 })
 
