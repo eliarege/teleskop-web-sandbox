@@ -19,8 +19,8 @@ const { $commandManager } = useNuxtApp()
 const step = editor.getPathElement({ stepId: props.stepId })
 const stepIndex = computed(() => editor.getStepIndex(step.stepId))
 const stepIcons = computed(() => {
-  const mainIcon = machine.getCommandIcon(step.mainCommand.commandNo)
-  const parallelIcons = step.parallelCommands.map(({ commandNo }) => machine.getCommandIcon(commandNo))
+  const mainIcon = getCommandIcon(machine.currentMachine.commands, machine.currentMachine.commandTypes, step.mainCommand.commandNo)
+  const parallelIcons = step.parallelCommands.map(({ commandNo }) => getCommandIcon(machine.currentMachine.commands, machine.currentMachine.commandTypes, commandNo))
 
   return [mainIcon, ...parallelIcons].filter(icon => isDef(icon))
 })

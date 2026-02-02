@@ -33,7 +33,7 @@ const translatedCommands = computed(() => {
   return commandsArray.map(command => ({
     ...command,
     name: mt(command.name, machine.currentMachine.id),
-    icon: machine.getCommandIcon(command.commandNo),
+    icon: getCommandIcon(machine.currentMachine.commands, machine.currentMachine.commandTypes, command.commandNo),
   }))
 })
 

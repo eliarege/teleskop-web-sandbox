@@ -689,7 +689,7 @@ registerCommand(() => {
         componentProps: {
           machineId: machine.currentMachine.id,
           machineName: machine.currentMachine.name,
-          machineCommands: Array.from(machine.currentMachine.commands.values()),
+          machineCommands: machine.currentMachine.commands,
         },
       }).onOk((command: MachineCommand) => {
         const { $q, $commandManager } = useNuxtApp()
@@ -811,6 +811,9 @@ function applyParallelCommandExecute(
   ctx.$q.dialog({
     component: CMMoveParallelStepDialog,
     componentProps: {
+      machineId: machine.currentMachine.id,
+      commands: machine.currentMachine.commands,
+      commandTypes: machine.currentMachine.commandTypes,
       type,
       commandNo,
       commandName: machineCommand.name,

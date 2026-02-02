@@ -42,7 +42,7 @@ const availableCommands = computed(() => {
     .map(command => ({
       label: `${command.commandNo} ${mt(command.name, machine.currentMachine.id)}`,
       value: command.commandNo,
-      icon: machine.getCommandIcon(command.commandNo),
+      icon: getCommandIcon(machine.currentMachine.commands, machine.currentMachine.commandTypes, command.commandNo),
     }))
 })
 
