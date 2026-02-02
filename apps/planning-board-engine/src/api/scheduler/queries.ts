@@ -1282,6 +1282,8 @@ export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
   step: number
   program: number
   command: number
+  programName?: string
+  commandName?: string
   startTime: Date
   endTime: Date | null
   theoreticalDuration: number
@@ -1412,6 +1414,8 @@ export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
     step: Math.floor(step.theoreticalStepNo),
     program: step.programNo,
     command: step.commandNo,
+    programName: step.programName,
+    commandName: step.commandName,
     startTime: step.startTime,
     endTime: step.endTime,
     theoreticalDuration: step.theoreticDuration || 0,
@@ -1427,6 +1431,8 @@ interface TheoreticalStep {
   programIndex: number
   programStepNo: number
   commandNo: number
+  programName?: string
+  commandName?: string
   theoreticDuration: number
 }
 
@@ -1436,6 +1442,8 @@ interface ActualStepInternal {
   commandNo: number
   startTime: Date
   endTime: Date | null
+  programName?: string
+  commandName?: string
 }
 
 interface ActualStepDetailed extends ActualStepInternal {
@@ -1484,6 +1492,7 @@ async function getArchivedBatchTheoreticalStepsInternal(machineId: number, progr
       .select([
         'P.PROGNO',
         'P.MACHINEID',
+        'P.NAME',
         'P.MACHINEPRGVERSIONNO',
         'T.PROGINDEX',
       ])
@@ -1499,12 +1508,18 @@ async function getArchivedBatchTheoreticalStepsInternal(machineId: number, progr
         .andOn('S.PROGNO', 'V.PROGNO')
         .andOn('S.MACHINEPRGVERSIONNO', 'V.MACHINEPRGVERSIONNO')
     })
+    .join('BAMASTERCOMMANDS as C', function () {
+      this.on('S.MACHINEID', 'C.MACHINEID')
+        .andOn('S.COMMANDNO', 'C.COMMANDNO')
+    })
     .select({
       stepNo: knex.raw('CAST(ROW_NUMBER() OVER (ORDER BY V.PROGINDEX, S.MAINSTEP) - 1 AS INT)'),
       programNo: 'S.PROGNO',
       programIndex: 'V.PROGINDEX',
       programStepNo: 'S.MAINSTEP',
       commandNo: 'S.COMMANDNO',
+      programName: 'V.NAME',
+      commandName: 'C.NAME',
       theoreticDuration: 'S.THEORETICDURATION',
     })
     .where('S.PARALELSTEP', 0)
@@ -1512,17 +1527,28 @@ async function getArchivedBatchTheoreticalStepsInternal(machineId: number, progr
 }
 
 async function getBatchActualStepsInternal(batchKey: number): Promise<ActualStepDetailed[]> {
-  const steps = await knex('BAACTUALPRGSTEPS')
-    .select({
-      actualStepNo: 'STEPNO',
-      programNo: 'PRGNO',
-      commandNo: 'COMMANDNO',
-      startTime: knex.raw(`DATEADD(MINUTE, ?, STARTTIME)`, [config.teleskopTimezoneOffset]),
-      endTime: knex.raw(`DATEADD(MINUTE, ?, ENDTIME)`, [config.teleskopTimezoneOffset]),
+  const steps = await knex('BAACTUALPRGSTEPS as b')
+    .leftJoin('BADATA as d', 'd.BATCHKEY', 'b.BATCHKEY')
+    .leftJoin('BAMASTERCOMMANDS as c', function () {
+      this.on('d.MACHINEID', 'c.MACHINEID')
+        .andOn('b.COMMANDNO', 'c.COMMANDNO')
     })
-    .where('BATCHKEY', batchKey)
-    .andWhere('PARALLELSTEPNO', 0)
-    .orderBy('STARTTIME')
+    .leftJoin('BAMASTERPRGHEADER as p', function () {
+      this.on('d.MACHINEID', 'p.MACHINEID')
+        .andOn('b.PRGNO', 'p.PROGNO')
+    })
+    .select({
+      actualStepNo: 'b.STEPNO',
+      programNo: 'b.PRGNO',
+      commandNo: 'b.COMMANDNO',
+      programName: 'p.NAME',
+      commandName: 'c.NAME',
+      startTime: knex.raw(`DATEADD(MINUTE, ?, b.STARTTIME)`, [config.teleskopTimezoneOffset]),
+      endTime: knex.raw(`DATEADD(MINUTE, ?, b.ENDTIME)`, [config.teleskopTimezoneOffset]),
+    })
+    .where('b.BATCHKEY', batchKey)
+    .andWhere('b.PARALLELSTEPNO', 0)
+    .orderBy('b.STARTTIME')
 
   if (steps.length === 0) {
     return []

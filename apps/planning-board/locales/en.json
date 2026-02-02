@@ -52,7 +52,8 @@
       "process": "Process Information",
       "pin": "Pin Task",
       "unpin": "Unpin Task",
-      "change-color": "Change Job Order Color"
+      "change-color": "Change Job Order Color",
+      "step-working-times": "Step Working Times"
     }
   },
   "plan-recipe": {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatDuration } from '@teleskop/utils';
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
@@ -17,11 +18,13 @@ const modifiedStepWorkingTimes = computed(() => {
   return (stepWorkingTimes.value || []).map((step) => {
     return {
       ...step,
-      step: step.step,
+      step: step.step + 1,
+      program: step.programName ? step.program + ' ' + step.programName : step.program,
+      command: step.commandName ? step.command + ' ' + step.commandName : step.command,
       startTime: step.startTime ? d(new Date(step.startTime), 'datetime') : '',
       endTime: step.endTime ? d(new Date(step.endTime), 'datetime') : '',
-      theoreticalDuration: step.theoreticalDuration ? `${step.theoreticalDuration} s` : '',
-      actualDuration: step.actualDuration ? `${step.actualDuration} s` : '',
+      theoreticalDuration: step.theoreticalDuration ? formatDuration(step.theoreticalDuration * 1000) : '',
+      actualDuration: step.actualDuration ? formatDuration(step.actualDuration * 1000) : '',
     }
   })
 })
@@ -150,13 +153,13 @@ async function printTable() {
   const boxSize = 5
   const spacing = 8
 
-  doc.setFillColor(255, 237, 213)
+  doc.setFillColor(191, 219, 254)
   doc.rect(leftMargin, legendY, boxSize, boxSize, 'F')
   doc.setDrawColor(180, 180, 180)
   doc.rect(leftMargin, legendY, boxSize, boxSize, 'S')
   doc.text(t('stepWorkingTimes.addedLater'), leftMargin + 7, legendY + 4)
 
-  doc.setFillColor(191, 219, 254)
+  doc.setFillColor(187, 247, 208)
   doc.rect(leftMargin, legendY + spacing, boxSize, boxSize, 'F')
   doc.setDrawColor(180, 180, 180)
   doc.rect(leftMargin, legendY + spacing, boxSize, boxSize, 'S')
@@ -219,11 +222,11 @@ function handleClose() {
         {{ t('stepWorkingTimes.colorCodes') }}
       </div>
       <div class="flex items-center gap-2">
-        <div class="w-4 h-4 bg-yellow-200 border border-gray-400" />
+        <div class="w-4 h-4 bg-blue-200 border border-gray-400" />
         <label for="overtime">{{ t('stepWorkingTimes.addedLater') }}</label>
       </div>
       <div class="flex items-center gap-2">
-        <div class="w-4 h-4 bg-blue-200 border border-gray-400" />
+        <div class="w-4 h-4 bg-green-200 border border-gray-400" />
         <label for="saved">{{ t('stepWorkingTimes.deletedOrSkipped') }}</label>
       </div>
       <div class="flex items-center gap-2">
@@ -288,7 +291,6 @@ function handleClose() {
 
   .bg-red-200,
   .bg-green-200,
-  .bg-yellow-200,
   .bg-blue-200 {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
