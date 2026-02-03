@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { QBtn, QIcon, QTooltip } from 'quasar'
-import { useResizeObserver } from '@vueuse/core'
 import type { CustomQBtnProps } from '../composables/useContextBar'
+import CollapsibleButtonBar from './CollapsibleButtonBar.vue'
 import TBDurationErrorsDialog from './TBDurationErrorsDialog.vue'
 import { calculateProgramDuration } from '~/shared/formula'
 import type { Machine, Program } from '~/shared/types'
@@ -50,22 +50,6 @@ watch(
   () => props.initialTemperature,
   calcProgramDuration,
 )
-
-const container = ref<HTMLElement | null>(null)
-const buttons = ref<HTMLElement | null>(null)
-
-const showLabels = ref(true)
-let openButtonWidth = 0
-
-useResizeObserver(container, () => {
-  if (!container.value || !buttons.value)
-    return
-
-  if (showLabels.value)
-    openButtonWidth = buttons.value.scrollWidth
-
-  showLabels.value = openButtonWidth < container.value.clientWidth
-})
 </script>
 
 <template>
@@ -82,37 +66,11 @@ useResizeObserver(container, () => {
       />
 
       <!-- Button Container -->
-      <div
-        ref="container"
-        class="flex flex-1 items-center overflow-hidden"
-      >
-        <div
-          ref="buttons"
-          class="flex items-center whitespace-nowrap"
-        >
-          <!-- Context Buttons -->
-          <QBtn
-            v-for="button in visibleContextBarButtons"
-            :key="button.label || button.originalLabel"
-            :disable="button.disable"
-            :icon="button.icon"
-            :label="showLabels ? button.label : undefined"
-            :class="showLabels ? 'mx-0 px-2 ml-1' : 'mx-1 px-4'"
-            square
-            flat
-            @click="button.onClick"
-          >
-            <QTooltip
-              v-if="button.tooltip || button.shortcut"
-            >
-              {{ button.tooltip }}
-              <span v-if="button.shortcut">
-                ({{ button.shortcut }})
-              </span>
-            </QTooltip>
-          </QBtn>
-        </div>
-      </div>
+      <CollapsibleButtonBar
+        :buttons="visibleContextBarButtons"
+        :menu-tooltip="t('contextBar.menuTooltip')"
+        dense
+      />
     </div>
 
     <!-- RIGHT SIDE -->
@@ -163,9 +121,5 @@ useResizeObserver(container, () => {
 
 :deep(.q-btn .q-icon) {
   font-size: 18px !important; /* ikon boyutu */
-}
-
-:deep(.q-btn .on-left) {
-  margin-right: 4px !important;
 }
 </style>
