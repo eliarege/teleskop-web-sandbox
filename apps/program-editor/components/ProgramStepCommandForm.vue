@@ -29,7 +29,7 @@ const machineCommand = computed(() => {
   return { editableParameters, selectableIOs }
 })
 
-const commandIcon = computed(() => machine.getCommandIcon(programCommand.commandNo!))
+const commandIcon = computed(() => getCommandIcon(machine.currentMachine.commands, machine.currentMachine.commandTypes, programCommand.commandNo!))
 
 /**
  * Parametreleri `BFCOMMANDPARAMETERS.PARAMETERGROUP` alanına göre grupla.

@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import type { ParameterItem } from '~/shared/types'
+import type { CommandTypes, MachineCommand, ParameterItem } from '~/shared/types'
 
 const props = defineProps<{
+  machineId: number
+  commands: Map<number, MachineCommand>
+  commandTypes: CommandTypes[]
   type: 'add' | 'remove' | 'changeParameter'
   commandNo: number
   commandName: string
@@ -14,28 +17,30 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits])
 
 const { t } = useI18n()
-const machine = useMachineStore()
 const { mt } = useProjectTranslations()
 const { dialogRef, onDialogOK, onDialogHide } = useDialogPluginComponent()
 
-const commandName = computed(() => mt(props.commandName, machine.currentMachine.id))
+const startSelect = ref()
+const endSelect = ref()
+
+const commandName = computed(() => mt(props.commandName, props.machineId))
 
 const startIndex = ref(props.stepIndex + 1)
 const endIndex = ref(props.stepsLength)
 
 const stepOptions = computed(() =>
-  Array.from({ length: props.stepsLength - startIndex.value + 1 }, (_, i) => startIndex.value + i),
+  [...Array(props.stepsLength)].map((_, i) => i + 1),
 )
 
-const commandIcon = computed(() => machine.getCommandIcon(props.commandNo))
-const commandParameter = computed(() => machine.currentMachine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index))
+const commandIcon = computed(() => getCommandIcon(props.commands, props.commandTypes, props.commandNo))
+const commandParameter = computed(() => props.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index))
 const parameterFormat = computed(() => commandParameter.value?.format || '')
 
 const parameterName = computed(() => {
   if (!props.parameter)
     return ''
-  const parameter = machine.currentMachine.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index)
-  return parameter ? mt(parameter.name, machine.currentMachine.id) : ''
+  const parameter = props.commands.get(props.commandNo)?.parameters.find(p => p.index === props.parameter!.index)
+  return parameter ? mt(parameter.name, props.machineId) : ''
 })
 
 const isChangeParameter = computed(() => props.type === 'changeParameter' && props.parameter)
@@ -53,6 +58,11 @@ function onOk() {
     endIndex: endIndex.value - 1,
   })
 }
+
+watch([startIndex, endIndex], () => {
+  startSelect.value?.validate()
+  endSelect.value?.validate()
+})
 </script>
 
 <template>
@@ -167,9 +177,11 @@ function onOk() {
           </div>
           <div class="col-6">
             <q-select
+              ref="startSelect"
               v-model="startIndex"
               :options="stepOptions"
               :label="t('moveParallelStep.startIndex')"
+              no-error-icon
               outlined
               dense
               options-dense
@@ -181,9 +193,11 @@ function onOk() {
           </div>
           <div class="col-6">
             <q-select
+              ref="endSelect"
               v-model="endIndex"
               :options="stepOptions"
               :label="t('moveParallelStep.endIndex')"
+              no-error-icon
               outlined
               dense
               options-dense

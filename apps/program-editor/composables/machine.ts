@@ -190,44 +190,6 @@ export const useMachineStore = defineStore('machine', () => {
   }
 
   /**
-   * Verilen bir komut numarası ile ilişkili ikonu döndürür.
-   *
-   * @param {number} commandNo - İkonun alınacağı komut numarası.
-   *
-   * @returns {StepIcon | undefined} Komutla ilişkili ikon veya eğer ikon bulunamazsa ya da seçim koşulları sağlanmazsa `undefined`.
-   *
-   * @description Bu fonksiyon, bir komut numarasının tanımlı olup olmadığını kontrol eder ve ilgili komutu ve komut tipini alır.
-   * Ardından, komut tipinin bilinen bir eşlemeyle uyumlu olup olmadığını ve `teleskopSettings` içindeki ikon ayarlarına göre
-   * ikonun gösterilip gösterilmeyeceğini belirler. Tüm koşullar sağlanırsa, uygun `StepIcon` döner; aksi takdirde `undefined` döner.
-   */
-  function getCommandIcon(commandNo: number): StepIcon | undefined {
-    const teleskopSettings = useTeleskopSettingsStore()
-
-    if (!isDef(commandNo))
-      return
-
-    const machineCommand = currentMachine.value.commands.get(commandNo)
-    if (!machineCommand)
-      return
-
-    const machineCommandType = currentMachine.value.commandTypes.find(commandType => commandType.commandNo === commandNo)
-    if (!machineCommandType)
-      return
-
-    const commandType = commandTypeMaps.find(map => map.value === machineCommandType.commandType)
-    if (!commandType)
-      return
-
-    const iconSetting = teleskopSettings.selectedIcons
-    const isSelected = (Number(iconSetting) & (1 << Number(commandType.index))) > 0
-
-    if (!isSelected)
-      return
-
-    return { name: commandType.icon, label: commandType.title, color: commandType.color }
-  }
-
-  /**
    * Seçili makineyi değiştirir ve ilgili makine sayfasına yönlendirir.
    *
    * @param {number} id - Değiştirilecek makinenin ID'si.
@@ -275,7 +237,6 @@ export const useMachineStore = defineStore('machine', () => {
     fetchMachine,
     loadMachine,
     fetchMachineGroups,
-    getCommandIcon,
     changeMachine,
     selectFirstUsableMachine,
   }

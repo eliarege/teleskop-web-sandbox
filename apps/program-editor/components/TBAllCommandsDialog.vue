@@ -4,7 +4,7 @@ import type { MachineCommand } from '~/shared/types'
 const props = defineProps<{
   machineId: number
   machineName: string
-  machineCommands: MachineCommand[]
+  machineCommands: Map<number, MachineCommand>
 }>()
 
 defineEmits([...useDialogPluginComponent.emits])
@@ -16,9 +16,9 @@ const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginC
 
 const commandIcons = computed(() =>
   Object.fromEntries(
-    props.machineCommands.map(cmd => [
+    Array.from(props.machineCommands.values()).map(cmd => [
       cmd.commandNo,
-      machine.getCommandIcon(cmd.commandNo),
+      getCommandIcon(props.machineCommands, machine.currentMachine.commandTypes, cmd.commandNo),
     ]),
   ),
 )
@@ -55,7 +55,7 @@ const commandIcons = computed(() =>
             dense
           >
             <q-item
-              v-for="command in machineCommands"
+              v-for="command in Array.from(props.machineCommands.values())"
               :key="command.commandNo"
               v-ripple
               clickable

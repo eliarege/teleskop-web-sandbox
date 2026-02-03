@@ -107,7 +107,7 @@ function calculateChartData() {
       pointRadius: 4,
       pointHoverRadius: 6,
       pointBackgroundColor: dataPoints.map((_, index) =>
-        machine.getCommandIcon(stepInfo[index]?.commandNo)?.color ?? '#000000',
+        getCommandIcon(machine.currentMachine.commands, machine.currentMachine.commandTypes, stepInfo[index]?.commandNo)?.color ?? '#000000',
       ),
     }],
   }
@@ -180,7 +180,7 @@ interface Point {
 
 function calcDataPoints(dataPoints: Coordinate[], stepInfo: { commandNo: number, commandName: string, step: number }[], timeData: number[]): Point[] {
   return dataPoints.map(({ x, y }, index) => {
-    const commandIcon = machine.getCommandIcon(stepInfo[index]?.commandNo)
+    const commandIcon = getCommandIcon(machine.currentMachine.commands, machine.currentMachine.commandTypes, stepInfo[index]?.commandNo)
     const isNotLast = index < dataPoints.length - 1
 
     return {

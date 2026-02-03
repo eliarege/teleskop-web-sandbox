@@ -3,7 +3,8 @@ import { isDef } from '@teleskop/utils'
 import { ref } from 'vue'
 import { klona } from 'klona'
 import { useEditorStore } from './editor'
-import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, MachineCommand, ParameterItem, Program, ProgramError, ProgramFilter, ProgramPDFPayloadMap, ProgramStep, ProgramStepCommand, StepError, ioListItem } from '~/shared/types'
+import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, CommandTypes, MachineCommand, ParameterItem, Program, ProgramError, ProgramFilter, ProgramPDFPayloadMap, ProgramStep, ProgramStepCommand, StepError, StepIcon, ioListItem } from '~/shared/types'
+import { commandTypeMaps } from '~/shared/constants'
 
 export interface CommitState {
   insert: any[]
@@ -562,4 +563,42 @@ export function buildTranslations(
     },
     {} as Record<string, string>,
   )
+}
+
+/**
+ * Verilen bir komut numarası ile ilişkili ikonu döndürür.
+ *
+ * @param {number} commandNo - İkonun alınacağı komut numarası.
+ *
+ * @returns {StepIcon | undefined} Komutla ilişkili ikon veya eğer ikon bulunamazsa ya da seçim koşulları sağlanmazsa `undefined`.
+ *
+ * @description Bu fonksiyon, bir komut numarasının tanımlı olup olmadığını kontrol eder ve ilgili komutu ve komut tipini alır.
+ * Ardından, komut tipinin bilinen bir eşlemeyle uyumlu olup olmadığını ve `teleskopSettings` içindeki ikon ayarlarına göre
+ * ikonun gösterilip gösterilmeyeceğini belirler. Tüm koşullar sağlanırsa, uygun `StepIcon` döner; aksi takdirde `undefined` döner.
+ */
+export function getCommandIcon(commands: Map<number, MachineCommand>, commandTypes: CommandTypes[], commandNo: number): StepIcon | undefined {
+  const teleskopSettings = useTeleskopSettingsStore()
+
+  if (!isDef(commandNo))
+    return
+
+  const machineCommand = commands.get(commandNo)
+  if (!machineCommand)
+    return
+
+  const machineCommandType = commandTypes.find(commandType => commandType.commandNo === commandNo)
+  if (!machineCommandType)
+    return
+
+  const commandType = commandTypeMaps.find(map => map.value === machineCommandType.commandType)
+  if (!commandType)
+    return
+
+  const iconSetting = teleskopSettings.selectedIcons
+  const isSelected = (Number(iconSetting) & (1 << Number(commandType.index))) > 0
+
+  if (!isSelected)
+    return
+
+  return { name: commandType.icon, label: commandType.title, color: commandType.color }
 }
