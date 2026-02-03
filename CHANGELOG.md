@@ -1,8 +1,21 @@
 # Changelog
 
+## 0.70.0 - 2026-02-03
+
+[Compare Changes](c0a22bba1e68f81d087fcebd1bf97a75b590f77d...7b41bcd01d59f160c048b513f0da8e91a3dd655d)
+
+### 🚀 Features
+
+-  **PE**: Implement CollapsibleButtonBar component and integrate it into ContextBar; add menu tooltip translations ([15d3d9b](15d3d9b9e945d1682b7b1cf0feafa7be91d9c5fe))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Adjust startIndex calculation and validate range for step options ([0938fba](0938fba61c2344761844be8c9824335f6328ae68))
+-  **PE**: Update CMMoveParallelStep and fix range selection validation issue ([7bffafb](7bffafbb189dee81f31e15786436eb9e988b665c))
+
 ## 0.69.0 - 2026-01-30
 
-[Compare Changes](0e34d813e525fe53407c391b5e1058729eb60ea9...dfcbabba0fde1e782b1480da530b97af4621e8cf)
+[Compare Changes](0e34d813e525fe53407c391b5e1058729eb60ea9...c0a22bba1e68f81d087fcebd1bf97a75b590f77d)
 
 ### 🚀 Features
 
