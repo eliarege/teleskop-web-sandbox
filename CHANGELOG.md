@@ -1,8 +1,21 @@
 # Changelog
 
+## 0.71.0 - 2026-02-03
+
+[Compare Changes](2903a288f95d7f28dcb908ec892b670b4e5e5578...1b9cdb298f3b551a64da99c13516224bf6a2f508)
+
+### 🚀 Features
+
+-  **PT**: Display program and command names in step working times, improve duration formatting, and update legend colors. ([9943c16](9943c1641a798a5255fb32dbce9a56f98007fb18))
+
+### 🐛 Bug Fixes
+
+-  **DM**: Fix typo ([2c718e6](2c718e6007ea8a7a3c837cb7bd4e12f74be8068b))
+-  **PT**: Update queries to filter batch steps by release dates and improve archival logic ([40ac447](40ac447a7df5e663cb5cf9ff0c223a36dfdcf2c8))
+
 ## 0.70.0 - 2026-02-03
 
-[Compare Changes](c0a22bba1e68f81d087fcebd1bf97a75b590f77d...7b41bcd01d59f160c048b513f0da8e91a3dd655d)
+[Compare Changes](c0a22bba1e68f81d087fcebd1bf97a75b590f77d...2903a288f95d7f28dcb908ec892b670b4e5e5578)
 
 ### 🚀 Features
 
