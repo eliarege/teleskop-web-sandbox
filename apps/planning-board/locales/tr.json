@@ -52,7 +52,8 @@
       "process": "Proses Bilgileri",
       "pin": "İş Emrini Sabitle",
       "unpin": "İş Emri Sabitlemesini Kaldır",
-      "change-color": "İş Emri Rengini Değiştir"
+      "change-color": "İş Emri Rengini Değiştir",
+      "step-working-times": "Adım Çalışma Süreleri"
     }
   },
   "plan-recipe": {
