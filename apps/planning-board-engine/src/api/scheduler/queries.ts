@@ -1523,6 +1523,11 @@ async function getArchivedBatchTheoreticalStepsInternal(machineId: number, progr
       theoreticDuration: 'S.THEORETICDURATION',
     })
     .where('S.PARALELSTEP', 0)
+    .andWhere('C.RELEASEDATE', '<=', startTime)
+    .andWhere((qb) => {
+      qb.whereNull('C.RELEASEENDDATE')
+        .orWhere('C.RELEASEENDDATE', '>', startTime)
+    })
     .orderBy('stepNo')
 }
 
@@ -1548,6 +1553,16 @@ async function getBatchActualStepsInternal(batchKey: number): Promise<ActualStep
     })
     .where('b.BATCHKEY', batchKey)
     .andWhere('b.PARALLELSTEPNO', 0)
+    .andWhereRaw('b.STARTTIME >= p.RELEASEDATE')
+    .andWhere((b) => {
+      b.whereNull('p.RELEASEENDDATE')
+        .orWhereRaw('b.STARTTIME < p.RELEASEENDDATE')
+    })
+    .andWhereRaw('b.STARTTIME >= c.RELEASEDATE')
+    .andWhere((b) => {
+      b.whereNull('c.RELEASEENDDATE')
+        .orWhereRaw('b.STARTTIME < c.RELEASEENDDATE')
+    })
     .orderBy('b.STARTTIME')
 
   if (steps.length === 0) {
