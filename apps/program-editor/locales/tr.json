@@ -36,7 +36,8 @@
   },
   "contextBar": {
     "durationErrorsTitle": "Süre Hesaplama Hataları",
-    "durationErrorsTooltip": "Program süresi hesaplanırken hatalar oluştu. Detayları görmek için tıklayın."
+    "durationErrorsTooltip": "Program süresi hesaplanırken hatalar oluştu. Detayları görmek için tıklayın.",
+    "menuTooltip": "İşlemler"
   },
   "calculationErrors": {
     "COMMAND_NOT_DEFINED": "Komut tanımlı değil",

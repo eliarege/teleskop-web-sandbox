@@ -36,7 +36,8 @@
   },
   "contextBar": {
     "durationErrorsTitle": "Duration Calculation Errors",
-    "durationErrorsTooltip": "There are errors in calculating the program duration. Click to see details."
+    "durationErrorsTooltip": "There are errors in calculating the program duration. Click to see details.",
+    "menuTooltip": "Actions"
   },
   "calculationErrors": {
     "COMMAND_NOT_DEFINED": "Command not defined",
