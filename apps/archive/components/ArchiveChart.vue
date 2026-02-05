@@ -766,8 +766,19 @@ onKeyStroke('ArrowRight', (event: KeyboardEvent) => {
 
     const currentViewDuration = differenceInMinutes(xExtendEndTime.value, xExtendStartTime.value)
     const halfDuration = currentViewDuration / 2
-    xExtendStartTime.value = addMinutes(newTime, -halfDuration)
-    xExtendEndTime.value = addMinutes(newTime, halfDuration)
+    const proposedStartTime = addMinutes(newTime, -halfDuration)
+    const proposedEndTime = addMinutes(newTime, halfDuration)
+
+    if (proposedStartTime < startTime.value) {
+      xExtendStartTime.value = startTime.value
+      xExtendEndTime.value = addMinutes(startTime.value, currentViewDuration)
+    } else if (proposedEndTime > endTime.value) {
+      xExtendEndTime.value = endTime.value
+      xExtendStartTime.value = addMinutes(endTime.value, -currentViewDuration)
+    } else {
+      xExtendStartTime.value = proposedStartTime
+      xExtendEndTime.value = proposedEndTime
+    }
   } else {
     selectedTime.value = endTime.value
   }
@@ -781,8 +792,19 @@ onKeyStroke('ArrowLeft', (event: KeyboardEvent) => {
 
     const currentViewDuration = differenceInMinutes(xExtendEndTime.value, xExtendStartTime.value)
     const halfDuration = currentViewDuration / 2
-    xExtendStartTime.value = addMinutes(newTime, -halfDuration)
-    xExtendEndTime.value = addMinutes(newTime, halfDuration)
+    const proposedStartTime = addMinutes(newTime, -halfDuration)
+    const proposedEndTime = addMinutes(newTime, halfDuration)
+
+    if (proposedEndTime > endTime.value) {
+      xExtendEndTime.value = endTime.value
+      xExtendStartTime.value = addMinutes(endTime.value, -currentViewDuration)
+    } else if (proposedStartTime < startTime.value) {
+      xExtendStartTime.value = startTime.value
+      xExtendEndTime.value = addMinutes(startTime.value, currentViewDuration)
+    } else {
+      xExtendStartTime.value = proposedStartTime
+      xExtendEndTime.value = proposedEndTime
+    }
   } else {
     selectedTime.value = startTime.value
   }
