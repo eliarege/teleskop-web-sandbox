@@ -421,13 +421,13 @@
     "recordDate": "Kayıt Tarihi",
     "recipeName": "Reçete Adı",
     "recipeAmount": "Reçete Miktarı",
-    "amount": "Gerçek Miktar",
-    "dispenserId": "Dağıtıcı ID",
+    "amount": "Tartılan Miktar",
+    "dispenserName": "Dağıtıcı Adı",
     "machineId": "Makine ID",
     "lotNo": "Lot No",
-    "isManuel": "Manuel mi",
-    "weighingStartTime": "Tartım Başlangıç Zamanı",
-    "cost": "Maliyet",
+    "weighingType": "Tartım Türü",
+    "manual": "Manuel",
+    "automatic": "Otomatik",
     "machineName": "Makine Adı"
   }
 }

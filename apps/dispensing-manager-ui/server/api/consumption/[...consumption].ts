@@ -84,6 +84,7 @@ const selectParametersConsumption = {
   programOrder: 'd.PROGRAMORDER',
   programReqOrder: 'd.PROGRAMREQORDER',
   dispenserId: 'd.DISPENSERID',
+  dispenserName: 'disp.MACHINENAME',
   isErpTransferred: 'd.ISERPTRANSFERRED',
   calculatedConsumption: 'd.CALCULATEDCONSUMPTION',
   recipeNo: 'd.RECIPENO',
@@ -97,6 +98,7 @@ router.post('/consumptions', defineAuthEventHandler(async (event) => {
   const dataQuery = knex('DYTACONSUMPTION as d')
     .select(selectParametersConsumption)
     .leftJoin('BFMACHINES as m', 'd.MACHINEID', 'm.MACHINEID')
+    .leftJoin('DYTFMACHINES as disp', 'd.DISPENSERID', 'disp.MACHINEID')
     .where('d.DISPENSERID', '!=', -1)
     .orderBy('RECORDDATE', 'desc')
 

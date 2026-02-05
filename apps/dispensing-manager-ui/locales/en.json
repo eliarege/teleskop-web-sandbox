@@ -422,13 +422,13 @@
     "recordDate": "Record Date",
     "recipeName": "Recipe Name",
     "recipeAmount": "Recipe Amount",
-    "amount": "Actual Amount",
-    "dispenserId": "Dispenser ID",
+    "amount": "Weighed Amount",
+    "dispenserName": "Dispenser Name",
     "machineId": "Machine ID",
     "lotNo": "Lot Number",
-    "isManuel": "Is Manual",
-    "weighingStartTime": "Weighing Start Time",
-    "cost": "Cost",
+    "weighingType": "Weighing Type",
+    "manual": "Manual",
+    "automatic": "Automatic",
     "machineName": "Machine Name"
   }
 }
