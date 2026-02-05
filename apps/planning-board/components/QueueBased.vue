@@ -352,6 +352,22 @@ const options = computed(() => ({
     keys: ['jobOrder'],
     isCaseSensitive: false,
     threshold: exactMatch.value ? 0 : 0.3,
+    shouldSort: true,
+    sortFn: (a: any, b: any) => {
+      const searchTerm = store.unplannedText?.toLowerCase() || ''
+      const aValue = a.item?.jobOrder?.toLowerCase() || ''
+      const bValue = b.item?.jobOrder?.toLowerCase() || ''
+
+      const aExact = aValue === searchTerm && searchTerm !== ''
+      const bExact = bValue === searchTerm && searchTerm !== ''
+
+      if (aExact && !bExact)
+        return -1
+      if (!aExact && bExact)
+        return 1
+
+      return a.score - b.score
+    },
   },
   matchAllWhenSearchEmpty: true,
 }))
