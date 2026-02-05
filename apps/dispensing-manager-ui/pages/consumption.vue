@@ -69,13 +69,6 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
     filterType: 'includes',
   },
   {
-    name: 'correction',
-    label: t('correctionNo'),
-    field: 'correction',
-    filterable: true,
-    filterType: 'comparison',
-  },
-  {
     name: 'materialCode',
     label: t('materialCode'),
     field: 'materialCode',
@@ -106,11 +99,11 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
     filterType: 'comparison',
   },
   {
-    name: 'dispenserId',
-    label: t('consumption.dispenserId'),
-    field: 'dispenserId',
+    name: 'dispenserName',
+    label: t('consumption.dispenserName'),
+    field: 'dispenserName',
     filterable: true,
-    filterType: 'comparison',
+    filterType: 'includes',
   },
   {
     name: 'machineCode',
@@ -121,27 +114,11 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
   },
   {
     name: 'isManuel',
-    label: t('consumption.isManuel'),
+    label: t('consumption.weighingType'),
     field: 'isManuel',
     filterable: true,
     filterType: 'boolean',
-    format: val => val ? t('yes') : t('no'),
-  },
-  {
-    name: 'weighingStartTime',
-    label: t('consumption.weighingStartTime'),
-    field: 'weighingStartTime',
-    filterable: true,
-    filterType: 'date',
-    format: val => val ? d(val, 'datetime') : '-',
-  },
-  {
-    name: 'cost',
-    label: t('consumption.cost'),
-    field: 'cost',
-    filterable: true,
-    filterType: 'comparison',
-    format: val => val?.toFixed(2),
+    format: val => val ? t('consumption.manual') : t('consumption.automatic'),
   },
 ])
 
