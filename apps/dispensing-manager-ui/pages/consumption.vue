@@ -6,7 +6,6 @@ import { colors } from '~/shared/constants'
 
 const { t, d } = useI18n()
 const keycloak = useKeycloak()
-
 function getDefaultFilter() {
   const now = new Date()
   const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000)
@@ -22,7 +21,12 @@ function getDefaultFilter() {
     },
   ]
 }
-
+const { data: machines } = await useAuthFetch('/api/machine/machines')
+const { data: dispensers } = await useAuthFetch('/api/settings/dispenser')
+const modifiedDispensers = computed(() => dispensers.value.map(d => ({
+  dispenserName: d.name,
+  dispenserId: d.dispNo,
+})))
 const externalFilterSlots = useStorage('consumptionFilterSlots', getDefaultFilter(), sessionStorage)
 const pagination = ref({ rowsPerPage: 25, page: 1, rowsNumber: 0 } as QTableProps['pagination'])
 const visibleLoading = ref(true)
@@ -51,7 +55,7 @@ watch(pagination, async () => {
   await fetchData()
   visibleLoading.value = false
 })
-
+// const mSelectOptions =
 const columns = computed<Array<FilterableTableColumn>>(() => [
   {
     name: 'recordDate',
@@ -103,22 +107,47 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
     label: t('consumption.dispenserName'),
     field: 'dispenserName',
     filterable: true,
-    filterType: 'includes',
+    filterType: 'select',
+    selectionOptions: modifiedDispensers.value,
+    optionLabel: 'dispenserName',
+    optionValue: 'dispenserId',
   },
   {
-    name: 'machineCode',
+    name: 'machineName',
     label: t('consumption.machineName'),
-    field: 'machineCode',
+    field: 'machineName',
     filterable: true,
-    filterType: 'comparison',
+    filterType: 'select',
+    selectionOptions: machines.value,
+    optionLabel: 'machineName',
+    optionValue: 'machineId',
   },
   {
-    name: 'isManuel',
+    name: 'weighingType',
     label: t('consumption.weighingType'),
-    field: 'isManuel',
+    field: 'weighingType',
     filterable: true,
-    filterType: 'boolean',
-    format: val => val ? t('consumption.manual') : t('consumption.automatic'),
+    filterType: 'multiselect',
+    selectionOptions: [
+      { label: t('consumption.manual'), value: 'manuel' },
+      { label: t('consumption.automatic'), value: 'automatic' },
+      { label: t('consumption.correction'), value: 'correction' },
+      { label: t('consumption.addition'), value: 'addition' },
+    ],
+    optionLabel: 'label',
+    optionValue: 'value',
+    format: (val, row) => {
+      const types = []
+      if (row.manuel)
+        types.push(t('consumption.manual'))
+      if (row.automatic)
+        types.push(t('consumption.automatic'))
+      if (row.correction)
+        types.push(t('consumption.correction'))
+      if (row.addition)
+        types.push(t('consumption.addition'))
+      return types.join(', ')
+    },
   },
 ])
 

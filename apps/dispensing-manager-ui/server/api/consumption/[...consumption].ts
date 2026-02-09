@@ -1,5 +1,3 @@
-import { machine } from 'node:os'
-import { ElScrollbar } from 'element-plus'
 import { createRouter, useBase } from 'h3'
 import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
@@ -67,11 +65,13 @@ const selectParametersConsumption = {
   recordDate: 'd.RECORDDATE',
   amount: 'd.AMOUNT',
   unit: 'd.UNIT',
-  isManuel: 'd.ISMANUEL',
+  manuel: knex.raw('IIF(d.ISMANUEL = 0, 0, 1)'),
+  automatic: knex.raw('IIF(d.ISMANUEL = 1, 0, 1)'),
+  addition: 'd.ADDITION',
   correction: 'd.CORRECTION',
   system: 'd.SYSTEM',
-  machineId: 'd.MACHINEID',
-  machineCode: 'm.MACHINECODE',
+  dispenserId: 'm.DISPENSERID',
+  dispenserName: 'm.NAME',
   isTransferred: 'd.ISTRANSFERRED',
   materialCode: 'd.MATERIALCODE',
   jobOrderCode: 'd.JOBORDERCODE',
@@ -81,8 +81,8 @@ const selectParametersConsumption = {
   programNo: 'd.PROGRAMNO',
   programOrder: 'd.PROGRAMORDER',
   programReqOrder: 'd.PROGRAMREQORDER',
-  dispenserId: 'd.DISPENSERID',
-  dispenserName: 'disp.MACHINENAME',
+  machineId: 'c.MACHINEID',
+  machineName: 'c.MACHINENAME',
   isErpTransferred: 'd.ISERPTRANSFERRED',
   calculatedConsumption: 'd.CALCULATEDCONSUMPTION',
   recipeNo: 'd.RECIPENO',
@@ -95,13 +95,23 @@ router.post('/consumptions', defineAuthEventHandler(async (event) => {
 
   const dataQuery = knex('DYTACONSUMPTION as d')
     .select(selectParametersConsumption)
-    .leftJoin('BFMACHINES as m', 'd.MACHINEID', 'm.MACHINEID')
-    .leftJoin('DYTFMACHINES as disp', 'd.DISPENSERID', 'disp.MACHINEID')
+    .leftJoin('DYTFDISPENSERSETTINGS as m', 'd.DISPENSERID', 'm.DISPENSERID')
+    .leftJoin('DYTFMACHINES as c', 'd.MACHINEID', 'c.MACHINEID')
     .where('d.DISPENSERID', '!=', -1)
     .orderBy('RECORDDATE', 'desc')
 
   if (filters && filters.length > 0) {
-    filtersToKnex(filters, selectParametersConsumption, dataQuery)
+    filters.forEach((filter: any) => {
+      if (filter.filterType === 'multiselect') {
+        dataQuery.andWhere((builder: any) => {
+          filter.value.option?.forEach((opt: any) => {
+            builder.orWhere(selectParametersConsumption[opt.value], '=', 1)
+          })
+        })
+      } else {
+        filtersToKnex([filter], selectParametersConsumption, dataQuery)
+      }
+    })
   }
 
   const countQuery = dataQuery.clone().clearSelect().clearOrder().count('* as count')

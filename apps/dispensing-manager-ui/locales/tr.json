@@ -428,6 +428,8 @@
     "weighingType": "Tartım Türü",
     "manual": "Manuel",
     "automatic": "Otomatik",
+    "correction": "Düzeltme",
+    "addition": "İlave",
     "machineName": "Makine Adı"
   }
 }

@@ -429,6 +429,8 @@
     "weighingType": "Weighing Type",
     "manual": "Manual",
     "automatic": "Automatic",
+    "correction": "Correction",
+    "addition": "Addition",
     "machineName": "Machine Name"
   }
 }
