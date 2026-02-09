@@ -3,6 +3,8 @@ import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
+const config = useRuntimeConfig()
+
 export default useBase('/api/dispenser', router.handler)
 
 const selectParameters = {
@@ -24,8 +26,8 @@ const selectParameters = {
   priority: 'r.PRIORTY',
   plankey: 'r.PLANKEY',
   terminal: 'r.TERMINAL',
-  requestTime: 'r.REQUESTTIME',
-  completionTime: 'r.COMPLETEDTIME',
+  requestTime: knex.raw(`DATEADD(MINUTE, ?, r.REQUESTTIME)`, [config.teleskopTimezoneOffset]),
+  completionTime: knex.raw(`DATEADD(MINUTE, ?, r.COMPLETEDTIME)`, [config.teleskopTimezoneOffset]),
 }
 
 router.post('/joborderlogs', defineAuthEventHandler(async (event) => {

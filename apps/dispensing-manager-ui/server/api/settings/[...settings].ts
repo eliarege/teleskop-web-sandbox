@@ -4,6 +4,7 @@ import { knex } from '~/server/connectionPool'
 import { PRIMARY_KEY_VIOLATION, isMssqlError } from '~/server/lib/error'
 
 const router = createRouter()
+const config = useRuntimeConfig()
 export default useBase('/api/settings', router.handler)
 
 /**
@@ -43,7 +44,7 @@ const dispenserParameters = {
   dms: 'READCONSUMPTIONFROMDMS',
   exportUnrelatedConsumptions: 'EXPORTIRRELEVANTCONSUMPTION',
   exportFileName: 'EXPORTFILENAME',
-  connectionControlDate: 'CONNECTIONCONTROLDATE',
+  connectionControlDate: knex.raw('DATEADD(MINUTE, ?, CONNECTIONCONTROLDATE)', [config.teleskopTimezoneOffset]),
   connectionStatus: 'CONNECTIONSTATUS',
   vncPort: 'VNCPORT',
   vncPassword: 'VNCPASSWORD',
@@ -84,7 +85,7 @@ router.get('/dispenser-connection-status', defineAuthEventHandler(async (event) 
       fileSystem: 'BDYREQUESTPATH',
       dispIP: 'IP',
       name: 'NAME',
-      connectionControlDate: 'CONNECTIONCONTROLDATE',
+      connectionControlDate: knex.raw('DATEADD(MINUTE, ?, CONNECTIONCONTROLDATE)', [config.teleskopTimezoneOffset]),
       connectionStatus: 'CONNECTIONSTATUS',
     })
   const now = new Date()

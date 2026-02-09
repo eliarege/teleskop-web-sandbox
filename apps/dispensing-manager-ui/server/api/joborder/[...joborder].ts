@@ -4,6 +4,8 @@ import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
+const config = useRuntimeConfig()
+
 export default useBase('/api/joborder', router.handler)
 
 // router.get('/joborders', defineAuthEventHandler(async (event) => {
@@ -14,7 +16,7 @@ export default useBase('/api/joborder', router.handler)
 //       plannedMachineName: 'm.MACHINENAME',
 //       plannedMachineID: 'b.PLANNEDMACHINE',
 //       programList: 'b.PROGRAMNOLIST',
-//       plannedStartTime: 'b.PLANNEDSTARTTIME',
+//       plannedStartTime: knex.raw(`DATEADD(MINUTE, ?, b.PLANNEDSTARTTIME)`, [config.teleskopTimezoneOffset]),
 //     })
 //     .join('dbo.DYTFMACHINES as m', 'b.PLANNEDMACHINE', 'm.MACHINEID')
 //     .orderBy('b.PLANNEDSTARTTIME', 'desc')
@@ -27,8 +29,8 @@ const selectParameters = {
   plannedMachineName: 'm.MACHINENAME',
   machineid: 'b.PLANNEDMACHINE',
   programList: 'b.PROGRAMNOLIST',
-  plannedStartTime: 'b.PLANNEDSTARTTIME',
-  recordTime: 'b.RECORDTIME',
+  plannedStartTime: knex.raw(`DATEADD(MINUTE, ?, b.PLANNEDSTARTTIME)`, [config.teleskopTimezoneOffset]),
+  recordTime: knex.raw(`DATEADD(MINUTE, ?, b.RECORDTIME)`, [config.teleskopTimezoneOffset]),
 }
 
 router.get('/joborder-count', defineAuthEventHandler(async (event) => {

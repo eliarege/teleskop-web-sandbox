@@ -3,6 +3,8 @@ import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
+const config = useRuntimeConfig()
+
 export default useBase('/api/stepLogs', router.handler)
 
 const selectParameters = {
@@ -17,7 +19,7 @@ const selectParameters = {
   recipeType: 'L.RECIPETYPE',
   requestIndex: 'L.REQUESTPROGRAMINDEX',
   status: 'L.STATUS',
-  time: 'L.EVENTTIME',
+  time: knex.raw(`DATEADD(MINUTE, ?, L.EVENTTIME)`, [config.teleskopTimezoneOffset]),
   description: 'L.EXPLANATION',
 
 }

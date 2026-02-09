@@ -1,6 +1,8 @@
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
+const config = useRuntimeConfig()
+
 export default useBase('/api/recipe', router.handler)
 
 router.get('/correction-number-by-parameter', defineAuthEventHandler(async (event) => {
@@ -152,8 +154,8 @@ router.post('/previous-requests', defineAuthEventHandler(async (event) => {
       correctionNo: 'BATCHCORRECTIONNO',
       mainStep: 'PROGRAMSTEPNO',
       status: 'STATUS',
-      requestTime: 'REQUESTTIME',
-      endTime: 'COMPLETEDTIME',
+      requestTime: knex.raw(`DATEADD(MINUTE, ?, REQUESTTIME)`, [config.teleskopTimezoneOffset]),
+      endTime: knex.raw(`DATEADD(MINUTE, ?, COMPLETEDTIME)`, [config.teleskopTimezoneOffset]),
     })
   return query
 }))

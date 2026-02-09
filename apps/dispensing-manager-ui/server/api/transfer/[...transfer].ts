@@ -3,6 +3,8 @@ import { filtersToKnex } from '@teleskop/utils'
 import { knex } from '~/server/connectionPool'
 
 const router = createRouter()
+const config = useRuntimeConfig()
+
 export default useBase('/api/transfer', router.handler)
 
 const selectParameters = {
@@ -11,7 +13,7 @@ const selectParameters = {
   correctionNo: 'ti.CORRECTIONNUMBER',
   machineId: 'ti.MACHINEID',
   machineCode: 'm.MACHINECODE',
-  transferDate: 'ti.TRANSFERDATE',
+  transferDate: knex.raw('DATEADD(MINUTE, ?, ti.TRANSFERDATE)', [config.teleskopTimezoneOffset]),
   transferType: knex.raw('CASE WHEN ti.TRANSFERTYPE = 1 THEN 0 ELSE ti.TRANSFERTYPE END'),
   transferStatus: 'ti.TRANSFERSTATUS',
   transferSource: 'ti.TRANSFERSOURCE',

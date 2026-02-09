@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: 'Teleskop',
     teleskopInstanceName: '',
+    teleskopTimezoneOffset: -180,
     sambaPath: '//192.168.16.88/staging_dm',
     sambaUser: 'eliar',
     sambaPassword: 'eliar',
