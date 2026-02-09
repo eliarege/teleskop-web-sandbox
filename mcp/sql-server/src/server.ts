@@ -184,10 +184,10 @@ mcpServer.registerTool(
   async ({ schema }) => {
     const query = `
       SELECT
-        s.name AS SchemaName,
-        t.name AS TableName,
-        p.rows AS RowCount,
-        CAST(SUM(a.total_pages) * 8 AS BIGINT) AS TotalSpaceKB
+        s.name AS [SchemaName],
+        t.name AS [TableName],
+        p.rows AS [RowCount],
+        CAST(SUM(a.total_pages) * 8 AS BIGINT) AS [TotalSpaceKB]
       FROM sys.tables t
       INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
       LEFT JOIN sys.indexes i ON t.object_id = i.object_id AND i.index_id < 2
