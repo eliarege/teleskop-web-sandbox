@@ -351,7 +351,7 @@ const options = computed(() => ({
   fuseOptions: {
     keys: ['jobOrder'],
     isCaseSensitive: false,
-    threshold: exactMatch.value ? 0 : 0.3,
+    threshold: exactMatch.value ? 0 : 0.2,
     shouldSort: true,
     sortFn: (a: any, b: any) => {
       const searchTerm = store.unplannedText?.toLowerCase() || ''
