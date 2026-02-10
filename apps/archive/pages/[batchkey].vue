@@ -45,7 +45,7 @@ import TheoreticalPrograms from '~/components/TheoreticalPrograms.vue'
 import Chart from '~/components/Chart.vue'
 import ActualSteps from '~/components/ActualSteps.vue'
 import TheoreticalSteps from '~/components/TheoreticalSteps.vue'
-import { printJoborderRecipe, printJobOrderSummary } from '~/utils/functions'
+import { printJobOrderSummary, printJoborderRecipe } from '~/utils/functions'
 import ArchiveChart from '~/components/ArchiveChart.vue'
 import InterventionsDialog from '~/components/InterventionsDialog.vue'
 import JobOrderSummarySettingsDialog from '~/components/JobOrderSummarySettingsDialog.vue'
@@ -533,11 +533,11 @@ const layoutConfig = freezeLayoutConfig({
                     },
                   },
                   {
-                    title: t('panels.theoricPrograms'),
+                    title: t('panels.theoreticalPrograms'),
                     type: 'component',
                     componentType: 'TheoreticalPrograms',
                     componentState: {
-                      i18nKey: 'panels.theoricPrograms',
+                      i18nKey: 'panels.theoreticalPrograms',
                     },
                   },
                 ],
@@ -678,11 +678,11 @@ const layoutConfig = freezeLayoutConfig({
                 },
               },
               {
-                title: t('panels.theoricPrograms'),
+                title: t('panels.theoreticalPrograms'),
                 type: 'component',
                 componentType: 'TheoreticalSteps',
                 componentState: {
-                  i18nKey: 'panels.theoricPrograms',
+                  i18nKey: 'panels.theoreticalPrograms',
                 },
               },
             ],

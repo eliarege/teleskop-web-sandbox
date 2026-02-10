@@ -78,7 +78,7 @@
       "n-v5": "n-v5 açıklama bilgisi işlensin",
       "control": "İstek dosyalarındaki toplam istek sayısı ile kontrol yapılsın",
       "allBatchRequests": "Tüm batch istek sayıları üzerinden kontrol yap",
-      "totalRequest": "Programların toplam istek sayıları üzerindne kontrol yap",
+      "totalRequest": "Programların toplam istek sayıları üzerinden kontrol yap",
       "v1TankNoUse": "V1-Tank No Kullanmaz",
       "v2TankUse": "V2 Tank No Kullanır",
       "prgNo": "Program Numarası",
@@ -118,11 +118,11 @@
     "clear": "Temizle",
     "requestMechanism": {
       "_": "İstek Mekanizması",
-      "request1": "Tekrarlanan istekler gerçekleşşin.",
-      "request2": "Tekrarlanan istek, son istek ise gerçekleşşin.",
+      "request1": "Tekrarlanan istekler gerçekleşsin.",
+      "request2": "Tekrarlanan istek, son istek ise gerçekleşsin.",
       "request3": "Tekrarlanan istekler gerçekleşmesin.",
       "requestCheckBox": "Tekrarlanan istek tamamlanmamış ise gerçekleşsin.",
-      "answer": "Tekrar nediniyle iptal edilen istekler için cihaza gönderilecek cevap",
+      "answer": "Tekrar nedeniyle iptal edilen istekler için cihaza gönderilecek cevap",
       "ans1": "Cihaza tamamlandı gönder",
       "ans2": "Cihaza iptal gönder",
       "ans3": "Cihaza hiçbir şey gönderme",
@@ -192,7 +192,7 @@
     "retryRequestSent": "Adımı tekrarlama isteği başarıyla gönderildi.",
     "retryRequestDidNotSend": "Adımı tekrarlama isteği gönderilirken hata oluştu.",
     "cancelRequestSent": "Adımı iptal etme isteği gönderildi.",
-    "cancelRequestDidNotSend": "Adımı iptal etme isteği göderilirken hata oluştu."
+    "cancelRequestDidNotSend": "Adımı iptal etme isteği gönderilirken hata oluştu."
   },
   "jobOrderLogs": {
     "_": "İş Emri Kayıtları",
@@ -293,7 +293,7 @@
     "_": "Kayıtlı İş Emirleri",
     "programList": "Program Listesi",
     "scheduledStartTime": "Planlanan Başlangıç Zamanı",
-    "showJobOrderRecipe": "İş Emrinin Reçetesini Görmek İçin Üzerine Çıft Tıklayınız",
+    "showJobOrderRecipe": "İş Emrinin Reçetesini Görmek İçin Üzerine Çift Tıklayınız",
     "useDateFilter": "Tarih Filtresi Kullan"
   },
   "weighingInformation": {

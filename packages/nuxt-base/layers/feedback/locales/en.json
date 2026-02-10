@@ -8,7 +8,7 @@
       "no-auth": "Authentication is not configured.",
       "auth-required": "You need to log in to send feedback.",
       "email-not-verified": "You need to verify your e-mail to send feedback.",
-      "screenshot-error": "An error occured while taking a screenshot.",
+      "screenshot-error": "An error occurred while taking a screenshot.",
       "bad-image": "Invalid image format.",
       "error-fallback": "Unidentified error."
     },

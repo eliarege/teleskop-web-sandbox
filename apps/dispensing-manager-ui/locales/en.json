@@ -42,7 +42,7 @@
   "add": "Add",
   "replace": "Replace",
   "selectAll": "Select All",
-  "cancel": "İptal",
+  "cancel": "Cancel",
   "settings": {
     "_": "Settings",
     "requestFileSystem": "Request files directory",
@@ -172,7 +172,7 @@
     "info": "Information",
     "materialDistributor": "Distributor",
     "recipeMeasurement": "Recipe and Weighings",
-    "recipeOrder": "Recipe Serail Number",
+    "recipeOrder": "Recipe Serial Number",
     "recipeStepNum": "Recipe Step Number",
     "recipeType": "Recipe Type",
     "selectedRequest": "Items of the Selected Request",
@@ -191,9 +191,9 @@
     "requestSent": "Request sent.",
     "requestDidNotSend": "Request did not send.",
     "retryRequestSent": "Retry request sent successfully.",
-    "retryRequestDidNotSend": "An error occured while sending retry request.",
-    "cancelRequestSent": "Cancelation request sent successfully.",
-    "cancelRequestDidNotSend": "An error occured while sending cancelation request."
+    "retryRequestDidNotSend": "An error occurred while sending retry request.",
+    "cancelRequestSent": "Cancellation request sent successfully.",
+    "cancelRequestDidNotSend": "An error occurred while sending cancellation request."
   },
   "jobOrderLogs": {
     "_": "Job Order Logs",
@@ -267,25 +267,25 @@
     "previousRequests": "Step's Previous Details",
     "stepReInfo": "Rerequested Step's Details",
     "autoWeiDetails": "Automatic Weighing Details",
-    "manuelWeiDetails": "Manuel Weighing Details",
+    "manuelWeiDetails": "Manual Weighing Details",
     "prioritySelect": "Please select priority preferences.",
     "priorityLow": "Low",
     "priorityNormal": "Normal",
     "priorityHigh": "High",
     "priorityCritical": "Very High",
     "inputTankNo": "Please enter a tank no as 'integer'!",
-    "manuelMaterials": "Manuel Materials",
+    "manuelMaterials": "Manual Materials",
     "refresh": {
       "_": "Refresh",
       "solving": {
         "_": "Are you sure you want to refresh solving requests?",
         "success": "Solving requests refreshed successfully.",
-        "fail": "An error occured during refreshing solving requests."
+        "fail": "An error occurred during refreshing solving requests."
       },
       "weighing": {
         "_": "Are you sure you want to refresh weighing requests?",
         "success": "Weighing requests refreshed successfully.",
-        "fail": "An error occured during refreshing weighing requests."
+        "fail": "An error occurred during refreshing weighing requests."
       }
     },
     "status": "Status"
@@ -301,7 +301,7 @@
   "weighingInformation": {
     "_": " Weighing Information",
     "oto": "Automatic",
-    "man": "Manuel",
+    "man": "Manual",
     "automaticRequest": "Auto Request",
     "completionTime": "Completion Time",
     "mainStep": "Main Step",
@@ -381,12 +381,12 @@
     "selectObjectsWantToChange": "Select the {type} you want to edit.",
     "selectDispensers": "Select the dispensers you want to add-replace.",
     "successWarning": "Dispenser connections successfully edited.",
-    "failWarning": "An error occured during editing dispenser connections."
+    "failWarning": "An error occurred during editing dispenser connections."
   },
   "dispenserConnectionStatus": {
     "0": "Connected",
     "1": "No connection",
-    "2": "Dispener's path is not accesible",
+    "2": "Dispenser's path is not accessible",
     "3": "Dispensing manager service is not working."
   },
   "transferredJobOrders": {

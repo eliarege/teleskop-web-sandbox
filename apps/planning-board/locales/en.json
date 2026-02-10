@@ -14,7 +14,7 @@
   },
   "toast": {
     "data-cleanup": "Data Cleanup completed!",
-    "succesful": "Succesfully Saved",
+    "succesful": "Successfully Saved",
     "fail": {
       "refresh": "Failed to Refresh",
       "load": "Failed to Load"
@@ -112,7 +112,7 @@
     },
     "toast": {
       "succesful": "Note Added successfully!",
-      "error": "An error occured: {err}"
+      "error": "An error occurred: {err}"
     },
     "dialog": {
       "title": "Are you sure to delete this note?"

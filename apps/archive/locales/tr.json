@@ -85,8 +85,8 @@
   "panels": {
     "jobOrderInfo": "İş Emri Bilgi",
     "startParameters": "Başlatma Parametreleri",
-    "actualPrograms": "Çalışan",
-    "theoricPrograms": "Teorik",
+    "actualPrograms": "Çalışan Programlar",
+    "theoreticalPrograms": "Teorik Programlar",
     "AIN": "AIN",
     "DIN": "DIN",
     "AOUT": "AOUT",
@@ -316,7 +316,7 @@
     "SENSOR_HUB_STATUS": "Sensör Merkezi Durumu"
   },
   "commandErrors": {
-    "title": "Teorik scaklık hesaplanırken hata oluştu.",
+    "title": "Teorik sıcaklık hesaplanırken hata oluştu.",
     "DIVISION_BY_ZERO": "Sıfır ile bölünemez.",
     "UNKNOWN_OPERATOR": "Bilinmeyen operatör: {operator}",
     "UNKNOWN_NODE_TYPE": "Bilinmeyen node tipi: {type}",

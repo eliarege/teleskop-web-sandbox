@@ -40,7 +40,7 @@
   "showTooltip": "Show Tooltip",
   "consumptions": "Consumptions",
   "unknownCommand": "unknown command",
-  "parallelStepNo": "Paralel Step No",
+  "parallelStepNo": "Parallel Step No",
   "parallelStepNoShort": "P",
   "stepNo": "Main Step No",
   "stepNoShort": "S",
@@ -57,13 +57,13 @@
   "hide": "Hide",
   "parameter": "Parameter",
   "reelDataDialog": "Reel Cycle Count / Time Table",
-  "updateAxises": "Update Axises",
+  "updateAxises": "Update Axes",
   "addRemoveAxis": "Add/Remove Axis",
   "noAlarm": "No Alarm At Selected Time",
   "processGroup": "Process Group",
   "jobOrderSummarySettings": {
     "_": "Job Order Summary Report Settings",
-    "description": "Please select the ERP parameters wanted to show on job order summary report."
+    "description": "Please select the ERP parameters you want to show on the job order summary report."
   },
   "axisSettings": {
     "_": "Axis Settings",
@@ -71,13 +71,13 @@
     "noAxisAvailableError": "No available axis.",
     "add": "Create new axis",
     "selectUnit": "Please select unit",
-    "enterName": "Plase name the axis",
+    "enterName": "Please name the axis",
     "axisNameAlreadyExists": "Axis name already exists."
   },
   "jobOrderSummary": {
     "waterTotal": "Total Water",
     "electricity": "Electricity",
-    "steam": "steam",
+    "steam": "Steam",
     "steamPerWeight": "Kg Steam / Kg Fabric",
     "electricityPerWeight": "Kw / Kg Fabric",
     "totalWaterPerWeight": "Lt Water / Kg Fabric"
@@ -85,8 +85,8 @@
   "panels": {
     "jobOrderInfo": "Job Order Info",
     "startParameters": "Start Parameters",
-    "actualPrograms": "Actual",
-    "theoricPrograms": "Theoric",
+    "actualPrograms": "Actual Programs",
+    "theoreticalPrograms": "Theoretical Programs",
     "AIN": "AIN",
     "DIN": "DIN",
     "AOUT": "AOUT",
@@ -163,7 +163,7 @@
   },
   "ioSettings": {
     "showOnNewAxis": "Show on new axis",
-    "showOnExistingAxis": "Show on exisitng axis",
+    "showOnExistingAxis": "Show on existing axis",
     "selectAnAxis": "Select an axis"
   },
   "topbar": {
@@ -192,7 +192,7 @@
   },
   "tooltipOptions": {
     "title": "Tooltip Options",
-    "message": "Please select the data wanted to show",
+    "message": "Please select the data you want to show",
     "markedAnalogInputs": "Marked analog inputs",
     "markedAnalogOutputs": "Marked analog outputs",
     "markedCalcualtedValues": "Marked calculated values",
@@ -200,17 +200,17 @@
     "currentDuration": "Time passed since job order's start time",
     "activeUser": "Active user",
     "activeCommandTimeInfo": "Active command's start time and time passed since command's start time",
-    "manuelMeasuredValues": "Manuel values calculated by operator",
+    "manuelMeasuredValues": "Manual values measured by operator",
     "timePassed": "Time passed",
     "activeCommand": "Command",
     "timeUntilCommandStart": "Time Until Command"
   },
   "axisesVisibilityDialog": {
     "_": "Axis Visibility Settings",
-    "description": "Select the axises to show the right hand side of the graph."
+    "description": "Select the axes to show on the right hand side of the graph."
   },
   "errors": {
-    "cannotShowMoreThanFourAxis": "More than 4 axises cannot be shown at the same time."
+    "cannotShowMoreThanFourAxis": "More than 4 axes cannot be shown at the same time."
   },
   "batchSummary": {
     "_": "Batch Summary",
@@ -319,7 +319,7 @@
     "SENSOR_HUB_STATUS": "Sensor Hub Status"
   },
   "commandErrors": {
-    "title": "An error occured while calculating theoretical temperature.",
+    "title": "An error occurred while calculating theoretical temperature.",
     "DIVISION_BY_ZERO": "Division by zero.",
     "UNKNOWN_OPERATOR": "Unknown operator: {operator}",
     "UNKNOWN_NODE_TYPE": "Unknown node type: {type}",

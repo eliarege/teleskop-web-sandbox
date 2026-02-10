@@ -14,7 +14,7 @@
   "operator": "Operator can be used to change the program",
   "selectCommand": "Select Command",
   "noParallelStep": "No Parallel Step",
-  "programNotSaved": "Error occured while trying to save program",
+  "programNotSaved": "Error occurred while trying to save program",
   "programNotUpdated": "Program has not been updated",
   "treatmentParameterLimitReached": "Command {commandNo} cannot be used more than {limit}",
   "cannotParallelCommand": "Command {parallelCommandNo} cannot be used in parallel with command {mainCommandNo}",
@@ -174,7 +174,7 @@
     "suggestionList": "Suggestion List",
     "nonParallelCommands": "Non Parallel Commands",
     "parameter": {
-      "name": "Parameter Adı",
+      "name": "Parameter Name",
       "type": "Parameter Type",
       "value": "Value",
       "lowerLimit": "Lower Limit",
@@ -289,22 +289,22 @@
       "note": "Note",
       "processTypeNoReadOnlyHint": "Process Type No cannot be changed.",
       "success": "Program type {no} - {name} is created successfully.",
-      "fail": "An error occured while creating program type."
+      "fail": "An error occurred while creating program type."
     },
     "editProcessType": {
       "title": "Edit Program Type",
       "success": "Program type {no} - {name} is updated successfully.",
-      "fail": "An error occured while updating program type."
+      "fail": "An error occurred while updating program type."
     },
     "deleteProcessType": {
       "title": "Delete Program Type",
       "deletionWarning": "Program type \"{type}\" will be deleted! Are you sure you want to continue?",
       "success": "Program type {no} - {name} is deleted successfully.",
-      "fail": "An error occured while deleting program type."
+      "fail": "An error occurred while deleting program type."
     },
     "updateProcessTypes": {
       "success": "Program types updated successfully.",
-      "fail": "An error occured while updating program types."
+      "fail": "An error occurred while updating program types."
     }
   },
   "versionDialog": {
@@ -401,18 +401,18 @@
     },
     "get": {
       "success": "Program {programNo} retrieved successfully.",
-      "fail": "An error occured while retrieving program {programNo}.",
+      "fail": "An error occurred while retrieving program {programNo}.",
       "programNotFound": "Program {programNo} not found on the machine.",
       "machineNotFound": "Machine {machineId} not found.",
       "machineOffline": "Machine {machineId} is offline"
     },
     "delete": {
       "success": "Program is deleted successfully.",
-      "fail": "An error occured while deleting program."
+      "fail": "An error occurred while deleting program."
     },
     "getInMachine": {
       "success": "Program {programNo} is successfully taken in machine {machine}.",
-      "fail": "An error occured while taking program {programNo} in machine {machine}."
+      "fail": "An error occurred while taking program {programNo} in machine {machine}."
     },
     "copyAndSendSuccess": "Program {programNo} ({name}) is copied and sent to machine {machine}.",
     "copyAndSendFail": "Program {programNo} ({name}) could not be copied or sent to machine {machine}.",
@@ -465,7 +465,7 @@
     },
     "pasteNotification": {
       "success": "Program {name} is successfully saved with program no {programNo}.",
-      "fail": "An error occured while saving program {name} with program no {programNo}."
+      "fail": "An error occurred while saving program {name} with program no {programNo}."
     },
     "changeProcessTypeNotification": {
       "success": "Change process type operation is succeed for program with program no {programNo}.",
@@ -473,7 +473,7 @@
     },
     "deleteFromMultiMachineNotification": {
       "success": "Deleting program {name} with program no {programNo} from machine {machineId} is succeed.",
-      "fail": "An error occured while taking program {name} with program no {programNo} from machine {machineId}."
+      "fail": "An error occurred while taking program {name} with program no {programNo} from machine {machineId}."
     },
     "deleteVersionDialog": {
       "title": "Delete Version",
@@ -607,7 +607,7 @@
     "programFilter": "Program Filter",
     "programNo": "Program No",
     "programName": "Program Name",
-    "processType": "Proccess Type",
+    "processType": "Process Type",
     "clearFilterOnChange": "Clear filter when machine changed.",
     "delete_all": "Delete all",
     "close": "Close",

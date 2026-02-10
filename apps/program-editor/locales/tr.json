@@ -497,8 +497,8 @@
       "warning": "Version {code} silinecek! Devam etmek istediğinize emin misiniz?"
     },
     "updateHeaderNotification": {
-      "success": "{programNo} numaralı programın baslığı basarıyla değiştirildi.",
-      "fail": "{programNo} numaralı programın baslığı değiştirme işlemi basarısız."
+      "success": "{programNo} numaralı programın başlığı başarıyla değiştirildi.",
+      "fail": "{programNo} numaralı programın başlığı değiştirme işlemi başarısız."
     }
   },
   "exportExcelDialog": {
@@ -655,7 +655,7 @@
   "moveParallelStep": {
     "add": {
       "title": "Paralel Adımı Taşı",
-      "message": "Paralel adımı tasımak istediğinizden emin misiniz?",
+      "message": "Paralel adımı taşımak istediğinizden emin misiniz?",
       "operate": "Ekle"
     },
     "remove": {
@@ -683,7 +683,7 @@
     "title": "Program Yazma Ayarları",
     "addParallelCommandsFromPreviousStep": "Yeni eklenen adıma bir önceki komutun paralel komutlarını ekle",
     "confirmAddParallelCommandToSteps": "Bir adıma paralel bir komut eklendiğinde, diğer adımlara da eklenmesi gerektiğini sor",
-    "removeParallelCommandFromOtherSteps": "Bir adımdan paralel komut silindiğinde, diğer adımlardan da  sillinmesi gerektiğini sor",
+    "removeParallelCommandFromOtherSteps": "Bir adımdan paralel komut silindiğinde, diğer adımlardan da silinmesi gerektiğini sor",
     "changeParallelCommandParameterInOtherSteps": "Bir adımdan paralel komutun parametresi değiştirildiğinde, diğer adımlardan da değiştirilmesi gerektiğini sor",
     "preventParallelUsageForDisabledCommands": "Devreden çıkan komutların paralelde kullanımını engelle",
     "activeCommandGroups": "Komut Grupları Aktif",
@@ -736,7 +736,7 @@
     "selectedCommands": "Seçili Komutlar",
     "mainCommand": "Ana Komut",
     "parallelCommand": "Paralel Komut",
-    "noSelectedCommands": "Bu programda seçili komut bulunmamaktadir",
+    "noSelectedCommands": "Bu programda seçili komut bulunmamaktadır",
     "printError": "Yazdırma sırasında hata oluştu",
     "downloadError": "İndirme sırasında hata oluştu",
     "printProgram": "Program Yazdır",
