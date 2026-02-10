@@ -14,9 +14,9 @@ const selectParameters = {
   machineId: 'B.MACHINEID',
   machineName: 'B.MACHINECODE',
   jobOrder: 'B.JOBORDER',
-  startTime: db.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , B.STARTTIME)`),
-  endTime: db.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , B.ENDTIME)`),
-  cancelTime: db.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset} , B.CANCELTIME)`),
+  startTime: db.raw(`DATEADD(MINUTE, ?, B.STARTTIME)`, [config.teleskopTimezoneOffset]),
+  endTime: db.raw(`DATEADD(MINUTE, ?, B.ENDTIME)`, [config.teleskopTimezoneOffset]),
+  cancelTime: db.raw(`DATEADD(MINUTE, ?, B.CANCELTIME)`, [config.teleskopTimezoneOffset]),
   theoreticalProgramNoList: 'B.PROGRAMNOLIST',
 }
 export default defineEventHandler(async (event) => {
