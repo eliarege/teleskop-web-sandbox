@@ -78,6 +78,8 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 404,
         message: 'IO_VALUES_NOT_FOUND',
+        data: { batchKey },
+        cause: error,
       })
     } else {
       throw error

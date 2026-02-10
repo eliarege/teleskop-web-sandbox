@@ -73,6 +73,13 @@ const batchDataPromise = response.json().then((data: TaskResponse<DuoAny<Batch>>
     settingsStore.machineId = batchData.value!.machine.id
     settingsStore.initializeSettings()
   } else {
+    const message = data.error?.message || 'UNKNOWN_ERROR'
+    $q.notify({
+      color: 'negative',
+      position: 'top-right',
+      message: t('error._', { message: t(`error.${message}`, message) }),
+      icon: 'error',
+    })
     navigateTo('/')
   }
 })

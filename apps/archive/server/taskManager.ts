@@ -1,4 +1,5 @@
 import type { H3Event } from 'h3'
+import { H3Error } from 'h3'
 import type { TaskConfig, TaskStatus, TaskStepContext } from '~/types/archive'
 
 let counter = 0
@@ -38,17 +39,29 @@ export const taskManager = {
             }))
             controller.close()
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           task.state = 'failed'
-          console.error(err)
-          controller.enqueue(JSON.stringify({
+          const errorRes = {
             status: 'error',
             error: {
-              message: err.message,
-              data: err.data || null,
+              message: 'An error occurred',
+              data: null as unknown,
             },
-          }))
-          task.message = err.message || 'error'
+          }
+
+          if (err instanceof H3Error) {
+            errorRes.error.message = err.message
+            errorRes.error.data = err.data
+            console.error(err.cause || err)
+          } else if (err instanceof Error) {
+            errorRes.error.message = err.message
+            console.error(err)
+          } else {
+            console.error(err)
+          }
+
+          controller.enqueue(JSON.stringify(errorRes))
+          task.message = errorRes.error.message || 'error'
           controller.close()
         }
       },
