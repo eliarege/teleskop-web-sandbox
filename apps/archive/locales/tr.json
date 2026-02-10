@@ -334,6 +334,7 @@
   "error": {
     "_": "İş Emri yüklenirken hata oluştu: {message}",
     "BATCH_NOT_FOUND": "İş Emri bulunamadı",
+    "IO_VALUES_NOT_FOUND": "Bu iş emri için IO değerleri bulunamadı",
     "UNKNOWN_ERROR": "Bilinmeyen bir hata oluştu"
   },
   "loading": {

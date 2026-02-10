@@ -337,6 +337,7 @@
   "error": {
     "_": "Error while loading Job Order data: {message}",
     "BATCH_NOT_FOUND": "Job Order not found.",
+    "IO_VALUES_NOT_FOUND": "IO values not found for this job order.",
     "UNKNOWN_ERROR": "Unknown error occurred."
   },
   "loading": {
