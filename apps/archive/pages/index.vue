@@ -48,7 +48,7 @@ const columns = computed(() => [
     label: t('jobOrderTable.jobOrder'),
     field: 'jobOrder',
     filterable: true,
-    filterType: 'comparison',
+    filterType: 'includes',
   },
   {
     name: 'machineName',
@@ -86,18 +86,18 @@ const columns = computed(() => [
   },
   {
     name: 'theoreticalProgramNoList',
-    label: t('panels.theoricPrograms'),
+    label: t('panels.theoreticalPrograms'),
     field: 'theoreticalProgramNoList',
     filterable: true,
     filterType: 'multiselect',
     selectionOptions: theoreticalPrograms.value,
-    format: val => val.toString(),
+    format: val => val.join(', '),
   },
   {
     name: 'actualProgramNoList',
     label: t('panels.actualPrograms'),
     field: 'actualProgramNoList',
-    format: val => val.toString(),
+    format: val => val.join(', '),
   },
 ] as FilterableTableColumn[])
 
