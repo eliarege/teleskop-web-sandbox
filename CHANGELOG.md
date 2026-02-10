@@ -1,8 +1,35 @@
 # Changelog
 
+## 0.72.0 - 2026-02-10
+
+[Compare Changes](605bd3a7d51b13d2475b34b56c8fbc5d81bc28a4...054925c2413062de5893953d05637038c0ff0d86)
+
+### 🚀 Features
+
+-  **DM**: Add `teleskopTimezoneOffset` to adjust time fields across multiple API endpoints ([a2e802e](a2e802e9989a2ddc7e8a86df7bd621fc5be11617))
+
+### 🐛 Bug Fixes
+
+-  **DM**: Update dispenser terminology and improve consumption table structure ([ee1aacf](ee1aacf5ccec1301c6361384cfa7f83251bf329f))
+-  **DM**: Removed redundant select parameters ([dec6f81](dec6f8152a11091a1eb9e0e3b26900f2303ade9f))
+-  **AR**: Improve time extension logic to respect start and end time boundaries ([a93bb46](a93bb467273f6e0458efa77f5728dfb7a925aec8))
+-  **PT**: Enhance sorting logic in unplanned search for job orders ([1213e05](1213e05b763758bb4c676802d02e51e883aaef4c))
+-  **DM**: Add correction and addition options to filters and update API query ([1d41ae1](1d41ae150cac35c1de248d7bb1ea6e70d07b4663))
+-  **PT**: Adjust fuse search threshold for improved matching accuracy ([c210361](c210361b088c7aa895847c88ef739a28a940e6ae))
+- **mcp**: Update SQL query to use square brackets for identifiers ([5b19c04](5b19c04e998d0cdc585e68fa1ad19a24f8c066bf))
+- Correct spelling errors and improve message clarity in localization files ([021c401](021c40100b853573663e61f1a848bc696ee86294))
+-  **AR**: Update jobOrder filterType to 'includes' and correct label for theoreticalPrograms in job order table ([fd6a172](fd6a172a4cfc9e46545a40fda6a5ee45b31a388c))
+-  **AR**: Parameterize timezone offset in SQL queries for start, end, and cancel times ([2d6ab35](2d6ab357965c1a5f9e1fdb97840b5db4da404151))
+-  **AR**: Add error handling for missing IO values and update localization files ([bbfb1d6](bbfb1d68639f2bc481b3be60c33c1e8b6433aa4f))
+-  **AR**: Enhance error handling in IO retrieval and task management ([054925c](054925c2413062de5893953d05637038c0ff0d86))
+
+### ⚡ Performance
+
+-  **AR**: Throttle time navigation on Arrow key presses for improved performance ([b30976b](b30976bbd800d0a3f7cc6a536770ad01b71ac556))
+
 ## 0.71.0 - 2026-02-03
 
-[Compare Changes](2903a288f95d7f28dcb908ec892b670b4e5e5578...1b9cdb298f3b551a64da99c13516224bf6a2f508)
+[Compare Changes](2903a288f95d7f28dcb908ec892b670b4e5e5578...605bd3a7d51b13d2475b34b56c8fbc5d81bc28a4)
 
 ### 🚀 Features
 
