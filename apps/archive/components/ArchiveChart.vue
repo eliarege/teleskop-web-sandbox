@@ -42,6 +42,7 @@ import {
   formatDuration,
   intervalToDuration,
 } from 'date-fns'
+import { throttle } from 'quasar'
 import type { QBtnProps } from 'quasar'
 import AxisesVisibilityDialog from './AxisesVisibilityDialog.vue'
 import ReelDataDialog from './ReelDataDialog.vue'
@@ -758,7 +759,9 @@ onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
   }
 })
 
-onKeyStroke('ArrowRight', (event: KeyboardEvent) => {
+const throttleDelay = 100
+
+onKeyStroke('ArrowRight', throttle((event: KeyboardEvent) => {
   event.preventDefault()
   const newTime = addMinutes(selectedTime.value, 1)
   if (newTime <= endTime.value) {
@@ -782,9 +785,9 @@ onKeyStroke('ArrowRight', (event: KeyboardEvent) => {
   } else {
     selectedTime.value = endTime.value
   }
-})
+}, throttleDelay))
 
-onKeyStroke('ArrowLeft', (event: KeyboardEvent) => {
+onKeyStroke('ArrowLeft', throttle((event: KeyboardEvent) => {
   event.preventDefault()
   const newTime = addMinutes(selectedTime.value, -1)
   if (newTime >= startTime.value) {
@@ -808,7 +811,8 @@ onKeyStroke('ArrowLeft', (event: KeyboardEvent) => {
   } else {
     selectedTime.value = startTime.value
   }
-})
+}, throttleDelay))
+
 function formatDurationHHMMSS(startDate, endDate) {
   // Calculate the difference in milliseconds
   const ms = differenceInMilliseconds(endDate, startDate)
