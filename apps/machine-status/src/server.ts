@@ -20,7 +20,7 @@ export async function main() {
   const fastify = Fastify({ logger })
   const teleskop = createKyselyInstance<TeleskopDatabase>(config.teleskopConnectionString || {
     host: config.teleskopHost,
-    port: config.teleskopPort,
+    port: config.teleskopInstanceName ? undefined : config.teleskopPort,
     database: config.teleskopDatabase,
     user: config.teleskopUser,
     password: config.teleskopPassword,
