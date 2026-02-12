@@ -17,10 +17,10 @@ router.get('/machines', defineAuthEventHandler(async (event) => {
 }))
 
 router.get('/machine', defineAuthEventHandler(async (event) => {
-  const { jobOrder, correctionNo } = getQuery(event)
+  const { joborder, correctionNo } = getQuery(event)
   const machineId = knex('DYBFBATCHPLAN')
     .select('PLANNEDMACHINE')
-    .where('JOBORDER', jobOrder)
+    .where('JOBORDER', joborder)
     .andWhere('CORRECTIONNUMBER', correctionNo)
 
   const machine = await knex('DYTFMACHINES')
