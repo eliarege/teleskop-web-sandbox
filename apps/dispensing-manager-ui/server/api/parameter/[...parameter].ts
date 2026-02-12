@@ -8,7 +8,7 @@ router.get('/parameters', defineAuthEventHandler(async (event) => {
   const { plankey } = getQuery(event)
   const parameters = await knex('DYBFBATCHPLANPARAMETERS')
     .select({
-      joborder: 'JOBORDER',
+      jobOrder: 'JOBORDER',
       parameter: 'PARAMSTRING',
       type: 'PARAMETERTYPE',
       value: 'VALUE',

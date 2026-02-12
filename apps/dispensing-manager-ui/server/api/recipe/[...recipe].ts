@@ -17,7 +17,7 @@ router.get('/correction-number-by-parameter', defineAuthEventHandler(async (even
       .orderBy('CORRECTIONNUMBER', 'asc')
       .select('CORRECTIONNUMBER')
   }
-  /** Returns correction no of the spesific joborder's highest planKey */
+  /** Returns correction no of the spesific jobOrder's highest planKey */
   if (searchBy === 'planKey') {
     result = knex('DYBFBATCHPLAN')
       .where('JOBORDER', parameter)
@@ -63,7 +63,7 @@ router.get('/joborder', defineAuthEventHandler(async (event) => {
     .where('r.PLANKEY', planKey)
     .select({
       planKey: 'r.PLANKEY',
-      joborder: 'r.JOBORDER',
+      jobOrder: 'r.JOBORDER',
       recipeType: 'r.RECIPETYPE',
       processOrder: 'r.RCPINDEX',
       ISN: 'r.REQNO_BATCH',
@@ -144,13 +144,13 @@ router.put('/change-recipe-amount', defineAuthEventHandler({
 }))
 
 router.post('/previous-requests', defineAuthEventHandler(async (event) => {
-  const { joborder, programNo, mainStep } = await readBody(event)
+  const { jobOrder, programNo, mainStep } = await readBody(event)
   const query = await knex('DYTFCHEMREQUESTS')
-    .where('BATCHNO', joborder)
+    .where('BATCHNO', jobOrder)
     .andWhere('PROGRAMNO', programNo)
     .andWhere('PROGRAMSTEPNO', mainStep)
     .select({
-      joborder: 'BATCHNO',
+      jobOrder: 'BATCHNO',
       correctionNo: 'BATCHCORRECTIONNO',
       mainStep: 'PROGRAMSTEPNO',
       status: 'STATUS',
@@ -205,7 +205,7 @@ router.post('/recipe-manuals', defineAuthEventHandler(async (event) => {
     // .select('A.*', 'B.MATERIALNAME', 'C.CORRECTIONNUMBER', 'C.PROGRAMNOLIST', 'C.PLANNEDMACHINE', 'C.ISCOUPLED', 'C.SLAVEMACHINEID', 'C.STARTEDMACHINEID')
     .select({
       planKey: 'A.PLANKEY',
-      joborder: 'A.JOBORDER',
+      jobOrder: 'A.JOBORDER',
       recipeType: 'A.RECIPETYPE',
       processOrder: 'A.RCPINDEX',
       ISN: 'A.REQNO_BATCH',

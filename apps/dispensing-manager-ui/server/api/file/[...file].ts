@@ -47,7 +47,7 @@ router.post('/write-recipe-step', defineAuthEventHandler({
     }
 
     const query = await knex('DYTFCHEMREQUESTS')
-      .where('BATCHNO', body.row.joborder)
+      .where('BATCHNO', body.row.jobOrder)
       .andWhere('PROGRAMNO', body.row.programNo)
       .andWhere('PROGRAMSTEPNO', body.row.mainStep)
       .andWhere('RECIPETYPE', body.row.recipeType)

@@ -22,7 +22,7 @@ useTimeoutPoll(refreshConnectionStatus, 120000, { immediate: true })
 const machines = await keycloak.fetch('/api/machine/machines')
 const dispensers = await keycloak.fetch('/api/settings/dispenser')
 const columnsRecipe = computed<Array<FilterableTableColumn>>(() => [
-  { name: 'joborder', label: t('joborder'), field: 'joborder', filterable: true, filterType: 'comparison' },
+  { name: 'jobOrder', label: t('jobOrder'), field: 'jobOrder', filterable: true, filterType: 'comparison' },
   { name: 'batchCorrectionNo', label: t('correctionNo'), field: 'batchCorrectionNo', filterable: true, filterType: 'comparison' },
   {
     name: 'machinename',
@@ -168,7 +168,7 @@ watch(selectedRow, async (newSelected) => {
   await fetchMaterialData(newSelected?.reqnumber)
 })
 async function clickShowRecipe(row: any, isLogs: string) {
-  const params = new URLSearchParams({ joborder: row.joborder, correctionNo: row.batchCorrectionNo, isLogs })
+  const params = new URLSearchParams({ jobOrder: row.jobOrder, correctionNo: row.batchCorrectionNo, isLogs })
   await navigateToPage(`recipe?${params}`)
 }
 
@@ -186,7 +186,7 @@ async function isRecipeDeleted(row) {
   const isDeleted = await keycloak.fetch('/api/dispenser/check-status', {
     method: 'POST',
     body: {
-      joborder: row.joborder,
+      jobOrder: row.jobOrder,
       correctionNo: row.batchCorrectionNo,
     },
   })
@@ -216,7 +216,7 @@ async function processRequest(type: 'retry' | 'cancel', row: any) {
       row.priority,
       row.machineid,
       row.tankno,
-      row.joborder,
+      row.jobOrder,
       row.programno,
       row.stepno,
       row.recipeStepNo,

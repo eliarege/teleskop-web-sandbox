@@ -60,7 +60,7 @@ const columns = computed(() => [
   },
   {
     name: 'jobOrder',
-    label: t('joborder'),
+    label: t('jobOrder'),
     field: 'jobOrder',
     filterable: true,
     filterType: 'comparison',

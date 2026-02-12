@@ -2,13 +2,13 @@
 import { colors } from '~/shared/constants'
 
 const props = defineProps({
-  joborder: Number,
+  jobOrder: Number,
   plankey: Number,
 })
 
 const { t } = useI18n()
 
-const joborder = ref(props.joborder)
+const jobOrder = ref(props.jobOrder)
 const plankey = ref(props.plankey)
 
 const parameterCols = computed(() => [
@@ -26,9 +26,9 @@ const pagination = ref({ rowsPerPage: 0 })
   <q-card class="column">
     <q-card-section>
       <div class="text-h6 ml-5 mt-5">
-        {{ t('jobOrderParameters._') }} - {{ t('joborder') }} :
-        <span v-if="joborder">
-          {{ joborder }}
+        {{ t('jobOrderParameters._') }} - {{ t('jobOrder') }} :
+        <span v-if="jobOrder">
+          {{ jobOrder }}
         </span>
       </div>
     </q-card-section>

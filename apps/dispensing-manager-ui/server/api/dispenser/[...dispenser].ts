@@ -9,7 +9,7 @@ export default useBase('/api/dispenser', router.handler)
 
 const selectParameters = {
   reqnumber: 'r.REQNUMBER',
-  joborder: 'r.BATCHNO',
+  jobOrder: 'r.BATCHNO',
   batchCorrectionNo: 'r.BATCHCORRECTIONNO',
   machinename: 'm.MACHINENAME',
   machineid: 'm.MACHINEID',
@@ -103,7 +103,7 @@ router.put('/complete-program', defineAuthEventHandler({
 router.post('/check-status', defineAuthEventHandler(async (event) => {
   const body = await readBody(event)
   const status = await knex('DYBFBATCHPLAN')
-    .where('JOBORDER', body.joborder)
+    .where('JOBORDER', body.jobOrder)
     .andWhere('CORRECTIONNUMBER', body.correctionNo)
     .select('ISDELETED')
   return status[0].ISDELETED

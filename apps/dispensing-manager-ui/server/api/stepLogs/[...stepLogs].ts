@@ -12,7 +12,7 @@ const selectParameters = {
   plankey: 'L.PLANKEY',
   machineid: 'L.MACHINEID',
   machineName: 'M.MACHINENAME',
-  joborder: 'L.JOBORDER',
+  jobOrder: 'L.JOBORDER',
   programIndex: 'L.PROGRAMINDEX',
   programNo: 'L.PROGRAMNO',
   programName: 'P.NAME',

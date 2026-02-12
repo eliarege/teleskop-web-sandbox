@@ -67,7 +67,7 @@ const columns = computed<Array<FilterableTableColumn>>(() => [
   },
   {
     name: 'jobOrderCode',
-    label: t('joborder'),
+    label: t('jobOrder'),
     field: 'jobOrderCode',
     filterable: true,
     filterType: 'includes',

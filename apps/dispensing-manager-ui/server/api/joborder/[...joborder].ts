@@ -11,7 +11,7 @@ export default useBase('/api/joborder', router.handler)
 // router.get('/joborders', defineAuthEventHandler(async (event) => {
 //   const orders = await knex('DYBFBATCHPLAN as b')
 //     .select({
-//       joborder: 'b.JOBORDER',
+//       jobOrder: 'b.JOBORDER',
 //       correctionNo: 'b.CORRECTIONNUMBER',
 //       plannedMachineName: 'm.MACHINENAME',
 //       plannedMachineID: 'b.PLANNEDMACHINE',
@@ -24,7 +24,7 @@ export default useBase('/api/joborder', router.handler)
 // }))
 
 const selectParameters = {
-  joborder: 'b.JOBORDER',
+  jobOrder: 'b.JOBORDER',
   correctionNo: 'b.CORRECTIONNUMBER',
   plannedMachineName: 'm.MACHINENAME',
   machineid: 'b.PLANNEDMACHINE',

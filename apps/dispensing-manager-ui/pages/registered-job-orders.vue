@@ -38,9 +38,9 @@ watch(pagination, async (_newPagination) => {
 
 const columns = computed(() => [
   {
-    name: 'joborder',
-    label: t('joborder'),
-    field: 'joborder',
+    name: 'jobOrder',
+    label: t('jobOrder'),
+    field: 'jobOrder',
     filterable: true,
     filterType: 'comparison',
   },
@@ -80,7 +80,7 @@ const columns = computed(() => [
 ] as FilterableTableColumn[])
 
 async function handleRowDblClick(row: any) {
-  await navigateToPage(`recipe?joborder=${row.joborder}&correctionNo=${row.correctionNo}`)
+  await navigateToPage(`recipe?jobOrder=${row.jobOrder}&correctionNo=${row.correctionNo}`)
 }
 
 async function handleFilterSlotsUpdate(updatedValue: any) {

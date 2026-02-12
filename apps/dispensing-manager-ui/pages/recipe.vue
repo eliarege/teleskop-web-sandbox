@@ -192,8 +192,8 @@ async function getCorrectionNOs(parameter: string) {
 
 /**
  * TODO:
- * Have to have the machine that joborder is running
- * Have to have joborder of the recipe
+ * Have to have the machine that jobOrder is running
+ * Have to have jobOrder of the recipe
  * Might to have colors array
  */
 const recipeDataTemp = ref()
@@ -269,7 +269,7 @@ async function requestJobOrder() {
     }
     const tempMach = await keycloak.fetch(`/api/machine/machine?`, {
       query: {
-        joborder: currentRecipeJoborder.value,
+        jobOrder: currentRecipeJoborder.value,
         correctionNo: correctionNoDisplayed.value,
       },
     })
@@ -301,15 +301,15 @@ async function checkIsThereAnyLog(plankey) {
 }
 
 const route = useRoute()
-if (route.query.correctionNo && route.query.joborder) {
-  jobordernum.value = route.query.joborder
+if (route.query.correctionNo && route.query.jobOrder) {
+  jobordernum.value = route.query.jobOrder
   correctionNoDisplayed.value = Number(route.query.correctionNo)
   await requestJobOrder()
   if (route.query.isLogs === 'true') {
     if (isThereAnyLog.value)
       showLogsDialog.value = true
     else
-      notification(false, t('warnings.noJobOrderLogs', { joborder: jobordernum.value }))
+      notification(false, t('warnings.noJobOrderLogs', { jobOrder: jobordernum.value }))
   }
 }
 
@@ -320,7 +320,7 @@ function buttonAction(link: string) {
     }
     if (link === 'showLogs') {
       if (!isThereAnyLog.value) {
-        notification(false, t('warnings.noJobOrderLogs', { joborder: jobordernum.value }))
+        notification(false, t('warnings.noJobOrderLogs', { jobOrder: jobordernum.value }))
       } else {
         showLogsDialog.value = true
       }
@@ -511,7 +511,7 @@ const plannedMachineButton = computed(() => {
         full-height
         full-width
       >
-        <ParameterDialogContent :joborder="Number(lastJobOrder)" :plankey="plankey" />
+        <ParameterDialogContent :jobOrder="Number(lastJobOrder)" :plankey="plankey" />
       </q-dialog>
       <q-dialog
         v-if="isThereAnyLog"
@@ -519,7 +519,7 @@ const plannedMachineButton = computed(() => {
         full-height
         full-width
       >
-        <LogsDialogContent :joborder="Number(lastJobOrder)" :plankey="plankey" />
+        <LogsDialogContent :jobOrder="Number(lastJobOrder)" :plankey="plankey" />
       </q-dialog>
       <q-dialog
         v-model="showConsumptionDialog"
@@ -527,7 +527,7 @@ const plannedMachineButton = computed(() => {
         full-width
       >
         <ConsumptionDialogContent
-          :joborder="lastJobOrder"
+          :jobOrder="lastJobOrder"
           :machinename="machine.machinename"
           :correction-no="correctionNoDisplayed"
         />

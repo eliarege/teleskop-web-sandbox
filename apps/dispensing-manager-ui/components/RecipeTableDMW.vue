@@ -199,7 +199,7 @@ async function requestRow() {
     priority.value.value,
     props.machineid,
     tankNo.value,
-    selectedRow.value.joborder,
+    selectedRow.value.jobOrder,
     selectedRow.value.programNo,
     selectedRow.value.mainStep,
     selectedRow.value.mainStep,
@@ -233,10 +233,10 @@ watch(() => props.resetCounter, (newValue, oldValue) => {
 
 async function showLogsOfSelectedStep() {
   if (selectedRow.value) {
-    const { joborder, programNo, mainStep } = selectedRow.value
+    const { jobOrder, programNo, mainStep } = selectedRow.value
     const data = await keycloak.fetch('/api/recipe/previous-requests', {
       method: 'POST',
-      body: { joborder, programNo, mainStep },
+      body: { jobOrder, programNo, mainStep },
     })
     if (!data.length)
       notification(false, t('warnings.noPreviousStepLogs'))
@@ -244,7 +244,7 @@ async function showLogsOfSelectedStep() {
       $q.dialog({
         component: RecipeStepPreviousRequestsContent,
         componentProps: {
-          joborder,
+          jobOrder,
           programNo,
           mainStep,
           data,

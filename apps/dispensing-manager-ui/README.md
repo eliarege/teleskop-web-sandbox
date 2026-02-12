@@ -263,7 +263,7 @@ User defines the query logics like joins, orderBys, limit etc... and gives filte
 
 ```js
 const selectParameters = {
-  joborder: 'b.BData1',
+  jobOrder: 'b.BData1',
   correctionNo: 'b.BData2',
   plannedMachineName: 'm.MData1',
   machineid: 'b.BData3',

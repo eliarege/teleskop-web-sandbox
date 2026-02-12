@@ -4,14 +4,14 @@ import { colors } from '~/shared/constants'
 import type { Column } from '~/shared/types'
 
 const props = defineProps({
-  joborder: Number,
+  jobOrder: Number,
   plankey: Number,
 })
 const keycloak = useKeycloak()
 
 const { t, d } = useI18n()
 
-const joborder = ref(props.joborder)
+const jobOrder = ref(props.jobOrder)
 const plankey = ref(props.plankey)
 const machinename = ref()
 const status = ref([
@@ -28,7 +28,7 @@ const status = ref([
 const logCols = computed<Column[]>(() => [
   { name: 'id', label: t('jobOrderLogs.id'), field: 'id', filterable: true, filterType: 'comparison' },
   { name: 'machineName', label: t('machinename'), field: 'machineName' },
-  { name: 'joborder', label: t('jobOrderLogs.jobOrderCode'), field: 'joborder' },
+  { name: 'jobOrder', label: t('jobOrderLogs.jobOrderCode'), field: 'jobOrder' },
   { name: 'programIndex', label: t('jobOrderLogs.programIndex'), field: 'programIndex', filterable: true, filterType: 'comparison' },
   { name: 'programNo', label: t('programNo'), field: 'programNo', filterable: true, filterType: 'comparison' },
   { name: 'programName', label: t('programName'), field: 'programName' },
@@ -90,8 +90,8 @@ const pagination = ref({ rowsPerPage: 0 })
   <q-card class="column">
     <div class="text-h6 ml-7 mt-3">
       {{ t('jobOrderLogs._') }} -
-      <span v-if="joborder">
-        {{ t('joborder') }} : {{ joborder }} -
+      <span v-if="jobOrder">
+        {{ t('jobOrder') }} : {{ jobOrder }} -
       </span>
       <span v-if="machinename">
         {{ t('machinename') }} : {{ machinename }}

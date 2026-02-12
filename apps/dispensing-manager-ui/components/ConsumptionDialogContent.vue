@@ -3,7 +3,7 @@ import { cellRGBColorHandler } from '../shared/functions'
 import { colors } from '~/shared/constants'
 
 const props = defineProps({
-  joborder: String,
+  jobOrder: String,
   machinename: String,
   correctionNo: Number,
 })
@@ -50,7 +50,7 @@ const columnsOto = computed(() => [
 ])
 
 const columnsMan = computed(() => [
-  { name: 'joborder', label: t('joborder'), field: 'joborder' },
+  { name: 'jobOrder', label: t('jobOrder'), field: 'jobOrder' },
   { name: 'correctionNo', label: t('correctionNo'), field: 'correctionNo' },
   { name: 'weighingNumber', label: t('weighingInformation.weighingNumber'), field: 'weighingNumber' },
   { name: 'recipeType', label: t('recipeType'), field: 'recipeType', format: (val, row) => t(`recipeTypes.${val}`) },
@@ -68,8 +68,8 @@ const columnsMan = computed(() => [
   },
 ])
 
-const data = await keycloak.fetch(`/api/consumption/theoretical?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
-const data2 = await keycloak.fetch(`/api/consumption/manual?joborder=${props.joborder}&correctionNo=${props.correctionNo}`)
+const data = await keycloak.fetch(`/api/consumption/theoretical?jobOrder=${props.jobOrder}&correctionNo=${props.correctionNo}`)
+const data2 = await keycloak.fetch(`/api/consumption/manual?jobOrder=${props.jobOrder}&correctionNo=${props.correctionNo}`)
 </script>
 
 <template>
@@ -77,8 +77,8 @@ const data2 = await keycloak.fetch(`/api/consumption/manual?joborder=${props.job
     <q-card-section>
       <div class="text-h6 ml-7 mt-3">
         {{ t('weighingInformation._') }} -
-        <span v-if="joborder">
-          {{ t('joborder') }} : {{ joborder }} -
+        <span v-if="jobOrder">
+          {{ t('jobOrder') }} : {{ jobOrder }} -
         </span>
         <span v-if="props.machinename">
           {{ t('machinename') }} : {{ props.machinename }}

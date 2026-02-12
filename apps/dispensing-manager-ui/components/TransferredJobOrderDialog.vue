@@ -64,7 +64,7 @@ function getTransferStatusColor(status: TransferStatus): string {
           </div>
           <div class="row">
             <div class="col-6">
-              <strong>{{ t('joborder') }}:</strong>
+              <strong>{{ t('jobOrder') }}:</strong>
               {{ transfer.jobOrder }}
             </div>
             <div class="col-6">
