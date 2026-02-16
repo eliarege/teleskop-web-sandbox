@@ -715,31 +715,13 @@ const tooltipContent = computed(() => {
     .map((dataset) => {
       // Find the closest data point
 
-      let dataPoint
-
-      if (dataset.io.ioValues.length) {
-        if (dataset.io.type === 'AOUT') {
-          const filtered = dataset.io.ioValues
-            .filter(
-              v => (new Date(v.time)).getTime() <= selectedTime.value.getTime(),
-            )
-            .sort((a, b) => (new Date(a.time)).getTime() - (new Date(b.time)).getTime())
-
-          if (filtered.length > 0)
-            dataPoint = { ...filtered[filtered.length - 1], name: dataset.io.name }
-        } else {
-          dataPoint = dataset.io.ioValues.reduce((prev, curr) => {
-            const prevDiff = Math.abs(
-              new Date(prev.time).getTime() - selectedTime.value.getTime(),
-            )
-            const currDiff = Math.abs(
-              new Date(curr.time).getTime() - selectedTime.value.getTime(),
-            )
-            return currDiff < prevDiff
-              ? { ...curr, name: dataset.io.name }
-              : { ...prev, name: dataset.io.name }
-          })
-        }
+      const dataPoint = {
+        ...getApproxIoValueAtTime(
+          selectedTime.value,
+          dataset.io.ioValues,
+          dataset.io.type === 'AIN' ? 'interpolated' : 'lastTime',
+        ),
+        name: dataset.io.name,
       }
 
       return {

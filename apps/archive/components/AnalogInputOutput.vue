@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import * as d3 from 'd3'
 import type { AnalogInputOutputType, CalculatedValue, Counter, IOSetting } from '~/types/archive'
 import { userSettingsStore } from '~/composables/userSettingsStore'
 import { getCommandsWithClosestTime } from '~/utils/functions'
@@ -16,7 +15,7 @@ const commandsWithClosestTime = computed(() => {
   return getCommandsWithClosestTime(
     props.selectedTime,
     props.commands,
-    props.typeKey === 'analogOutputs' ? 'lastTime' : 'closestTime',
+    props.typeKey === 'analogInputs' ? 'interpolated' : 'lastTime',
   )
 })
 function updateSetting(key: string, setting: IOSetting) {

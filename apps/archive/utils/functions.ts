@@ -1,11 +1,12 @@
 import { renderToString } from '@vue/server-renderer'
 import { Notify } from 'quasar'
 import { format } from 'date-fns'
+import { interpolateNumber } from 'd3'
 import JobOrderSummary from '~/components/JobOrderSummary.vue'
 import RecipeSummary from '~/components/RecipeSummary.vue'
 import BatchSummary from '~/components/BatchSummary.vue'
 import type { AnalogInputOutputType, BasicProgram, BatchInfo, BatchParameters, CalculatedValue, ConsumptionUnits, Counter, DigitalInputOutputType, ERPParameter, Machine, Program } from '~/types/archive'
-import type { DDate } from '~/types/utils'
+import type { DuoRaw } from '~/types/utils'
 
 export function formatDuration(sec: number): string {
   const totalSeconds = Math.abs(Math.floor(sec))
@@ -20,45 +21,102 @@ export function formatDuration(sec: number): string {
   ].join(':')
 }
 
+export function getApproxIoValueAtTime(
+  time: Date,
+  ioValues: Array<{ time: string, value: number }>,
+  strategy: 'closestTime' | 'lastTime' | 'interpolated' = 'interpolated',
+): { time: string, value: number } {
+  const selectedTime = time.getTime()
+  const sortedIoValues = ioValues.toSorted((a, b) =>
+    new Date(a.time).getTime() - new Date(b.time).getTime(),
+  )
+
+  if (strategy === 'closestTime') {
+    // Exit if we the diff increases, since the array is sorted
+    let closest = { time: '', value: 0 }
+    let closestDiff = Number.POSITIVE_INFINITY
+    for (const current of sortedIoValues) {
+      const currentTime = new Date(current.time).getTime()
+      const currentDiff = Math.abs(currentTime - selectedTime)
+
+      if (currentDiff < closestDiff) {
+        closest = current
+        closestDiff = currentDiff
+      } else if (currentDiff > closestDiff) {
+        break
+      }
+    }
+    return closest
+  } else if (strategy === 'lastTime') {
+    let last = { time: '', value: 0 }
+    for (const current of sortedIoValues) {
+      const currentTime = new Date(current.time).getTime()
+      if (currentTime <= selectedTime) {
+        last = current
+      } else {
+        break
+      }
+    }
+    return last
+  } else if (strategy === 'interpolated') {
+    let beforePoint = null
+    let afterPoint = null
+
+    for (let i = 0; i < sortedIoValues.length; i++) {
+      const pointTime = new Date(sortedIoValues[i].time).getTime()
+      if (pointTime > selectedTime) {
+        afterPoint = sortedIoValues[i]
+        beforePoint = i > 0 ? sortedIoValues[i - 1] : null
+        break
+      }
+    }
+
+    if (!afterPoint && sortedIoValues.length > 0) {
+      beforePoint = sortedIoValues[sortedIoValues.length - 1]
+    }
+
+    if (beforePoint && afterPoint) {
+      const beforeTime = new Date(beforePoint.time).getTime()
+      const afterTime = new Date(afterPoint.time).getTime()
+      const t = (selectedTime - beforeTime) / (afterTime - beforeTime)
+
+      const interpolator = interpolateNumber(beforePoint.value, afterPoint.value)
+      const interpolatedValue = interpolator(t)
+
+      return {
+        time: time.toISOString(),
+        value: interpolatedValue,
+      }
+    } else if (beforePoint) {
+      return beforePoint
+    } else if (afterPoint) {
+      return afterPoint
+    }
+  }
+
+  return { time: '', value: 0 }
+}
+
 export function getCommandsWithClosestTime(
   slcTime: Date,
-  commands: AnalogInputOutputType[] | DigitalInputOutputType[] | Counter[] | CalculatedValue[],
-  getWith: 'closestTime' | 'lastTime' = 'closestTime',
+  commands: DuoRaw<AnalogInputOutputType[] | DigitalInputOutputType[] | Counter[] | CalculatedValue[]>,
+  getWith: 'closestTime' | 'lastTime' | 'interpolated' = 'lastTime',
 ) {
-  const selectedTime = slcTime.getTime()
-
   return commands.map((io) => {
     const values = io?.ioValues ?? []
-    let closestIoValue = { time: '' as unknown as DDate, value: 0 }
-    if (getWith === 'closestTime') {
-      if (values.length > 0)
-        closestIoValue = io.ioValues.reduce((closest, current) => {
-          const currentTime = new Date(current.time).getTime()
-          const closestTime = new Date(closest.time).getTime()
-
-          const currentDiff = Math.abs(currentTime - selectedTime)
-          const closestDiff = Math.abs(closestTime - selectedTime)
-
-          return currentDiff < closestDiff ? current : closest
-        })
-    } else if (getWith === 'lastTime') {
-      const filtered = values
-        .filter(
-          v => new Date(v.time).getTime() <= selectedTime,
-        )
-        .sort((a, b) => (new Date(a.time)).getTime() - (new Date(b.time)).getTime())
-      if (filtered.length > 0)
-        closestIoValue = filtered[filtered.length - 1]
-    }
+    const closestIoValue = values.length > 0
+      ? getApproxIoValueAtTime(slcTime, values, getWith)
+      : { time: '', value: 0 }
     return {
       ...io,
       closestIoValue,
     }
   })
 }
+
 export function getCommandsWithClosestTimeDigital(
   slcTime: Date,
-  commands: AnalogInputOutputType[] | DigitalInputOutputType[],
+  commands: DuoRaw<AnalogInputOutputType[] | DigitalInputOutputType[]>,
 ) {
   const selectedTime = slcTime.getTime()
 
