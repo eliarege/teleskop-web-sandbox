@@ -15,6 +15,9 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const filteredCommands = computed(() => {
+  if (!Array.isArray(props.commands))
+    return []
+
   return props.commands.filter((program) => {
     const startTimeValue = new Date(program.startTime).getTime()
     const endTimeValue = new Date(program.endTime).getTime()

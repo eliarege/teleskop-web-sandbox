@@ -31,7 +31,8 @@ watch(pagination, async () => {
   await fetchData()
   loading.hide()
 })
-const { data: theoreticalPrograms } = await useFetch('/api/theoretical-programs')
+
+const { data: theoreticalProgramNos } = await useFetch<number[]>('/api/theoretical-programs')
 
 const columns = computed(() => [
   {
@@ -90,7 +91,7 @@ const columns = computed(() => [
     field: 'theoreticalProgramNoList',
     filterable: true,
     filterType: 'multiselect',
-    selectionOptions: theoreticalPrograms.value,
+    selectionOptions: theoreticalProgramNos.value || [],
     format: val => val.join(', '),
   },
   {

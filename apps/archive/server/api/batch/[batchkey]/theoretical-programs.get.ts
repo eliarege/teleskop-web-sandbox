@@ -7,6 +7,22 @@ interface PartialBatch {
   startTime: Date
 }
 
+interface TheoreticalProgramsResult {
+  programs: Program[]
+  warnings: { programNo: number, changeDate: string }[]
+  notFoundPrograms: number[]
+}
+
+interface RawProgram {
+  name: string
+  duration: number
+  programNo: number
+  programVersion: number
+  originalIndex: number
+  fromFallback?: boolean
+  changeDate?: Date
+}
+
 export default defineEventHandler(async (event) => {
   const batchKey = getBatchKeyParam(event)
   const batch = await db('BADATA').first({
@@ -24,20 +40,22 @@ export default defineEventHandler(async (event) => {
   }
 
   if (batch.programList.length) {
-    const programs = await getTheoreticalPrograms(batch)
-    return programs
+    const result = await getTheoreticalPrograms(batch)
+    return result
   } else {
-    return []
+    return { programs: [], warnings: [], notFoundPrograms: [] }
   }
 })
 
-async function getTheoreticalPrograms(batch: PartialBatch) {
+async function getTheoreticalPrograms(batch: PartialBatch): Promise<TheoreticalProgramsResult> {
+  const config = useRuntimeConfig()
   const programList = batch.programList.split(',').map(Number)
   if (!programList.length) {
-    return []
+    return { programs: [], warnings: [], notFoundPrograms: [] }
   }
 
-  const rawPrograms = await db
+  // First, try to get programs from archive (BAMASTERPRGHEADER)
+  const archivedPrograms = await db
     .from('BAMASTERPRGHEADER as P')
     .join(db.raw(/* sql */`(
       VALUES ${programList.map((p, i) => `(${p}, ${i})`)}
@@ -47,6 +65,7 @@ async function getTheoreticalPrograms(batch: PartialBatch) {
       duration: 'P.DURATION',
       programNo: 'P.PROGNO',
       programVersion: 'P.MACHINEPRGVERSIONNO',
+      originalIndex: 'T.PROGINDEX',
     })
     .where('P.MACHINEID', batch.machineId)
     .andWhere('P.RELEASEDATE', '<=', batch.startTime)
@@ -54,104 +73,251 @@ async function getTheoreticalPrograms(batch: PartialBatch) {
       this.whereNull('P.RELEASEENDDATE')
         .orWhere('P.RELEASEENDDATE', '>', batch.startTime)
     })
-    .orderBy('T.PROGINDEX') as {
-    name: string
-    duration: number
-    programNo: number
-    programVersion: number
-  }[]
+    .orderBy('T.PROGINDEX') as RawProgram[]
 
-  if (!rawPrograms.length) {
-    return []
+  // Find missing programs that were not in archive
+  const foundProgramNos = new Set(archivedPrograms.map(p => p.programNo))
+  const missingProgramIndices = programList
+    .map((progNo, index) => ({ progNo, index }))
+    .filter(({ progNo }) => !foundProgramNos.has(progNo))
+
+  // Fallback: get missing programs from BFMASTERPRGHEADER (current programs)
+  let fallbackPrograms: RawProgram[] = []
+  const warnings: TheoreticalProgramsResult['warnings'] = []
+  const notFoundPrograms: number[] = []
+
+  if (missingProgramIndices.length > 0) {
+    fallbackPrograms = await db
+      .from('BFMASTERPRGHEADER as P')
+      .join(db.raw(/* sql */`(
+        VALUES ${missingProgramIndices.map(m => `(${m.progNo}, ${m.index})`)}
+      ) T(PROGNO, PROGINDEX)`), 'P.PROGNO', 'T.PROGNO')
+      .select({
+        name: 'P.NAME',
+        duration: 'P.DURATION',
+        programNo: 'P.PROGNO',
+        originalIndex: 'T.PROGINDEX',
+        changeDate: db.raw(`DATEADD(MINUTE, ?, P.CHANGEDATE)`, [config.teleskopTimezoneOffset]),
+      })
+      .where('P.MACHINEID', batch.machineId)
+      .orderBy('T.PROGINDEX') as (RawProgram & { changeDate: Date })[]
+
+    // Mark fallback programs and create warnings
+    for (const prog of fallbackPrograms) {
+      prog.fromFallback = true
+      prog.programVersion = 0 // BF tables don't have version, use 0 as placeholder
+      warnings.push({
+        programNo: prog.programNo,
+        changeDate: prog.changeDate?.toISOString() ?? '',
+      })
+    }
+
+    // Find programs that were not found in either BA or BF tables
+    const fallbackProgramNos = new Set(fallbackPrograms.map(p => p.programNo))
+    for (const { progNo } of missingProgramIndices) {
+      if (!fallbackProgramNos.has(progNo)) {
+        notFoundPrograms.push(progNo)
+      }
+    }
   }
 
-  const programListWithVersions = () => db.raw(/* sql */`(
-    VALUES ${rawPrograms.map((p, i) => `(${p.programNo}, ${i}, ${p.programVersion})`)}
-  ) T(PROGNO, PROGINDEX, PROGVERSION)`)
+  // Merge and sort all programs by original index
+  const rawPrograms = [...archivedPrograms, ...fallbackPrograms]
+    .sort((a, b) => a.originalIndex - b.originalIndex)
 
-  const rawCommands = await db
-    .from('BAMASTERSTEPS as P')
-    .join(programListWithVersions(), qb =>
-      qb.on('P.PROGNO', 'T.PROGNO')
-        .andOn('P.MACHINEPRGVERSIONNO', 'T.PROGVERSION'))
-    .select({
-      programIndex: 'T.PROGINDEX',
-      mainStep: 'P.MAINSTEP',
-      parallelStep: 'P.PARALELSTEP',
-      commandNo: 'P.COMMANDNO',
-    })
-    .where('P.MACHINEID', batch.machineId)
-    .orderBy(['T.PROGINDEX', 'P.MAINSTEP', 'P.PARALELSTEP']) as {
+  if (!rawPrograms.length) {
+    return { programs: [], warnings: [], notFoundPrograms }
+  }
+
+  // Separate archived and fallback programs for different query strategies
+  const archivedWithIndex = rawPrograms
+    .map((p, idx) => ({ ...p, mergedIndex: idx }))
+    .filter(p => !p.fromFallback)
+  const fallbackWithIndex = rawPrograms
+    .map((p, idx) => ({ ...p, mergedIndex: idx }))
+    .filter(p => p.fromFallback)
+
+  // Query helpers for archived programs (with version)
+  const archivedProgramListWithVersions = () => archivedWithIndex.length > 0
+    ? db.raw(/* sql */`(
+      VALUES ${archivedWithIndex.map(p => `(${p.programNo}, ${p.mergedIndex}, ${p.programVersion})`)}
+    ) T(PROGNO, PROGINDEX, PROGVERSION)`)
+    : null
+
+  // Query helpers for fallback programs (without version)
+  const fallbackProgramList = () => fallbackWithIndex.length > 0
+    ? db.raw(/* sql */`(
+      VALUES ${fallbackWithIndex.map(p => `(${p.programNo}, ${p.mergedIndex})`)}
+    ) T(PROGNO, PROGINDEX)`)
+    : null
+
+  // Fetch commands from both sources
+  const rawCommands: {
     programIndex: number
     mainStep: number
     parallelStep: number
     commandNo: number
-  }[]
+  }[] = []
 
-  const rawParameters = await db
-    .from('BAMASTERSTEPPARAMS as P')
-    .join(programListWithVersions(), qb =>
-      qb.on('P.PROGNO', 'T.PROGNO')
-        .andOn('P.MACHINEPRGVERSIONNO', 'T.PROGVERSION'))
-    .select({
-      programIndex: 'T.PROGINDEX',
-      mainStep: 'P.MAINSTEP',
-      parallelStep: 'P.PARALELSTEP',
-      value: db.raw(`TRY_CAST(REPLACE(P.VALUE, ',', '.')  AS FLOAT)`),
-      index: 'P.PARAMETERINDEX',
-    })
-    .where('P.MACHINEID', batch.machineId)
-    .orderBy(['T.PROGINDEX', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.PARAMETERINDEX']) as {
+  if (archivedWithIndex.length > 0) {
+    const archivedCommands = await db
+      .from('BAMASTERSTEPS as P')
+      .join(archivedProgramListWithVersions()!, qb =>
+        qb.on('P.PROGNO', 'T.PROGNO')
+          .andOn('P.MACHINEPRGVERSIONNO', 'T.PROGVERSION'))
+      .select({
+        programIndex: 'T.PROGINDEX',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        commandNo: 'P.COMMANDNO',
+      })
+      .where('P.MACHINEID', batch.machineId)
+    rawCommands.push(...archivedCommands)
+  }
+
+  if (fallbackWithIndex.length > 0) {
+    const fallbackCommands = await db
+      .from('BFMASTERSTEPS as P')
+      .join(fallbackProgramList()!, 'P.PROGNO', 'T.PROGNO')
+      .select({
+        programIndex: 'T.PROGINDEX',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        commandNo: 'P.COMMANDNO',
+      })
+      .where('P.MACHINEID', batch.machineId)
+    rawCommands.push(...fallbackCommands)
+  }
+  rawCommands.sort((a, b) => a.programIndex - b.programIndex || a.mainStep - b.mainStep || a.parallelStep - b.parallelStep)
+
+  // Fetch parameters from both sources
+  const rawParameters: {
     programIndex: number
     mainStep: number
     parallelStep: number
     value: number
     index: number
-  }[]
+  }[] = []
 
-  const rawIos = await db
-    .from('BAMASTERSTEPINPUTOUTPUTS as P')
-    .join(programListWithVersions(), qb =>
-      qb.on('P.PROGNO', 'T.PROGNO')
-        .andOn('P.MACHINEPRGVERSIONNO', 'T.PROGVERSION'))
-    .select({
-      programIndex: 'T.PROGINDEX',
-      mainStep: 'P.MAINSTEP',
-      parallelStep: 'P.PARALELSTEP',
-      ioIndex: 'P.IOINDEX',
-      ioId: 'P.IOID',
-    })
-    .where('P.MACHINEID', batch.machineId)
-    .orderBy(['T.PROGINDEX', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX']) as {
+  if (archivedWithIndex.length > 0) {
+    const archivedParams = await db
+      .from('BAMASTERSTEPPARAMS as P')
+      .join(archivedProgramListWithVersions()!, qb =>
+        qb.on('P.PROGNO', 'T.PROGNO')
+          .andOn('P.MACHINEPRGVERSIONNO', 'T.PROGVERSION'))
+      .select({
+        programIndex: 'T.PROGINDEX',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        value: db.raw(`TRY_CAST(REPLACE(P.VALUE, ',', '.')  AS FLOAT)`),
+        index: 'P.PARAMETERINDEX',
+      })
+      .where('P.MACHINEID', batch.machineId)
+    rawParameters.push(...archivedParams)
+  }
+
+  if (fallbackWithIndex.length > 0) {
+    const fallbackParams = await db
+      .from('BFMASTERSTEPPARAMS as P')
+      .join(fallbackProgramList()!, 'P.PROGNO', 'T.PROGNO')
+      .select({
+        programIndex: 'T.PROGINDEX',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        value: db.raw(`TRY_CAST(REPLACE(P.VALUE, ',', '.')  AS FLOAT)`),
+        index: 'P.PARAMETERINDEX',
+      })
+      .where('P.MACHINEID', batch.machineId)
+    rawParameters.push(...fallbackParams)
+  }
+  rawParameters.sort((a, b) => a.programIndex - b.programIndex || a.mainStep - b.mainStep || a.parallelStep - b.parallelStep || a.index - b.index)
+
+  // Fetch IOs from both sources
+  const rawIos: {
     programIndex: number
     mainStep: number
     parallelStep: number
     ioIndex: number
     ioId: number
-  }[]
+  }[] = []
 
-  const rawIoSelections = await db
-    .from('BAMASTERSTEPSELECTIONLIST as P')
-    .join(programListWithVersions(), qb =>
-      qb.on('P.PROGNO', 'T.PROGNO')
-        .andOn('P.MACHINEPRGVERSIONNO', 'T.PROGVERSION'))
-    .select({
-      programIndex: 'T.PROGINDEX',
-      mainStep: 'P.MAINSTEP',
-      parallelStep: 'P.PARALELSTEP',
-      ioIndex: 'P.IOINDEX',
-      ioType: db.raw('P.IOTYPE + 1'),
-      ioId: 'P.SELECTEDIOID',
-    })
-    .where('P.MACHINEID', batch.machineId)
-    .orderBy(['T.PROGINDEX', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX', 'P.SELECTIONINDEX']) as {
+  if (archivedWithIndex.length > 0) {
+    const archivedIos = await db
+      .from('BAMASTERSTEPINPUTOUTPUTS as P')
+      .join(archivedProgramListWithVersions()!, qb =>
+        qb.on('P.PROGNO', 'T.PROGNO')
+          .andOn('P.MACHINEPRGVERSIONNO', 'T.PROGVERSION'))
+      .select({
+        programIndex: 'T.PROGINDEX',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioId: 'P.IOID',
+      })
+      .where('P.MACHINEID', batch.machineId)
+    rawIos.push(...archivedIos)
+  }
+
+  if (fallbackWithIndex.length > 0) {
+    const fallbackIos = await db
+      .from('BFMASTERSTEPINPUTOUTPUTS as P')
+      .join(fallbackProgramList()!, 'P.PROGNO', 'T.PROGNO')
+      .select({
+        programIndex: 'T.PROGINDEX',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioId: 'P.IOID',
+      })
+      .where('P.MACHINEID', batch.machineId)
+    rawIos.push(...fallbackIos)
+  }
+  rawIos.sort((a, b) => a.programIndex - b.programIndex || a.mainStep - b.mainStep || a.parallelStep - b.parallelStep || a.ioIndex - b.ioIndex)
+
+  // Fetch IO selections from both sources
+  const rawIoSelections: {
     programIndex: number
     mainStep: number
     parallelStep: number
     ioIndex: number
     ioType: number
     ioId: number
-  }[]
+  }[] = []
+
+  if (archivedWithIndex.length > 0) {
+    const archivedSelections = await db
+      .from('BAMASTERSTEPSELECTIONLIST as P')
+      .join(archivedProgramListWithVersions()!, qb =>
+        qb.on('P.PROGNO', 'T.PROGNO')
+          .andOn('P.MACHINEPRGVERSIONNO', 'T.PROGVERSION'))
+      .select({
+        programIndex: 'T.PROGINDEX',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioType: db.raw('P.IOTYPE + 1'),
+        ioId: 'P.SELECTEDIOID',
+      })
+      .where('P.MACHINEID', batch.machineId)
+    rawIoSelections.push(...archivedSelections)
+  }
+
+  if (fallbackWithIndex.length > 0) {
+    const fallbackSelections = await db
+      .from('BFMASTERSTEPSELECTIONLIST as P')
+      .join(fallbackProgramList()!, 'P.PROGNO', 'T.PROGNO')
+      .select({
+        programIndex: 'T.PROGINDEX',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioType: db.raw('P.IOTYPE + 1'),
+        ioId: 'P.SELECTEDIOID',
+      })
+      .where('P.MACHINEID', batch.machineId)
+    rawIoSelections.push(...fallbackSelections)
+  }
+  rawIoSelections.sort((a, b) => a.programIndex - b.programIndex || a.mainStep - b.mainStep || a.parallelStep - b.parallelStep || a.ioIndex - b.ioIndex)
 
   let cmdCursor = 0
   let parCursor = 0
@@ -240,5 +406,5 @@ async function getTheoreticalPrograms(batch: PartialBatch) {
     }
   }
 
-  return result
+  return { programs: result, warnings, notFoundPrograms }
 }

@@ -350,5 +350,15 @@
     "loadingMergedCommands": "Loading Merged Commands",
     "loadingTheoreticalPrograms": "Loading Theoretical Programs",
     "loadingIOValues": "Loading I/O Values"
+  },
+  "theoreticalPrograms": {
+    "emptyTitle": "No Theoretical Program Found",
+    "emptyMessage": "No theoretical program data available for this job order. The theoretical temperature chart will not be drawn.",
+    "fallbackTitle": "Programs Not Found in Archive",
+    "fallbackMessage": "The following programs were not found in the archive and current program data will be used. Inconsistencies may be observed in the Theoretical Temperature/Time chart.",
+    "fallbackProgram": "Program #{programNo} - Updated on {changeDate}",
+    "notFoundTitle": "Program Not Defined",
+    "notFoundMessage": "The following programs were not found in either the archive or the current program list. The theoretical Temperature/Time chart will not be drawn.",
+    "notFoundProgram": "Program #{programNo}"
   }
 }

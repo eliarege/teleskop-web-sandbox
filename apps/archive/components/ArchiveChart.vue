@@ -60,21 +60,37 @@ defineExpose({ resetZoom })
 
 // Start time - end time initleri burada başka bir yerde modifiye etmeyiniz
 const settingsStore = userSettingsStore()
-const theoreticalTemperatures = props.theoreticalPrograms.flatMap(t => t.ioValues)
-const startTime = ref(new Date(props.batch.jobOrderInfo.startTime))
+const theoreticalTemperatures = computed(() => {
+  if (!Array.isArray(props.theoreticalPrograms))
+    return []
+
+  return props.theoreticalPrograms.flatMap(t => t.ioValues)
+},
+)
+const startTime = computed(() => {
+  if (!props.batch?.jobOrderInfo?.startTime)
+    return null
+
+  return new Date(props.batch.jobOrderInfo.startTime)
+})
+
 function getLastDate() {
-  const possibleEndTimes: number[] = [
-    new Date(theoreticalTemperatures[theoreticalTemperatures.length - 1].time).getTime(),
-    new Date(props.batch.lastRecordDate).getTime(),
-    new Date(props.batch.jobOrderInfo.endTime!).getTime(),
-  ]
-  const maxDateMs = possibleEndTimes.reduce<number>((max: number, value: number) => {
-    if (!value)
-      return max
-    if (!max)
-      return value
-    return value > max ? value : max
-  }, 0) || null
+  const possibleEndTimes: number[] = []
+
+  const lastTheoretical = theoreticalTemperatures.value.at(-1)
+  if (lastTheoretical?.time)
+    possibleEndTimes.push(new Date(lastTheoretical.time).getTime())
+
+  if (props.batch?.lastRecordDate)
+    possibleEndTimes.push(new Date(props.batch.lastRecordDate).getTime())
+
+  if (props.batch?.jobOrderInfo?.endTime)
+    possibleEndTimes.push(new Date(props.batch.jobOrderInfo.endTime).getTime())
+
+  const maxDateMs = possibleEndTimes.length
+    ? Math.max(...possibleEndTimes)
+    : null
+
   return maxDateMs ? new Date(maxDateMs) : new Date()
 }
 const endTime = ref(
@@ -104,6 +120,7 @@ const visibleAxises = computed(() => {
     ),
   )
 })
+const visibleAxisesEntries = computed(() => [...(visibleAxises.value?.entries?.() ?? [])])
 const { width: outerWidth, height: outerHeight } = useElementSize(chartEl)
 const margin = ref({ top: 20, right: 180, bottom: 50, left: 50 })
 let chartHeightMultiplier = 1
@@ -112,7 +129,7 @@ let chartHeightMultiplier = 1
 // Chart ve altında kalan digital-io gösterim yeri için gerekli alanı burası oluşturur
 // Lütfen sadece burayı update'leyiniz alanlarla alakalı
 function updateMultipliers() {
-  if (settingsStore.bottomChartVisibilityStatus !== 0) {
+  if (settingsStore?.bottomChartVisibilityStatus !== 0) {
     margin.value.bottom = 0
     chartHeightMultiplier = 0.7
   } else {
@@ -139,6 +156,12 @@ const innerRect = computed(() => {
   }
 })
 
+const innerRectWidth = computed(() => innerRect.value?.width ?? 0)
+const innerRectHeight = computed(() => innerRect.value?.height ?? 0)
+const marginTop = computed(() => margin.value?.top ?? 0)
+const marginRight = computed(() => margin.value?.right ?? 0)
+const marginLeft = computed(() => margin.value?.left ?? 0)
+
 const id = useId()
 const xExtendStartTime = ref(startTime.value)
 const xExtendEndTime = ref(endTime.value)
@@ -164,12 +187,15 @@ const xScale = computed(() => {
 //   props.batch.theoreticalPrograms,
 //   props.batch.machine,
 // )
-settingsStore.updateAxis('\'C', {
-  max: Math.max(
-    settingsStore.axises.get('\'C')?.max,
-    Number(d3Max(theoreticalTemperatures, v => v.value)),
-  ),
-})
+const axis = settingsStore.axises.get('\'C')
+
+const theoreticalMax = d3Max(theoreticalTemperatures.value, v => v.value)
+
+if (axis && theoreticalMax !== undefined) {
+  settingsStore.updateAxis('\'C', {
+    max: Math.max(axis.max ?? 0, theoreticalMax),
+  })
+}
 const colorTransitionPortions: number[] = []
 
 /**
@@ -178,17 +204,17 @@ const colorTransitionPortions: number[] = []
  */
 const jobOrderDurationTheoreticalDuration
   = new Date(
-    theoreticalTemperatures[theoreticalTemperatures.length - 1].time,
-  ).getTime() - startTime.value.getTime()
-theoreticalTemperatures.forEach((io, index) => {
+    theoreticalTemperatures.value[theoreticalTemperatures.value.length - 1]?.time,
+  ).getTime() - (startTime.value?.getTime() ?? 0)
+theoreticalTemperatures.value.forEach((io, index) => {
   if (index) {
     if (
-      theoreticalTemperatures[index].programNo
-      !== theoreticalTemperatures[index - 1].programNo
+      theoreticalTemperatures.value[index].programNo
+      !== theoreticalTemperatures.value[index - 1].programNo
     ) {
       const durationUntilStart
-        = new Date(theoreticalTemperatures[index - 1].time).getTime()
-        - startTime.value.getTime()
+        = new Date(theoreticalTemperatures.value[index - 1].time).getTime()
+        - (startTime.value?.getTime() ?? 0)
       colorTransitionPortions.push(
         durationUntilStart / jobOrderDurationTheoreticalDuration,
       )
@@ -205,12 +231,12 @@ if (!colorTransitionPortions.length)
 const dataSet = computed(() => {
   const set: { io: any, color: string, axis?: any, isDefault?: boolean, lineType?: LineType }[] = []
   set.push({
-    io: { ioValues: theoreticalTemperatures, settingKey: 'DEFAULT' },
+    io: { ioValues: theoreticalTemperatures.value, settingKey: 'DEFAULT' },
     isDefault: true,
     color: '#FFFFFF',
     axis: '\'C',
   })
-  props.batch.analogInputs.forEach((io) => {
+  props.batch.analogInputs?.forEach((io) => {
     const setting = settingsStore.getSetting(`analogInputs_${io.ioIndex}`)
     if (setting && setting.selected)
       set.push({
@@ -220,7 +246,7 @@ const dataSet = computed(() => {
         axis: setting.axis,
       })
   })
-  props.batch.counters.forEach((io) => {
+  props.batch.counters?.forEach((io) => {
     const setting = settingsStore.getSetting(`counters_${io.ioIndex}`)
     if (setting && setting.selected)
       set.push({
@@ -230,7 +256,7 @@ const dataSet = computed(() => {
         axis: setting.axis,
       })
   })
-  props.batch.calculatedValues.forEach((io) => {
+  props.batch.calculatedValues?.forEach((io) => {
     const setting = settingsStore.getSetting(`calculatedValues_${io.ioIndex}`)
     if (setting && setting.selected)
       set.push({
@@ -240,7 +266,7 @@ const dataSet = computed(() => {
         axis: setting.axis,
       })
   })
-  props.batch.analogOutputs.forEach((io) => {
+  props.batch.analogOutputs?.forEach((io) => {
     const setting = settingsStore.getSetting(`analogOutputs_${io.ioIndex}`)
     if (setting && setting.selected)
       set.push({
@@ -256,19 +282,19 @@ const dataSet = computed(() => {
 
 // Digital iolar için dataset
 const digitalDataSet = computed(() => {
-  if (settingsStore.bottomChartVisibilityStatus === 1) {
+  if (settingsStore?.bottomChartVisibilityStatus === 1) {
     const set = [] as DigitalInputOutputType[]
-    props.batch.digitalInputs.forEach((io) => {
+    props.batch.digitalInputs?.forEach((io) => {
       const setting = settingsStore.getSetting(`digitalInputs_${io.ioIndex}`)
       if (setting && setting.selected)
         set.push(io)
     })
-    props.batch.digitalOutputs.forEach((io) => {
+    props.batch.digitalOutputs?.forEach((io) => {
       const setting = settingsStore.getSetting(`digitalOutputs_${io.ioIndex}`)
       if (setting && setting.selected)
         set.push(io)
     })
-    props.batch.digitalOutputLocks.forEach((io) => {
+    props.batch.digitalOutputLocks?.forEach((io) => {
       const setting = settingsStore.getSetting(
         `digitalOutputLocks_${io.ioIndex}`,
       )
@@ -276,8 +302,8 @@ const digitalDataSet = computed(() => {
         set.push(io)
     })
     return set.map((io) => {
-      const firstIO = { value: io.ioValues[0].value, time: startTime.value }
-      const lastIO = { value: io.ioValues[io.ioValues.length - 1].value, time: endTime.value }
+      const firstIO = { value: io.ioValues[0]?.value ?? 0, time: startTime.value }
+      const lastIO = { value: io.ioValues[io.ioValues.length - 1]?.value ?? 0, time: endTime.value }
       return { ...io, ioValues: [firstIO, ...io.ioValues, lastIO] }
     })
   } else return []
@@ -286,9 +312,9 @@ const digitalDataSet = computed(() => {
 // Reels data seti. Bunların hepsinin tipi ve gösterildikleri alanlar - componentler farklı
 
 const reelsDataSet = computed(() => {
-  if (settingsStore.bottomChartVisibilityStatus === 2) {
+  if (settingsStore?.bottomChartVisibilityStatus === 2) {
     const cycs = []
-    props.batch.cycleTimes.forEach((cycle) => {
+    props.batch.cycleTimes?.forEach((cycle) => {
       const setting = settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`)
       if (setting && setting.selected)
         cycs.push({ ...cycle, color: setting.color, lineType: setting.lineType })
@@ -329,7 +355,7 @@ const yScales = computed(() => {
 const reelYScale = computed(() => {
   const max = Number(
     d3Max(
-      reelsDataSet.value.map(cyc => d3Max(cyc.cycles, c => c.duration)),
+      reelsDataSet.value.map(cyc => cyc.cycles ? d3Max(cyc.cycles, c => c.duration) : 0),
     ),
   )
   return scaleLinear()
@@ -420,7 +446,7 @@ const lines = computed(() => {
           return xScale.value(new Date(d.time))
         })
         .y((d: any) => scale(d.value))
-        .curve(dataSet.value[index].io.type !== 'AOUT' ? curveLinear : curveStepAfter),
+        .curve(dataSet.value[index]?.io?.type !== 'AOUT' ? curveLinear : curveStepAfter),
     }
   })
 })
@@ -438,10 +464,15 @@ const reelLines = computed(() => {
   })
 })
 function updateYAxises() {
-  yAxisLeft?.call(
-    axisLeft(yScales.value[0]) // FIXME
-      .ticks(yAxisTickCount.value),
-  )
+  if (!innerRect.value?.height)
+    return
+
+  if (yScales.value[0]) {
+    yAxisLeft?.call(
+      axisLeft(yScales.value[0]) // FIXME
+        .ticks(yAxisTickCount.value),
+    )
+  }
   yAxisReels?.call(
     axisLeft(reelYScale.value) // FIXME
       .ticks(reelsYAxisTickCount.value),
@@ -500,7 +531,7 @@ function getBrush() {
   return brushX()
     .extent([
       [margin.value.left, margin.value.top], // Top-left corner of the brush area
-      [innerRect.value.width + margin.value.left, settingsStore.bottomChartVisibilityStatus ? innerRect.value.height + margin.value.bottom : innerRect.value.height + margin.value.top], // Bottom-right corner of the brush area
+      [innerRect.value.width + margin.value.left, settingsStore?.bottomChartVisibilityStatus ? innerRect.value.height + margin.value.bottom : innerRect.value.height + margin.value.top], // Bottom-right corner of the brush area
     ])
     .on('start', (event) => {
       startX = event.sourceEvent.x
@@ -587,6 +618,9 @@ watch(visibleAxises, async (newval) => {
 
 // fix(AR): TW-178
 watch(selectedTime, () => {
+  if (!xExtendStartTime.value || !xExtendEndTime.value)
+    return
+
   const visibleStart = xExtendStartTime.value.getTime()
   const visibleEnd = xExtendEndTime.value.getTime()
   const needleTime = selectedTime.value.getTime()
@@ -637,7 +671,7 @@ const uniqueBars = ref(
     value: { startTime: string | Date, endTime: string | Date }[]
   }[],
 )
-props.batch.alarms.forEach((alarm) => {
+props.batch.alarms?.forEach((alarm) => {
   const uniqueIndex = uniqueBars.value.findIndex(
     al => alarm.alarmNo === al.alarmNo,
   )
@@ -721,7 +755,7 @@ const tooltipContent = computed(() => {
     )
 
   // TODO: bottomChartVisibilityStatus enum değer olmalı
-  if (settingsStore.bottomChartVisibilityStatus === 2) {
+  if (settingsStore?.bottomChartVisibilityStatus === 2) {
     reelsDataSet.value.forEach((reel) => {
       let closestPoint
       if (reel.cycles.length) {
@@ -855,7 +889,10 @@ function getAlarmWidth(startTime: string | Date, endTime: string | Date) {
 }
 const arrowPoints = computed(() => {
   const unloadPoints: { x: number, y: number }[] = []
-  theoreticalTemperatures.forEach((temp) => {
+  if (!yScales.value[0])
+    return unloadPoints
+
+  theoreticalTemperatures.value.forEach((temp) => {
     if (props.batch.machine.commands.find(cmd => cmd.commandNo === temp.commandNo)?.isUnload) {
       unloadPoints.push({
         x: xScale.value(temp.time),
@@ -1000,7 +1037,7 @@ const selectedCommand = computed(() => {
       />
       <!-- Right buttons see buttons[] array -->
       <g
-        :transform="`translate(${innerRect.width + margin.right}, ${margin.top})`"
+        :transform="`translate(${innerRectWidth + marginRight}, ${marginTop})`"
       >
         <foreignObject
           v-for="(button, index) in buttons"
@@ -1023,26 +1060,26 @@ const selectedCommand = computed(() => {
       </g>
       <defs>
         <clipPath :id="clipId">
-          <rect :width="innerRect.width" :height="innerRect.height" />
+          <rect :width="innerRectWidth" :height="innerRectHeight" />
         </clipPath>
       </defs>
       <!-- Right axises -->
       <g
-        :transform="`translate(${margin.left},${margin.top})`"
+        :transform="`translate(${marginLeft},${marginTop})`"
         style="cursor: crosshair;"
       >
         <g
           ref="xAxisEl"
           class="x-axis"
-          :transform="`translate(0,${innerRect.height * chartHeightMultiplier})`"
+          :transform="`translate(0,${innerRectHeight * chartHeightMultiplier})`"
         />
         <g ref="yAxisEl" class="y-axis" />
         <g
-          v-for="([key, axis], index) in visibleAxises.entries()"
+          v-for="([key, axis], index) in visibleAxisesEntries"
           :id="`${id}-${formatASCII(key)}`"
           :key="`${key}-axis`"
           class="y-axis-right"
-          :transform="`translate(${innerRect.width + index * 35}, 0)`"
+          :transform="`translate(${innerRectWidth + index * 35}, 0)`"
         >
           <text
             :id="`axis-${index}`"
@@ -1057,7 +1094,7 @@ const selectedCommand = computed(() => {
           <path
             v-for="(line, index) in lines"
             :key="`${index}-line`"
-            :d="line.line(dataSet[index].io.ioValues)!"
+            :d="line.line(dataSet[index]?.io?.ioValues || [])!"
             fill="none"
             :stroke="line.isDefault ? 'url(#koko)' : line.color"
             :stroke-width="line.isDefault ? 1 : 2.5"
@@ -1065,7 +1102,7 @@ const selectedCommand = computed(() => {
             style="pointer-events: none;"
           />
           <g v-for="(line, index) in lines" :key="`${index}-dots`">
-            <g v-if="line.lineType === 'dotted'">
+            <g v-if="line.lineType === 'dotted' && dataSet[index]?.io?.ioValues && yScales[index]">
               <circle
                 v-for="(point, pointIndex) in dataSet[index].io.ioValues"
                 :key="`${index}-${pointIndex}`"
@@ -1094,9 +1131,9 @@ const selectedCommand = computed(() => {
           :x2="selectedX"
           y1="0"
           :y2="
-            settingsStore.bottomChartVisibilityStatus
+            settingsStore?.bottomChartVisibilityStatus
               ? outerHeight - 40
-              : innerRect.height
+              : innerRectHeight
           "
           stroke="black"
           stroke-dasharray="4"
@@ -1160,7 +1197,7 @@ const selectedCommand = computed(() => {
             y="60"
           >
             {{ t("tooltipOptions.activeUser") }}:
-            {{ batch.jobOrderInfo.operatorName }}
+            {{ batch.jobOrderInfo?.operatorName }}
           </text>
           <text
             v-if="selectedCommand"
@@ -1193,7 +1230,7 @@ const selectedCommand = computed(() => {
         </g>
         <!-- Digital ios -->
         <g
-          v-if="settingsStore.bottomChartVisibilityStatus === 1"
+          v-if="settingsStore?.bottomChartVisibilityStatus === 1"
           :transform="`translate(${0}, ${outerHeight * chartHeightMultiplier + 20})`"
         >
           <g class="io-status-bars">
@@ -1219,7 +1256,7 @@ const selectedCommand = computed(() => {
           </g>
         </g>
         <!-- Reel lines -->
-        <g v-show="settingsStore.bottomChartVisibilityStatus === 2">
+        <g v-show="settingsStore?.bottomChartVisibilityStatus === 2">
           <g
             ref="reelsXAxisEl"
             class="x-axis"
@@ -1230,14 +1267,14 @@ const selectedCommand = computed(() => {
             <path
               v-for="(line, index) in reelLines"
               :key="`${index}-line-reel`"
-              :d="line.line(reelsDataSet[index].cycles)!"
+              :d="line.line(reelsDataSet[index]?.cycles || [])!"
               fill="none"
               :stroke="line.color"
               stroke-width="3"
               :stroke-dasharray="line.lineType === 'dashed' ? '4,2' : 'none'"
             />
             <g v-for="(line, index) in reelLines" :key="`${index}-dots-reel`">
-              <g v-if="line.lineType === 'dotted'">
+              <g v-if="line.lineType === 'dotted' && reelsDataSet[index]?.cycles">
                 <circle
                   v-for="(point, pointIndex) in reelsDataSet[index].cycles"
                   :key="`${index}-${pointIndex}`"
