@@ -347,5 +347,15 @@
     "loadingMergedCommands": "Birleştirilmiş Komutlar Yükleniyor",
     "loadingTheoreticalPrograms": "Teorik Programlar Yükleniyor",
     "loadingIOValues": "Giriş/Çıkış Değerleri Yükleniyor"
+  },
+  "theoreticalPrograms": {
+    "emptyTitle": "Teorik Program Bulunamadı",
+    "emptyMessage": "Bu iş emri için teorik program verisi bulunmamaktadır. Teorik sıcaklık grafiği çizilmeyecektir.",
+    "fallbackTitle": "Arşivde Program Bulunamadı",
+    "fallbackMessage": "Aşağıdaki programlar arşivde bulunamadı ve güncel program verileri kullanılacaktır. Teorik Sıcaklık/Zaman grafiğinde tutarsızlıklar gözlenebilir.",
+    "fallbackProgram": "{programNo} numaralı program - {changeDate} tarihinde güncellenmiş",
+    "notFoundTitle": "Program Tanımsız",
+    "notFoundMessage": "Aşağıdaki programlar ne arşivde ne de güncel program listesinde bulunamadı. Teorik Sıcaklık/Zaman grafiği çizilmeyecektir.",
+    "notFoundProgram": "{programNo} numaralı program"
   }
 }

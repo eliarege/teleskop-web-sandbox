@@ -261,14 +261,40 @@ batchData.value?.calculatedValues.forEach((command) => {
 const mergedCommandsWithNames = computed(() => getCommandsWithNames())
 // Teorik sıcaklık hesaplama kısmı için lütfen herhangi bir şey değiştirmeden önce
 // @egeiliklier 'e danışınız.
-const theoreticalCommands = calculateTheoreticalCommands(batchData.value?.jobOrderInfo.startTime, 25, batchData.value?.theoreticalPrograms, batchData.value?.machine)
-const { theoreticalPrograms, errors } = calculateProgramTheoreticalTemperature(
-  batchData.value?.jobOrderInfo.startTime,
-  25, // Flat 25 normalde DB'den alınacak. TODO:
-  batchData.value?.theoreticalPrograms,
-  batchData.value?.machine,
-)
-if (errors.length) {
+const theoreticalCommands = computed(() => {
+  if (!batchData.value?.theoreticalPrograms?.length)
+    return []
+
+  return calculateTheoreticalCommands(
+    batchData.value.jobOrderInfo.startTime,
+    25,
+    batchData.value.theoreticalPrograms,
+    batchData.value.machine,
+  )
+})
+
+const theoreticalResult = computed(() => {
+  // Don't calculate if programs are missing (not found in either BA or BF tables)
+  if (batchData.value?.notFoundPrograms?.length) {
+    return { theoreticalPrograms: [], errors: [] }
+  }
+
+  if (!batchData.value?.theoreticalPrograms?.length) {
+    return { theoreticalPrograms: [], errors: [] }
+  }
+
+  return calculateProgramTheoreticalTemperature(
+    batchData.value.jobOrderInfo.startTime,
+    25,
+    batchData.value.theoreticalPrograms,
+    batchData.value.machine,
+  )
+})
+
+const theoreticalPrograms = computed(() => theoreticalResult.value.theoreticalPrograms)
+const errors = computed(() => theoreticalResult.value.errors)
+
+if (errors.value.length) {
   $q.notify({
     timeout: 0,
     type: 'negative',
@@ -284,10 +310,77 @@ if (errors.length) {
     multiLine: true,
     message: h(ExpandableMessage, {
       title: t('commandErrors.title'),
-      details: errors.map(error => t(`commandErrors.${error.code}`, error.params)),
+      details: errors.value.map(error => t(`commandErrors.${error.code}`, error.params)),
     }),
   })
 }
+
+const theoreticalDialogShown = ref(false)
+const fallbackWarningDialogShown = ref(false)
+const notFoundDialogShown = ref(false)
+
+watch(
+  theoreticalPrograms,
+  (programs) => {
+    if (!programs || theoreticalDialogShown.value)
+      return
+
+    if (programs.length === 0) {
+      theoreticalDialogShown.value = true
+      $q.dialog({
+        title: t('theoreticalPrograms.emptyTitle'),
+        message: t('theoreticalPrograms.emptyMessage'),
+        color: 'warning',
+      })
+    }
+  },
+)
+
+// Show error for programs not found in either BA or BF tables
+watch(
+  () => batchData.value?.notFoundPrograms,
+  (notFoundPrograms) => {
+    if (!notFoundPrograms?.length || notFoundDialogShown.value)
+      return
+
+    const programList = notFoundPrograms.map(progNo =>
+      t('theoreticalPrograms.notFoundProgram', { programNo: progNo }),
+    ).join('<br>')
+
+    notFoundDialogShown.value = true
+    $q.dialog({
+      title: t('theoreticalPrograms.notFoundTitle'),
+      message: `${t('theoreticalPrograms.notFoundMessage')}<br><br>${programList}`,
+      html: true,
+      color: 'negative',
+    })
+  },
+  { immediate: true },
+)
+
+// Show warnings for programs loaded from fallback (BFMASTERPRGHEADER)
+watch(
+  () => batchData.value?.theoreticalProgramWarnings,
+  (warnings) => {
+    if (!warnings?.length || fallbackWarningDialogShown.value)
+      return
+
+    const { d } = useI18n()
+    const warningList = warnings.map((warning) => {
+      const changeDate = warning.changeDate ? d(new Date(warning.changeDate), 'datetime') : '-'
+      return `<li>${t('theoreticalPrograms.fallbackProgram', { programNo: warning.programNo, changeDate })}</li>`
+    }).join('')
+
+    fallbackWarningDialogShown.value = true
+    $q.dialog({
+      title: t('theoreticalPrograms.fallbackTitle'),
+      message: `${t('theoreticalPrograms.fallbackMessage')}<br><br><ul>${warningList}</ul>`,
+      html: true,
+      color: 'warning',
+    })
+  },
+  { immediate: true },
+)
 
 const actualPrograms = computed(() => {
   const prgs: Array<BasicProgram> = []
@@ -300,7 +393,9 @@ const actualPrograms = computed(() => {
         endTime: '',
       })
     } else {
-      prgs[prgs.length - 1].endTime = step.endTime
+      if (step.endTime && prgs.length > 0) {
+        prgs[prgs.length - 1].endTime = step.endTime
+      }
     }
   })
   return prgs
@@ -340,12 +435,12 @@ const components: Record<string, () => any> = {
     }),
   TheoreticalPrograms: () =>
     h(TheoreticalPrograms, {
-      programs: theoreticalPrograms,
+      programs: theoreticalPrograms.value,
       selectedTime: selectedDate.value,
     }),
   TheoreticalSteps: () =>
     h(TheoreticalSteps, {
-      commands: theoreticalCommands as DuoAny<BatchCommand>[],
+      commands: theoreticalCommands.value,
       selectedTime: selectedDate.value,
       machineCommands: batchData.value?.machine.commands as MachineCommand[],
       onUpdateSelectedTime: (time: string) => updateSelectedTime(time),
@@ -421,7 +516,7 @@ const components: Record<string, () => any> = {
     h(ArchiveChart, {
       'ref': chart,
       'batch': { ...batchData.value, mergedCommands: mergedCommandsWithNames.value },
-      theoreticalPrograms,
+      'theoreticalPrograms': theoreticalPrograms.value,
       'modelValue': selectedDate.value,
       'onUpdate:modelValue': (newVal: Date) => {
         selectedDate.value = newVal

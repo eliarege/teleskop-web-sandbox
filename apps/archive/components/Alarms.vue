@@ -82,6 +82,9 @@ const columns = computed(() => [
 ])
 
 const rows = computed(() => {
+  if (!props.alarms)
+    return []
+
   return props.alarms
     .filter((alarm) => {
       if (settingStore.showAllAlarms) {

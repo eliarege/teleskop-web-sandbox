@@ -46,6 +46,9 @@ export function pick<T extends Record<string, any>>(object: T, keys: (keyof T)[]
   return result
 }
 
-export function last<T>(arr: T[]): T | undefined {
+export function last<T>(arr?: T[]): T | undefined {
+  if (!Array.isArray(arr) || arr.length === 0)
+    return undefined
+
   return arr[arr.length - 1]
 }

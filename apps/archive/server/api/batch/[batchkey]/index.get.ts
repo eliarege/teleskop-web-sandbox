@@ -59,8 +59,11 @@ const tasks: Array<{ message: string, method: (event: H3Event, result: any) => P
   },
   {
     message: 'loadingTheoreticalPrograms',
-    method: async (event, result) => {
-      result.theoreticalPrograms = await theoreticalProgramsGet(event)
+    method: async (event, result: Batch) => {
+      const { programs, warnings, notFoundPrograms } = await theoreticalProgramsGet(event)
+      result.theoreticalPrograms = programs
+      result.theoreticalProgramWarnings = warnings
+      result.notFoundPrograms = notFoundPrograms
     },
   },
   {

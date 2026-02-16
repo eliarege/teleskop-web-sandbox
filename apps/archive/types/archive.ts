@@ -12,6 +12,8 @@ export interface Batch {
   actualCommands: BatchCommand[]
   mergedCommands: MergedBatchCommand[]
   theoreticalPrograms: Program[]
+  theoreticalProgramWarnings?: { programNo: number, changeDate: string }[]
+  notFoundPrograms?: number[]
   analogInputs: AnalogInputOutputType[]
   analogOutputs: AnalogInputOutputType[]
   digitalInputs: DigitalInputOutputType[]

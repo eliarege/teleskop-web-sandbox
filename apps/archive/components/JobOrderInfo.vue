@@ -3,23 +3,36 @@ import { format } from 'date-fns'
 import type { BatchInfo } from '~/types/archive'
 
 const props = defineProps<{
-  jobOrderInfo: BatchInfo
+  jobOrderInfo?: BatchInfo
 }>()
 const { t } = useI18n()
 
 const keyLabels = computed(() => {
+  const job = props.jobOrderInfo
+
   return {
     machineName: t('jobOrderTable.machineName'),
     machineModel: t('jobOrderTable.model'),
     operatorName: t('jobOrderTable.operator'),
     jobOrder: t('jobOrderTable.jobOrder'),
     startTime: t('jobOrderTable.startTime'),
-    endTime: props.jobOrderInfo.isCancelled ? t('jobOrderTable.cancelTime') : t('jobOrderTable.endTime'),
+    endTime: job?.isCancelled
+      ? t('jobOrderTable.cancelTime')
+      : t('jobOrderTable.endTime'),
     theoreticalEndTime: t('jobOrderTable.theoreticalEndTime'),
   }
 })
 
-const theoreticalEndTime = computed(() => new Date((new Date(props.jobOrderInfo.startTime)).getTime() + props.jobOrderInfo.theoreticalDuration * 1000))
+const theoreticalEndTime = computed(() => {
+  const job = props.jobOrderInfo
+  if (!job?.startTime || !job?.theoreticalDuration)
+    return null
+
+  return new Date(
+    new Date(job.startTime).getTime()
+      + job.theoreticalDuration * 1000,
+  )
+})
 </script>
 
 <template>
@@ -31,14 +44,14 @@ const theoreticalEndTime = computed(() => new Date((new Date(props.jobOrderInfo.
             {{ value }}
           </td>
           <td class="px-2 py-0.5 text-left">
-            <span v-if="key === 'theoreticalEndTime'">
+            <span v-if="key === 'theoreticalEndTime' && theoreticalEndTime">
               {{ format(theoreticalEndTime, 'HH:mm:ss dd/MM/yyyy') }}
             </span>
             <span v-else-if="key === 'startTime' || key === 'endTime'">
-              {{ jobOrderInfo[key] ? format(jobOrderInfo[key], 'HH:mm:ss dd/MM/yyyy') : '-' }}
+              {{ props.jobOrderInfo?.[key] ? format(props.jobOrderInfo[key], 'HH:mm:ss dd/MM/yyyy') : '-' }}
             </span>
             <span v-else>
-              {{ jobOrderInfo[key] }}
+              {{ props.jobOrderInfo?.[key] }}
             </span>
           </td>
         </tr>
