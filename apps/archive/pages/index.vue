@@ -7,7 +7,7 @@ import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 // For this, we can use the onMounted hook from 'vue'
 
 const { t, d } = useI18n()
-const { loading } = useQuasar()
+const { loading, notify } = useQuasar()
 
 const externalFilterSlots = useStorage('filterSlots', [], sessionStorage)
 const { data: machines } = await useFetch('/api/machine')
@@ -104,8 +104,23 @@ const columns = computed(() => [
 
 const selectedRow = ref()
 
+const errorChannel = new BroadcastChannel('archive-error')
+errorChannel.onmessage = (event) => {
+  loading.hide()
+  notify({
+    color: 'negative',
+    position: 'top-right',
+    message: event.data.message,
+    icon: 'error',
+  })
+}
+
+onUnmounted(() => {
+  errorChannel.close()
+})
+
 async function handleRowDblClick(batchkey: number) {
-  await navigateTo(`/${batchkey}`)
+  await navigateTo(`/${batchkey}?fromList=true`, { open: { target: '_blank' } })
 }
 
 onKeyStroke('Enter', () => {
@@ -138,6 +153,16 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
         @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         @update-pagination="pgn => pagination = pgn"
       >
+        <template #body-cell-jobOrder="props">
+          <a
+            :href="`/${props.row.batchKey}?fromList=true`"
+            target="_blank"
+            class="job-order-link"
+            @click.stop
+          >
+            {{ props.value }}
+          </a>
+        </template>
         <template #body-cell-batchStatus="props">
           <q-icon
             :name="props.value ? 'directions_run' : 'check'"
@@ -179,5 +204,13 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
 .right-home {
   position: absolute;
   right: 0;
+}
+:deep(.job-order-link) {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+:deep(.job-order-link:hover) {
+  color: var(--q-primary);
 }
 </style>

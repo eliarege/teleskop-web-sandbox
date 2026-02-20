@@ -660,7 +660,7 @@ function onRequest(pagination: QTableProps['pagination']) {
               :props="bodyProps"
               @dblclick="handleDoubleClick(bodyProps.row)"
             >
-              <slot :name="`body-cell-${col.name}`" v-bind="col">
+              <slot :name="`body-cell-${col.name}`" v-bind="{ ...col, row: bodyProps.row }">
                 {{ col.value }}
               </slot>
             </q-td>

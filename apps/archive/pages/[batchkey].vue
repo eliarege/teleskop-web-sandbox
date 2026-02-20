@@ -74,13 +74,21 @@ const batchDataPromise = response.json().then((data: TaskResponse<DuoAny<Batch>>
     settingsStore.initializeSettings()
   } else {
     const message = data.error?.message || 'UNKNOWN_ERROR'
-    $q.notify({
-      color: 'negative',
-      position: 'top-right',
-      message: t('error._', { message: t(`error.${message}`, message) }),
-      icon: 'error',
-    })
-    navigateTo('/')
+    const errorMessage = t('error._', { message: t(`error.${message}`, message) })
+    if (route.query.fromList) {
+      const errorChannel = new BroadcastChannel('archive-error')
+      errorChannel.postMessage({ message: errorMessage })
+      errorChannel.close()
+      window.close()
+    } else {
+      $q.notify({
+        color: 'negative',
+        position: 'top-right',
+        message: errorMessage,
+        icon: 'error',
+      })
+      navigateTo('/')
+    }
   }
 })
 await trackTaskProgress()
