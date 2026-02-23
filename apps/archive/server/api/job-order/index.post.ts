@@ -65,16 +65,35 @@ export default defineEventHandler(async (event) => {
   }
   const rows = await knexInstance
   for (const row of rows) {
-    const programNoList = (await db('BAACTUALPRGSTEPS')
-      .select('PRGNO')
-      .where('BATCHKEY', Number(row.batchKey))
-      .orderBy('STEPNO', 'asc'))
-      .map(el => el.PRGNO)
-    row.theoreticalProgramNoList = row.theoreticalProgramNoList.includes(',') ? row.theoreticalProgramNoList.split(',').map((p: string) => Number(p)) : [Number(row.theoreticalProgramNoList)]
+    const actualSteps = await db('BAACTUALPRGSTEPS as A')
+      .select('A.PRGNO', 'M.NAME')
+      .join('BADATA as BD', 'BD.BATCHKEY', 'A.BATCHKEY')
+      .join('BAMASTERPRGHEADER as M', function () {
+        this.on('M.MACHINEID', '=', 'BD.MACHINEID')
+          .andOn('M.PROGNO', '=', 'A.PRGNO')
+      })
+      .where('A.BATCHKEY', Number(row.batchKey))
+      .orderBy('A.STEPNO', 'asc')
+
+    row.theoreticalProgramNoList = row.theoreticalProgramNoList.includes(',')
+      ? row.theoreticalProgramNoList.split(',').map((p: string) => Number(p))
+      : [Number(row.theoreticalProgramNoList)]
+
+    const theoreticalNames = await db('BAMASTERPRGHEADER')
+      .select('PROGNO', 'NAME')
+      .where('MACHINEID', row.machineId)
+      .whereIn('PROGNO', row.theoreticalProgramNoList)
+
+    const theoreticalNameMap = new Map(theoreticalNames.map((t: any) => [t.PROGNO, t.NAME]))
+    row.theoreticalProgramNameList = row.theoreticalProgramNoList.map((p: number) => theoreticalNameMap.get(p) ?? null)
+
     row.actualProgramNoList = []
-    programNoList.forEach((programNo: number, index) => {
-      if (index === 0 || programNo !== programNoList[index - 1])
-        row.actualProgramNoList.push(programNo)
+    row.actualProgramNameList = []
+    actualSteps.forEach((step: any, index: number) => {
+      if (index === 0 || step.PRGNO !== actualSteps[index - 1].PRGNO) {
+        row.actualProgramNoList.push(step.PRGNO)
+        row.actualProgramNameList.push(step.NAME)
+      }
     })
   }
   return { rows, count }

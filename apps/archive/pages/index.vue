@@ -163,6 +163,22 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
             {{ props.value }}
           </a>
         </template>
+        <template #body-cell-theoreticalProgramNoList="props">
+          <span>
+            {{ props.value }}
+            <q-tooltip v-if="props.row.theoreticalProgramNameList?.length" :delay="500">
+              {{ props.row.theoreticalProgramNameList.join(', ') }}
+            </q-tooltip>
+          </span>
+        </template>
+        <template #body-cell-actualProgramNoList="props">
+          <span>
+            {{ props.value }}
+            <q-tooltip v-if="props.row.actualProgramNameList?.length" :delay="500">
+              {{ props.row.actualProgramNameList.join(', ') }}
+            </q-tooltip>
+          </span>
+        </template>
         <template #body-cell-batchStatus="props">
           <q-icon
             :name="props.value ? 'directions_run' : 'check'"
