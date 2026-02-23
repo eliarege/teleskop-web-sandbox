@@ -33,6 +33,7 @@ watch(pagination, async () => {
 })
 
 const { data: theoreticalProgramNos } = await useFetch<number[]>('/api/theoretical-programs')
+const { data: actualProgramNos } = await useFetch<number[]>('/api/actual-programs')
 
 const columns = computed(() => [
   {
@@ -98,6 +99,9 @@ const columns = computed(() => [
     name: 'actualProgramNoList',
     label: t('panels.actualPrograms'),
     field: 'actualProgramNoList',
+    filterable: true,
+    filterType: 'multiselect',
+    selectionOptions: actualProgramNos.value || [],
     format: val => val.join(', '),
   },
 ] as FilterableTableColumn[])

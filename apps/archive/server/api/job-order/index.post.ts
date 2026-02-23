@@ -23,16 +23,17 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const knexInstance: any = db('BADATA as B')
   let programFilter
+  let actualProgramFilter
   let filters
 
   if (body.filters && body.filters?.length > 0) {
     const programFilterIndex = body.filters.findIndex((flt: any) => flt.field === 'theoreticalProgramNoList')
-    if (programFilterIndex !== -1) {
-      filters = body.filters.filter((flt: any) => flt.field !== 'theoreticalProgramNoList')
+    const actualProgramFilterIndex = body.filters.findIndex((flt: any) => flt.field === 'actualProgramNoList')
+    filters = body.filters.filter((flt: any) => flt.field !== 'theoreticalProgramNoList' && flt.field !== 'actualProgramNoList')
+    if (programFilterIndex !== -1)
       programFilter = body.filters[programFilterIndex]
-    } else {
-      filters = body.filters
-    }
+    if (actualProgramFilterIndex !== -1)
+      actualProgramFilter = body.filters[actualProgramFilterIndex]
     filtersToKnex(filters, selectParameters, knexInstance)
   }
 
@@ -50,24 +51,48 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (actualProgramFilter) {
+    const actualOpts: number[] = actualProgramFilter.value.option
+    knexInstance.whereIn('B.BATCHKEY', function (this: any) {
+      this.select('BATCHKEY').from('BAACTUALPRGSTEPS').whereIn('PRGNO', actualOpts)
+    })
+  }
+
   const { count } = (await knexInstance.clone().count('* as count').first())
 
-  // Build a match-count expression so rows matching more selected programs rank higher.
+  // Build match-count expressions so rows matching more selected programs rank higher.
+  const extraSelectColumns: Record<string, any> = {}
+
   if (programFilter && programFilter.value.option.length > 1) {
     const bindings: string[] = []
     const caseParts = programFilter.value.option.map((opt: number) => {
       bindings.push(`${opt}`, `${opt},%`, `%,${opt}`, `%,${opt},%`)
       return 'CASE WHEN B.PROGRAMNOLIST = ? OR B.PROGRAMNOLIST LIKE ? OR B.PROGRAMNOLIST LIKE ? OR B.PROGRAMNOLIST LIKE ? THEN 1 ELSE 0 END'
     })
-    const matchCountExpr = db.raw(`(${caseParts.join(' + ')})`, bindings)
-    knexInstance.select({ ...selectParameters, matchCount: matchCountExpr })
+    extraSelectColumns.theoMatchCount = db.raw(`(${caseParts.join(' + ')})`, bindings)
+  }
+
+  if (actualProgramFilter && actualProgramFilter.value.option.length > 1) {
+    const actualOpts: number[] = actualProgramFilter.value.option
+    const bindings: number[] = []
+    const caseParts = actualOpts.map((opt: number) => {
+      bindings.push(opt)
+      return 'CASE WHEN EXISTS (SELECT 1 FROM BAACTUALPRGSTEPS WHERE BATCHKEY = B.BATCHKEY AND PRGNO = ?) THEN 1 ELSE 0 END'
+    })
+    extraSelectColumns.actualMatchCount = db.raw(`(${caseParts.join(' + ')})`, bindings)
+  }
+
+  if (Object.keys(extraSelectColumns).length > 0) {
+    knexInstance.select({ ...selectParameters, ...extraSelectColumns })
   } else {
     knexInstance.select(selectParameters)
   }
 
   if (body.pagination) {
     if (programFilter && programFilter.value.option.length > 1)
-      knexInstance.orderBy('matchCount', 'desc')
+      knexInstance.orderBy('theoMatchCount', 'desc')
+    if (actualProgramFilter && actualProgramFilter.value.option.length > 1)
+      knexInstance.orderBy('actualMatchCount', 'desc')
 
     if (body.pagination.sortBy)
       knexInstance.orderBy(selectParameters[body.pagination.sortBy], body.pagination.descending ? 'desc' : 'asc')
@@ -112,6 +137,8 @@ export default defineEventHandler(async (event) => {
     })
 
     delete row.matchCount
+    delete row.theoMatchCount
+    delete row.actualMatchCount
   }
   return { rows, count }
 })
