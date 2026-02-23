@@ -36,24 +36,39 @@ export default defineEventHandler(async (event) => {
     filtersToKnex(filters, selectParameters, knexInstance)
   }
 
-  const { count } = (await knexInstance.clone().count('* as count').first())
-
-  knexInstance.select(selectParameters)
-
   if (programFilter) {
+    const opts: number[] = programFilter.value.option
     knexInstance.andWhere((builder: any) => {
-      const DBName = 'B.PROGRAMNOLIST' // selectParameters[programFilter.field]
-      programFilter.value.option.forEach((opt: number) => {
-        builder.andWhere((innerBuilder: any) => {
-          innerBuilder.orWhere(DBName, '=', `${opt}`)
-          innerBuilder.orWhere(DBName, 'like', `%,${opt}%`)
-          innerBuilder.orWhere(DBName, 'like', `%${opt},%`)
+      opts.forEach((opt: number) => {
+        builder.orWhere((inner: any) => {
+          inner.where('B.PROGRAMNOLIST', '=', `${opt}`)
+            .orWhere('B.PROGRAMNOLIST', 'like', `${opt},%`) // first in list
+            .orWhere('B.PROGRAMNOLIST', 'like', `%,${opt}`) // last in list
+            .orWhere('B.PROGRAMNOLIST', 'like', `%,${opt},%`) // middle of list
         })
       })
     })
   }
 
+  const { count } = (await knexInstance.clone().count('* as count').first())
+
+  // Build a match-count expression so rows matching more selected programs rank higher.
+  if (programFilter && programFilter.value.option.length > 1) {
+    const bindings: string[] = []
+    const caseParts = programFilter.value.option.map((opt: number) => {
+      bindings.push(`${opt}`, `${opt},%`, `%,${opt}`, `%,${opt},%`)
+      return 'CASE WHEN B.PROGRAMNOLIST = ? OR B.PROGRAMNOLIST LIKE ? OR B.PROGRAMNOLIST LIKE ? OR B.PROGRAMNOLIST LIKE ? THEN 1 ELSE 0 END'
+    })
+    const matchCountExpr = db.raw(`(${caseParts.join(' + ')})`, bindings)
+    knexInstance.select({ ...selectParameters, matchCount: matchCountExpr })
+  } else {
+    knexInstance.select(selectParameters)
+  }
+
   if (body.pagination) {
+    if (programFilter && programFilter.value.option.length > 1)
+      knexInstance.orderBy('matchCount', 'desc')
+
     if (body.pagination.sortBy)
       knexInstance.orderBy(selectParameters[body.pagination.sortBy], body.pagination.descending ? 'desc' : 'asc')
     else
@@ -95,6 +110,8 @@ export default defineEventHandler(async (event) => {
         row.actualProgramNameList.push(step.NAME)
       }
     })
+
+    delete row.matchCount
   }
   return { rows, count }
 })
