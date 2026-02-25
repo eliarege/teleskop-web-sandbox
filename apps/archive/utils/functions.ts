@@ -162,70 +162,76 @@ function formatSecondsToHHMMSS(sec: number) {
   )
 }
 
+function openPrintWindow(html: string, options?: { autoClose?: boolean, windowFeatures?: string }) {
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const printWindow = window.open(url, '_blank', options?.windowFeatures ?? 'left=100,top=100,width=1200,height=800')
+
+  if (!printWindow)
+    return
+
+  printWindow.onload = () => {
+    URL.revokeObjectURL(url)
+    printWindow.focus()
+
+    if (options?.autoClose) {
+      printWindow.addEventListener('afterprint', () => {
+        printWindow.close()
+      })
+    }
+
+    printWindow.print()
+  }
+}
+
 export async function printJoborderRecipe(batchKey: number, jobOrderInfo: BatchInfo, programs: BasicProgram[]) {
   const recipe = await $fetch(`/api/batch/${batchKey}/recipe`)
 
   const appContent = await renderToString(h(RecipeSummary, { recipe, jobOrderInfo, programs }))
 
-  // Create a new window or document for printing
-  const printWindow = window.open('', '_blank', 'left=100,top=100,width=1200,height=800')
-
-  if (!printWindow)
-    return
-
-  // Define the HTML content for the printable document
-  const content = `
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-              }
-              .container {
-                width: 90%;
-                margin: 20px auto;
-              }
-              .header,
-              .section {
-                display: flex;
-                justify-content: space-between;
-                padding: 10px 0;
-              }
-              .section-title {
-                font-weight: bold;
-                border-bottom: 1px solid black;
-                padding-bottom: 5px;
-              }
-              .table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-              }
-              .table th,
-              .table td {
-                border: 1px solid black;
-                padding: 8px;
-                text-align: left;
-              }
-              .highlight-red {
-                color: red;
-              }
-            </style>
-          </head>
-          <body>
-            ${appContent}
-          </body>
-        </html>
-      `
-
-  // Write the content to the new window/document
-  printWindow.document.open()
-  printWindow.document.write(content)
-  printWindow.document.close()
-  printWindow.focus()
-
-  // Trigger print dialog after content is loaded
-  printWindow.print()
+  openPrintWindow(`
+    <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+          }
+          .container {
+            width: 90%;
+            margin: 20px auto;
+          }
+          .header,
+          .section {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+          }
+          .section-title {
+            font-weight: bold;
+            border-bottom: 1px solid black;
+            padding-bottom: 5px;
+          }
+          .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          .table th,
+          .table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+          }
+          .highlight-red {
+            color: red;
+          }
+        </style>
+      </head>
+      <body>
+        ${appContent}
+      </body>
+    </html>
+  `)
 }
 export async function printJobOrderSummary(batchKey: number, jobOrderInfo: BatchInfo, programs: BasicProgram[]) {
   const consumptions = await $fetch(`/api/batch/${batchKey}/consumptions`)
@@ -243,65 +249,49 @@ export async function printJobOrderSummary(batchKey: number, jobOrderInfo: Batch
     waterTypes,
   }))
 
-  // Create a new window or document for printing
-  const printWindow = window.open('', '_blank', 'left=100,top=100,width=1200,height=800')
-
-  if (!printWindow)
-    return
-
-  // Define the HTML content for the printable document
-  const content = `
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-              }
-              .container {
-                width: 90%;
-                margin: 20px auto;
-              }
-              .header,
-              .section {
-                display: flex;
-                justify-content: space-between;
-                padding: 10px 0;
-              }
-              .section-title {
-                font-weight: bold;
-                border-bottom: 1px solid black;
-                padding-bottom: 5px;
-              }
-              .table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-              }
-              .table th,
-              .table td {
-                border: 1px solid black;
-                padding: 8px;
-                text-align: left;
-              }
-              .highlight-red {
-                color: red;
-              }
-            </style>
-          </head>
-          <body>
-            ${appContent}
-          </body>
-        </html>
-      `
-
-  // Write the content to the new window/document
-  printWindow.document.open()
-  printWindow.document.write(content)
-  printWindow.document.close()
-  printWindow.focus()
-
-  // Trigger print dialog after content is loaded
-  printWindow.print()
+  openPrintWindow(`
+    <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+          }
+          .container {
+            width: 90%;
+            margin: 20px auto;
+          }
+          .header,
+          .section {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+          }
+          .section-title {
+            font-weight: bold;
+            border-bottom: 1px solid black;
+            padding-bottom: 5px;
+          }
+          .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          .table th,
+          .table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+          }
+          .highlight-red {
+            color: red;
+          }
+        </style>
+      </head>
+      <body>
+        ${appContent}
+      </body>
+    </html>
+  `)
 }
 export function setAxisVisibility(keyParam: string, changeTo: boolean) {
   const { t } = useNuxtApp().$i18n
@@ -344,46 +334,107 @@ export function getChartSVG() {
   return clonedChart.innerHTML
 }
 
-export function printChartSVG() {
+export function printChartSVG(options: {
+  machineId: number
+  machineName: string
+  jobOrder: string
+  programNos: number[]
+  startTime: string
+  endTime: string | null
+}) {
   const svgContent = getChartSVG()
-  // Create a new window for printing
-  const printWindow = window.open('', 'Print SVG', 'height=600,width=800')
-  if (!printWindow)
-    return
+  const { t } = useNuxtApp().$i18n
+  const formattedStartTime = format(new Date(options.startTime), 'dd/MM/yyyy HH:mm:ss')
+  const formattedEndTime = options.endTime ? format(new Date(options.endTime), 'dd/MM/yyyy HH:mm:ss') : '-'
+  const programNosStr = options.programNos.join(', ')
 
-  // Write the SVG content to the new window
-  printWindow.document.write(`
+  openPrintWindow(`
     <!DOCTYPE html>
     <html>
-    <head>
-      <style>
+      <head>
+        <style>
+        @page {
+          size: landscape;
+          margin: 5mm;
+        }
+
         body {
+          margin: 4px 10px;
+          font-family: Arial, sans-serif;
+          font-size: 12px;
+        }
+
+        .print-header {
+          border-bottom: 2px solid #333;
+          padding-bottom: 6px;
+          margin-bottom: 6px;
+        }
+
+        .header-titles, .header-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 10px;
+        }
+
+        .header-titles {
+          font-size: 14px;
+          margin-bottom: 4px;
+        }
+
+        .info-item {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          white-space: nowrap;
+        }
+
+        .chart-wrapper {
           display: flex;
           justify-content: center;
           align-items: center;
-          height: 100vh;
-          margin: 0;
+          height: calc(100vh - 70px);
         }
+
         svg {
-          max-width: 100%;
-          max-height: 100%;
+          width: 100%;
+          height: 100%;
         }
       </style>
     </head>
+
     <body>
-      ${svgContent}
+      <div class="print-header">
+        <div class="header-titles">
+          <div><b>${t('batchSummary.machineInfo')}</b></div>
+          <div><b>${t('batchSummary.batchInfo')}</b></div>
+        </div>
+
+        <div class="header-grid">
+          <div class="info-item">
+            <div><b>${t('batchSummary.machineNo')}:</b> ${options.machineId}</div>
+            <div><b>${t('batchSummary.machineName')}:</b> ${options.machineName}</div>
+          </div>
+
+          <div class="info-item">
+            <div><b>${t('batchSummary.jobOrder')}:</b> ${options.jobOrder}</div>
+            <div><b>${t('batchSummary.programNo')}:</b> ${programNosStr}</div>
+          </div>
+
+          <div class="info-item">
+            <div><b>${t('batchSummary.startTime')}:</b> ${formattedStartTime}</div>
+            <div><b>${t('batchSummary.endTime')}:</b> ${formattedEndTime}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        ${svgContent}
+      </div>
     </body>
-    </html>
-  `)
-
-  // Print the new window
-  printWindow.document.close()
-  printWindow.focus()
-  printWindow.print()
-
-  // Close the new window
-  printWindow.close()
+  </html>
+  `, { autoClose: true })
 }
+
 export async function printBatchSummary(
   batchKey: number,
   machineInfo: Machine,
@@ -444,156 +495,132 @@ export async function printBatchSummary(
     }),
   )
 
-  // Create a new window or document for printing
-  const printWindow = window.open('', '_blank', 'left=100,top=100,width=1200,height=800')
-
-  if (!printWindow)
-    return
-
-  // Define the HTML content for the printable document
-  const content = `
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                font-size: 12px;
-              }
-              ol,
-              ul,
-              menu {
-                list-style: none;
-                margin: 0;
-                padding: 0;
-              }
-              .pie-desc-item {
-                height: 10px;
-                display: flex;
-                gap: 5px;
-                padding-left: 5px;
-                padding-top: 5px;
-              }
-              .color-red-sq {
-                background-color: red;
-              }
-              .color-blue-sq {
-                background-color: blue;
-              }
-              .color-purple-sq {
-                background-color: purple;
-              }
-              .color-yellow-sq {
-                background-color: yellow;
-              }
-              .pie-desc {
-                border-color: #888;
-                font-size: 10px;
-                margin: 0px;
-                padding-left: 30px;
-                display: flex;
-                flex-direction: column;
-              }
-              .square-color {
-                height: 12px;
-                width: 12px;
-                background-color: red;
-                border: 1px solid;
-              }
-              .chart-container {
-                text-align: center;
-                margin-bottom: 20px;
-              }
-
-              .filled-pie-chart {
-                transform: rotate(-90deg); /* Align first slice to the top */
-              }
-              body {
-                font-size: 12px;
-              }
-              .header-tables {
-                display: flex;
-                height: 200px;
-              }
-              .info-table {
-                border-collapse: collapse;
-                margin: 0 5px;
-              }
-              .info-table-consumptions {
-                border-collapse: collapse;
-                margin: 0 5px;
-                font-size: 12px;
-              }
-              .info-table-consumptions-bold {
-                font-weight: bold;
-              }
-              .info-table th {
-                padding-left: 3px;
-                background-color: #f0f0f0;
-                font-size: 10px;
-              }
-              .bold-red-th {
-                font-size: 14px;
-                color: red;
-              }
-              td {
-                padding: 0 3px;
-                font-size: 10px;
-                border: 1px solid #a8a8a8;
-              }
-              .chart-container {
-                padding-left: 30px;
-              }
-              .chart-container,
-              .line-chart-container {
-                text-align: center;
-              }
-              .text-section {
-                margin: 20px 0;
-              }
-              .filled-pie-chart {
-                transform: rotate(-90deg);
-              }
-              .custom-component-section {
-                margin: 20px 0;
-                font-size: 10px;
-              }
-              .q-table--dense.no-hover tbody tr:hover td::before {
-                content: unset !important;
-              }
-              .q-table--dense {
-                border-width: 1px 0 0 1px;
-                border-style: solid;
-                border-color: #888;
-              }
-              .q-table--dense td {
-                border-width: 0 1px 1px 0;
-                border-style: solid;
-                border-color: #888;
-                padding-left: 5px;
-                padding-right: 5px;
-              }
-              .intervention-list-cell > :not([hidden]) ~ :not([hidden]) {
-                border-width: 1px 0 0 0;
-                border-style: solid;
-                border-color: rgb(136, 136, 136);
-              }
-
-            </style>
-          </head>
-          <body>
-            ${appContent}
-          </body>
-        </html>
-      `
-
-  // Write the content to the new window/document
-  printWindow.document.open()
-  printWindow.document.write(content)
-  printWindow.document.close()
-  printWindow.focus()
-
-  // Trigger print dialog after content is loaded
-  printWindow.print()
+  openPrintWindow(`
+    <html>
+      <head>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+          }
+          ol,
+          ul,
+          menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+          }
+          .pie-desc-item {
+            height: 10px;
+            display: flex;
+            gap: 5px;
+            padding-left: 5px;
+            padding-top: 5px;
+          }
+          .color-red-sq {
+            background-color: red;
+          }
+          .color-blue-sq {
+            background-color: blue;
+          }
+          .color-purple-sq {
+            background-color: purple;
+          }
+          .color-yellow-sq {
+            background-color: yellow;
+          }
+          .pie-desc {
+            border-color: #888;
+            font-size: 10px;
+            margin: 0px;
+            padding-left: 30px;
+            display: flex;
+            flex-direction: column;
+          }
+          .square-color {
+            height: 12px;
+            width: 12px;
+            background-color: red;
+            border: 1px solid;
+          }
+          .chart-container {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .filled-pie-chart {
+            transform: rotate(-90deg);
+          }
+          .header-tables {
+            display: flex;
+            height: 200px;
+          }
+          .info-table {
+            border-collapse: collapse;
+            margin: 0 5px;
+          }
+          .info-table-consumptions {
+            border-collapse: collapse;
+            margin: 0 5px;
+            font-size: 12px;
+          }
+          .info-table-consumptions-bold {
+            font-weight: bold;
+          }
+          .info-table th {
+            padding-left: 3px;
+            background-color: #f0f0f0;
+            font-size: 10px;
+          }
+          .bold-red-th {
+            font-size: 14px;
+            color: red;
+          }
+          td {
+            padding: 0 3px;
+            font-size: 10px;
+            border: 1px solid #a8a8a8;
+          }
+          .chart-container {
+            padding-left: 30px;
+          }
+          .chart-container,
+          .line-chart-container {
+            text-align: center;
+          }
+          .text-section {
+            margin: 20px 0;
+          }
+          .custom-component-section {
+            margin: 20px 0;
+            font-size: 10px;
+          }
+          .q-table--dense.no-hover tbody tr:hover td::before {
+            content: unset !important;
+          }
+          .q-table--dense {
+            border-width: 1px 0 0 1px;
+            border-style: solid;
+            border-color: #888;
+          }
+          .q-table--dense td {
+            border-width: 0 1px 1px 0;
+            border-style: solid;
+            border-color: #888;
+            padding-left: 5px;
+            padding-right: 5px;
+          }
+          .intervention-list-cell > :not([hidden]) ~ :not([hidden]) {
+            border-width: 1px 0 0 0;
+            border-style: solid;
+            border-color: rgb(136, 136, 136);
+          }
+        </style>
+      </head>
+      <body>
+        ${appContent}
+      </body>
+    </html>
+  `)
 }
 
 export function flattenPrograms(programs: Program[]) {

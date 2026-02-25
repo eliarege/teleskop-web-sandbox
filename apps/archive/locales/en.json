@@ -243,7 +243,8 @@
     "manualDelay": "Manual Delay",
     "programNo": "Program No",
     "programName": "Program Name",
-    "interventions": "Interventions"
+    "interventions": "Interventions",
+    "batchInfo": "Batch Info"
   },
   "calculatedValues": {
     "DAKIKADA_TAMBUR_DEVRI": "Drum Revolution Per Minute",
