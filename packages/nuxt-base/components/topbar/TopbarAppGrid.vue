@@ -41,6 +41,7 @@ const appButtons = appList
           flat
           no-caps
           :href="app.url"
+          target="_blank"
         >
           <QImg
             class="block"
