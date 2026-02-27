@@ -12,48 +12,48 @@ import { taskManager } from '~/server/taskManager'
 import type { Batch } from '~/types/archive'
 import { last } from '~/server/utils/functions'
 
-const tasks: Array<{ message: string, method: (event: H3Event, result: any) => Promise<void> }> = [
+const tasks: Array<{ message: string, method: (event: H3Event, result: Batch) => Promise<void> }> = [
   {
     message: 'loadingMachineInfo',
-    method: async (event, result) => {
+    method: async (event, result: Batch) => {
       const machine = await machineGet(event)
       result.machine = machine
     },
   },
   {
     message: 'loadingJobOrderInfo',
-    method: async (event, result) => {
+    method: async (event, result: Batch) => {
       const jobOrderInfo = await batchInfoGet(event)
       result.jobOrderInfo = jobOrderInfo
     },
   },
   {
     message: 'loadingBatchParameters',
-    method: async (event, result) => {
+    method: async (event, result: Batch) => {
       result.batchParameters = await batchParametersGet(event)
     },
   },
   {
     message: 'loadingInterventions',
-    method: async (event, result) => {
+    method: async (event, result: Batch) => {
       result.interventions = await interventionsGet(event)
     },
   },
   {
     message: 'loadingAlarms',
-    method: async (event, result) => {
+    method: async (event, result: Batch) => {
       result.alarms = await alarmsGet(event)
     },
   },
   {
     message: 'loadingActualCommands',
-    method: async (event, result) => {
+    method: async (event, result: Batch) => {
       result.actualCommands = await actualCommandsGet(event)
     },
   },
   {
     message: 'loadingMergedCommands',
-    method: async (event, result) => {
+    method: async (event, result: Batch) => {
       result.mergedCommands = await mergedCommandsGet(event)
     },
   },

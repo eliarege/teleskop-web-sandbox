@@ -836,6 +836,10 @@ function showInterventionsDialog() {
   $q.dialog({
     component: InterventionsDialog,
     componentProps: {
+      jobOrderNo: batchData.value?.jobOrderInfo.jobOrder ?? '',
+      startTime: batchData.value?.jobOrderInfo.startTime ?? null,
+      endTime: batchData.value?.jobOrderInfo.endTime ?? null,
+      cancelTime: batchData.value?.jobOrderInfo.cancelTime ?? null,
       interventions: batchData.value?.interventions,
     },
   }).onOk((data) => {

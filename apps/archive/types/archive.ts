@@ -251,6 +251,7 @@ export interface BatchInfo {
   jobOrder: string
   startTime: string
   endTime: string | null
+  cancelTime: string | null
   programCount: number
   operatorCode: number
   operatorName: string
@@ -266,6 +267,7 @@ export interface BatchIntervention {
   time: Date
   parameters: string[]
   explanation: string[]
+  operator: string
 }
 
 export interface BatchAlarm {
