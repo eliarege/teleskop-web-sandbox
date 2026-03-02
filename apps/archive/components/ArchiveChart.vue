@@ -771,7 +771,14 @@ onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
     resetZoom()
-    printChartSVG()
+    printChartSVG({
+      machineId: props.batch.machine.id,
+      machineName: props.batch.machine.name,
+      jobOrder: props.batch.jobOrderInfo.jobOrder,
+      programNos: props.batch.theoreticalPrograms.map(p => p.programNo),
+      startTime: props.batch.jobOrderInfo.startTime,
+      endTime: props.batch.jobOrderInfo.endTime,
+    })
   }
 })
 
@@ -909,7 +916,14 @@ const buttons = computed(() =>
       onClick: async () => {
         resetZoom()
         await nextTick()
-        printChartSVG()
+        printChartSVG({
+          machineId: props.batch.machine.id,
+          machineName: props.batch.machine.name,
+          jobOrder: props.batch.jobOrderInfo.jobOrder,
+          programNos: props.batch.theoreticalPrograms.map(p => p.programNo),
+          startTime: props.batch.jobOrderInfo.startTime,
+          endTime: props.batch.jobOrderInfo.endTime,
+        })
       },
     },
     {

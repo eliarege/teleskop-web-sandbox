@@ -224,10 +224,10 @@
     "capacity": "Kapasite",
     "operator": "Operatör",
     "jobOrder": "İş Emri",
-    "startTime": "Başlama",
-    "endTime": "Bitiş",
-    "cancelTime": "İptal",
-    "theoreticalEndTime": "Teorik Bitiş",
+    "startTime": "Başlama Zamanı",
+    "endTime": "Bitiş Zamanı",
+    "cancelTime": "İptal Zamanı",
+    "theoreticalEndTime": "Teorik Bitiş Zamanı",
     "actualDuration": "Gerçek Süre",
     "actualTheoreticalDuration": "Fiili Teorik Süre",
     "theoreticalDuration": "Teorik Süre",
@@ -240,7 +240,8 @@
     "manualDelay": "Manuel Gecikme",
     "programNo": "Program No",
     "programName": "Program İsmi",
-    "interventions": "Müdaheleler"
+    "interventions": "Müdaheleler",
+    "batchInfo": "Batch Bilgileri"
   },
   "calculatedValues": {
     "DAKIKADA_TAMBUR_DEVRI": "Dakikada Tambur Devri",
