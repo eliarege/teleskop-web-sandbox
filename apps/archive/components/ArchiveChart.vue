@@ -48,6 +48,7 @@ import AxisesVisibilityDialog from './AxisesVisibilityDialog.vue'
 import ReelDataDialog from './ReelDataDialog.vue'
 import type { Batch, DigitalInputOutputType, LineType, Reel, TheoreticalProgram } from '~/types/archive'
 import UpdateAxisDialog from '~/components/UpdateAxisDialog.vue'
+import { alarmTypes } from '~/shared/constants'
 
 const props = defineProps<{
   batch: Batch
@@ -411,23 +412,11 @@ function updateXAxis() {
       .ticks(xAxisTickCount.value),
   )
 }
-const alarmTypes = computed(() => [
-  { type: 0, label: t('alarmSettings.0sh'), color: 'red' },
-  { type: 1, label: t('alarmSettings.1sh'), color: 'blue' },
-  { type: 2, label: t('alarmSettings.2sh'), color: 'green' },
-  { type: 3, label: t('alarmSettings.3sh'), color: 'red' },
-  { type: 4, label: t('alarmSettings.4'), color: 'blue' },
-  { type: 5, label: t('alarmSettings.5'), color: 'blue' },
-  { type: 6, label: t('alarmSettings.6'), color: 'blue' },
-  { type: 7, label: t('alarmSettings.7sh'), color: 'blue' },
-  { type: 8, label: t('alarmSettings.8'), color: 'blue' },
-  { type: 9, label: t('alarmSettings.9'), color: 'yellow' },
-  { type: 10, label: t('alarmSettings.10'), color: '#FF00FF' },
-  { type: 11, label: t('alarmSettings.11sh'), color: 'blue' },
-] as { type: number, label: string, color: string }[])
+
 function colorInterpolator(alarmType: number) {
-  return alarmTypes.value.find(alarm => alarm.type === alarmType)?.color || 'blue'
+  return alarmTypes.find(alarm => alarm.type === alarmType)?.color || 'blue'
 }
+
 // const colorInterpolator = interpolateRgbBasis([
 // 'purple',
 // 'blue',
@@ -1005,7 +994,7 @@ const selectedCommand = computed(() => {
       >
         <g :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
         <text>
-          {{ alarm.label }}
+          {{ t(alarm.label) }}
         </text>
       </g>
     </g>
