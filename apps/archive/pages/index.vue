@@ -171,7 +171,9 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
           <span>
             {{ props.value }}
             <q-tooltip v-if="props.row.theoreticalProgramNameList?.length" :delay="500">
-              {{ props.row.theoreticalProgramNameList.join(', ') }}
+              <div v-for="(progNo, idx) in props.row.theoreticalProgramNoList" :key="idx">
+                {{ progNo }} - {{ props.row.theoreticalProgramNameList[idx] }}
+              </div>
             </q-tooltip>
           </span>
         </template>
@@ -179,7 +181,9 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
           <span>
             {{ props.value }}
             <q-tooltip v-if="props.row.actualProgramNameList?.length" :delay="500">
-              {{ props.row.actualProgramNameList.join(', ') }}
+              <div v-for="(progNo, idx) in props.row.actualProgramNoList" :key="idx">
+                {{ progNo }} - {{ props.row.actualProgramNameList[idx] }}
+              </div>
             </q-tooltip>
           </span>
         </template>
