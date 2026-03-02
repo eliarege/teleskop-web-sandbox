@@ -10,27 +10,8 @@ function withHostname(url: string) {
   return url.replace('$hostname', window.location.hostname)
 }
 
-function getCurrentApp() {
-  const currentAppUrl = withBase(config.app.baseURL, window.origin)
-  let closest = null as AppMeta | null
-  let closestDist = 1000
-  for (const app of appList) {
-    const appUrl = withBase(app.url, window.origin)
-    if (currentAppUrl.startsWith(appUrl)) {
-      const dist = currentAppUrl.length - appUrl.length
-      if (closestDist > dist) {
-        closest = app
-        closestDist = dist
-      }
-    }
-  }
-  return closest
-}
-
-const currentApp = getCurrentApp()
-
 const appButtons = appList
-  .filter(app => app.name !== 'root' && (!currentApp || currentApp !== app))
+  .filter(app => app.name !== 'root')
   .map((app) => {
     return {
       label: () => t(`base.apps.${app.name}`),
@@ -60,6 +41,7 @@ const appButtons = appList
           flat
           no-caps
           :href="app.url"
+          target="_blank"
         >
           <QImg
             class="block"

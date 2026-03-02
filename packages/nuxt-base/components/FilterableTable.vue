@@ -603,8 +603,12 @@ function onRequest(pagination: QTableProps['pagination']) {
                             <q-space />
 
                             <!-- FIXME: HARDOCDED: '8' is the index of custom object of dateOptions array if more spesific intervals added it should be changed -->
-                            <q-btn dense @click="pushToFilters(col, 8)">
-                              {{ t('add') }}
+                            <q-btn
+                              v-close-popup
+                              dense
+                              @click="pushToFilters(col, 8)"
+                            >
+                              {{ t('ok') }}
                             </q-btn>
                           </div>
                         </template>
@@ -627,11 +631,12 @@ function onRequest(pagination: QTableProps['pagination']) {
                 <div class="flex justify-end">
                   <q-btn
                     v-if="col.filterType !== 'date' && col.filterType && !checkForButtonsInsteadOfSelect(col)"
-                    class="add-btn"
+                    v-close-popup
+                    class="ok-btn"
                     no-caps
                     @click="pushToFilters(col, index)"
                   >
-                    {{ t('add') }}
+                    {{ t('ok') }}
                   </q-btn>
                 </div>
               </q-list>
@@ -660,7 +665,7 @@ function onRequest(pagination: QTableProps['pagination']) {
               :props="bodyProps"
               @dblclick="handleDoubleClick(bodyProps.row)"
             >
-              <slot :name="`body-cell-${col.name}`" v-bind="col">
+              <slot :name="`body-cell-${col.name}`" v-bind="{ ...col, row: bodyProps.row }">
                 {{ col.value }}
               </slot>
             </q-td>
@@ -789,12 +794,12 @@ function onRequest(pagination: QTableProps['pagination']) {
   color: white;
 }
 
-.add-btn {
+.ok-btn {
   margin-top: 1.25rem;
   margin-bottom: 0.25rem;
   color: rgb(0, 0, 0);
 }
-.body--dark .add-btn {
+.body--dark .ok-btn {
   color: rgb(255, 255, 255);
 }
 .text-override-center :deep(.text-right) {
@@ -894,7 +899,7 @@ function onRequest(pagination: QTableProps['pagination']) {
     "ascending": "ascending",
     "descending": "descending",
     "order": "order",
-    "add": "Add",
+    "ok": "OK",
     "and": "and",
     "equals": "equals",
     "includes": "includes",
@@ -927,7 +932,7 @@ function onRequest(pagination: QTableProps['pagination']) {
     "ascending": "artan",
     "descending": "azalan",
     "order": "sırada",
-    "add": "Ekle",
+    "ok": "Tamam",
     "and": "ve",
     "equals": "eşittir",
     "includes": "içerir",
