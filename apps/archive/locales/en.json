@@ -61,6 +61,7 @@
   "addRemoveAxis": "Add/Remove Axis",
   "noAlarm": "No Alarm At Selected Time",
   "processGroup": "Process Group",
+  "operator": "Operator",
   "jobOrderSummarySettings": {
     "_": "Job Order Summary Report Settings",
     "description": "Please select the ERP parameters you want to show on the job order summary report."
@@ -361,5 +362,15 @@
     "notFoundTitle": "Program Not Defined",
     "notFoundMessage": "The following programs were not found in either the archive or the current program list. The theoretical Temperature/Time chart will not be drawn.",
     "notFoundProgram": "Program #{programNo}"
+  },
+  "interventionReport": {
+    "title": "Job Order Intervention Report",
+    "jobOrderNo": "Job Order No:",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "cancelTime": "Cancel Time",
+    "interventionTime": "Intervention Time",
+    "page": "Page {n}",
+    "fileName": "Job_Order_Intervention_Report"
   }
 }

@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
       jobOrder: 'B.JOBORDER',
       startTime: db.raw(`DATEADD(MINUTE, ?, B.STARTTIME)`, config.teleskopTimezoneOffset),
       endTime: db.raw(`DATEADD(MINUTE, ?, COALESCE(B.ENDTIME, B.CANCELTIME))`, config.teleskopTimezoneOffset),
+      cancelTime: db.raw(`DATEADD(MINUTE, ?, B.CANCELTIME)`, config.teleskopTimezoneOffset),
       programCount: 'B.PRGCOUNT',
       operatorCode: 'B.OPRCODE',
       operatorName: 'B.OPRNAME',

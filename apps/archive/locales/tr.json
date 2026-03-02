@@ -4,7 +4,7 @@
   },
   "date": "Tarih",
   "description": "Açıklama",
-  "interventions": "Müdaheleler",
+  "interventions": "Müdahaleler",
   "search": "Ara",
   "close": "Kapat",
   "cancel": "İptal",
@@ -61,6 +61,7 @@
   "reelDataDialog": "Kule Tur/Zaman Tablosu",
   "noAlarm": "Seçili Zamanda Alarm Bulunamadı",
   "processGroup": "İşlem Grubu",
+  "operator": "Operatör",
   "jobOrderSummary": {
     "waterTotal": "Toplam Su",
     "electricity": "Elektrik",
@@ -186,7 +187,7 @@
     "settings": {
       "_": "Ayarlar"
     },
-    "interventions": "Müdaheleler"
+    "interventions": "Müdahaleler"
   },
   "tooltipOptions": {
     "title": "Gösterge Seçenekleri",
@@ -240,7 +241,7 @@
     "manualDelay": "Manuel Gecikme",
     "programNo": "Program No",
     "programName": "Program İsmi",
-    "interventions": "Müdaheleler",
+    "interventions": "Müdahaleler",
     "batchInfo": "Batch Bilgileri"
   },
   "calculatedValues": {
@@ -358,5 +359,15 @@
     "notFoundTitle": "Program Tanımsız",
     "notFoundMessage": "Aşağıdaki programlar ne arşivde ne de güncel program listesinde bulunamadı. Teorik Sıcaklık/Zaman grafiği çizilmeyecektir.",
     "notFoundProgram": "{programNo} numaralı program"
+  },
+  "interventionReport": {
+    "title": "İş Emri Müdahale Raporu",
+    "jobOrderNo": "İş Emri No:",
+    "startTime": "Başlama Zamanı:",
+    "endTime": "Bitiş Zamanı:",
+    "cancelTime": "İptal Zamanı:",
+    "interventionTime": "Müdahale Zamanı",
+    "page": "Sayfa {n}",
+    "fileName": "Is_Emri_Mudahale_Raporu"
   }
 }

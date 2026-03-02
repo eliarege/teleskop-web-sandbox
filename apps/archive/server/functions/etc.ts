@@ -35,22 +35,33 @@ export async function getAlarms(batchKey: number, since?: Date | null): Promise<
  * Makine müdahalelerini, müdahale zamanına göre artan sıralamada döndürür.
  * `since` parametresi verilirse, `since` tarihinden itibaren gerçekleşen müdahalelerini verir.
  */
-export async function getInterventions(batchKey: number, since?: Date | null): Promise<DuoParsed<BatchIntervention>[]> {
+export async function getInterventions(batchKey: number, since?: Date | null): Promise<BatchIntervention[]> {
   const { teleskopTimezoneOffset } = useRuntimeConfig()
+
   const query = db
-    .from('BAINTERVENTION')
+    .from('BAINTERVENTION as BI')
     .select({
-      eventId: 'EVENTID',
-      time: db.raw(`DATEADD(MINUTE, ?, INTERVENTTIME)`, teleskopTimezoneOffset),
+      eventId: 'BI.EVENTID',
+      time: db.raw(`DATEADD(MINUTE, ?, BI.INTERVENTTIME)`, teleskopTimezoneOffset),
       parameters: db.raw(/* sql */`'['
-        + '"' + P1 + '",'
-        + '"' + P2 + '",'
-        + '"' + P3 + '"]'
-      `),
-      explanation: 'EXPLANATION',
+      + '"' + BI.P1 + '",'
+      + '"' + BI.P2 + '",'
+      + '"' + BI.P3 + '"]'
+    `),
+      explanation: 'BI.EXPLANATION',
+      operator: db.raw(`UA.USERNAME + ' ' + UA.USERLASTNAME`),
     })
-    .where('BATCHKEY', batchKey)
-    .orderBy('INTERVENTTIME')
+    .where('BI.BATCHKEY', batchKey)
+    .orderBy('BI.INTERVENTTIME')
+    .joinRaw(`
+    OUTER APPLY (
+      SELECT TOP 1 *
+      FROM BAUSERACTIVITY UA
+      WHERE UA.MACHINEID = BI.MACHINEID
+      AND UA.ACTIVITYDATE <= BI.INTERVENTTIME
+      ORDER BY UA.ACTIVITYDATE DESC
+    ) UA
+  `)
 
   if (since) {
     query.andWhere('INTERVENTTIME', '>', subMinutes(since, teleskopTimezoneOffset))
@@ -62,7 +73,7 @@ export async function getInterventions(batchKey: number, since?: Date | null): P
     int.explanation = int.explanation.split(/ ?,?\r ?/)
   }
 
-  return interventions as DuoParsed<BatchIntervention>[]
+  return interventions
 }
 
 /**
