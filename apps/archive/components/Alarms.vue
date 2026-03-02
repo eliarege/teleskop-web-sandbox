@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { format } from 'date-fns'
+import { alarmTypes } from '~/shared/constants'
 import type { BatchAlarm } from '~/types/archive'
 import { formatDuration } from '~/utils/functions'
 
@@ -6,26 +8,20 @@ const props = defineProps<{
   alarms: BatchAlarm[]
   selectedTime: Date
 }>()
+
 const emit = defineEmits<{
   (e: 'rowClicked', startTime: string): void
 }>()
-const { t, d } = useI18n()
-const $q = useQuasar()
 
-const alarmOptions = computed(() => [
-  { label: t('alarmSettings.0'), value: 1 },
-  { label: t('alarmSettings.1'), value: 2 },
-  { label: t('alarmSettings.2'), value: 3 },
-  { label: t('alarmSettings.3'), value: 4 },
-  { label: t('alarmSettings.4'), value: 5 },
-  { label: t('alarmSettings.5'), value: 6 },
-  { label: t('alarmSettings.6'), value: 7 },
-  { label: t('alarmSettings.7'), value: 8 },
-  { label: t('alarmSettings.8'), value: 9 },
-  { label: t('alarmSettings.9'), value: 10 },
-  { label: t('alarmSettings.10'), value: 11 },
-  { label: t('alarmSettings.11'), value: 12 },
-])
+const $q = useQuasar()
+const { t } = useI18n()
+
+const alarmOptions = computed(() =>
+  alarmTypes.map(a => ({
+    label: t(a.label),
+    value: a.type,
+  })),
+)
 
 const settingStore = userSettingsStore()
 
@@ -57,6 +53,8 @@ const columns = computed(() => [
     required: true,
     field: 'startTime',
     align: 'center' as const,
+    format: (val: string) =>
+      val ? format(new Date(val), 'HH:mm:ss') : '',
   },
   {
     name: 'endTime',
@@ -64,6 +62,8 @@ const columns = computed(() => [
     required: true,
     field: 'endTime',
     align: 'center' as const,
+    format: (val: string) =>
+      val ? format(new Date(val), 'HH:mm:ss') : '',
   },
   {
     name: 'duration',
@@ -98,15 +98,12 @@ const rows = computed(() => {
       return false
     })
     .map((alarm) => {
-      const startTime = d(new Date(alarm.startTime), 'datetime', 'tr')
-      const endTime = alarm.endTime ? d(new Date(alarm.endTime), 'datetime', 'tr') : ''
-
       const durationMs = new Date(alarm.endTime || '').getTime() - new Date(alarm.startTime).getTime()
       const duration = durationMs > 0 ? formatDuration(durationMs / 1000) : 'N/A'
 
       return {
-        startTime,
-        endTime,
+        startTime: alarm.startTime,
+        endTime: alarm.endTime,
         duration,
         explanation: alarm.explanation,
         originalStartTime: alarm.startTime,
@@ -116,28 +113,31 @@ const rows = computed(() => {
 </script>
 
 <template>
-  <div class="wh-full overflow-y-auto text-xs h-full container">
-    <!-- Checkbox for select all -->
-    <div class="pos-relative">
-      <q-checkbox
-        :model-value="settingStore.showAllAlarms"
-        class="pos-absolute top-0 left-0 ml-5 z-1"
-        right-label
-        :label="checkLabel"
-        @update:model-value="newVal => settingStore.setShowAllAlarms(newVal)"
-      />
-    </div>
+  <div class="p-1 wh-full bg-white flex flex-col">
+    <div class="flex justify-between items-center text-xs mb-1 flex-shrink-0">
+      <!-- Checkbox for select all -->
+      <div>
+        <q-checkbox
+          :model-value="settingStore.showAllAlarms"
+          :label="checkLabel"
+          size="xs"
+          dense
+          @update:model-value="newVal => settingStore.setShowAllAlarms(newVal)"
+        />
+      </div>
 
-    <!-- Settings button -->
-    <div class="pos-relative">
-      <div class="pos-absolute top-0 right-0 mr-4 z-1">
+      <!-- Settings button -->
+      <div>
         <q-btn
           flat
+          dense
+          size="xs"
           icon="settings"
           @click="toggleAlarmsettings"
         />
       </div>
     </div>
+
     <!-- Table for alarms -->
     <q-table
       flat
@@ -148,20 +148,18 @@ const rows = computed(() => {
       :no-data-label="t('noAlarm')"
       :columns="columns"
       row-key="batchAlarmNo"
-      class="text-black table-custom my-auto mt-10 ml-4 mr-4"
+      hide-bottom
+      class="alarm-table w-full flex-1 min-h-0"
+      table-header-style="position: sticky; top: 0; z-index: 1;"
+      table-header-class="bg-gray-1 dark:bg-dark-4"
       @row-click="handleRowClick"
     />
   </div>
 </template>
 
 <style scoped>
-.q-table__card {
-  background-color: transparent;
-}
-.table-custom :deep(td) {
-  font-size: inherit;
-}
-.table-custom :deep(th) {
-  font-size: inherit;
+.alarm-table :deep(th),
+.alarm-table :deep(td) {
+  font-size: 11px;
 }
 </style>

@@ -71,3 +71,24 @@ export const calculatedValueKeys = [
   'CPT_SICAKLIK', // 69
   'SENSOR_HUB_STATUS', // 70
 ]
+
+type AlarmType = {
+  type: number
+  label: string
+  color: string
+}
+
+export const alarmTypes: AlarmType[] = [
+  { type: 0, label: 'alarmSettings.0sh', color: '#E53935' },
+  { type: 1, label: 'alarmSettings.1sh', color: '#1E88E5' },
+  { type: 2, label: 'alarmSettings.2sh', color: '#43A047' },
+  { type: 3, label: 'alarmSettings.3sh', color: '#8E24AA' },
+  { type: 4, label: 'alarmSettings.4', color: '#FB8C00' },
+  { type: 5, label: 'alarmSettings.5', color: '#00897B' },
+  { type: 6, label: 'alarmSettings.6', color: '#6D4C41' },
+  { type: 7, label: 'alarmSettings.7sh', color: '#3949AB' },
+  { type: 8, label: 'alarmSettings.8', color: '#FDD835' },
+  { type: 9, label: 'alarmSettings.9', color: '#D81B60' },
+  { type: 10, label: 'alarmSettings.10', color: '#00ACC1' },
+  { type: 11, label: 'alarmSettings.11sh', color: '#7CB342' },
+]

@@ -53,7 +53,7 @@ function handleRowClick(row: any) {
 </script>
 
 <template>
-  <div class="p-4 wh-full overflow-y-scroll">
+  <div class="p-1 wh-full bg-white">
     <q-table
       :rows="commandsWithNames"
       :columns="cols"
@@ -61,7 +61,9 @@ function handleRowClick(row: any) {
       hide-bottom
       bordered
       flat
-      class="custom-table"
+      class="custom-table h-full"
+      table-header-style="position: sticky; top: 0; z-index: 1;"
+      table-header-class="bg-gray-1 dark:bg-dark-4"
       :pagination="{ rowsPerPage: 0 }"
       @row-click="(e, r) => handleRowClick(r)"
     />
@@ -71,5 +73,10 @@ function handleRowClick(row: any) {
 <style scoped>
 .q-table__card {
   background-color: transparent;
+}
+
+.custom-table :deep(th),
+.custom-table :deep(td) {
+  font-size: 11px;
 }
 </style>
