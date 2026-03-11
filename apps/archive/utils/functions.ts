@@ -381,12 +381,21 @@ export function printChartSVG(options: {
           margin-bottom: 4px;
         }
 
-        .info-item {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
+        .info-table {
+          border-collapse: collapse;
+          border: none;
           white-space: nowrap;
+          table-layout: fixed;
         }
+
+        .info-table td {
+          border: none;
+          padding: 1px 1px 1px 0;
+        }
+
+        .col-label { width: 100px; }
+        .col-sep   { width: 16px;  }
+        .col-value { width: 160px; }
 
         .chart-wrapper {
           display: flex;
@@ -410,20 +419,59 @@ export function printChartSVG(options: {
         </div>
 
         <div class="header-grid">
-          <div class="info-item">
-            <div><b>${t('batchSummary.machineNo')}:</b> ${options.machineId}</div>
-            <div><b>${t('batchSummary.machineName')}:</b> ${options.machineName}</div>
-          </div>
+          <table class="info-table">
+            <colgroup>
+              <col class="col-label" />
+              <col class="col-sep" />
+              <col class="col-value" />
+            </colgroup>
+            <tr>
+              <td><b>${t('batchSummary.machineNo')}</b></td>
+              <td>:</td>
+              <td>${options.machineId}</td>
+            </tr>
+            <tr>
+              <td><b>${t('batchSummary.machineName')}</b></td>
+              <td>:</td>
+              <td>${options.machineName}</td>
+            </tr>
+          </table>
 
-          <div class="info-item">
-            <div><b>${t('batchSummary.jobOrder')}:</b> ${options.jobOrder}</div>
-            <div><b>${t('batchSummary.programNo')}:</b> ${programNosStr}</div>
-          </div>
+          <table class="info-table">
+            <colgroup>
+              <col class="col-label" />
+              <col class="col-sep" />
+              <col class="col-value" />
+            </colgroup>
+            <tr>
+              <td><b>${t('batchSummary.jobOrder')}</b></td>
+              <td>:</td>
+              <td>${options.jobOrder}</td>
+            </tr>
+            <tr>
+              <td><b>${t('batchSummary.programNo')}</b></td>
+              <td>:</td>
+              <td>${programNosStr}</td>
+            </tr>
+          </table>
 
-          <div class="info-item">
-            <div><b>${t('batchSummary.startTime')}:</b> ${formattedStartTime}</div>
-            <div><b>${t('batchSummary.endTime')}:</b> ${formattedEndTime}</div>
-          </div>
+          <table class="info-table">
+            <colgroup>
+              <col class="col-label" />
+              <col class="col-sep" />
+              <col class="col-value" />
+            </colgroup>
+            <tr>
+              <td><b>${t('batchSummary.startTime')}</b></td>
+              <td>:</td>
+              <td>${formattedStartTime}</td>
+            </tr>
+            <tr>
+              <td><b>${t('batchSummary.endTime')}</b></td>
+              <td>:</td>
+              <td>${formattedEndTime}</td>
+            </tr>
+          </table>
         </div>
       </div>
 
