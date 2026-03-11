@@ -131,10 +131,10 @@ let chartHeightMultiplier = 1
 // Lütfen sadece burayı update'leyiniz alanlarla alakalı
 function updateMultipliers() {
   if (settingsStore?.bottomChartVisibilityStatus !== 0) {
-    margin.value.bottom = 0
+    margin.value.bottom = 40
     chartHeightMultiplier = 0.7
   } else {
-    margin.value.bottom = 50
+    margin.value.bottom = 80
     chartHeightMultiplier = 1
   }
 }
@@ -160,7 +160,6 @@ const innerRect = computed(() => {
 const innerRectWidth = computed(() => innerRect.value?.width ?? 0)
 const innerRectHeight = computed(() => innerRect.value?.height ?? 0)
 const marginTop = computed(() => margin.value?.top ?? 0)
-const marginRight = computed(() => margin.value?.right ?? 0)
 const marginLeft = computed(() => margin.value?.left ?? 0)
 
 const id = useId()
@@ -900,6 +899,7 @@ const buttons = computed(() =>
   [
     {
       icon: 'print',
+      label: t('print'),
       tooltip: t('print'),
       flat: true,
       onClick: async () => {
@@ -917,29 +917,36 @@ const buttons = computed(() =>
     },
     {
       icon: settingsStore.showGraphTooltip ? 'comments_disabled' : 'comment',
-      flat: true,
+      label: settingsStore.showGraphTooltip ? t('hideTooltip') : t('showTooltip'),
       tooltip: settingsStore.showGraphTooltip
         ? t('hideTooltip')
         : t('showTooltip'),
+      flat: true,
       onClick: () =>
         (settingsStore.showGraphTooltip = !settingsStore.showGraphTooltip),
     },
     {
-      flat: true,
       icon: !settingsStore.bottomChartVisibilityStatus
         ? 'looks_one'
         : settingsStore.bottomChartVisibilityStatus === 1
           ? 'looks_two'
           : 'visibility_off',
+      label: !settingsStore.bottomChartVisibilityStatus
+        ? t('showDigitalIOs')
+        : settingsStore.bottomChartVisibilityStatus === 1
+          ? t('showCycleTimes')
+          : t('hide'),
       tooltip: !settingsStore.bottomChartVisibilityStatus
         ? t('showDigitalIOs')
         : settingsStore.bottomChartVisibilityStatus === 1
           ? t('showCycleTimes')
           : t('hide'),
+      flat: true,
       onClick: () => changeBottomVisibiltyStatus(),
     },
     {
       icon: 'settings',
+      label: t('updateAxises'),
       tooltip: t('updateAxises'),
       flat: true,
       onClick: () => {
@@ -954,6 +961,7 @@ const buttons = computed(() =>
     },
     {
       icon: 'stacked_line_chart',
+      label: t('addRemoveAxis'),
       tooltip: t('addRemoveAxis'),
       flat: true,
       onClick: () => {
@@ -964,6 +972,7 @@ const buttons = computed(() =>
     },
     {
       icon: 'analytics',
+      label: t('reelDataDialog'),
       tooltip: t('reelDataDialog'),
       flat: true,
       onClick: () => {
@@ -985,8 +994,26 @@ const selectedCommand = computed(() => {
 </script>
 
 <template>
-  <div ref="chartEl" class="chart">
-    <g id="top-alarm-defs" style="display: flex; gap: 10px; margin-left: 10px; font-size: small; margin-bottom: -20px;">
+  <!-- Chart ile ilgili butonların olduğu alan -->
+  <div class="bg-gray-1">
+    <q-btn
+      v-for="(button, index) in buttons"
+      :key="index"
+      v-bind="button"
+      :label="button.label"
+      class="px-2 text-gray-6"
+      no-caps
+      dense
+    >
+      <q-tooltip v-if="button.tooltip">
+        {{ button.tooltip }}
+      </q-tooltip>
+    </q-btn>
+  </div>
+
+  <div ref="chartEl" class="chart bg-white">
+    <!-- Alarm tanımlarının gösterildiği alan -->
+    <g id="top-alarm-defs" style="display: flex; gap: 10px; padding: 10px; font-size: small; margin-bottom: -20px;">
       <g
         v-for="alarm of alarmTypes"
         :key="`alarmType${alarm.type}`"
@@ -998,6 +1025,8 @@ const selectedCommand = computed(() => {
         </text>
       </g>
     </g>
+
+    <!-- Chart SVG alanı -->
     <svg
       ref="svgRef"
       :viewBox="`0 0 ${outerWidth} ${outerHeight}`"
@@ -1020,29 +1049,6 @@ const selectedCommand = computed(() => {
         :width="outerWidth"
         :height="outerHeight"
       />
-      <!-- Right buttons see buttons[] array -->
-      <g
-        :transform="`translate(${innerRectWidth + marginRight}, ${marginTop})`"
-      >
-        <foreignObject
-          v-for="(button, index) in buttons"
-          :key="`button-${index}`"
-          :x="0"
-          :y="`${index * 3}rem`"
-          width="3rem"
-          height="3rem"
-        >
-          <q-btn
-            v-bind="button"
-            dense
-            class="w-full h-full color-gray"
-          >
-            <q-tooltip v-if="button.tooltip">
-              {{ button.tooltip }}
-            </q-tooltip>
-          </q-btn>
-        </foreignObject>
-      </g>
       <defs>
         <clipPath :id="clipId">
           <rect :width="innerRectWidth" :height="innerRectHeight" />
@@ -1141,6 +1147,7 @@ const selectedCommand = computed(() => {
             />
           </g>
         </g>
+
         <!-- Tooltip content pixel pixel belirlenir maybe daha iyi bir implementation yapılabilir. -->
         <g
           v-if="
@@ -1213,6 +1220,7 @@ const selectedCommand = computed(() => {
             </text>
           </g>
         </g>
+
         <!-- Digital ios -->
         <g
           v-if="settingsStore?.bottomChartVisibilityStatus === 1"
@@ -1240,6 +1248,7 @@ const selectedCommand = computed(() => {
             </template>
           </g>
         </g>
+
         <!-- Reel lines -->
         <g v-show="settingsStore?.bottomChartVisibilityStatus === 2">
           <g
@@ -1272,7 +1281,6 @@ const selectedCommand = computed(() => {
             </g>
           </g>
         </g>
-
       </g>
     </svg>
   </div>
