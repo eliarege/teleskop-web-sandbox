@@ -185,7 +185,7 @@ export interface BatchParameter {
 
 export interface CommandParameter {
   commandNo: number
-  name: string
+  paramIndex: number
   paramName: string
   paramFormula: string
   binding: number

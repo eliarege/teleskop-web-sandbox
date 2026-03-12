@@ -434,41 +434,43 @@ export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtp
 }
 
 export async function updateCommandParameters(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
-  const commands = await tbb.fetchCommandParams()
+  const parameters = await tbb.fetchCommandParams()
   const formulas = await tbb.fetchGlobalCommandFormulas()
-  if (!commands.length && !formulas.length)
+  if (!parameters.length && !formulas.length)
     return false
 
-  const data = commands.map((c) => {
-    const globalCommandFormula = formulas.findIndex(f => f.commandNo === c.commandNo)
+  const data = parameters.map((p) => {
+    const globalCommandFormula = formulas.findIndex((f) => {
+      return f.commandNo === p.commandNo && f.commandParameterNo === p.paramIndex
+    })
 
     return omitUndefined({
       MACHINEID: machineId,
-      COMMANDNO: c.commandNo,
-      PARAMSTRING: c.paramName,
+      COMMANDNO: p.commandNo,
+      PARAMSTRING: p.paramName,
       COMMANDDEFINITION: false,
-      PROGRAMEDITING: c.binding === 1,
+      PROGRAMEDITING: p.binding === 1,
       BATCHPLANNING: false,
-      BATCHSTART: c.binding === 2,
+      BATCHSTART: p.binding === 2,
       COMMANDRUN: false,
       RECIPE: false,
-      VALUE: c.paramFormula ? c.paramFormula : (c.defaultValue).toString(),
-      PARAMETERTYPE: (c.selectionList?.length || globalCommandFormula !== -1) ? 1 : 0,
-      SELECTIONLIST: c.selectionList?.length ? c.selectionList.map(d => `"${d.name}"`).join(' ') : '',
-      SELECTIONVALUES: c.selectionList?.length ? c.selectionList.map(d => `"${d.value}"`).join(' ') : '',
+      VALUE: p.paramFormula ? p.paramFormula : (p.defaultValue).toString(),
+      PARAMETERTYPE: (p.selectionList?.length || globalCommandFormula !== -1) ? 1 : 0,
+      SELECTIONLIST: p.selectionList?.length ? p.selectionList.map(d => `"${d.name}"`).join(' ') : '',
+      SELECTIONVALUES: p.selectionList?.length ? p.selectionList.map(d => `"${d.value}"`).join(' ') : '',
       UNITCODE: 0,
-      PARAMLOWLIMIT: c.minValue,
-      PARAMHIGHLIMIT: c.maxValue,
-      CONTAINSVARIABLE: !!c.paramFormula,
-      TEMPERATURE: c.graphic,
-      USEDEFAULT: c.binding === 2 || c.binding === 3,
+      PARAMLOWLIMIT: p.minValue,
+      PARAMHIGHLIMIT: p.maxValue,
+      CONTAINSVARIABLE: !!p.paramFormula,
+      TEMPERATURE: p.graphic,
+      USEDEFAULT: p.binding === 2 || p.binding === 3,
       ISCOMMANDVARIABLE: false,
-      TBBFORMUL: !!c.paramFormula,
-      USEFORMULA: c.binding === 5,
-      PARAMETERINDEX: Number.parseInt(c.name.split(' ')[1]) - 1,
+      TBBFORMUL: !!p.paramFormula,
+      USEFORMULA: p.binding === 5,
+      PARAMETERINDEX: p.paramIndex,
       // Yeni eklenen sütunlar (4.23.5 ve sonrası)
-      MACHINECONSTANTFORLOWLIMIT: c.machineConstantIdMin,
-      MACHINECONSTANTFORHIGHLIMIT: c.machineConstantIdMax,
+      MACHINECONSTANTFORLOWLIMIT: p.machineConstantIdMin,
+      MACHINECONSTANTFORHIGHLIMIT: p.machineConstantIdMax,
     })
   })
 

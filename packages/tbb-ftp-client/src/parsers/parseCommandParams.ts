@@ -31,7 +31,7 @@ export function parseCommandParams(content: string) {
 
     const parameter: CommandParameter = {
       commandNo: tokens.get(0, 'integer'),
-      name: tokens.get(2, 'string'),
+      paramIndex: -1,
       paramName: tokens.get(3, 'string'),
       paramFormula: tokens.get(4, 'string'),
       binding: tokens.get(5, 'integer'),
@@ -41,6 +41,9 @@ export function parseCommandParams(content: string) {
       graphic: tokens.get(9, 'integer'),
       selectionList: null,
     }
+
+    const sp = tokens.get(2, 'string')
+    parameter.paramIndex = Number.parseInt(sp.slice('SP'.length).trim(), 10)
 
     // Check if index 10 is a list or an integer
     if (tokens.length > 10) {
