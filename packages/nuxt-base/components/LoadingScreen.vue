@@ -13,7 +13,7 @@ defineProps<{
     <div class="container">
       <div class="container__item">
         <div class="container__item-body">
-          <img :src="image">
+          <img :src="image" class="!hidden !md:block">
           <span class="container__item-body__text">{{
             firstMessage
           }}</span>
@@ -52,10 +52,13 @@ defineProps<{
       align-items: center;
 
       .container__item-body {
+        min-width: 20rem;
+        min-height: 10rem;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+
         .container__item-body__text {
           display: flex;
           text-align: center;
@@ -76,8 +79,9 @@ defineProps<{
   border-width: 3px;
   border-radius: 50%;
   animation: rotation 1s linear infinite;
-  width: 48px;
-  height: 48px;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-top: 1rem;
   display: inline-block;
   position: relative;
   box-sizing: border-box;

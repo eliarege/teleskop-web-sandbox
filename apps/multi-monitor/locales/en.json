@@ -4,6 +4,7 @@
   },
   "archive-monitor": "Archive Monitor",
   "machine-error": "Machine Failure",
+  "machine-required": "Machine ID is required",
   "home": "Home",
   "loading": "Loading",
   "vnc-error": "{name} Connection Failed!",

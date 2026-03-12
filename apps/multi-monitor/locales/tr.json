@@ -4,6 +4,7 @@
   },
   "archive-monitor": "Arşiv Monitör",
   "machine-error": "Makine Arıza",
+  "machine-required": "Makine ID'si gereklidir",
   "home": "Anasayfa",
   "loading": "Yükleniyor",
   "vnc-error": "{name} Bağlantısı Başarısız Oldu!",
