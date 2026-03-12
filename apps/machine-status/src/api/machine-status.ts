@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from 'fastify'
+import type { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import type { Kysely } from 'kysely'
 import { sql } from 'kysely'
 import pMemoize from 'p-memoize'
@@ -193,41 +193,78 @@ const fetchJobOrderErpParameters = pMemoize(async (
   cache: erpParameterCache,
 })
 
+async function getMachineStatusById(fastify: FastifyInstance, machineId: number): Promise<MachineStatus | null> {
+  const machineStatuses = await getMachineStatuses(fastify, machineId)
+  return machineStatuses.length > 0 ? machineStatuses[0] : null
+}
+
+async function getMachineStatuses(fastify: FastifyInstance, machineId?: number): Promise<MachineStatus[]> {
+  const { teleskop } = fastify
+  fastify.log.debug('Fetching machine statuses')
+  const machineStatuses = await fetchMachineStatus(teleskop)
+  fastify.log.debug('Fetching weight parameter names')
+  const weightParameterNames = await fetchWeightParameterNames(teleskop)
+  const machineIdToWeightParamName: Record<number, string | null> = {}
+
+  for (const item of weightParameterNames) {
+    machineIdToWeightParamName[item.machineId] = item.parameterName
+  }
+
+  const filteredMachineStatuses = machineId
+    ? machineStatuses.filter(status => status.id === machineId)
+    : machineStatuses
+
+  for (const status of filteredMachineStatuses) {
+    if (status.runningJobOrder && status.runningBatchKey && status.runningBatchKey > 0) {
+      fastify.log.debug(`Fetching ERP parameters for job order ${status.runningJobOrder} (batch key: ${status.runningBatchKey})`)
+      status.erp = await fetchJobOrderErpParameters(
+        teleskop,
+        status.runningJobOrder,
+        status.runningBatchKey,
+      )
+      const paramName = machineIdToWeightParamName[status.id]
+      if (paramName) {
+        const weightValue = Number(status.erp[paramName])
+        if (!Number.isNaN(weightValue)) {
+          status.runningFabricWeight = weightValue
+        }
+      }
+      status.runningFabricWeight ??= 0
+    }
+  }
+
+  return filteredMachineStatuses
+}
+
 const route: FastifyPluginAsync = async (fastify) => {
   const aliases = ['/', '/api/v1/machine_status']
+  const machineByIdAliases = ['/:machineId', '/api/v1/machine_status/:machineId']
 
   aliases.forEach(alias =>
     fastify.get(alias, async function () {
-      const { teleskop } = this
-      this.log.debug('Fetching machine statuses')
-      const machineStatuses = await fetchMachineStatus(teleskop)
-      this.log.debug('Fetching weight parameter names')
-      const weightParameterNames = await fetchWeightParameterNames(teleskop)
-      const machineIdToWeightParamName: Record<number, string | null> = {}
-      for (const item of weightParameterNames) {
-        machineIdToWeightParamName[item.machineId] = item.parameterName
+      return await getMachineStatuses(this)
+    }),
+  )
+
+  machineByIdAliases.forEach(alias =>
+    fastify.get<{ Params: { machineId: string } }>(alias, async function (request, reply) {
+      const machineId = Number.parseInt(request.params.machineId, 10)
+
+      if (!Number.isInteger(machineId) || machineId <= 0) {
+        return reply.code(400).send({
+          message: 'machineId must be a positive integer',
+        })
       }
 
-      for (const status of machineStatuses) {
-        if (status.runningJobOrder && status.runningBatchKey && status.runningBatchKey > 0) {
-          this.log.debug(`Fetching ERP parameters for job order ${status.runningJobOrder} (batch key: ${status.runningBatchKey})`)
-          status.erp = await fetchJobOrderErpParameters(
-            teleskop,
-            status.runningJobOrder,
-            status.runningBatchKey,
-          )
-          const paramName = machineIdToWeightParamName[status.id]
-          if (paramName) {
-            const weightValue = Number(status.erp[paramName])
-            if (!Number.isNaN(weightValue)) {
-              status.runningFabricWeight = weightValue
-            }
-          }
-          // Ensure runningFabricWeight is at least 0 for running job orders
-          status.runningFabricWeight ??= 0
-        }
+      const machineStatus = await getMachineStatusById(this, machineId)
+
+      if (!machineStatus) {
+        return reply.code(404).send({
+          message: `Machine with id ${machineId} not found`,
+        })
       }
-      return machineStatuses
+
+      return machineStatus
     }),
   )
 }
