@@ -1,8 +1,46 @@
 # Changelog
 
+## 0.73.0 - 2026-03-12
+
+[Compare Changes](109c7818bcc0debf5f82c394b1cb66e19be6f1d6...b203bc1b0dc46effd62a58e5f572fa7ca03f8559)
+
+### 🚀 Features
+
+-  **AR**: Add fallback to BFMASTERPRGHEADER when theoretical program not found in archive ([04ab442](04ab44254dc7bcadf12af2a316580159e4d9cfce))
+- Enhance interventions report with additional details and localization support ([67bc9e6](67bc9e6a7f19e6806fabec2f964b6589bf7e625c))
+-  **AR**: TW-184 Job order details open in new tab ([b5065cf](b5065cffeaeabc940debae5a5d08bb890c7a3c28))
+-  **AR**: TW-185 Program names tooltip added ([6eb97d0](6eb97d029112d78fc86b8a060a1f151dfb2cb605))
+-  **AR**: TW-187 Program filter added actual programs ([2f73f43](2f73f43937a13621b9ab2becc6966f817cff32ae))
+- TW-196 Current app added to app list on top bar ([3ac1000](3ac1000ddbb265d6eb854f6a0f728f13e1524419))
+- TW-183 Apps open in new tab from top bar ([50177ad](50177addf034babe317953bb9f58b957af2715cd))
+-  **AR**: TW-185 tooltip formatting ([11f369e](11f369e2276222a702f2fdb6a34141ed1a30a7ea))
+- Single machine fetch and iframe view for multi-monitor ([cb1087e](cb1087e47d05fd6bed67d87ea3452f3088609694))
+
+### 🐛 Bug Fixes
+
+-  **MS**: Conditionally set port based on instance name due to port and instance name being mutually exclusive ([5c7e9dc](5c7e9dc564d341e05ae8d197cb8d2ee2ac36f663))
+-  **DM**: Correct variable casing for jobOrder in machine retrieval endpoint ([97a1f4b](97a1f4b2ca9b1495140584f77ddc3105167eb858))
+-  **DM**: Standardize variable casing for jobOrder across components and API ([93811cf](93811cf735af21ae6427f1c6e3abe48a73f4a541))
+-  **AR**: Interpolate analog inputs, show last value for others ([028d468](028d468feef4db8877ab2cecc0e2b24e508f7968))
+-  **AR**: Enhance print functionality with detailed batch information and improved layout ([29b4cf8](29b4cf819085b97e5b35ca7e8006f610ae91dbce))
+-  **AR**: Define alarm types with labels and colors for better alarm management ([7f8f2cb](7f8f2cb57edd97ac731a35335067a469a21fe1f2))
+-  **AR**: TW-186 Program filter fixes ([b0e0fef](b0e0fef3c8c7944fb8244046e9ed1cf37ae7da2d))
+- TW-199 FilterableTable filter dialog changes ([a5df14a](a5df14a5fa8de3747b90ac91201172c670286194))
+-  **AR**: Update chart buttons style ([94cdf1e](94cdf1ed3dd0801fc02846ac26a04cd0d880f594))
+- **migrations**: Syntax error when creating splitListToTable function ([adb5b01](adb5b017485194d07dbece791b46d359dfa35ed9))
+-  **MA**: Incorrect search criteria for globalCommandFormula in updateCommandParameters ([1ce09d4](1ce09d43e5ac6fb06ebdf37a37a89bf34ad78024))
+-  **PE**: Incorrect filter criteria for editableParameters ([0e1e588](0e1e5884b12120a301cbda225a8145336cbe30d3))
+-  **PE**: Update filter criteria for command formulas to include global formulas ([b203bc1](b203bc1b0dc46effd62a58e5f572fa7ca03f8559)), Reference:https://eliarelektronik.atlassian.net/wiki/spaces/TXXX/pages/3745513508/Teleskop+veri+taban+tablolar+ve+ili+kili+dosyalar+n+formatlar#%5BinlineExtension%5DGenel-Komut-Form%C3%BClleri---globalCommandFormulas
+
+### 🔧 Miscellaneous Tasks
+
+- Bump git-cliff to 2.12.0 ([b26418c](b26418c82b3afdd9d421fe5ebba968dc676c9e6e))
+- Update packageManager version to pnpm@10.29.2 ([8e5404d](8e5404d224ebe01e0dfb52575f344b6bb245431e))
+- Update browsers list db ([40fab67](40fab6747ad8624bcb595905acae219a74f4b621))
+
 ## 0.72.0 - 2026-02-10
 
-[Compare Changes](605bd3a7d51b13d2475b34b56c8fbc5d81bc28a4...054925c2413062de5893953d05637038c0ff0d86)
+[Compare Changes](605bd3a7d51b13d2475b34b56c8fbc5d81bc28a4...109c7818bcc0debf5f82c394b1cb66e19be6f1d6)
 
 ### 🚀 Features
 
