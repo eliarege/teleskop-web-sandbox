@@ -1,6 +1,6 @@
 import { set as setTimestamp } from 'date-fns'
 import type { Machine, MachineCommand, ParameterItem, Program, ioListItem } from '../shared/types'
-import { BEGIN_HEADER, BEGIN_PROGRAM, FIRST_COMMAND_NO, LAST_COMMAND_NO } from './constants'
+import { BEGIN_HEADER, BEGIN_PROGRAM, FIRST_COMMAND_NO, LAST_COMMAND_NO } from './constants.ts'
 
 /**
  * Capture groups:
@@ -252,7 +252,7 @@ export function parseProgramString(programString: string, machine: Pick<Machine,
 
 function parseCommandParameters(programNo: number, parameter: string, command: MachineCommand): ParameterItem[] {
   const parameters: ParameterItem[] = []
-  const editableParameters = command.parameters.filter(p => p.editable)
+  const editableParameters = command.parameters.filter(p => p.editable || p.useFormula)
   if (parameter) {
     const parameterValues = parameter.split(' ')
     for (let index = 0; index < parameterValues.length; index++) {
