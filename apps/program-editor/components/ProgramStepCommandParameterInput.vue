@@ -50,7 +50,7 @@ const options = computed<Option[]>(() => {
   const selections = props.parameter.selections ?? []
   if (props.parameter.type === 'SELECTABLE_FORMULA') {
     return machine.currentMachine.commandFormulas
-      .filter((f: CommandFormula) => f.commandNo === props.commandNo)
+      .filter((f: CommandFormula) => f.commandNo === props.commandNo || f.commandNo === -1)
       .map((f: CommandFormula) => ({
         label: f.formulaName,
         value: f.formulaId,
