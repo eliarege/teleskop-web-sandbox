@@ -953,7 +953,7 @@ export const useEditorStore = defineStore('editor', () => {
       const payload = {
         machine: { id: machine.currentMachine.id, name: machine.currentMachine.name },
         programs: [program.value],
-        selectedCommandNos: Array.from(commandList.keys()),
+        selectedCommandNos: commandList.map(c => c.commandNo),
         commandList,
         translations: processed,
         locale: locale.value,
