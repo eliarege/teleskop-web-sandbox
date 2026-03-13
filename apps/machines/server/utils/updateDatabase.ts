@@ -435,15 +435,11 @@ export async function updateGlobalCommandFormulas(machineId: number, tbb: TbbFtp
 
 export async function updateCommandParameters(machineId: number, tbb: TbbFtpClient, trx: Knex.Transaction) {
   const parameters = await tbb.fetchCommandParams()
-  const formulas = await tbb.fetchGlobalCommandFormulas()
-  if (!parameters.length && !formulas.length)
+  if (!parameters.length) {
     return false
+  }
 
   const data = parameters.map((p) => {
-    const globalCommandFormula = formulas.findIndex((f) => {
-      return f.commandNo === p.commandNo && f.commandParameterNo === p.paramIndex
-    })
-
     return omitUndefined({
       MACHINEID: machineId,
       COMMANDNO: p.commandNo,
@@ -455,7 +451,7 @@ export async function updateCommandParameters(machineId: number, tbb: TbbFtpClie
       COMMANDRUN: false,
       RECIPE: false,
       VALUE: p.paramFormula ? p.paramFormula : (p.defaultValue).toString(),
-      PARAMETERTYPE: (p.selectionList?.length || globalCommandFormula !== -1) ? 1 : 0,
+      PARAMETERTYPE: (p.selectionList?.length || p.binding === 5) ? 1 : 0,
       SELECTIONLIST: p.selectionList?.length ? p.selectionList.map(d => `"${d.name}"`).join(' ') : '',
       SELECTIONVALUES: p.selectionList?.length ? p.selectionList.map(d => `"${d.value}"`).join(' ') : '',
       UNITCODE: 0,
