@@ -1017,7 +1017,7 @@ const selectedCommand = computed(() => {
       <g
         v-for="alarm of alarmTypes"
         :key="`alarmType${alarm.type}`"
-        style="display: flex; align-items: center; justify-content: center; gap: 5px;"
+        style="display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;"
       >
         <g :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
         <text>
@@ -1054,11 +1054,11 @@ const selectedCommand = computed(() => {
           <rect :width="innerRectWidth" :height="innerRectHeight" />
         </clipPath>
       </defs>
-      <!-- Right axises -->
       <g
         :transform="`translate(${marginLeft},${marginTop})`"
         style="cursor: crosshair;"
       >
+        <!-- Axises -->
         <g
           ref="xAxisEl"
           class="x-axis"
@@ -1104,7 +1104,7 @@ const selectedCommand = computed(() => {
               />
             </g>
           </g>
-          <!-- teorik sıcaklık grafiği -->
+          <!-- Teorik sıcaklık grafiği -->
           <linearGradient id="koko">
             <stop
               v-for="(point, index) of colorTransitionPortions"
@@ -1114,7 +1114,7 @@ const selectedCommand = computed(() => {
             />
           </linearGradient>
         </g>
-        <!-- selected time line -->
+        <!-- Selected time line -->
         <line
           v-if="selectedX !== null"
           id="chart-selected-time-line"
