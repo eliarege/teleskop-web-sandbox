@@ -1,8 +1,22 @@
 # Changelog
 
+## 0.73.1 - 2026-03-13
+
+[Compare Changes](db6af242c841bf1616ce4cd3d4e2fd53001d82ca...fd94301b77378b683bbd34401d0bbf566f9f4240)
+
+### 🐛 Bug Fixes
+
+-  **AR**: Missing jspdf and jspdf-autotable dependencies from package.json ([b60d593](b60d593a0b45f8551ae82ed04e436e3081ff2cab))
+-  **MM**: Removed vnc routing limit ([8b048ec](8b048ec6c7740cee04597f6be5317ca4dd0c4bbd))
+-  **MM**: Enhance material fetching logic and add localization for empty material step ([34bcca4](34bcca4d1e28000da4dc6721ad4ae11f59ce2de7))
+-  **PE**: Update command number mapping and improve PDF generation error handling ([a1bb77d](a1bb77de4c5478f8d2ff4686312e0d79564d13a1))
+-  **MA**: Remove unnecessary global formula check from updateCommandParameters ([be78d41](be78d4129706cccedfe5692e65e050e95a74ec69))
+-  **MM**: Consistent MachineCard tooltip styling ([9bfb535](9bfb535f25d3b5a497afb17a8e6d1557fed9139f))
+-  **AR**: Improve alarm legend styling and update comments for clarity in ArchiveChart.vue ([fd94301](fd94301b77378b683bbd34401d0bbf566f9f4240))
+
 ## 0.73.0 - 2026-03-12
 
-[Compare Changes](109c7818bcc0debf5f82c394b1cb66e19be6f1d6...b203bc1b0dc46effd62a58e5f572fa7ca03f8559)
+[Compare Changes](109c7818bcc0debf5f82c394b1cb66e19be6f1d6...db6af242c841bf1616ce4cd3d4e2fd53001d82ca)
 
 ### 🚀 Features
 
