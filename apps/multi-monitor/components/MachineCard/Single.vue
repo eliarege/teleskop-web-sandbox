@@ -80,12 +80,8 @@ const cardColors = computed(() => {
 })
 
 const isScreenViable = computed(() => screenWidth.value >= 900)
-const route = useRoute()
-const noVncUrl = withBaseURL(`${route.path}?machineId=${route.query.machineId}`)
 const computedVncLink = computed(() => {
-  if (!props.machine || !isScreenViable.value)
-    return noVncUrl
-  return `/vnc/${props.machine.id}`
+  return `/vnc/${props.machine!.id}`
 })
 
 const computedVncTarget = computed(() => {
