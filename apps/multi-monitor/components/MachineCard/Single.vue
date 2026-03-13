@@ -85,9 +85,6 @@ const computedVncLink = computed(() => {
 })
 
 const computedVncTarget = computed(() => {
-  if (!isScreenViable.value) {
-    return '_self'
-  }
   return '_blank'
 })
 
@@ -199,15 +196,20 @@ const infoTextColor = computed(() => {
               <NuxtLink
                 v-if="machine.hasVNC"
                 :to="computedVncLink"
-                :target="computedVncTarget"
-                :class="isScreenViable ? '' : 'cursor-not-allowed'"
+                target="_blank"
               >
                 <TwIcon
                   name="i-material-symbols:monitor-outline"
                   size="20px"
                   :color="determineTextColor(cardColors.backGround)"
                 />
-                <QTooltip>VNC</QTooltip>
+                <q-tooltip
+                  transition-show="scale"
+                  class="text-black e-border bg-white"
+                  :offset="[3, 3]"
+                >
+                  VNC
+                </q-tooltip>
               </NuxtLink>
 
               <NuxtLink
@@ -220,7 +222,13 @@ const infoTextColor = computed(() => {
                   size="20px"
                   :color="determineTextColor(cardColors.backGround)"
                 />
-                <QTooltip>{{ t('details._') }}</QTooltip>
+                <q-tooltip
+                  transition-show="scale"
+                  class="text-black e-border bg-white"
+                  :offset="[3, 3]"
+                >
+                  {{ t('details._') }}
+                </q-tooltip>
               </NuxtLink>
 
               <NuxtLink
@@ -235,7 +243,7 @@ const infoTextColor = computed(() => {
                   size="20px"
                   :color="determineTextColor(cardColors.backGround)"
                 />
-                <QTooltip>{{ t('archive-monitor') }}</QTooltip>
+                <q-tooltip>{{ t('archive-monitor') }}</q-tooltip>
               </NuxtLink>
             </div>
           </div>
@@ -247,9 +255,9 @@ const infoTextColor = computed(() => {
             size="43px"
             color="red"
           />
-          <QTooltip anchor="top middle">
+          <q-tooltip anchor="top middle">
             {{ t('machine-error') }}
-          </QTooltip>
+          </q-tooltip>
         </div>
         <div v-else class="machine-icons">
           <img
