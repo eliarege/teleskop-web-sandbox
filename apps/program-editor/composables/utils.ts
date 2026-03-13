@@ -5,6 +5,7 @@ import { klona } from 'klona'
 import { useEditorStore } from './editor'
 import type { CommandError, CommandIO, CommandIOSelection, CommandParameter, CommandTypes, MachineCommand, ParameterItem, Program, ProgramError, ProgramFilter, ProgramPDFPayloadMap, ProgramStep, ProgramStepCommand, StepError, StepIcon, ioListItem } from '~/shared/types'
 import { commandTypeMaps } from '~/shared/constants'
+import PdfWorker from '~/workers/pdf-generator.worker.ts?worker'
 
 export interface CommitState {
   insert: any[]
@@ -493,34 +494,28 @@ function filterValidIOCombinations(
  * @returns  {Promise<Blob>} PDF Blob nesnesi
  */
 export async function generateProgramPDF<T extends keyof ProgramPDFPayloadMap>(type: T, payload: ProgramPDFPayloadMap[T]): Promise<Blob> {
-  const { default: PdfWorker } = await import('~/workers/pdf-generator.worker.ts?worker')
   const worker = new PdfWorker()
 
-  try {
-    const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-      worker.onmessage = (e) => {
-        e.data.success ? resolve(e.data.data) : reject(new Error(e.data.error))
-        worker.terminate()
-      }
+  const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+    worker.onmessage = (e) => {
+      worker.terminate()
+      e.data.success ? resolve(e.data.data) : reject(new Error(e.data.error))
+    }
 
-      worker.onerror = (error) => {
-        reject(error)
-        worker.terminate()
-      }
+    worker.onerror = (error) => {
+      worker.terminate()
+      reject(error)
+    }
 
-      try {
-        worker.postMessage({ type, payload: klona(payload) })
-      } catch (error) {
-        reject(error)
-        worker.terminate()
-      }
-    })
+    try {
+      worker.postMessage({ type, payload: klona(payload) })
+    } catch (error) {
+      worker.terminate()
+      reject(error)
+    }
+  })
 
-    return new Blob([buffer], { type: 'application/pdf' })
-  } catch (error) {
-    worker.terminate()
-    throw error
-  }
+  return new Blob([buffer], { type: 'application/pdf' })
 }
 
 export function downloadPDF(blob: Blob, fileName: string) {

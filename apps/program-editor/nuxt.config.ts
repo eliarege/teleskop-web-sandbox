@@ -1,3 +1,5 @@
+import { base64Loader } from '@teleskop/nuxt-base/build/plugins/base64'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: false },
@@ -55,6 +57,7 @@ export default defineNuxtConfig({
   vite: {
     worker: {
       format: 'es',
+      plugins: () => [base64Loader()],
     },
   },
 })
