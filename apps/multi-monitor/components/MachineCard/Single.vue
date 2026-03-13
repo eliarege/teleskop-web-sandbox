@@ -243,7 +243,13 @@ const infoTextColor = computed(() => {
                   size="20px"
                   :color="determineTextColor(cardColors.backGround)"
                 />
-                <q-tooltip>{{ t('archive-monitor') }}</q-tooltip>
+                <q-tooltip
+                  transition-show="scale"
+                  class="text-black e-border bg-white"
+                  :offset="[3, 3]"
+                >
+                  {{ t('archive-monitor') }}
+                </q-tooltip>
               </NuxtLink>
             </div>
           </div>

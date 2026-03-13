@@ -82,7 +82,13 @@ const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.ur
               size="20px"
               :color="determineTextColor(colors.backGround)"
             />
-            <QTooltip>VNC</QTooltip>
+            <QTooltip
+              transition-show="scale"
+              class="text-black e-border bg-white"
+              :offset="[3, 3]"
+            >
+              VNC
+            </QTooltip>
           </NuxtLink>
           <NuxtLink :to="handleRouting(machine.runningBatchStatus, machine.id)" :class="machine.runningStepNo !== 0 ? 'cursor-pointer' : 'cursor-not-allowed'">
             <TwIcon
@@ -90,7 +96,13 @@ const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.ur
               size="20px"
               :color="determineTextColor(colors.backGround)"
             />
-            <QTooltip>{{ t('details._') }}</QTooltip>
+            <QTooltip
+              transition-show="scale"
+              class="text-black e-border bg-white"
+              :offset="[3, 3]"
+            >
+              {{ t('details._') }}
+            </QTooltip>
           </NuxtLink>
           <NuxtLink
             v-if="archiveUrl !== null && machine.runningBatchStatus !== BatchStatus.IDLE"
@@ -104,7 +116,13 @@ const archiveUrl = computed(() => appList.find(a => a.name === Apps.archive)?.ur
               size="20px"
               :color="determineTextColor(colors.backGround)"
             />
-            <QTooltip>{{ t('archive-monitor') }}</QTooltip>
+            <QTooltip
+              transition-show="scale"
+              class="text-black e-border bg-white"
+              :offset="[3, 3]"
+            >
+              {{ t('archive-monitor') }}
+            </QTooltip>
           </NuxtLink>
         </div>
       </div>
