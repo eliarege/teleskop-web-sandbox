@@ -13,6 +13,7 @@
   "error-message": "It seems like there is an error.",
   "error-message-middle": "Please contact with your IT crew,",
   "error-message-last": "or wait until we fix the issue!",
+  "no-material-in-step": "There is no material in this step",
   "no-erp-val": "NO ERP VALUE",
   "machine-status-server-unavailable": "No response from machine status server",
   "language": "English",

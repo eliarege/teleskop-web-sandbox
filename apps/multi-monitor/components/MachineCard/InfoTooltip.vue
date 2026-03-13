@@ -5,7 +5,7 @@ interface InfoTooltipProps {
   programNo: number
 }
 const props = defineProps<InfoTooltipProps>()
-
+const { t } = useI18n()
 const { data, status } = await useFetch('/api/recipeStep', {
   method: 'GET',
   query: props,
@@ -16,10 +16,15 @@ const { data, status } = await useFetch('/api/recipeStep', {
   <div v-if="status === 'pending'" class="w-full h-full flex-center min-w-20 min-h-20">
     <LoadingSpinner :with-wrapper="false" />
   </div>
-  <div v-for="(item, idx) in data" :key="idx">
-    <div>
-      {{ item.materialName }}
-      {{ item.amount.toFixed(2).replace(/\.?0+$/, '') }}
+  <div v-if="data.length === 0">
+    {{ t('no-material-in-step') }}
+  </div>
+  <div v-else>
+    <div v-for="(item, idx) in data" :key="idx">
+      <div>
+        <span class="font-500">{{ item.materialName }}:</span>
+        {{ item.amount.toFixed(2).replace(/\.?0+$/, '') }} gr
+      </div>
     </div>
   </div>
 </template>

@@ -423,7 +423,11 @@ export async function getDyeingRecipe(recipeJB: string, recipeID: number): Promi
 }
 export async function getRecipeStepMaterial(planKey: number, recipeIndex: number, programNo: number): Promise<{ materialName: string, amount: number }[]> {
   const a: { materialName: string, amount: number }[] = await knex('DYBFBATCHORDERRECIPESTEPS as d')
-    .leftJoin('DYBFBATCHORDERRECIPEHEADER as m', 'm.PLANKEY', 'd.PLANKEY')
+    .leftJoin('DYBFBATCHORDERRECIPEHEADER as m', (builder) => {
+      builder.on('m.PLANKEY', '=', 'd.PLANKEY')
+        .andOn('m.RCPINDEX', '=', 'd.RCPINDEX')
+        .andOn('m.RECIPETYPE', '=', 'd.RECIPETYPE')
+    })
     .leftJoin('DYTFMATERIAL as b', 'b.MATERIALCODE', 'd.CHEMCODE')
     .select({
       materialName: 'b.MATERIALNAME',

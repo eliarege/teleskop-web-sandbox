@@ -13,6 +13,7 @@
   "error-message": "Bir sorun var gibi görünüyor.",
   "error-message-middle": "Lütfen BT ekibinizle irtibata geçiniz,",
   "error-message-last": "ya da biz hatayı çözene kadar bekleyiniz!",
+  "no-material-in-step": "Bu adımda malzeme kullanılmamaktadır",
   "no-erp-val": "ERP DEĞERİ SEÇİLMEDİ",
   "machine-status-server-unavailable": "Makine durum servisinden yanıt gelmiyor",
   "language": "Türkçe",
