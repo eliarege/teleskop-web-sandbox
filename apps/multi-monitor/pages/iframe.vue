@@ -5,12 +5,24 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const { notify } = useQuasar()
-const { data: machine } = await useFetch<MachineData>('/api/machines', {
+const { data: machine, refresh } = await useFetch<MachineData>('/api/machines', {
   method: 'GET',
   query: {
     machineId: route.query.machineId,
   },
 })
+let refreshTimeout: ReturnType<typeof setTimeout> | null = null
+let isPollingActive = true
+
+async function scheduleRefresh() {
+  await refresh()
+
+  if (!isPollingActive)
+    return
+
+  refreshTimeout = setTimeout(scheduleRefresh, 5000)
+}l
+
 definePageMeta({
   layout: 'empty',
 })
@@ -22,7 +34,17 @@ onMounted(() => {
       message: t('machine-required'),
     })
     router.back()
+    return
   }
+
+  refreshTimeout = setTimeout(scheduleRefresh, 5000)
+})
+
+onBeforeUnmount(() => {
+  isPollingActive = false
+
+  if (refreshTimeout)
+    clearTimeout(refreshTimeout)
 })
 </script>
 
