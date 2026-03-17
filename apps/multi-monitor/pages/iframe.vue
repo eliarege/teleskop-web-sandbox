@@ -21,7 +21,7 @@ async function scheduleRefresh() {
     return
 
   refreshTimeout = setTimeout(scheduleRefresh, 5000)
-}l
+}
 
 definePageMeta({
   layout: 'empty',
