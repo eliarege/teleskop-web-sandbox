@@ -1011,7 +1011,7 @@ export async function bulkUpsertPlanParameters(
     // Insert new parameters
     await insertBatch(trx, 'DYBFBATCHPLANPARAMETERS', batchParams.map((bp) => {
       const value = parameters.find(p => p.paramString === bp.paramString)?.value
-      if (!value) {
+      if (!isDef(value)) {
         throw new Error(`${bp.paramString} parameter value required`)
       }
 
@@ -1020,7 +1020,7 @@ export async function bulkUpsertPlanParameters(
         PLANKEY: planKey,
         BATCHPARAMETERID: bp.id,
         PARAMSTRING: bp.paramString,
-        VALUE: value,
+        VALUE: `${value}`,
         PARAMETERTYPE: bp.paramType,
         UNITCODE: bp.unitCode,
         ADDEDWITHDEFAULT: 0,

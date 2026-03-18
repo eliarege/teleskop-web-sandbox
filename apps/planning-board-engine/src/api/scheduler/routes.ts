@@ -204,10 +204,7 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       Body: {
         planKey: number
         machineId: number
-        parameters: Array<{
-          parameter: PlanParameter
-          value: number
-        }>
+        parameters: Array<PlanParameter>
       }
     }>, reply) => {
       try {
