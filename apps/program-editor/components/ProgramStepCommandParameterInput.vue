@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import InputDuration from './InputDuration.vue'
 import InputNumber from './InputNumber.vue'
-import type { CommandFormula, CommandParameter, ParameterItem, ParameterSelections } from '~/shared/types'
+import InputSelect from './InputSelect.vue'
+import type { CommandFormula, CommandParameter, ParameterSelections } from '~/shared/types'
 
 const props = defineProps<{
   stepId: number
@@ -35,10 +36,30 @@ const model = computed({
 })
 
 const previousValue = ref(Number(programParameter.value))
+
 const rules = [
-  (value: number | string) => value !== '' || t('input.required', { field: t('program.parameter') }),
-  (value: number | string) => (Number(value) >= props.parameter.minValue && Number(value) <= props.parameter.maxValue) || t('valueOutOfRange', { minValue: props.parameter.minValue, maxValue: props.parameter.maxValue }),
+  (value: number | string) => value !== ''
+  || t('input.required', { field: t('program.parameter') }),
+  (value: number | string) => {
+    if (props.parameter.type === 'SELECT' || props.parameter.type === 'SELECT_ADDITIVE' || props.parameter.type === 'SELECTABLE_FORMULA') {
+      return props.parameter.selections?.some(opt => opt.value === value) || t('input.invalid', { field: t('program.parameter') })
+    }
+    return true
+  },
+  (value: number | string) => (Number(value) >= props.parameter.minValue
+  && Number(value) <= props.parameter.maxValue)
+  || t('valueOutOfRange', {
+    minValue: props.parameter.format === 'DURATION' ? formatDuration(props.parameter.minValue) : props.parameter.minValue,
+    maxValue: props.parameter.format === 'DURATION' ? formatDuration(props.parameter.maxValue) : props.parameter.maxValue,
+  }),
 ]
+
+function formatDuration(value: number): string {
+  const minutes = Math.floor(value / 60)
+  const seconds = value % 60
+
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
 
 interface Option {
   label: string
@@ -170,16 +191,15 @@ function handleBlur() {
     </template>
 
     <template v-else-if="parameter.type === 'SELECT' || parameter.type === 'SELECT_ADDITIVE'">
-      <QSelect
+      <InputSelect
         v-model="model"
         :label="parameter.name ? mt(parameter.name, machine.currentMachine.id) : undefined"
         :options="options"
-        option-value="value"
+        :rules="rules"
         options-dense
-        map-options
-        emit-value
         outlined
         dense
+        hide-bottom-space
         :style="{ '--q-label-length': labelLength, '--q-value-length': valueLength }"
         class="text-3 q-select-nowrap dynamic-width"
         @focus="handleFocus"
@@ -187,15 +207,13 @@ function handleBlur() {
     </template>
 
     <template v-else-if="parameter.type === 'SELECTABLE_FORMULA'">
-      <QSelect
+      <InputSelect
         v-model="model"
         :label="parameter.name ? mt(parameter.name, machine.currentMachine.id) : undefined"
         :options="options"
-        :option-label="(f) => f.label?.trim().slice(0, 15)"
-        option-value="value"
+        :option-label="(f: any) => f.label?.trim().slice(0, 15)"
+        :rules="rules"
         options-dense
-        map-options
-        emit-value
         outlined
         dense
         :style="{ '--q-label-length': labelLength, '--q-value-length': valueLength }"
@@ -218,7 +236,7 @@ function handleBlur() {
             </QItemSection>
           </QItem>
         </template>
-      </QSelect>
+      </InputSelect>
       <QTooltip>
         {{ options.find((f) => f.value === model)?.formula }}
       </QTooltip>
