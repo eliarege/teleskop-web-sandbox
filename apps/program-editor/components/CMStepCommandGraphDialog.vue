@@ -68,7 +68,7 @@ function calculateChartData() {
 
   const dataPoints: ChartDataPoint[] = commandsLength.value.map(({ commandNo, startStep, endStep }) => {
     const machineCommandName = props.machine.commands.get(commandNo)?.name || ''
-    const commandName = `${commandNo}/${mt(machineCommandName, props.machine.id) || t('apperance.unknownCommand')}`
+    const commandName = `${commandNo} ${mt(machineCommandName, props.machine.id) || t('apperance.unknownCommand')}`
 
     return { x: [startStep, endStep] as [number, number], y: commandName }
   })

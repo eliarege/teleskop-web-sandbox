@@ -563,6 +563,8 @@ export function buildTranslations(
 /**
  * Verilen bir komut numarası ile ilişkili ikonu döndürür.
  *
+ * @param {Map<number, MachineCommand>} commands - Komutların bulunduğu harita.
+ * @param {CommandTypes[]} commandTypes - Komut tipleri.
  * @param {number} commandNo - İkonun alınacağı komut numarası.
  *
  * @returns {StepIcon | undefined} Komutla ilişkili ikon veya eğer ikon bulunamazsa ya da seçim koşulları sağlanmazsa `undefined`.

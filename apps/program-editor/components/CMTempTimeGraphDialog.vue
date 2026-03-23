@@ -70,10 +70,10 @@ const labelsPlugin = {
         ctx.fillText(text, midX, yPos)
       }
 
-      if (showSlopes.value && point.slope !== 0)
+      if (showSlopes.value && point.slope != null && point.slope !== 0)
         drawLabel(`${Number.parseFloat(point.slope.toFixed(1)).toString()}°C`, 5)
 
-      if (showDurations.value && point.duration >= 600)
+      if (showDurations.value && point.duration != null && point.duration >= 600)
         drawLabel(`${Math.floor(point.duration / 60)}'`, -18)
     })
 
