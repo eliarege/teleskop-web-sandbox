@@ -2,6 +2,7 @@
 import { useStorage } from '@vueuse/core'
 import type { QTableProps } from 'quasar'
 import type { FilterableTableColumn } from '@teleskop/nuxt-base'
+import { withBase } from 'ufo'
 
 // Call fetchData when component is mounted.
 // For this, we can use the onMounted hook from 'vue'
@@ -124,7 +125,8 @@ onUnmounted(() => {
 })
 
 async function handleRowDblClick(batchkey: number) {
-  await navigateTo(`/${batchkey}?fromList=true`, { open: { target: '_blank' } })
+  const baseURL = useRuntimeConfig().app.baseURL
+  await navigateTo(withBase(`/${batchkey}?fromList=true`, baseURL), { open: { target: '_blank' } })
 }
 
 onKeyStroke('Enter', () => {
