@@ -26,7 +26,20 @@ export enum SecurityType {
   ARD = 30,
   MSLogonII = 113,
   UnixLogon = 129,
+
+  // VeNCrypt subtypes
   Plain = 256,
+  TLSNone = 257,
+  TLSVnc = 258,
+  TLSPlain = 259,
+  X509None = 260,
+  X509Vnc = 261,
+  X509Plain = 262,
+  TLSSASL = 263,
+  X509SASL = 264,
+  Ident = 265,
+  TLSIdent = 266,
+  X509Ident = 267,
 }
 
 export enum ClientMessageType {
@@ -39,11 +52,13 @@ export enum ClientMessageType {
 }
 
 /** Supported security types in order of preference */
-// const supportedSecurityTypes = [
-//   SecurityType.VNCAuth,
-//   SecurityType.None,
-//   SecurityType.Tight,
-// ]
+const supportedSecurityTypes = [
+  SecurityType.VNCAuth,
+  SecurityType.None,
+  SecurityType.Tight,
+  SecurityType.VeNCrypt,
+  SecurityType.Plain,
+]
 
 export class HandshakeError extends Error {}
 
@@ -100,8 +115,10 @@ export class ProxyHandshake {
     try {
       await this.negotiateProtocolVersion()
       await this.negotiateSecurity()
-      await this.negotiateAuthentication()
-      const ok = await this.handleSecurityResult()
+      let ok = await this.negotiateAuthentication()
+      if (!ok)
+        return false
+      ok = await this.handleSecurityResult()
       if (!ok)
         return false
       await this.negotiateClientInit()
@@ -163,14 +180,18 @@ export class ProxyHandshake {
    *
    * Read more: https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#security-types
    */
-  private async negotiateAuthentication(): Promise<void> {
+  private async negotiateAuthentication(): Promise<boolean> {
     switch (this.securityType) {
       case SecurityType.None:
-        return
+        return true
       case SecurityType.VNCAuth:
         return this.negotiateVncAuth()
       case SecurityType.Tight:
         return this.negotiateTightAuth()
+      case SecurityType.VeNCrypt:
+        return this.negotiateVeNCryptAuth()
+      case SecurityType.Plain:
+        return this.negotiatePlainAuth()
       default:
         throw new HandshakeError(`Unsupported security type: ${getSecurityTypeString(this.securityType)}`)
     }
@@ -181,7 +202,7 @@ export class ProxyHandshake {
    *
    * Read more: https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#vnc-authentication
    */
-  private async negotiateVncAuth(): Promise<void> {
+  private async negotiateVncAuth(): Promise<boolean> {
     // Server sends auth challenge
     const msg = await this.expectServerMsg(16, 'Auth Challenge')
     this.client.send(msg)
@@ -194,6 +215,7 @@ export class ProxyHandshake {
       throw new HandshakeError('Failed responding to server challenge')
     }
     this.server.write(result)
+    return true
   }
 
   /**
@@ -201,7 +223,7 @@ export class ProxyHandshake {
    *
    * Read more: https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#tight-security-type
    */
-  private async negotiateTightAuth(): Promise<void> {
+  private async negotiateTightAuth(): Promise<boolean> {
     this.tightVNC = true
     let msg: Buffer
     // Server sends list of tunnels
@@ -244,7 +266,69 @@ export class ProxyHandshake {
     } else {
       this.securityType = SecurityType.None
     }
-    await this.negotiateAuthentication()
+    return await this.negotiateAuthentication()
+  }
+
+  /**
+   * VeNCrypt Security Type
+   *
+   * Read more: https://github.com/rfbproto/rfbproto/blob/master/rfbproto.rst#vencrypt
+   */
+  private async negotiateVeNCryptAuth(): Promise<boolean> {
+    let msg: Buffer
+    // Server sends the highest version of VeNCrypt it supports
+    msg = await this.expectServerMsg(2, 'VeNCrypt version')
+    this.logger.debug(`VeNCrypt version: ${msg[0]}.${msg[1]}`)
+    this.client.send(msg)
+    // Client responds with the version it supports
+    msg = await this.expectClientMsg('VeNCrypt version')
+    this.server.write(msg)
+
+    // Sends one byte response which indicates if everything is OK.
+    // - Non-zero value means failure and connection will be closed.
+    // - Zero value means success.
+    msg = await this.expectServerMsg(1, 'VeNCrypt status')
+    this.client.send(msg)
+    const status = msg.readUint8(0)
+    if (status !== 0) {
+      this.logger.debug(`VeNCrypt negotiation failed with status: ${status}`)
+      return false
+    }
+    // Server sends list of supported VeNCrypt subtypes.
+    msg = await this.expectServerMsg(1, 'Number of VeNCrypt subtypes')
+    const numberOfSubtypes = msg.readUint8(0)
+    this.logger.debug(`Number of VeNCrypt subtypes: ${numberOfSubtypes}`)
+
+    msg = await this.expectServerMsg(numberOfSubtypes * 4, 'VeNCrypt subtypes')
+    this.client.send(Buffer.from([numberOfSubtypes, ...msg]))
+
+    // Client selects subtype
+    msg = await this.expectClientMsg('Selected VeNCrypt subtype')
+    const subtype = msg.readUInt32BE(0)
+    this.logger.debug(`Selected VeNCrypt subtype: ${getSecurityTypeString(subtype)}`)
+
+    if (!supportedSecurityTypes.includes(subtype)) {
+      throw new HandshakeError(
+        `Unsupported VeNCrypt subtype selected by client: ${getSecurityTypeString(subtype)}`,
+      )
+    }
+    this.server.write(msg)
+    this.securityType = subtype
+    return await this.negotiateAuthentication()
+  }
+
+  private async negotiatePlainAuth(): Promise<boolean> {
+    // We ignore the client response and send our credentials
+    await this.expectClientMsg('Client Credentials')
+    const username = Buffer.from(this.machine.username ?? '', 'utf8')
+    const password = Buffer.from(this.machine.password, 'utf8')
+    const msg = Buffer.alloc(8 + username.length + password.length)
+    msg.writeUInt32BE(username.length, 0)
+    msg.writeUInt32BE(password.length, 4)
+    username.copy(msg, 8)
+    password.copy(msg, 8 + username.length)
+    this.server.write(msg)
+    return true
   }
 
   /**

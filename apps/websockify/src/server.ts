@@ -157,6 +157,7 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
       controller.abort()
       client.close()
       server.end()
+      clearTimeout(timeout)
     }
   }
 
@@ -223,7 +224,7 @@ function createProxyStream(machine: Machine, client: WebSocket, logger: Logger, 
   })
 
   server.on('end', () => {
-    clearTimeout(timeout)
+    cleanup()
     logger.info('Server connection closed')
   })
 
