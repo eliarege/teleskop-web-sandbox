@@ -289,6 +289,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       }
     }
 
+    await editor.fetchAllProcessTypes()
+
     editor.isLoading = false
   }
 
@@ -515,6 +517,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       } else {
         notifyError(t('contextMenu.getAllProgramsFailed', { message: response.message }))
       }
+
+      await editor.fetchAllProcessTypes()
     } catch (error: any) {
       notifyError(t('contextMenu.getAllProgramsFailed', { message: error.message }))
       console.error('Get All Programs error:', error)

@@ -1125,6 +1125,30 @@ export class MachineController {
   }
 
   /**
+   * Programın typeId ve additionalTypeId değerlerinin BFPROCESSTYPES tablosunda var olmasını sağlar.
+   * Yoksa otomatik olarak oluşturur.
+   */
+  @withTransaction
+  private async ensureProcessTypesExist(typeId?: string | number, additionalTypeId?: string | number): Promise<void> {
+    const codes = [typeId, additionalTypeId].filter(code => code != null && code !== '')
+
+    for (const code of codes) {
+      const exists = await this.trx('BFPROCESSTYPES')
+        .first('PROCESSCODE')
+        .where('PROCESSCODE', code)
+
+      if (!exists) {
+        await this.trx('BFPROCESSTYPES').insert({
+          PROCESSCODE: code,
+          PROCESSNAME: `Process ${code}`,
+          NOTE: '',
+          BOYAPRGMI: 1,
+        })
+      }
+    }
+  }
+
+  /**
    * Programı veritabanına ekler
    * @param program - Program objesi
    * @returns {Promise<void>}
@@ -1135,6 +1159,8 @@ export class MachineController {
     if (exists) {
       throw new PError('PROGRAM_EXISTS', { machineId: this.id, programNo: program.programNo })
     }
+
+    await this.ensureProcessTypesExist(program.typeId, program.additionalTypeId)
 
     const { initialTemperature = 25 } = await getTeleskopSettings()
 
