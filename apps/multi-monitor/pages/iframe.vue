@@ -9,6 +9,8 @@ const { data: machine, refresh } = await useFetch<MachineData>('/api/machines', 
   method: 'GET',
   query: {
     machineId: route.query.machineId,
+    // For staging servers, should be validated via proxy server
+    embed_token: route.query.embed_token,
   },
 })
 let refreshTimeout: ReturnType<typeof setTimeout> | null = null
