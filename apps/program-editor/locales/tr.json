@@ -575,7 +575,8 @@
       "getAllPrograms": "{name} makinesinden tüm programları al",
       "copy": "Programları Kopyala",
       "paste": "Programları Yapıştır",
-      "goToMachineApp": "Makineler Uygulamasına Git"
+      "goToMachineApp": "Makineler Uygulamasına Git",
+      "noProgram": "No programs found on {name} machine"
     },
     "processType": {
       "sendPrograms": "{name} tipindeki programları gönder",

@@ -1130,6 +1130,17 @@ export class MachineController {
    */
   @withTransaction
   private async ensureProcessTypesExist(typeId?: string | number, additionalTypeId?: string | number): Promise<void> {
+    const PROCESS_TYPE_NAMES: Record<number, string> = {
+      0: 'Standart Boyama',
+      1: 'Sentetik/Özel Boyama',
+      2: 'Kasar(Ön İşlem)',
+      3: 'Hazırlık/Yağ Sökümü',
+      4: 'Yıkama(Haslık)',
+      5: 'Yumuşatma',
+      6: 'Durulama/Söküm',
+      7: 'İlave Program',
+    }
+
     const codes = [typeId, additionalTypeId].filter(code => code != null && code !== '')
 
     for (const code of codes) {
@@ -1138,9 +1149,11 @@ export class MachineController {
         .where('PROCESSCODE', code)
 
       if (!exists) {
+        const numericCode = Number(code)
+        const processName = PROCESS_TYPE_NAMES[numericCode] ?? `Process ${code}`
         await this.trx('BFPROCESSTYPES').insert({
           PROCESSCODE: code,
-          PROCESSNAME: `Process ${code}`,
+          PROCESSNAME: processName,
           NOTE: '',
           BOYAPRGMI: 1,
         })
