@@ -1,5 +1,5 @@
 import type { Knex } from 'knex'
-import { config } from '../config'
+import { config } from '../../config'
 
 export async function up(knex: Knex) {
   if (!config.enableLegacyMigrations) {
