@@ -94,13 +94,12 @@ async function migrateDmExchange(isDown?: boolean) {
   await dmExchange.destroy()
 }
 
-function main() {
+async function main() {
   const isDown = process.argv.includes('down')
-  const tasks = [migrateTeleskop(isDown)]
+  await migrateTeleskop(isDown)
   if (config.dmExchangeEnabled) {
-    tasks.push(migrateDmExchange(isDown))
+    await migrateDmExchange(isDown)
   }
-  return Promise.all(tasks)
 }
 
 main()
