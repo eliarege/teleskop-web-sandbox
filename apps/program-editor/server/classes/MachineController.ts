@@ -1862,8 +1862,7 @@ export class MachineController {
     }
 
     await dmExchange.transaction(async (trx) => {
-      // Handle Treatment Machine Groups
-
+      // 1. Treatments insert/update
       const treatment = await trx('Treatments')
         .where('TreatmentNo', program.programNo)
         .andWhere('TreatmentType', 0)
@@ -1878,12 +1877,6 @@ export class MachineController {
           ImportState: 1,
           TreatmentType: 0,
         })
-
-        await trx('Treatment_MGroups').insert({
-          TreatmentNo: program.programNo,
-          MGroupNo: groupNo,
-          ImportState: 1,
-        })
       } else {
         await trx('Treatments').update({
           TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
@@ -1894,11 +1887,30 @@ export class MachineController {
         })
           .where('TreatmentNo', program.programNo)
           .andWhere('TreatmentType', 0)
-
-        await trx('Treatment_Parameter_Ref')
-          .where('TreatmentNo', program.programNo)
-          .del()
       }
+
+      // 2. Treatment_MGroups - her zaman kontrol et, yoksa ekle
+      const mgroup = await trx('Treatment_MGroups')
+        .where('TreatmentNo', program.programNo)
+        .andWhere('MGroupNo', groupNo)
+        .andWhere('TreatmentType', 0)
+        .first('*')
+
+      if (!mgroup) {
+        await trx('Treatment_MGroups').insert({
+          TreatmentNo: program.programNo,
+          MGroupNo: groupNo,
+          ImportState: 1,
+          TreatmentType: 0,
+        })
+      }
+
+      // 3. Treatment_Parameter_Ref - her zaman temizle ve yeniden ekle
+      await trx('Treatment_Parameter_Ref')
+        .where('TreatmentNo', program.programNo)
+        .andWhere('TreatmentType', 0)
+        .del()
+
       if (treatmentRefs.length) {
         await trx('Treatment_Parameter_Ref').insert(
           treatmentRefs.map((ref, index) => {
@@ -1907,6 +1919,7 @@ export class MachineController {
               TreatmentParaCounter: index + 1,
               TreatmentParaNo: ref.parameterNo,
               ImportState: 1,
+              TreatmentType: 0,
             }
           }),
         )
