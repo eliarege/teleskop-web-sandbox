@@ -32,6 +32,9 @@ function zoomOut() {
 function resetZoom() {
   queueBasedRef.value.resetZoom()
 }
+function scrollToNow() {
+  queueBasedRef.value.scrollToNow()
+}
 
 function getBatchTextInfo(batchText: string[], translationKey: string) {
   return computed(() => batchText.map(item => t(`${translationKey}.${item}`)))
@@ -80,6 +83,7 @@ const { data: state } = useAuthFetch('/api/ptStatus')
             @zoom-in="zoomIn()"
             @zoom-out="zoomOut()"
             @reset-zoom="resetZoom()"
+            @scroll-to-now="scrollToNow()"
           />
           <TopbarButton
             v-for="(item, index) in items"
