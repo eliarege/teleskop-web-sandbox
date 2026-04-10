@@ -29,6 +29,7 @@ defineExpose({
   zoomOut,
   resetZoom: zoomReset,
   unplannedSearch,
+  scrollToNow,
 })
 
 let scheduler: SchedulerPro
@@ -491,6 +492,9 @@ function zoomOut() {
 }
 function zoomReset() {
   scheduler.zoomLevel = 17
+}
+function scrollToNow() {
+  scheduler.scrollToDate(new Date(), { block: 'center' })
 }
 function unplannedSearch(str: string) {
   grid.features.search.search(str)

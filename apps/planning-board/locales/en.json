@@ -2,6 +2,7 @@
   "plannedEventTextInfo": "Planned Event Text",
   "completedEventTextInfo": "Completed Event Text",
   "ongoingTextInfo": "Ongoing Text Info",
+  "scrollToNow": "Now",
   "send-message": {
     "_": "Send a message to Machine {machineName}.",
     "send": "Send",

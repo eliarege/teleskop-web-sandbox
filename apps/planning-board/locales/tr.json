@@ -2,6 +2,7 @@
   "plannedEventTextInfo": "Planlanmış İş Emri Metni",
   "completedEventTextInfo": "Tamamlanmış İş Emri Metni",
   "ongoingTextInfo": "Devam Eden İş Emri Metni",
+  "scrollToNow": "Şimdi",
   "send-message": {
     "_": "{machineName} Makinesine mesaj gönder.",
     "send": "Gönder",

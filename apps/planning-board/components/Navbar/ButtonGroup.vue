@@ -10,6 +10,7 @@ const emit = defineEmits([
   'zoom-in',
   'zoom-out',
   'reset-zoom',
+  'scroll-to-now',
 ])
 
 const { t } = useI18n()
@@ -140,6 +141,14 @@ const datePicker = ref(false)
       dense
       no-caps
       @click="emit('reset-zoom')"
+    />
+    <NavbarButton
+      :description="t('scrollToNow')"
+      icon="i-mdi:crosshairs-gps"
+      flat
+      dense
+      no-caps
+      @click="emit('scroll-to-now')"
     />
   </div>
 </template>
