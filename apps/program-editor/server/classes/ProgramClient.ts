@@ -360,6 +360,24 @@ export class TonelloProgramClient implements ProgramClient {
       .map(p => Number(p.code))
   }
 
+  async downloadAllPrograms(commands: MachineCommand[]): Promise<Program[]> {
+    const programNos = await this.fetchProgramList()
+    const programs: Program[] = []
+
+    for (const programNo of programNos) {
+      try {
+        const program = await this.downloadProgram(programNo, commands)
+        if (program) {
+          programs.push(program)
+        }
+      } catch (error) {
+        logger.error(`Failed to download Tonello program ${programNo} on machine ${this.id}:`, error)
+      }
+    }
+
+    return programs
+  }
+
   async deleteProgram(_id: number): Promise<void> {
     // NOT IMPLEMENTED
   }
