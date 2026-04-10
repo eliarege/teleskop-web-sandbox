@@ -1,6 +1,18 @@
 import Knex from 'knex'
+import { inferBoolean } from '@teleskop/utils'
 
 const config = useRuntimeConfig()
+
+function toBoolean(value: string | boolean | undefined): boolean {
+  if (typeof value === 'boolean')
+    return value
+  if (typeof value === 'string')
+    return inferBoolean(value)
+  return false
+}
+
+export const isDmExchangeEnabled = toBoolean(config.dmExchangeEnabled)
+
 const knex = Knex({
   client: 'mssql',
   connection: {
@@ -16,6 +28,24 @@ const knex = Knex({
   },
 })
 
+const dmExchangeKnex = isDmExchangeEnabled
+  ? Knex({
+      client: 'mssql',
+      connection: {
+        host: config.dmExchangeHost,
+        port: Number(config.dmExchangePort),
+        user: config.dmExchangeUser,
+        password: String(config.dmExchangePassword),
+        database: config.dmExchangeDatabase,
+        options: {
+          instanceName: config.dmExchangeInstanceName,
+          trustServerCertificate: true,
+        },
+      },
+    })
+  : null
+
 export {
+  dmExchangeKnex,
   knex,
 }

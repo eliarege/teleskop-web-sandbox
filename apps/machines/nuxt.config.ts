@@ -16,6 +16,13 @@ export default defineNuxtConfig({
     teleskopPassword: '',
     teleskopDatabase: '',
     teleskopInstanceName: '',
+    dmExchangeEnabled: false,
+    dmExchangeHost: '',
+    dmExchangePort: '',
+    dmExchangeUser: '',
+    dmExchangePassword: '',
+    dmExchangeDatabase: '',
+    dmExchangeInstanceName: '',
     teleskopTimezoneOffset: -180,
     public: {
       kcClientId: 'machines',

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { knex } from '~/server/connectionPool'
 import { isMachineLocked } from '~/server/lib/machine-lock'
+import { upsertMachineToDmExchange } from '~/server/lib/dmexchange'
 import { machineSchema } from '~/shared/schemas/machine'
 
 const updateMachineSchema = z.object({
@@ -20,34 +21,47 @@ export default defineAuthEventHandler(async (event) => {
   }
 
   try {
-    const res = await knex('BFMACHINES').where({
-      MACHINEID: id,
-    }).update({
-      MACHINEID: Number(machine.machineId),
-      MACHINECODE: machine.machineCode,
-      GRUPNO: machine.groupId,
-      TBBMODEL: machine.tbbModel,
-      THEORICALCHARGE: machine.theoricalCharge,
-      MACHINECAPACITY: machine.machineCapacity,
-      IP: machine.ip,
-      PORT: 8080,
-      VERSION: machine.version,
-      NOZZLECOUNT: machine.nozzleCount,
-      theoricalChargeDuration: machine.theoricalChargeDuration,
-      REELCOUNT: machine.reelCount,
-      STEAMUNIT: machine.steamUnit,
-      INUSE: machine.inUse,
-      MTTEMPIO: machine.MTTempIo,
-      STEAMKGPERHOUR: machine.steamKgPerHour,
-      STEAMVALVEDO: machine.steamValveDo,
-      ADDITIONALTANK1: machine.additionalTank1,
-      ADDITIONALTANK2: machine.additionalTank2,
-      ADDITIONALTANK3: machine.additionalTank3,
-      ADDITIONALTANK4: machine.additionalTank4,
-      RESERVETANK: machine.reserveTank,
-      STOREELECTRICITYASINC: machine.storeElectricityAsInc,
-      THEORETICALWATER: machine.theoreticalWater,
-      THEORETICALSTEAM: machine.theoreticalSteam,
+    const res = await knex.transaction(async (trx) => {
+      const updateResult = await trx('BFMACHINES').where({
+        MACHINEID: id,
+      }).update({
+        MACHINEID: Number(machine.machineId),
+        MACHINECODE: machine.machineCode,
+        GRUPNO: machine.groupId,
+        TBBMODEL: machine.tbbModel,
+        THEORICALCHARGE: machine.theoricalCharge,
+        MACHINECAPACITY: machine.machineCapacity,
+        IP: machine.ip,
+        PORT: 8080,
+        VERSION: machine.version,
+        NOZZLECOUNT: machine.nozzleCount,
+        theoricalChargeDuration: machine.theoricalChargeDuration,
+        REELCOUNT: machine.reelCount,
+        STEAMUNIT: machine.steamUnit,
+        INUSE: machine.inUse,
+        MTTEMPIO: machine.MTTempIo,
+        STEAMKGPERHOUR: machine.steamKgPerHour,
+        STEAMVALVEDO: machine.steamValveDo,
+        ADDITIONALTANK1: machine.additionalTank1,
+        ADDITIONALTANK2: machine.additionalTank2,
+        ADDITIONALTANK3: machine.additionalTank3,
+        ADDITIONALTANK4: machine.additionalTank4,
+        RESERVETANK: machine.reserveTank,
+        STOREELECTRICITYASINC: machine.storeElectricityAsInc,
+        THEORETICALWATER: machine.theoreticalWater,
+        THEORETICALSTEAM: machine.theoreticalSteam,
+      })
+
+      await upsertMachineToDmExchange({
+        machineId: machine.machineId,
+        machineCode: machine.machineCode,
+        groupId: Number(machine.groupId),
+        machineCapacity: machine.machineCapacity,
+        theoricalCharge: machine.theoricalCharge,
+        inUse: machine.inUse,
+      })
+
+      return updateResult
     })
     return res
   } catch (err) {
