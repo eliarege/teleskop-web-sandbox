@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+import path from 'node:path'
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
 import type { TonelloProgram } from '@teleskop/core'
 import { TonelloApi } from '@teleskop/core'
@@ -57,6 +59,53 @@ export class T7ProgramClient implements ProgramClient {
     return files
       .map((f: any) => Number(f.name.split('.')[0]))
       .filter((n: number) => !Number.isNaN(n))
+  }
+
+  async downloadAllPrograms(commands: MachineCommand[]): Promise<Program[]> {
+    const remotePath = '/tbb6500/data/programs/program'
+    const localDir = await this.ftp.downloadDir(remotePath)
+
+    try {
+      const commandMap = this.commandArrayToMap(commands)
+      const programs: Program[] = []
+      const files = fs.readdirSync(localDir)
+
+      for (const fileName of files) {
+        const programNo = Number(fileName.split('.')[0])
+        if (Number.isNaN(programNo))
+          continue
+
+        const filePath = path.join(localDir, fileName)
+        const programString = fs.readFileSync(filePath, 'utf-8')
+
+        let rawProgram: Program
+        try {
+          rawProgram = parseProgramString(programString, {
+            id: this.id,
+            commands: commandMap,
+          })
+        } catch (error) {
+          logger.error(`Parse error for program ${programNo} on machine ${this.id}:`, error)
+          continue
+        }
+
+        programs.push({
+          ...rawProgram,
+          machineId: this.id,
+          programNo,
+          duration: 0,
+          typeName: '',
+          prgState: ProgramStatus.EXISTS_ON_BOTH,
+          icon: '',
+          isChanged: false,
+          tbbProgramChangedEvent: 0,
+        })
+      }
+
+      return programs
+    } finally {
+      fs.rmSync(localDir, { recursive: true, force: true })
+    }
   }
 
   async downloadProgram(programNo: number, commands: MachineCommand[]): Promise<Program | null> {

@@ -311,7 +311,8 @@
       "title": "Delete Program Type",
       "deletionWarning": "Program type \"{type}\" will be deleted! Are you sure you want to continue?",
       "success": "Program type {no} - {name} is deleted successfully.",
-      "fail": "An error occurred while deleting program type."
+      "fail": "An error occurred while deleting program type.",
+      "errorInUse": "This program type has programs assigned to it and cannot be deleted."
     },
     "updateProcessTypes": {
       "success": "Program types updated successfully.",

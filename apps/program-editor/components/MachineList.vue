@@ -14,6 +14,10 @@ const machine = useMachineStore()
 const machineStatusStore = useMachineStatusStore()
 const filter = useProgramFilterStore()
 
+function getProcessTypeCount(processCode: number): number {
+  return editor.allPrograms.filter(p => p.typeId === processCode).length
+}
+
 async function onMachineClick(machineInfo: MachineInfo, processType?: ProcessType) {
   if (machineInfo.disabled)
     return
@@ -158,7 +162,15 @@ function isMachineSelected(machineId: number): boolean {
                 @click="onMachineClick(machineItem, processType)"
               >
                 <QItemSection dense>
-                  {{ processType.label }}
+                  <div class="row no-wrap items-center justify-between full-width">
+                    <span class="truncate">{{ processType.label }}</span>
+                    <span
+                      v-if="isMachineSelected(machineItem.id) && getProcessTypeCount(processType.value) > 0"
+                      class="text-gray-5 text-xs q-ml-sm"
+                    >
+                      {{ getProcessTypeCount(processType.value) }}
+                    </span>
+                  </div>
                 </QItemSection>
 
                 <QMenu touch-position context-menu>
