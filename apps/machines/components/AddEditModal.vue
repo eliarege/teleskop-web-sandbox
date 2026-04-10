@@ -368,11 +368,11 @@ async function getVersionInfo(formData: Machine) {
             />
             <FormKit
               type="number"
-              name="theoricalCharge"
-              :label="t('theoricalCharge')"
+              name="theoreticalCharge"
+              :label="t('theoreticalCharge')"
               number="integer"
               :validation="[['required'], ['min', 1], ['max', 25], ['theoriticalChargeRule']]"
-              :validation-label="t('theoricalCharge')"
+              :validation-label="t('theoreticalCharge')"
               :validation-rules="{ theoriticalChargeRule }"
               :validation-messages="{
                 theoriticalChargeRule: t('chargeExceeds1Day'),
@@ -381,10 +381,10 @@ async function getVersionInfo(formData: Machine) {
             <FormKit
               type="number"
               number="integer"
-              name="theoricalChargeDuration"
-              :label="t('theoricalChargeDuration')"
+              name="theoreticalChargeDuration"
+              :label="t('theoreticalChargeDuration')"
               :validation="[['required'], ['min', 45], ['max', 1440], ['theoriticalChargeRule']]"
-              :validation-label="t('theoricalChargeDuration')"
+              :validation-label="t('theoreticalChargeDuration')"
               :validation-rules="{ theoriticalChargeRule }"
               :validation-messages="{
                 theoriticalChargeRule: t('chargeExceeds1Day'),
