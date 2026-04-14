@@ -203,7 +203,7 @@ async function processProgramSteps(
       counterState.callOffManual++
     } else {
       if (i === 0 || allMaterials[i - 1].orderNo < material.orderNo || allMaterials[i - 1].isIntermediateStep) {
-        counterState.callOff = material.orderNo
+        counterState.callOff++
       }
       currentCallOff = counterState.callOff
     }
