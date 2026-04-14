@@ -58,13 +58,14 @@ export default defineEventHandler(async (event) => {
 
     for (const header of batchHeaders) {
       const programNo = header.program_no
+      const recipeIndex = header.recipe_index
 
-      if (!programsMap.has(programNo)) {
-        programsMap.set(programNo, {
+      if (!programsMap.has(recipeIndex)) {
+        programsMap.set(recipeIndex, {
           recipeId: 0,
           programNo,
           programName: header.program_name || '',
-          stepNo: header.recipe_index,
+          stepNo: recipeIndex,
           machineId: batchPlan.planned_machine,
           flotteRatio: header.flotte_ratio,
           totalWeight: header.weight,
@@ -117,7 +118,7 @@ export default defineEventHandler(async (event) => {
       if (!materialRequest)
         continue
 
-      const stepKey = `${jobOrder.program_no}-${step.main_step}-${step.recipe_type}`
+      const stepKey = `${step.process_order}-${step.main_step}-${step.recipe_type}`
 
       if (!stepsMap.has(stepKey)) {
         stepsMap.set(stepKey, {
@@ -143,9 +144,9 @@ export default defineEventHandler(async (event) => {
 
     // Assign steps to programs
     for (const [stepKey, stepData] of stepsMap) {
-      const [programNoStr] = stepKey.split('-')
-      const programNo = Number(programNoStr)
-      const program = programsMap.get(programNo)
+      const [processOrderStr] = stepKey.split('-')
+      const processOrder = Number(processOrderStr)
+      const program = programsMap.get(processOrder)
 
       if (program) {
         // Sort materials by orderNo
