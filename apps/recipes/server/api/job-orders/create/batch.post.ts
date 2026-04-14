@@ -103,7 +103,7 @@ async function insertRecipeMaterials(
     KindOfProduct: material.type === RecipeType.DYE ? 1 : 2,
     KindOfStation: material.isManual ? 5 : 2,
     TreatmentNo: program.programNo,
-    Program_order: program.stepNo + 1,
+    Program_order: programOrder + 1,
     Preparation_counter: isIntermediateStep ? callOff : material.orderNo,
     CallOff: callOff,
     Counter: counter,
