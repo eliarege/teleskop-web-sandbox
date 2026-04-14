@@ -56,17 +56,17 @@ const result = ref(0)
 
 const scope = computed(() => {
   return {
-    ...startingParameters.value.reduce((acc, param) => {
+    ...startingParameters.value.reduce((acc: Record<string, number>, param: { paramString: string, defaultValue: number }) => {
       const paramName = param.paramString.trim().replace(/\s/g, '_')
       acc[paramName] = param.defaultValue
       return acc
     }, {}),
-    ...machineConstants.value.reduce((acc, constant) => {
+    ...machineConstants.value.reduce((acc: Record<string, number>, constant: { paramString: string, defaultValue: number }) => {
       const constantName = constant.paramString.trim().replace(/\s/g, '_')
       acc[constantName] = constant.defaultValue
       return acc
     }, {}),
-    ...commandParameters.value.reduce((acc, param) => {
+    ...commandParameters.value.reduce((acc: Record<string, number>, param: { paramString: string, defaultValue: number }) => {
       const paramName = param.paramString.trim().replace(/\s/g, '_')
       acc[paramName] = param.defaultValue
       return acc
