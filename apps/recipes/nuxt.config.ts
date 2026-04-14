@@ -17,11 +17,6 @@ export default defineNuxtConfig({
     recipesDbPort: '5432',
     recipesDbPassword: '123456',
     recipesDbName: 'recipes',
-    teleskopHost: '192.168.16.87',
-    teleskopUser: 'sa',
-    teleskopPort: '7654',
-    teleskopPassword: '12345678tT',
-    teleskopDatabase: 'Teleskop',
     public: {
       kcUrl: 'http://localhost:8080',
       kcRealm: 'teleskop-web',
