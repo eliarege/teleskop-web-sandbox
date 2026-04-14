@@ -124,20 +124,24 @@ onUnmounted(() => {
   errorChannel.close()
 })
 
-async function handleRowDblClick(batchkey: number) {
-  const baseURL = useRuntimeConfig().app.baseURL
-  await navigateTo(withBase(`/${batchkey}?fromList=true`, baseURL), { open: { target: '_blank' } })
-}
-
 onKeyStroke('Enter', () => {
   if (selectedRow.value) {
-    handleRowDblClick(selectedRow.value.batchKey)
+    navigateToJobOrder(selectedRow.value.batchKey)
   }
 })
 
 async function handleFilterSlotsUpdate(updatedValue: any) {
   externalFilterSlots.value = updatedValue
   await fetchData()
+}
+
+function getJobOrderUrl(jobOrder: number) {
+  const baseURL = useRuntimeConfig().app.baseURL
+  return withBase(`/${jobOrder}?fromList=true`, baseURL)
+}
+
+async function navigateToJobOrder(jobOrder: number) {
+  window.open(getJobOrderUrl(jobOrder), '_blank')
 }
 </script>
 
@@ -155,16 +159,16 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
         :rows="jobOrders"
         :columns="columns"
         :filter-slots="externalFilterSlots"
-        @row-dblclick="row => handleRowDblClick(row.batchKey)"
+        @row-dblclick="row => navigateToJobOrder(row.batchKey)"
         @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         @update-pagination="pgn => pagination = pgn"
       >
         <template #body-cell-jobOrder="props">
           <a
-            :href="`/${props.row.batchKey}?fromList=true`"
+            :href="getJobOrderUrl(props.value)"
             target="_blank"
             class="job-order-link"
-            @click.stop
+            @click.stop.prevent="navigateToJobOrder(props.value)"
           >
             {{ props.value }}
           </a>
