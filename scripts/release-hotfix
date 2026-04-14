@@ -8,6 +8,12 @@ cd "$parent_dir" || exit 1
 #   exit 1
 # fi
 
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$current_branch" != "main" ]]; then
+  echo "Error: This script can only be run on the 'main' branch. Current branch: $current_branch"
+  exit 1
+fi
+
 if ! command -v jq &> /dev/null; then
   echo "jq is not installed. Please install jq to proceed."
   exit 1
