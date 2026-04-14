@@ -32,11 +32,6 @@ onUnmounted(() => {
   editor.errorIds.delete(id)
 })
 
-onMounted(() => {
-  if (input.value)
-    input.value.focus()
-})
-
 function handleBlur() {
   input.value?.validate()
   emit('inputBlur')

@@ -37,30 +37,6 @@ const model = computed({
 
 const previousValue = ref(Number(programParameter.value))
 
-const rules = [
-  (value: number | string) => value !== ''
-  || t('input.required', { field: t('program.parameter') }),
-  (value: number | string) => {
-    if (props.parameter.type === 'SELECT' || props.parameter.type === 'SELECT_ADDITIVE' || props.parameter.type === 'SELECTABLE_FORMULA') {
-      return props.parameter.selections?.some(opt => opt.value === value) || t('input.invalid', { field: t('program.parameter') })
-    }
-    return true
-  },
-  (value: number | string) => (Number(value) >= props.parameter.minValue
-  && Number(value) <= props.parameter.maxValue)
-  || t('valueOutOfRange', {
-    minValue: props.parameter.format === 'DURATION' ? formatDuration(props.parameter.minValue) : props.parameter.minValue,
-    maxValue: props.parameter.format === 'DURATION' ? formatDuration(props.parameter.maxValue) : props.parameter.maxValue,
-  }),
-]
-
-function formatDuration(value: number): string {
-  const minutes = Math.floor(value / 60)
-  const seconds = value % 60
-
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-}
-
 interface Option {
   label: string
   value: number | string
@@ -84,6 +60,33 @@ const options = computed<Option[]>(() => {
     }))
   }
 })
+
+const rules = [
+  (value: number | string) => value !== ''
+  || t('input.required', { field: t('program.parameter') }),
+  (value: number | string) => {
+    if (props.parameter.type === 'SELECTABLE_FORMULA') {
+      return options.value.some(opt => opt.value === value) || t('input.invalid', { field: t('program.parameter') })
+    }
+    if (props.parameter.type === 'SELECT' || props.parameter.type === 'SELECT_ADDITIVE') {
+      return props.parameter.selections?.some(opt => opt.value === value) || t('input.invalid', { field: t('program.parameter') })
+    }
+    return true
+  },
+  (value: number | string) => (Number(value) >= props.parameter.minValue
+  && Number(value) <= props.parameter.maxValue)
+  || t('valueOutOfRange', {
+    minValue: props.parameter.format === 'DURATION' ? formatDuration(props.parameter.minValue) : props.parameter.minValue,
+    maxValue: props.parameter.format === 'DURATION' ? formatDuration(props.parameter.maxValue) : props.parameter.maxValue,
+  }),
+]
+
+function formatDuration(value: number): string {
+  const minutes = Math.floor(value / 60)
+  const seconds = value % 60
+
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
 
 const isOptimizable = computed(() => {
   return teleskopSettings.treatmentSettings.optimizedEnable && machine.currentMachine.treatmentParameters.find((tp) => {
@@ -216,6 +219,7 @@ function handleBlur() {
         options-dense
         outlined
         dense
+        hide-bottom-space
         :style="{ '--q-label-length': labelLength, '--q-value-length': valueLength }"
         class="text-3 q-select-nowrap dynamic-width"
         @focus="handleFocus"

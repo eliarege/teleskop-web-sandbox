@@ -99,6 +99,8 @@ async function updateStepCommand(commandNo: number) {
       $commandManager.executeCommand('applyParallelCommand', { $q }, 'add', commandNo, stepIndex)
     }
   }
+
+  nextTick(() => selectRef.value?.focus())
 }
 
 function isParallelCommandRestricted(commandNo: number): boolean {

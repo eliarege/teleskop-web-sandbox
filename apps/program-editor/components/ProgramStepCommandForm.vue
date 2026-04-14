@@ -124,20 +124,23 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
         <!-- Command -->
         <div class="flex">
           <div class="pb-1 pr-2">
-            <CommandSelector :step-id="stepId" :parallel-index="parallelIndex" />
+            <CommandSelector
+              :step-id="stepId"
+              :parallel-index="parallelIndex"
+            />
           </div>
 
           <!-- Parameters & IOs -->
           <div class="flex-1 flex">
             <div
               v-for="(group, groupName) in groupedParameters"
-              :key="`group-${programCommand.commandNo}-${groupName}`"
+              :key="`group-${groupName}`"
               class="inline-flex parameter-group mr-2 mb-1 rounded"
               :class="{ 'parameter-group__multiple': group.length > 1 }"
             >
               <ProgramStepCommandParameterInput
                 v-for="item in group"
-                :key="`pr-${programCommand.commandNo}-${item.originalIndex}`"
+                :key="`pr-${item.originalIndex}`"
                 :step-id="stepId"
                 :parallel-index="parallelIndex"
                 :parameter-index="item.originalIndex"
@@ -150,7 +153,7 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
             </div>
             <ProgramStepCommandIoInput
               v-for="(io, index) in machineCommand.selectableIOs"
-              :key="`io-${programCommand.commandNo}-${index}`"
+              :key="`io-${index}`"
               :step-id="stepId"
               :parallel-index="parallelIndex"
               :io-index="index"
