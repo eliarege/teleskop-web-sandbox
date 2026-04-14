@@ -1,4 +1,4 @@
-import { connectTeleskopDB, dmsDB } from '~/server/connectionPool'
+import { connectDmExchangeDB, connectTeleskopDB, dmsDB } from '~/server/connectionPool'
 import type { DatabaseConnection } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
@@ -18,5 +18,7 @@ export default defineEventHandler(async (event) => {
   .where('db_type', type)
   if (type === 'teleskop')
     connectTeleskopDB(settings)
+  else if (type === 'dmexchange')
+    connectDmExchangeDB(settings)
   return databaseConnection
 })
