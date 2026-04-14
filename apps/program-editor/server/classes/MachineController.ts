@@ -667,6 +667,9 @@ export class MachineController {
       }
 
       const program = await this.client.downloadProgram(programNo, commands)
+      if (program) {
+        await this.ensureProcessTypesExistBulk([program.typeId, program.additionalTypeId])
+      }
       await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
 
       return program
@@ -1129,7 +1132,7 @@ export class MachineController {
    * Yoksa otomatik olarak oluşturur.
    */
   @withTransaction
-  private async ensureProcessTypesExist(typeId: number, additionalTypeId: number): Promise<void> {
+  private async ensureProcessTypesExistBulk(codes: number[]): Promise<void> {
     const PROCESS_TYPE_NAMES: Record<number, string> = {
       0: 'Standart Boyama',
       1: 'Sentetik/Özel Boyama',
@@ -1141,23 +1144,29 @@ export class MachineController {
       7: 'İlave Program',
     }
 
-    const codes = [typeId, additionalTypeId].filter(code => code != null)
+    const uniqueCodes = [...new Set(codes.filter(code => code != null))]
+    if (!uniqueCodes.length)
+      return
 
-    for (const code of codes) {
-      const exists = await this.trx('BFPROCESSTYPES')
-        .first('PROCESSCODE')
-        .where('PROCESSCODE', code)
+    const existing = await this.trx('BFPROCESSTYPES')
+      .whereIn('PROCESSCODE', uniqueCodes)
+      .pluck('PROCESSCODE') as number[]
 
-      if (!exists) {
-        const numericCode = Number(code)
-        const processName = PROCESS_TYPE_NAMES[numericCode] ?? `Process ${code}`
-        await this.trx('BFPROCESSTYPES').insert({
-          PROCESSCODE: code,
-          PROCESSNAME: processName,
-          NOTE: '',
-          BOYAPRGMI: 1,
-        })
-      }
+    const existingSet = new Set(existing.map(Number))
+    const missing = uniqueCodes.filter(code => !existingSet.has(Number(code)))
+
+    if (missing.length) {
+      await this.trx('BFPROCESSTYPES').insert(
+        missing.map((code) => {
+          const numericCode = Number(code)
+          return {
+            PROCESSCODE: code,
+            PROCESSNAME: PROCESS_TYPE_NAMES[numericCode] ?? `Process ${code}`,
+            NOTE: '',
+            BOYAPRGMI: 1,
+          }
+        }),
+      )
     }
   }
 
@@ -1172,8 +1181,6 @@ export class MachineController {
     if (exists) {
       throw new PError('PROGRAM_EXISTS', { machineId: this.id, programNo: program.programNo })
     }
-
-    await this.ensureProcessTypesExist(program.typeId, program.additionalTypeId)
 
     const { initialTemperature = 25 } = await getTeleskopSettings()
 
@@ -1511,27 +1518,38 @@ export class MachineController {
       let errorCount = 0
       const errors: string[] = []
 
-      // Her program için download işlemi yap
+      // 1. Geçiş: tüm programları makineden indir
+      const downloadedPrograms: { programNo: number, program: Program }[] = []
       for (const programNo of programNumbers) {
         try {
-          // Makineden programı indir
           const program = await this.client.downloadProgram(programNo, commands)
-
           if (!program) {
             throw new Error(`Program ${programNo} not found on machine`)
           }
+          downloadedPrograms.push({ programNo, program })
+        } catch (error) {
+          errorCount++
+          const errorMsg = `Program ${programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
+          errors.push(errorMsg)
+          logger.error({ error, programNo }, `Failed to download program ${programNo}`)
+        }
+      }
 
-          // Programın var olup olmadığını kontrol et
+      // Tüm process type kodlarını tek seferde kontrol et ve eksikleri ekle
+      const allTypeCodes = downloadedPrograms.flatMap(({ program }) => [program.typeId, program.additionalTypeId])
+      await this.ensureProcessTypesExistBulk(allTypeCodes)
+
+      // 2. Geçiş: programları veritabanına kaydet
+      for (const { programNo, program } of downloadedPrograms) {
+        try {
           const exists = await this.hasProgram(programNo)
 
           if (exists) {
-            // Program varsa önce sil, sonra yenisini ekle
             await this.deleteProgramFromDatabase(programNo)
-            await this.insertProgram(program)
+            await this.insertProgram(program, true)
             logger.info(`Program ${programNo} updated (replaced existing program)`)
           } else {
-            // Program yoksa direkt ekle
-            await this.insertProgram(program)
+            await this.insertProgram(program, true)
             logger.info(`Program ${programNo} created (new program)`)
           }
 
@@ -1545,7 +1563,7 @@ export class MachineController {
           errorCount++
           const errorMsg = `Program ${programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
           errors.push(errorMsg)
-          logger.error({ error, programNo }, `Failed to download program ${programNo}`)
+          logger.error({ error, programNo }, `Failed to insert program ${programNo}`)
         }
       }
 
