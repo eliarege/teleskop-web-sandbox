@@ -1793,9 +1793,6 @@ export class MachineController {
 
     const settings = await fetchTeleskopSettings()
 
-    if (!settings.treatmentSettings.optimizedEnable)
-      return
-
     await ensureTreatmentGroups()
 
     const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
@@ -1928,14 +1925,24 @@ export class MachineController {
   }
 
   async deleteTreatments(programNo: number): Promise<void> {
+    const config = useRuntimeConfig()
+    if (!config.dmexchangeEnabled)
+      return
+
     await dmExchange.transaction(async (trx) => {
       await trx('Treatments')
         .where('TreatmentNo', programNo)
         .andWhere('TreatmentType', 0)
         .del()
 
+      await trx('Treatment_MGroups')
+        .where('TreatmentNo', programNo)
+        .andWhere('TreatmentType', 0)
+        .del()
+
       await trx('Treatment_Parameter_Ref')
         .where('TreatmentNo', programNo)
+        .andWhere('TreatmentType', 0)
         .del()
     })
   }
