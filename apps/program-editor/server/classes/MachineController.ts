@@ -1129,7 +1129,7 @@ export class MachineController {
    * Yoksa otomatik olarak oluşturur.
    */
   @withTransaction
-  private async ensureProcessTypesExist(typeId?: string | number, additionalTypeId?: string | number): Promise<void> {
+  private async ensureProcessTypesExist(typeId: number, additionalTypeId: number): Promise<void> {
     const PROCESS_TYPE_NAMES: Record<number, string> = {
       0: 'Standart Boyama',
       1: 'Sentetik/Özel Boyama',
@@ -1141,7 +1141,7 @@ export class MachineController {
       7: 'İlave Program',
     }
 
-    const codes = [typeId, additionalTypeId].filter(code => code != null && code !== '')
+    const codes = [typeId, additionalTypeId].filter(code => code != null)
 
     for (const code of codes) {
       const exists = await this.trx('BFPROCESSTYPES')
