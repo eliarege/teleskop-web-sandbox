@@ -44,11 +44,34 @@ const options: { label: string, value: ProgramDeletionSource }[] = [
         </div>
       </QCardSection>
 
-      <QCardSection class="text-gray-8 dark:text-gray-3">
-        <span class="max-w-100">
-          {{ t('contextMenu.deleteProgramDialog.message', { count: programNos.length, programNo: props.programNos.join(', ') }) }}
-        </span>
-        <div class="mt-4 ml-4 flex">
+      <QCardSection class="text-gray-8 dark:text-gray-3 pt-0">
+        <div v-if="programNos.length === 1">
+          {{ t('contextMenu.deleteProgramDialog.message', { count: 1, programNo: props.programNos[0] }) }}
+        </div>
+
+        <div v-else>
+          <div
+            class="row q-gutter-xs scroll q-pa-sm bg-gray-1 dark:bg-dark-3 rounded-borders mb-3"
+            style="max-height: 120px;"
+          >
+            <q-chip
+              v-for="no in programNos"
+              :key="no"
+              outline
+              dense
+              size="12px"
+              color="primary"
+              class="text-gray-8 dark:text-gray-3"
+            >
+              {{ no }}
+            </q-chip>
+          </div>
+          <div>
+            {{ t('contextMenu.deleteProgramDialog.message', { count: programNos.length }) }}
+          </div>
+        </div>
+
+        <div class="mt-4 flex q-pa-sm">
           <QOptionGroup
             v-model="selectedOption"
             class="q-gutter-sm"

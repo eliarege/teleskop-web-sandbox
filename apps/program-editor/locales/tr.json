@@ -360,7 +360,7 @@
 
     "deleteProgramDialog": {
       "title": "Programı Sil",
-      "message": "{programNo} numaralı program silinecek! Devam etmek istediğinize emin misiniz? | {programNo} numaralı programlar silinecek! Devam etmek istediğinize emin misiniz?",
+      "message": "{programNo} numaralı program silinecek! Devam etmek istediğinize emin misiniz? | {count} program silinecek! Devam etmek istediğinize emin misiniz?",
       "deleteFromBoth": "Programı Teleskop'tan ve cihazdan sil",
       "deleteFromTeleskop": "Programı sadece Teleskop'tan sil",
       "deleteFromMachine": "Programı sadece cihazdan sil"
@@ -373,7 +373,7 @@
       "title": "Program Numaralarını Düzenle",
       "warning": "Yapıştırılmak istenilen programların numaraları bu makinede mevcut. Lütfen yeni program numaralarını giriniz.",
       "overwrite": "Üzerine Yapıştır",
-      "clear": "Clear",
+      "clear": "Temizle",
       "willOverwrite": "Bu program bu makinedeki mevcut programın üzerine kopyalanacak",
       "hasDuplicate": "Bu program numarası zaten kullanıldı",
       "setAllToOriginal": "Orijinal Numaraları Kullan",

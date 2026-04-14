@@ -357,7 +357,7 @@
 
     "deleteProgramDialog": {
       "title": "Delete Program",
-      "message": "Program {programNo} will be deleted! Are you sure you want to continue? | Programs {programNo} will be deleted! Are you sure you want to continue?",
+      "message": "{programNo} will be deleted! Are you sure you want to continue? | {count} programs will be deleted! Are you sure you want to continue?",
       "deleteFromBoth": "Delete program from both machine and Teleskop",
       "deleteFromTeleskop": "Delete program from Teleskop",
       "deleteFromMachine": "Delete program from machine"
