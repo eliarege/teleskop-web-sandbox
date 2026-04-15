@@ -22,11 +22,4 @@ export async function up(knex: Knex) {
   if (toInsert.length > 0) {
     await knex('BFPROCESSTYPES').insert(toInsert)
   }
-
-  const toUpdate = PROCESS_TYPES.filter(p => existingSet.has(p.PROCESSCODE))
-  for (const p of toUpdate) {
-    await knex('BFPROCESSTYPES')
-      .where('PROCESSCODE', p.PROCESSCODE)
-      .update({ PROCESSNAME: p.PROCESSNAME })
-  }
 }
