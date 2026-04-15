@@ -126,7 +126,7 @@
     "MaterialCountMismatch": "İstek sayıları materyal sayılarıyla eşleşmiyor. Yine de devam etmek ister misiniz",
     "JobOrderCancel": "Bir iş emri başlatmadan çıkmak istediğinize emin misiniz?",
     "JobOrderExists": "Bu numaralı bir iş emri mevcut. Devam etmek istediğinize emin misiniz?",
-    "CapacityExceeded": "Uyarı: Toplam ağırlık aşağıdaki makineler için makine kapasitesinin % {percentage}'unu aşıyor:",
+    "CapacityExceeded": "Uyarı: Toplam ağırlık aşağıdaki makineler için makine kapasitesinin %{percentage}'unu aşıyor:",
     "ContinueAnyway": "Yine de devam etmek istiyor musunuz?",
     "OverrideStartedJobOrder": "Bu iş emri zaten başlatılmış veya devam ediyor. Üzerine yazmak istediğinize emin misiniz?"
   },
