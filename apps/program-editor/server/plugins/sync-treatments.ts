@@ -1,24 +1,32 @@
 import { db, dmExchange } from '../database'
-import { ensureTreatmentGroups, fetchTeleskopSettings } from '../functions'
-import { machineStore } from '../classes/MachineStore'
+import { upsertTreatments } from '../functions'
 import logger from '../logger'
 
 async function syncMissingTreatments(): Promise<void> {
-  const config = useRuntimeConfig()
-  if (!config.dmexchangeEnabled)
+  if (!dmExchange)
     return
 
-  const settings = await fetchTeleskopSettings()
-  if (!settings.treatmentSettings.optimizedEnable)
-    return
-
-  const allPrograms = await db('BFMASTERPRGHEADER')
-    .distinct({ machineId: 'MACHINEID', programNo: 'PROGNO' })
+  // Pick one machine per program using a window function (lowest MACHINEID wins)
+  const allPrograms = await db
+    .with('prg', (qb) => {
+      qb.from('BFMASTERPRGHEADER AS H')
+        .join('BFMACHINES AS M', 'M.MACHINEID', 'H.MACHINEID')
+        .select({
+          programNo: 'H.PROGNO',
+          programName: 'H.NAME',
+          groupNo: 'M.GRUPNO',
+        })
+        .rowNumber('rowNumber', 'H.MACHINEID', ['H.PROGNO'])
+        .where('M.INUSE', true)
+        .andWhere('M.USEINTELESKOP', true)
+    })
+    .select('prg.programNo', 'prg.programName', 'prg.groupNo')
+    .where('prg.rowNumber', 1) as { programNo: number, programName: string, groupNo: number }[]
 
   if (!allPrograms.length)
     return
 
-  const programNos = [...new Set(allPrograms.map((p: { programNo: number }) => p.programNo))]
+  const programNos = allPrograms.map(p => p.programNo)
 
   const existingTreatments = await dmExchange('Treatments')
     .whereIn('TreatmentNo', programNos)
@@ -26,34 +34,21 @@ async function syncMissingTreatments(): Promise<void> {
     .select('TreatmentNo')
 
   const existingSet = new Set(existingTreatments.map((t: { TreatmentNo: number }) => t.TreatmentNo))
-  const missingProgramNos = programNos.filter(no => !existingSet.has(no))
+  const missingPrograms = allPrograms.filter(p => !existingSet.has(p.programNo))
 
-  if (!missingProgramNos.length) {
+  if (!missingPrograms.length) {
     logger.info('Treatment sync: no missing treatments found')
     return
   }
 
-  logger.info(`Treatment sync: ${missingProgramNos.length} programs missing from Treatments, syncing...`)
+  logger.info(`Treatment sync: ${missingPrograms.length} programs missing from Treatments, syncing...`)
 
-  await ensureTreatmentGroups()
-
-  let successCount = 0
-  let errorCount = 0
-
-  for (const programNo of missingProgramNos) {
-    const row = allPrograms.find((p: { programNo: number }) => p.programNo === programNo)!
-    try {
-      const controller = await machineStore.get(row.machineId)
-      const { program } = await controller.fetchProgram(programNo)
-      await controller.upsertTreatments(program)
-      successCount++
-    } catch (err) {
-      errorCount++
-      logger.error({ err, machineId: row.machineId, programNo }, `Treatment sync: failed for machine ${row.machineId}, program ${programNo}`)
-    }
+  try {
+    await upsertTreatments(missingPrograms)
+    logger.info(`Treatment sync: done — ${missingPrograms.length} synced`)
+  } catch (err) {
+    logger.error({ err }, 'Treatment sync: failed')
   }
-
-  logger.info(`Treatment sync: done — ${successCount} synced, ${errorCount} failed`)
 }
 
 export default defineNitroPlugin(() => {

@@ -1,11 +1,11 @@
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { ensureTreatmentGroups, fetchTeleskopSettings, getTeleskopSettings, logEditorOperation } from '../functions'
-import { db, dmExchange } from '../database'
-import { withProgramClient, withTransaction } from '../decorators'
+import { fetchTeleskopSettings, getTeleskopSettings, logEditorOperation, upsertTreatments } from '../functions'
+import { db } from '../database'
+import { withDmTransaction, withProgramClient, withTransaction } from '../decorators'
 import { sql } from '../sql'
 import { PError } from '../error'
-import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
+import { ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
@@ -15,13 +15,15 @@ import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
 export class MachineController {
-  readonly trx: Knex.Transaction
+  trx: Knex.Transaction
+  dmTrx: Knex.Transaction | null
 
   constructor(
     public readonly id: number,
     public readonly client: ProgramClient,
   ) {
     this.trx = db as Knex.Transaction
+    this.dmTrx = null
   }
 
   @withTransaction
@@ -731,6 +733,7 @@ export class MachineController {
    * @param {Program} program - Güncellenmek istenen program
    * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
    */
+  @withDmTransaction
   @withTransaction
   async updateProgram(program: Program, isNewVersion: boolean = true): Promise<boolean> {
     const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
@@ -1175,6 +1178,7 @@ export class MachineController {
    * @param program - Program objesi
    * @returns {Promise<void>}
    */
+  @withDmTransaction
   @withTransaction
   async insertProgram(program: Program, isNewVersion: boolean = true): Promise<void> {
     const exists = await this.hasProgram(program.programNo)
@@ -1424,6 +1428,7 @@ export class MachineController {
    * @param programNos - Silinecek programın numarası veya numaraları (tekli veya array)
    * @returns {Promise<boolean>} - İşlem başarılıysa true döner
    */
+  @withDmTransaction
   @withTransaction
   async deleteProgramFromDatabase(programNos: number | number[]): Promise<boolean> {
     const programNumbers = Array.isArray(programNos) ? programNos : [programNos]
@@ -1448,9 +1453,11 @@ export class MachineController {
         .del()
     }
 
-    // Başarılı bir silme olduysa harici Treatment temizliğini tetikle
+    // Başarılı bir silme olduysa Treatment temizliğini tetikle
     if (deletedCount > 0) {
-      await this.deleteOrphanedTreatments(programNumbers)
+      for (const programNo of programNumbers) {
+        await this.deleteTreatments(programNo)
+      }
     }
 
     return deletedCount > 0
@@ -1787,165 +1794,159 @@ export class MachineController {
   }
 
   /**
-   * Yeni oluşturulan programı Treatments tablosuna ekler.
+   * Programı Treatments tablosuna ekler ve varsa optimizasyon parametrelerini günceller.
    * @param program - Program
    * @returns {Promise<void>}
    */
+  @withDmTransaction
   async upsertTreatments(program: Program): Promise<void> {
-    const config = useRuntimeConfig()
-    if (!config.dmexchangeEnabled)
+    const dmTrx = this.dmTrx
+    if (!dmTrx)
       return
 
-    const settings = await fetchTeleskopSettings()
-
-    await ensureTreatmentGroups()
-
-    let totalOptimizeCount = 0
-    const treatmentRefs = [] as { counter: number, parameterNo: number }[]
-
-    if (settings.treatmentSettings.optimizedEnable) {
-      const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
-        return { ...parameter, counter: 0 }
-      })
-
-      const erpTreatmentParameters = await dmExchange('Treatment_Parameter')
-        .select({
-          paramNo: 'TreatmentParaNo',
-          paramName: 'TreatmentParaName',
-        }) as { paramNo: number, paramName: string }[]
-
-      const handleParameter = (command: ProgramStepCommand, parameter: ParameterItem) => {
-        const tp = treatmentParameters.find((tp) => {
-          return tp.commandNo === command.commandNo && tp.parameterIndex === parameter.index
-        })
-        if (tp) {
-          tp.counter++
-          if (tp.counter >= settings.treatmentSettings.optimizedLimit) {
-            throw new PError('PROGRAM_TREATMENT_COMMAND_LIMIT', {
-              machineId: this.id,
-              programNo: program.programNo,
-              commandNo: command.commandNo!,
-              limit: settings.treatmentSettings.optimizedLimit,
-            })
-          }
-          totalOptimizeCount++
-          treatmentRefs.push({
-            counter: tp.counter,
-            parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
-          })
-        }
-      }
-
-      for (const step of program.steps) {
-        // Main command
-        for (const parameter of step.mainCommand.parameters) {
-          handleParameter(step.mainCommand, parameter)
-        }
-        // Parallel Commands
-        for (const parallelCommand of step.parallelCommands) {
-          for (const parameter of parallelCommand.parameters) {
-            handleParameter(parallelCommand, parameter)
-          }
-        }
-      }
-    }
-
-    const groupNo = (await db('BFMACHINES')
-      .first({ groupNo: 'GRUPNO' })
-      .where('MACHINEID', this.id))?.groupNo
-
-    // Not expected
+    const groupNo = await this.getMachineGroupNo()
     if (!isDef(groupNo)) {
       throw new Error(`Machine ${this.id} not found`)
     }
 
-    await dmExchange.transaction(async (trx) => {
-      // 1. Treatments insert/update
-      const treatment = await trx('Treatments')
-        .where('TreatmentNo', program.programNo)
-        .andWhere('TreatmentType', 0)
-        .first('*')
+    await upsertTreatments([{
+      programNo: program.programNo,
+      programName: program.name,
+      groupNo,
+    }], dmTrx)
 
-      if (!treatment) {
-        await trx('Treatments').insert({
-          TreatmentNo: program.programNo,
-          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
-          TreatmentName: program.name,
-          TreatmentParaCount: 0,
-          ImportState: 1,
-          TreatmentType: 0,
-        })
-      } else {
-        await trx('Treatments').update({
-          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
-          TreatmentName: program.name,
-          TreatmentParaCount: totalOptimizeCount,
-          ImportState: 1,
-          TreatmentType: 0,
-        })
-          .where('TreatmentNo', program.programNo)
-          .andWhere('TreatmentType', 0)
-      }
-
-      // 2. Treatment_MGroups - her zaman kontrol et, yoksa ekle
-      const mgroup = await trx('Treatment_MGroups')
-        .where('TreatmentNo', program.programNo)
-        .andWhere('MGroupNo', groupNo)
-        .andWhere('TreatmentType', 0)
-        .first('*')
-
-      if (!mgroup) {
-        await trx('Treatment_MGroups').insert({
-          TreatmentNo: program.programNo,
-          MGroupNo: groupNo,
-          ImportState: 1,
-          TreatmentType: 0,
-        })
-      }
-
-      // 3. Treatment_Parameter_Ref - her zaman temizle ve yeniden ekle
-      await trx('Treatment_Parameter_Ref')
-        .where('TreatmentNo', program.programNo)
-        .andWhere('TreatmentType', 0)
-        .del()
-
-      if (treatmentRefs.length) {
-        await trx('Treatment_Parameter_Ref').insert(
-          treatmentRefs.map((ref, index) => {
-            return {
-              TreatmentNo: program.programNo,
-              TreatmentParaCounter: index + 1,
-              TreatmentParaNo: ref.parameterNo,
-              ImportState: 1,
-              TreatmentType: 0,
-            }
-          }),
-        )
-      }
-    })
+    const settings = await fetchTeleskopSettings()
+    if (settings.treatmentSettings.optimizedEnable) {
+      await this.upsertTreatmentParameters(program)
+    }
   }
 
+  /**
+   * Programın optimizasyon parametrelerini Treatment_Parameter_Ref tablosuna ekler
+   * ve Treatments tablosundaki TreatmentParaCount değerini günceller.
+   * Yalnızca optimizedEnable aktif olduğunda çağrılmalıdır.
+   * @param program - Program
+   * @returns {Promise<void>}
+   */
+  private async upsertTreatmentParameters(program: Program): Promise<void> {
+    const dmTrx = this.dmTrx!
+    const settings = await fetchTeleskopSettings()
+
+    let totalOptimizeCount = 0
+    const treatmentRefs = [] as { counter: number, parameterNo: number }[]
+    const teleskopTreatmentParameters = await this.fetchTreatmentParameters()
+    const treatmentParameters = teleskopTreatmentParameters.map((parameter) => {
+      return { ...parameter, counter: 0 }
+    })
+
+    const erpTreatmentParameters = await dmTrx('Treatment_Parameter')
+      .select({
+        paramNo: 'TreatmentParaNo',
+        paramName: 'TreatmentParaName',
+      }) as { paramNo: number, paramName: string }[]
+
+    const handleParameter = (command: ProgramStepCommand, parameter: ParameterItem) => {
+      const tp = treatmentParameters.find((tp) => {
+        return tp.commandNo === command.commandNo && tp.parameterIndex === parameter.index
+      })
+      if (tp) {
+        tp.counter++
+        if (tp.counter >= settings.treatmentSettings.optimizedLimit) {
+          throw new PError('PROGRAM_TREATMENT_COMMAND_LIMIT', {
+            machineId: this.id,
+            programNo: program.programNo,
+            commandNo: command.commandNo!,
+            limit: settings.treatmentSettings.optimizedLimit,
+          })
+        }
+        totalOptimizeCount++
+        treatmentRefs.push({
+          counter: tp.counter,
+          parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
+        })
+      }
+    }
+
+    for (const step of program.steps) {
+      for (const parameter of step.mainCommand.parameters) {
+        handleParameter(step.mainCommand, parameter)
+      }
+      for (const parallelCommand of step.parallelCommands) {
+        for (const parameter of parallelCommand.parameters) {
+          handleParameter(parallelCommand, parameter)
+        }
+      }
+    }
+
+    await dmTrx('Treatments')
+      .update({ TreatmentParaCount: totalOptimizeCount })
+      .where('TreatmentNo', program.programNo)
+      .andWhere('TreatmentType', 0)
+
+    if (treatmentRefs.length) {
+      await dmTrx('Treatment_Parameter_Ref').insert(
+        treatmentRefs.map((ref, index) => ({
+          TreatmentNo: program.programNo,
+          TreatmentParaCounter: index + 1,
+          TreatmentParaNo: ref.parameterNo,
+          ImportState: 1,
+          TreatmentType: 0,
+        })),
+      )
+    }
+  }
+
+  private async getMachineGroupNo(): Promise<number | undefined> {
+    const row = await db('BFMACHINES')
+      .where('MACHINEID', this.id)
+      .first({ groupNo: 'GRUPNO' })
+
+    return row?.groupNo
+  }
+
+  @withDmTransaction
+  @withTransaction
   async deleteTreatments(programNo: number): Promise<void> {
-    const config = useRuntimeConfig()
-    if (!config.dmexchangeEnabled)
+    const dmTrx = this.dmTrx
+    if (!dmTrx)
       return
 
-    await dmExchange.transaction(async (trx) => {
-      await trx('Treatments')
+    // Use this.trx so we see within-transaction BF deletions
+    const remainingAnywhere = await this.trx('BFMASTERPRGHEADER')
+      .where('PROGNO', programNo)
+      .first('PROGNO')
+
+    const groupNo = await this.getMachineGroupNo()
+
+    const remainingInGroup = isDef(groupNo)
+      ? await this.trx('BFMASTERPRGHEADER as H')
+        .join('BFMACHINES as M', 'M.MACHINEID', 'H.MACHINEID')
+        .where('H.PROGNO', programNo)
+        .andWhere('M.GRUPNO', groupNo)
+        .first('H.PROGNO')
+      : null
+
+    // Only delete Treatment_Parameter_Ref and Treatments when no machine has this program
+    if (!remainingAnywhere) {
+      await dmTrx('Treatment_Parameter_Ref')
         .where('TreatmentNo', programNo)
         .andWhere('TreatmentType', 0)
         .del()
 
-      await trx('Treatment_MGroups')
+      await dmTrx('Treatments')
         .where('TreatmentNo', programNo)
         .andWhere('TreatmentType', 0)
         .del()
+    }
 
-      await trx('Treatment_Parameter_Ref')
+    // Only delete Treatment_MGroups entry for this group when no machine in the group has this program
+    if (!remainingInGroup && isDef(groupNo)) {
+      await dmTrx('Treatment_MGroups')
         .where('TreatmentNo', programNo)
+        .andWhere('MGroupNo', groupNo)
         .andWhere('TreatmentType', 0)
         .del()
-    })
+    }
   }
 
   async fetchTreatmentParameters(): Promise<TreatmentParameter[]> {
@@ -2293,56 +2294,5 @@ export class MachineController {
       console.error('Error in findInPrograms:', error)
       throw new Error('Failed to search in programs', { cause: error })
     }
-  }
-
-  /**
-   * Teleskop veritabanından silinen programların başka bir makinede kalıp kalmadığını kontrol eder.
-   * Eğer hiçbir makinede kalmadıysa, bu programları dmExchange (Treatments) tablosundan temizler.
-   * @param deletedProgramNos - Silinen program numaraları
-   */
-  async deleteOrphanedTreatments(deletedProgramNos: number[]): Promise<void> {
-    const config = useRuntimeConfig()
-
-    // Teleskop/dmExchange entegrasyonu aktif değilse veya liste boşsa işlem yapma
-    if (!config.dmexchangeEnabled || deletedProgramNos.length === 0) {
-      return
-    }
-
-    // Hangi programların BAŞKA makinelerde hala kullanıldığını bul
-    const remainingPrograms = await this.trx('BFMASTERPRGHEADER')
-      .distinct('PROGNO')
-      .whereIn('PROGNO', deletedProgramNos)
-
-    const remainingProgramNos = remainingPrograms.map(p => p.PROGNO)
-
-    // Hiçbir makinede kalmayan (tamamen yok olan) programları filtrele
-    const totallyDeletedPrograms = deletedProgramNos.filter(
-      progNo => !remainingProgramNos.includes(progNo),
-    )
-
-    // Tamamen silinmiş program(lar) yoksa fonksiyondan çık
-    if (totallyDeletedPrograms.length === 0) {
-      return
-    }
-
-    // Tamamen silinenleri dmExchange üzerinden güvenli bir şekilde temizle
-    await dmExchange.transaction(async (dmTrx) => {
-      // Önce alt tablolar (Foreign Key hatalarını önlemek için)
-      await dmTrx('Treatment_Parameter_Ref')
-        .whereIn('TreatmentNo', totallyDeletedPrograms)
-        .andWhere('TreatmentType', 0)
-        .del()
-
-      await dmTrx('Treatment_MGroups')
-        .whereIn('TreatmentNo', totallyDeletedPrograms)
-        .andWhere('TreatmentType', 0)
-        .del()
-
-      // En son ana tablo
-      await dmTrx('Treatments')
-        .whereIn('TreatmentNo', totallyDeletedPrograms)
-        .andWhere('TreatmentType', 0)
-        .del()
-    })
   }
 }

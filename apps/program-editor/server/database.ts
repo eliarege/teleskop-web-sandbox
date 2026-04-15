@@ -1,8 +1,8 @@
-import Knex from 'knex'
+import knex from 'knex'
 
 const config = useRuntimeConfig()
 
-export const db = Knex({
+export const db = knex({
   client: 'mssql',
   connection: {
     host: config.teleskopHost,
@@ -17,17 +17,19 @@ export const db = Knex({
   },
 })
 
-export const dmExchange = Knex({
-  client: 'mssql',
-  connection: {
-    host: config.dmexchangeHost,
-    port: Number(config.dmexchangePort),
-    user: config.dmexchangeUser,
-    password: String(config.dmexchangePassword),
-    database: config.dmexchangeDatabase,
-    options: {
-      instanceName: config.dmexchangeInstanceName,
-      trustServerCertificate: true,
+export const dmExchange = config.dmexchangeEnabled
+  ? knex({
+    client: 'mssql',
+    connection: {
+      host: config.dmexchangeHost,
+      port: Number(config.dmexchangePort),
+      user: config.dmexchangeUser,
+      password: String(config.dmexchangePassword),
+      database: config.dmexchangeDatabase,
+      options: {
+        instanceName: config.dmexchangeInstanceName,
+        trustServerCertificate: true,
+      },
     },
-  },
-})
+  })
+  : null

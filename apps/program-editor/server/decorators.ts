@@ -1,10 +1,11 @@
 import type { Knex } from 'knex'
 import type { TbbFtpClient } from '@teleskop/tbb-ftp-client'
-import { db } from './database'
+import { db, dmExchange } from './database'
 import type { ProgramClient } from './classes/ProgramClient'
 
 const ftpRefMap = new WeakMap<any, { count: number }>()
 const trxRefMap = new WeakMap<any, { count: number, failed: boolean }>()
+const dmTrxRefMap = new WeakMap<any, { count: number, failed: boolean }>()
 
 function _withFTP<This extends { ftp: TbbFtpClient }, Args extends any[], Return>(
   target: (this: This, ...args: Args) => Return,
@@ -154,6 +155,47 @@ export function withTransaction<This extends { trx: Knex.Transaction }>(target: 
           } else {
             await this.trx.rollback()
             this.trx = db as Knex.Transaction
+          }
+        }
+      }
+    }
+  }
+}
+
+export function withDmTransaction<This extends { dmTrx: Knex.Transaction | null }>(target: This, propertyKey: string, descriptor: PropertyDescriptor) {
+  const method = descriptor.value
+  if (typeof method !== 'function' || typeof target !== 'object')
+    throw new TypeError('Decorator should be used on methods')
+
+  descriptor.value = async function (this: This, ...args: any[]) {
+    if (!dmExchange) {
+      return await method.call(this, ...args)
+    }
+    let ref = dmTrxRefMap.get(this)
+    if (!ref) {
+      ref = { count: 1, failed: false }
+      dmTrxRefMap.set(this, ref)
+    } else {
+      ref.count++
+    }
+    try {
+      if (ref.count === 1) {
+        this.dmTrx = await dmExchange.transaction()
+      }
+      return await method.call(this, ...args)
+    } catch (err) {
+      ref.failed = true
+      throw err
+    } finally {
+      ref.count--
+      if (!ref.count) {
+        dmTrxRefMap.delete(this)
+        if (this.dmTrx?.isTransaction && !this.dmTrx.isCompleted()) {
+          if (!ref.failed) {
+            await this.dmTrx.commit()
+          } else {
+            await this.dmTrx.rollback()
+            this.dmTrx = dmExchange as Knex.Transaction | null
           }
         }
       }
