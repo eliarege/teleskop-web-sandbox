@@ -437,8 +437,8 @@ registerCommand(() => {
           additionalTypeId: selectedRows[0].additionalTypeId,
           options: editor.allProcessTypes,
         },
-      }).onOk(async (result: { typeId: number, additionalTypeId: number | null }) => {
-        await contextMenuStore.changeProcessType(machineId, selectedRows, result)
+      }).onOk(async (result: { type: number, additionalType: number | null }) => {
+        await contextMenuStore.changeProcessType(machineId, selectedRows, { typeId: result.type, additionalTypeId: result.additionalType })
         await editor.refreshAllPrograms()
         return true
       }).onCancel(() => {

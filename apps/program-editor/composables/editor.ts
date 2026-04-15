@@ -608,10 +608,13 @@ export const useEditorStore = defineStore('editor', () => {
    * Güncellenmiş işlem türleri, `allProcessType` değişkenine atanır.
    */
   async function fetchAllProcessTypes(): Promise<void> {
-    allProcessTypes.value = (await kc.fetch<ProcessType[]>('/api/process')).map(type => ({
-      ...type,
-      label: capitalize(type.label),
-    }))
+    allProcessTypes.value = (await kc.fetch<ProcessType[]>('/api/process')).map((type) => {
+      const rawLabel = type.label
+      const label = rawLabel.startsWith('#')
+        ? t(`processTypes.${rawLabel.slice(1)}`)
+        : capitalize(rawLabel)
+      return { ...type, rawLabel, label }
+    })
   }
 
   async function addProcessType(newType: ProcessType): Promise<void> {

@@ -46,6 +46,7 @@ export interface ProgramTableRow {
 
 export interface ProcessType {
   label: string
+  rawLabel?: string
   value: number
   description: string
 }

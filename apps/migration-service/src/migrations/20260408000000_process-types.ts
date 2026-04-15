@@ -1,14 +1,14 @@
 import type { Knex } from 'knex'
 
 const PROCESS_TYPES = [
-  { PROCESSCODE: 0, PROCESSNAME: 'Standart Boyama', NOTE: '', BOYAPRGMI: 1 },
-  { PROCESSCODE: 1, PROCESSNAME: 'Sentetik/Özel Boyama', NOTE: '', BOYAPRGMI: 1 },
-  { PROCESSCODE: 2, PROCESSNAME: 'Kasar(Ön İşlem)', NOTE: '', BOYAPRGMI: 1 },
-  { PROCESSCODE: 3, PROCESSNAME: 'Hazırlık/Yağ Sökümü', NOTE: '', BOYAPRGMI: 1 },
-  { PROCESSCODE: 4, PROCESSNAME: 'Yıkama(Haslık)', NOTE: '', BOYAPRGMI: 1 },
-  { PROCESSCODE: 5, PROCESSNAME: 'Yumuşatma', NOTE: '', BOYAPRGMI: 1 },
-  { PROCESSCODE: 6, PROCESSNAME: 'Durulama/Söküm', NOTE: '', BOYAPRGMI: 1 },
-  { PROCESSCODE: 7, PROCESSNAME: 'İlave Program', NOTE: '', BOYAPRGMI: 1 },
+  { PROCESSCODE: 0, PROCESSNAME: '#dye', NOTE: '', BOYAPRGMI: 1 },
+  { PROCESSCODE: 1, PROCESSNAME: '#synthetic', NOTE: '', BOYAPRGMI: 1 },
+  { PROCESSCODE: 2, PROCESSNAME: '#bleaching', NOTE: '', BOYAPRGMI: 1 },
+  { PROCESSCODE: 3, PROCESSNAME: '#preparation', NOTE: '', BOYAPRGMI: 1 },
+  { PROCESSCODE: 4, PROCESSNAME: '#washing', NOTE: '', BOYAPRGMI: 1 },
+  { PROCESSCODE: 5, PROCESSNAME: '#softening', NOTE: '', BOYAPRGMI: 1 },
+  { PROCESSCODE: 6, PROCESSNAME: '#rinsing', NOTE: '', BOYAPRGMI: 1 },
+  { PROCESSCODE: 7, PROCESSNAME: '#additional', NOTE: '', BOYAPRGMI: 1 },
 ]
 
 export async function up(knex: Knex) {

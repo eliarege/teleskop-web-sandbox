@@ -213,16 +213,20 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const { notifyError } = useNotify()
     editor.isLoading = true
 
-    for (const program of programs) {
-      try {
-        await updateProgramHeader(machineId, program.programNo, {
-          programNo: program.programNo,
-          typeId: typeData.typeId,
-          additionalTypeId: typeData.additionalTypeId,
-        })
-      } catch (e) {
-        notifyError(t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
+    try {
+      for (const program of programs) {
+        try {
+          await updateProgramHeader(machineId, program.programNo, {
+            programNo: program.programNo,
+            typeId: typeData.typeId,
+            additionalTypeId: typeData.additionalTypeId,
+          })
+        } catch (e) {
+          notifyError(t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
+        }
       }
+    } finally {
+      editor.isLoading = false
     }
   }
 

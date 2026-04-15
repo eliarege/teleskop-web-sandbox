@@ -276,6 +276,16 @@
     "title": "Yeniden Adlandır",
     "message": "Yeni program adını giriniz."
   },
+  "processTypes": {
+    "dye": "Standart Boyama",
+    "synthetic": "Sentetik/Özel Boyama",
+    "bleaching": "Kasar (Ön İşlem)",
+    "preparation": "Hazırlık/Yağ Sökümü",
+    "washing": "Yıkama (Haslık)",
+    "softening": "Yumuşatma",
+    "rinsing": "Durulama/Söküm",
+    "additional": "İlave Program"
+  },
   "processTypeDialog": {
     "title": "Program Tipleri",
     "processTypeNo": "Tip No",
@@ -289,6 +299,7 @@
       "processTypeNoUnique": "Program Tipi No benzersiz olmalıdır",
       "processTypeName": "Program Tipi Adı",
       "processTypeNameRequired": "Program Tipi Adı gereklidir",
+      "processTypeNameHashForbidden": "Program Tipi Adı '#' ile başlayamaz",
       "note": "Not",
       "processTypeNoReadOnlyHint": "Program Tipi Numarası değiştirilemez.",
       "success": "{no} - {name} program tipi başarıyla oluşturuldu.",
