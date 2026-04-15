@@ -509,22 +509,29 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function getAllPrograms(machine: { id: number, name: string }): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-    const { notifySuccess, notifyError } = useNotify()
+    const { notifySuccess, notifyError, notifyWarning } = useNotify()
     editor.isLoading = true
 
     try {
-      const response = await fetch<{ success: boolean, message: string }>(`/api/machine/${machine.id}/download-all-programs`, {
+      const response = await fetch<{ success: boolean, count: number, total: number, errors: Array<{ programNo: number, message: string }>, message?: string }>(`/api/machine/${machine.id}/download-all-programs`, {
         method: 'POST',
       })
+      if (response.errors.length > 0) {
+        for (const err of response.errors) {
+          console.warn(`Get All Programs: program ${err.programNo} failed:`, err.message)
+        }
+      }
       if (response.success) {
         notifySuccess(t('contextMenu.getAllProgramsSuccess', { machineName: machine.name }))
+      } else if (response.count > 0) {
+        notifyWarning(t('contextMenu.getAllProgramsPartialSuccess', { count: response.count, total: response.total, machineName: machine.name }))
       } else {
-        notifyError(t('contextMenu.getAllProgramsFailed', { message: response.message }))
+        notifyError(response.message ?? t('contextMenu.getAllProgramsFailed', { machineName: machine.name }))
       }
 
       await editor.fetchAllProcessTypes()
     } catch (error: any) {
-      notifyError(t('contextMenu.getAllProgramsFailed', { message: error.message }))
+      notifyError(t('contextMenu.getAllProgramsFailed', { machineName: machine.name }))
       console.error('Get All Programs error:', error)
     } finally {
       editor.isLoading = false

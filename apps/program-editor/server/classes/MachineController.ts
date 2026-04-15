@@ -1515,20 +1515,19 @@ export class MachineController {
    */
   @withProgramClient
   @withTransaction
-  async downloadAllPrograms(): Promise<{ success: boolean, count: number, message: string }> {
+  async downloadAllPrograms(): Promise<{ success: boolean, count: number, total: number, errors: Array<{ programNo: number, message: string }>, message?: string }> {
     try {
       // Önce program listesini al
       const programNumbers = await this.client.fetchProgramList()
 
       if (programNumbers.length === 0) {
-        return { success: true, count: 0, message: 'No programs found on machine' }
+        return { success: true, count: 0, total: 0, errors: [] }
       }
 
       // Machine commands listesini al
       const commands = await this.fetchCommands()
       let successCount = 0
-      let errorCount = 0
-      const errors: string[] = []
+      const errors: { programNo: number, message: string }[] = []
 
       // 1. Geçiş: tüm programları makineden indir
       const downloadedPrograms: { programNo: number, program: Program }[] = []
@@ -1540,9 +1539,7 @@ export class MachineController {
           }
           downloadedPrograms.push({ programNo, program })
         } catch (error) {
-          errorCount++
-          const errorMsg = `Program ${programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
-          errors.push(errorMsg)
+          errors.push({ programNo, message: error instanceof Error ? error.message : 'Unknown error' })
           logger.error({ error, programNo }, `Failed to download program ${programNo}`)
         }
       }
@@ -1572,29 +1569,29 @@ export class MachineController {
 
           successCount++
         } catch (error) {
-          errorCount++
-          const errorMsg = `Program ${programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
-          errors.push(errorMsg)
-          logger.error({ error, programNo }, `Failed to insert program ${programNo}`)
+          errors.push({ programNo, message: error instanceof Error ? error.message : 'Unknown error' })
+          logger.error({ error, programNo }, `Failed to download program ${programNo}`)
         }
       }
 
-      const message = `Downloaded ${successCount}/${programNumbers.length} programs successfully`
       if (errors.length > 0) {
         logger.warn({ errors }, 'Some programs failed to download')
       }
 
       return {
-        success: errorCount === 0,
+        success: errors.length === 0,
         count: successCount,
-        message: errors.length > 0 ? `${message}. Errors: ${errors.join(', ')}` : message,
+        total: programNumbers.length,
+        errors,
       }
     } catch (error) {
       logger.error({ error }, 'Failed to download all programs from machine')
       return {
         success: false,
         count: 0,
-        message: `Failed to download programs: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        total: 0,
+        errors: [],
+        message: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }

@@ -439,6 +439,7 @@
     "sendAllProgramsSuccess": "Tüm programlar {machineName} makinesine başarıyla gönderildi.",
     "sendAllProgramsFailed": "Tüm programlar {machineName} makinesine gönderilirken hata oluştu.",
     "getAllProgramsSuccess": "Tüm programlar {machineName} makinesinden başarıyla alındı.",
+    "getAllProgramsPartialSuccess": "{count}/{total} program {machineName} makinesinden alındı.",
     "getAllProgramsFailed": "Tüm programlar {machineName} makinesinden alınırken hata oluştu.",
     "copyAndSend": {
       "machineSelection": "Makine Seçimi",
