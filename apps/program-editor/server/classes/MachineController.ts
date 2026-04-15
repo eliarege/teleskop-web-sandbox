@@ -1826,13 +1826,11 @@ export class MachineController {
             limit: settings.treatmentSettings.optimizedLimit,
           })
         }
-        if (!settings.treatmentSettings.optimizedEnable || (settings.treatmentSettings.optimizedEnable && parameter.optimized)) {
-          totalOptimizeCount++
-          treatmentRefs.push({
-            counter: tp.counter,
-            parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
-          })
-        }
+        totalOptimizeCount++
+        treatmentRefs.push({
+          counter: tp.counter,
+          parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
+        })
       }
     }
 
@@ -1870,7 +1868,7 @@ export class MachineController {
           TreatmentNo: program.programNo,
           TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
           TreatmentName: program.name,
-          TreatmentParaCount: totalOptimizeCount,
+          TreatmentParaCount: 0,
           ImportState: 1,
           TreatmentType: 0,
         })
