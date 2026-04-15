@@ -111,12 +111,12 @@ export const commandTypeMaps: CommandTypeMap[] = [
 export const ADDITIONAL_PROCESS_CODE_ILAVE = 7
 
 export const PROCESS_TYPE_NAMES: Record<number, string> = {
-  0: 'Standart Boyama',
-  1: 'Sentetik/Özel Boyama',
-  2: 'Kasar(Ön İşlem)',
-  3: 'Hazırlık/Yağ Sökümü',
-  4: 'Yıkama(Haslık)',
-  5: 'Yumuşatma',
-  6: 'Durulama/Söküm',
-  7: 'İlave Program',
+  0: '#dye',
+  1: '#synthetic',
+  2: '#bleaching',
+  3: '#preparation',
+  4: '#washing',
+  5: '#softening',
+  6: '#rinsing',
+  7: '#additional',
 }

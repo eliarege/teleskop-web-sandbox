@@ -10,7 +10,7 @@ import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
 import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
-import { AdditiveType, CommandType, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
+import { AdditiveType, CommandType, PROCESS_TYPE_NAMES, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
@@ -1136,17 +1136,6 @@ export class MachineController {
    */
   @withTransaction
   private async ensureProcessTypesExistBulk(codes: number[]): Promise<void> {
-    const PROCESS_TYPE_NAMES: Record<number, string> = {
-      0: 'Standart Boyama',
-      1: 'Sentetik/Özel Boyama',
-      2: 'Kasar(Ön İşlem)',
-      3: 'Hazırlık/Yağ Sökümü',
-      4: 'Yıkama(Haslık)',
-      5: 'Yumuşatma',
-      6: 'Durulama/Söküm',
-      7: 'İlave Program',
-    }
-
     const uniqueCodes = [...new Set(codes.filter(code => code != null))]
     if (!uniqueCodes.length)
       return
