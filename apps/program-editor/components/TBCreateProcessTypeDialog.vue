@@ -16,7 +16,7 @@ const editor = useEditorStore()
 // Reactive form data
 const processType = ref<ProcessType>({
   value: props.processType?.value ?? 0,
-  label: props.processType?.label ?? '',
+  label: props.processType?.rawLabel ?? props.processType?.label ?? '',
   description: props.processType?.description ?? '',
 })
 
@@ -45,6 +45,7 @@ const valueRules = computed(() => [
 
 const labelRules = [
   (val: string) => (val && val.trim().length > 0) || t('processTypeDialog.createProcessType.processTypeNameRequired'),
+  (val: string) => !val.startsWith('#') || val === props.processType?.rawLabel || t('processTypeDialog.createProcessType.processTypeNameHashForbidden'),
 ]
 
 async function handleApply() {

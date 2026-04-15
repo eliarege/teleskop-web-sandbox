@@ -276,6 +276,16 @@
     "title": "Yeniden Adlandır",
     "message": "Yeni program adını giriniz."
   },
+  "processTypes": {
+    "dye": "Standart Boyama",
+    "synthetic": "Sentetik/Özel Boyama",
+    "bleaching": "Kasar (Ön İşlem)",
+    "preparation": "Hazırlık/Yağ Sökümü",
+    "washing": "Yıkama (Haslık)",
+    "softening": "Yumuşatma",
+    "rinsing": "Durulama/Söküm",
+    "additional": "İlave Program"
+  },
   "processTypeDialog": {
     "title": "Program Tipleri",
     "processTypeNo": "Tip No",
@@ -289,6 +299,7 @@
       "processTypeNoUnique": "Program Tipi No benzersiz olmalıdır",
       "processTypeName": "Program Tipi Adı",
       "processTypeNameRequired": "Program Tipi Adı gereklidir",
+      "processTypeNameHashForbidden": "Program Tipi Adı '#' ile başlayamaz",
       "note": "Not",
       "processTypeNoReadOnlyHint": "Program Tipi Numarası değiştirilemez.",
       "success": "{no} - {name} program tipi başarıyla oluşturuldu.",
@@ -360,7 +371,7 @@
 
     "deleteProgramDialog": {
       "title": "Programı Sil",
-      "message": "{programNo} numaralı program silinecek! Devam etmek istediğinize emin misiniz? | {programNo} numaralı programlar silinecek! Devam etmek istediğinize emin misiniz?",
+      "message": "{programNo} numaralı program silinecek! Devam etmek istediğinize emin misiniz? | {count} program silinecek! Devam etmek istediğinize emin misiniz?",
       "deleteFromBoth": "Programı Teleskop'tan ve cihazdan sil",
       "deleteFromTeleskop": "Programı sadece Teleskop'tan sil",
       "deleteFromMachine": "Programı sadece cihazdan sil"
@@ -373,7 +384,7 @@
       "title": "Program Numaralarını Düzenle",
       "warning": "Yapıştırılmak istenilen programların numaraları bu makinede mevcut. Lütfen yeni program numaralarını giriniz.",
       "overwrite": "Üzerine Yapıştır",
-      "clear": "Clear",
+      "clear": "Temizle",
       "willOverwrite": "Bu program bu makinedeki mevcut programın üzerine kopyalanacak",
       "hasDuplicate": "Bu program numarası zaten kullanıldı",
       "setAllToOriginal": "Orijinal Numaraları Kullan",
@@ -575,7 +586,8 @@
       "getAllPrograms": "{name} makinesinden tüm programları al",
       "copy": "Programları Kopyala",
       "paste": "Programları Yapıştır",
-      "goToMachineApp": "Makineler Uygulamasına Git"
+      "goToMachineApp": "Makineler Uygulamasına Git",
+      "noProgram": "No programs found on {name} machine"
     },
     "processType": {
       "sendPrograms": "{name} tipindeki programları gönder",

@@ -273,6 +273,16 @@
     "title": "Rename Program",
     "message": "Enter the new name of the program."
   },
+  "processTypes": {
+    "dye": "Standard Dyeing",
+    "synthetic": "Synthetic/Special Dyeing",
+    "bleaching": "Bleaching (Pre-treatment)",
+    "preparation": "Preparation/Degreasing",
+    "washing": "Washing (Fastness)",
+    "softening": "Softening",
+    "rinsing": "Rinsing/Stripping",
+    "additional": "Additional Program"
+  },
   "processTypeDialog": {
     "title": "Program Types",
     "processTypeNo": "Type No",
@@ -286,6 +296,7 @@
       "processTypeNoUnique": "Process Type No must be unique",
       "processTypeName": "Process Type Name",
       "processTypeNameRequired": "Process Type Name is required",
+      "processTypeNameHashForbidden": "Process Type Name cannot start with '#'",
       "note": "Note",
       "processTypeNoReadOnlyHint": "Process Type No cannot be changed.",
       "success": "Program type {no} - {name} is created successfully.",
@@ -357,7 +368,7 @@
 
     "deleteProgramDialog": {
       "title": "Delete Program",
-      "message": "Program {programNo} will be deleted! Are you sure you want to continue? | Programs {programNo} will be deleted! Are you sure you want to continue?",
+      "message": "{programNo} will be deleted! Are you sure you want to continue? | {count} programs will be deleted! Are you sure you want to continue?",
       "deleteFromBoth": "Delete program from both machine and Teleskop",
       "deleteFromTeleskop": "Delete program from Teleskop",
       "deleteFromMachine": "Delete program from machine"

@@ -667,6 +667,9 @@ export class MachineController {
       }
 
       const program = await this.client.downloadProgram(programNo, commands)
+      if (program) {
+        await this.ensureProcessTypesExistBulk([program.typeId, program.additionalTypeId])
+      }
       await logEditorOperation(ProgramEditorActivityCodes.PROGRAMRECEIVED, `Makine ${this.id}`, `Program ${programNo}`)
 
       return program
@@ -1125,6 +1128,49 @@ export class MachineController {
   }
 
   /**
+   * Programın typeId ve additionalTypeId değerlerinin BFPROCESSTYPES tablosunda var olmasını sağlar.
+   * Yoksa otomatik olarak oluşturur.
+   */
+  @withTransaction
+  private async ensureProcessTypesExistBulk(codes: number[]): Promise<void> {
+    const PROCESS_TYPE_NAMES: Record<number, string> = {
+      0: 'Standart Boyama',
+      1: 'Sentetik/Özel Boyama',
+      2: 'Kasar(Ön İşlem)',
+      3: 'Hazırlık/Yağ Sökümü',
+      4: 'Yıkama(Haslık)',
+      5: 'Yumuşatma',
+      6: 'Durulama/Söküm',
+      7: 'İlave Program',
+    }
+
+    const uniqueCodes = [...new Set(codes.filter(code => code != null))]
+    if (!uniqueCodes.length)
+      return
+
+    const existing = await this.trx('BFPROCESSTYPES')
+      .whereIn('PROCESSCODE', uniqueCodes)
+      .pluck('PROCESSCODE') as number[]
+
+    const existingSet = new Set(existing.map(Number))
+    const missing = uniqueCodes.filter(code => !existingSet.has(Number(code)))
+
+    if (missing.length) {
+      await this.trx('BFPROCESSTYPES').insert(
+        missing.map((code) => {
+          const numericCode = Number(code)
+          return {
+            PROCESSCODE: code,
+            PROCESSNAME: PROCESS_TYPE_NAMES[numericCode] ?? `Process ${code}`,
+            NOTE: '',
+            BOYAPRGMI: 1,
+          }
+        }),
+      )
+    }
+  }
+
+  /**
    * Programı veritabanına ekler
    * @param program - Program objesi
    * @returns {Promise<void>}
@@ -1472,27 +1518,38 @@ export class MachineController {
       let errorCount = 0
       const errors: string[] = []
 
-      // Her program için download işlemi yap
+      // 1. Geçiş: tüm programları makineden indir
+      const downloadedPrograms: { programNo: number, program: Program }[] = []
       for (const programNo of programNumbers) {
         try {
-          // Makineden programı indir
           const program = await this.client.downloadProgram(programNo, commands)
-
           if (!program) {
             throw new Error(`Program ${programNo} not found on machine`)
           }
+          downloadedPrograms.push({ programNo, program })
+        } catch (error) {
+          errorCount++
+          const errorMsg = `Program ${programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
+          errors.push(errorMsg)
+          logger.error({ error, programNo }, `Failed to download program ${programNo}`)
+        }
+      }
 
-          // Programın var olup olmadığını kontrol et
+      // Tüm process type kodlarını tek seferde kontrol et ve eksikleri ekle
+      const allTypeCodes = downloadedPrograms.flatMap(({ program }) => [program.typeId, program.additionalTypeId])
+      await this.ensureProcessTypesExistBulk(allTypeCodes)
+
+      // 2. Geçiş: programları veritabanına kaydet
+      for (const { programNo, program } of downloadedPrograms) {
+        try {
           const exists = await this.hasProgram(programNo)
 
           if (exists) {
-            // Program varsa önce sil, sonra yenisini ekle
             await this.deleteProgramFromDatabase(programNo)
-            await this.insertProgram(program)
+            await this.insertProgram(program, true)
             logger.info(`Program ${programNo} updated (replaced existing program)`)
           } else {
-            // Program yoksa direkt ekle
-            await this.insertProgram(program)
+            await this.insertProgram(program, true)
             logger.info(`Program ${programNo} created (new program)`)
           }
 
@@ -1506,7 +1563,7 @@ export class MachineController {
           errorCount++
           const errorMsg = `Program ${programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
           errors.push(errorMsg)
-          logger.error({ error, programNo }, `Failed to download program ${programNo}`)
+          logger.error({ error, programNo }, `Failed to insert program ${programNo}`)
         }
       }
 

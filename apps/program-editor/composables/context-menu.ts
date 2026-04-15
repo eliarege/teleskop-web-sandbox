@@ -213,16 +213,20 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const { notifyError } = useNotify()
     editor.isLoading = true
 
-    for (const program of programs) {
-      try {
-        await updateProgramHeader(machineId, program.programNo, {
-          programNo: program.programNo,
-          typeId: typeData.typeId,
-          additionalTypeId: typeData.additionalTypeId,
-        })
-      } catch (e) {
-        notifyError(t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
+    try {
+      for (const program of programs) {
+        try {
+          await updateProgramHeader(machineId, program.programNo, {
+            programNo: program.programNo,
+            typeId: typeData.typeId,
+            additionalTypeId: typeData.additionalTypeId,
+          })
+        } catch (e) {
+          notifyError(t(`contextMenu.changeProcessTypeNotification.fail`, { programNo: program.programNo }))
+        }
       }
+    } finally {
+      editor.isLoading = false
     }
   }
 
@@ -288,6 +292,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
         notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
       }
     }
+
+    await editor.fetchAllProcessTypes()
 
     editor.isLoading = false
   }
@@ -515,6 +521,8 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       } else {
         notifyError(t('contextMenu.getAllProgramsFailed', { message: response.message }))
       }
+
+      await editor.fetchAllProcessTypes()
     } catch (error: any) {
       notifyError(t('contextMenu.getAllProgramsFailed', { message: error.message }))
       console.error('Get All Programs error:', error)
