@@ -1834,15 +1834,17 @@ export class MachineController {
       }
     }
 
-    for (const step of program.steps) {
-      // Main command
-      for (const parameter of step.mainCommand.parameters) {
-        handleParameter(step.mainCommand, parameter)
-      }
-      // Parallel Commands
-      for (const parallelCommand of step.parallelCommands) {
-        for (const parameter of parallelCommand.parameters) {
-          handleParameter(parallelCommand, parameter)
+    if (settings.treatmentSettings.optimizedEnable) {
+      for (const step of program.steps) {
+        // Main command
+        for (const parameter of step.mainCommand.parameters) {
+          handleParameter(step.mainCommand, parameter)
+        }
+        // Parallel Commands
+        for (const parallelCommand of step.parallelCommands) {
+          for (const parameter of parallelCommand.parameters) {
+            handleParameter(parallelCommand, parameter)
+          }
         }
       }
     }
