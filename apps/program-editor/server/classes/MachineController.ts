@@ -1448,6 +1448,11 @@ export class MachineController {
         .del()
     }
 
+    // Başarılı bir silme olduysa harici Treatment temizliğini tetikle
+    if (deletedCount > 0) {
+      await this.deleteOrphanedTreatments(programNumbers)
+    }
+
     return deletedCount > 0
   }
 
@@ -1795,46 +1800,42 @@ export class MachineController {
 
     await ensureTreatmentGroups()
 
-    const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
-      return {
-        ...parameter,
-        counter: 0,
-      }
-    })
-
-    const erpTreatmentParameters = await dmExchange('Treatment_Parameter')
-      .select({
-        paramNo: 'TreatmentParaNo',
-        paramName: 'TreatmentParaName',
-      }) as { paramNo: number, paramName: string }[]
-
+    let totalOptimizeCount = 0
     const treatmentRefs = [] as { counter: number, parameterNo: number }[]
 
-    let totalOptimizeCount = 0
-
-    const handleParameter = (command: ProgramStepCommand, parameter: ParameterItem) => {
-      const tp = treatmentParameters.find((tp) => {
-        return tp.commandNo === command.commandNo && tp.parameterIndex === parameter.index
+    if (settings.treatmentSettings.optimizedEnable) {
+      const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
+        return { ...parameter, counter: 0 }
       })
-      if (tp) {
-        tp.counter++
-        if (tp.counter >= settings.treatmentSettings.optimizedLimit) {
-          throw new PError('PROGRAM_TREATMENT_COMMAND_LIMIT', {
-            machineId: this.id,
-            programNo: program.programNo,
-            commandNo: command.commandNo!,
-            limit: settings.treatmentSettings.optimizedLimit,
+
+      const erpTreatmentParameters = await dmExchange('Treatment_Parameter')
+        .select({
+          paramNo: 'TreatmentParaNo',
+          paramName: 'TreatmentParaName',
+        }) as { paramNo: number, paramName: string }[]
+
+      const handleParameter = (command: ProgramStepCommand, parameter: ParameterItem) => {
+        const tp = treatmentParameters.find((tp) => {
+          return tp.commandNo === command.commandNo && tp.parameterIndex === parameter.index
+        })
+        if (tp) {
+          tp.counter++
+          if (tp.counter >= settings.treatmentSettings.optimizedLimit) {
+            throw new PError('PROGRAM_TREATMENT_COMMAND_LIMIT', {
+              machineId: this.id,
+              programNo: program.programNo,
+              commandNo: command.commandNo!,
+              limit: settings.treatmentSettings.optimizedLimit,
+            })
+          }
+          totalOptimizeCount++
+          treatmentRefs.push({
+            counter: tp.counter,
+            parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
           })
         }
-        totalOptimizeCount++
-        treatmentRefs.push({
-          counter: tp.counter,
-          parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
-        })
       }
-    }
 
-    if (settings.treatmentSettings.optimizedEnable) {
       for (const step of program.steps) {
         // Main command
         for (const parameter of step.mainCommand.parameters) {
@@ -2292,5 +2293,56 @@ export class MachineController {
       console.error('Error in findInPrograms:', error)
       throw new Error('Failed to search in programs', { cause: error })
     }
+  }
+
+  /**
+   * Teleskop veritabanından silinen programların başka bir makinede kalıp kalmadığını kontrol eder.
+   * Eğer hiçbir makinede kalmadıysa, bu programları dmExchange (Treatments) tablosundan temizler.
+   * @param deletedProgramNos - Silinen program numaraları
+   */
+  async deleteOrphanedTreatments(deletedProgramNos: number[]): Promise<void> {
+    const config = useRuntimeConfig()
+
+    // Teleskop/dmExchange entegrasyonu aktif değilse veya liste boşsa işlem yapma
+    if (!config.dmexchangeEnabled || deletedProgramNos.length === 0) {
+      return
+    }
+
+    // Hangi programların BAŞKA makinelerde hala kullanıldığını bul
+    const remainingPrograms = await this.trx('BFMASTERPRGHEADER')
+      .distinct('PROGNO')
+      .whereIn('PROGNO', deletedProgramNos)
+
+    const remainingProgramNos = remainingPrograms.map(p => p.PROGNO)
+
+    // Hiçbir makinede kalmayan (tamamen yok olan) programları filtrele
+    const totallyDeletedPrograms = deletedProgramNos.filter(
+      progNo => !remainingProgramNos.includes(progNo),
+    )
+
+    // Tamamen silinmiş program(lar) yoksa fonksiyondan çık
+    if (totallyDeletedPrograms.length === 0) {
+      return
+    }
+
+    // Tamamen silinenleri dmExchange üzerinden güvenli bir şekilde temizle
+    await dmExchange.transaction(async (dmTrx) => {
+      // Önce alt tablolar (Foreign Key hatalarını önlemek için)
+      await dmTrx('Treatment_Parameter_Ref')
+        .whereIn('TreatmentNo', totallyDeletedPrograms)
+        .andWhere('TreatmentType', 0)
+        .del()
+
+      await dmTrx('Treatment_MGroups')
+        .whereIn('TreatmentNo', totallyDeletedPrograms)
+        .andWhere('TreatmentType', 0)
+        .del()
+
+      // En son ana tablo
+      await dmTrx('Treatments')
+        .whereIn('TreatmentNo', totallyDeletedPrograms)
+        .andWhere('TreatmentType', 0)
+        .del()
+    })
   }
 }
