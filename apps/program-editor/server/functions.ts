@@ -1,4 +1,5 @@
 import type { Knex } from 'knex'
+import { insertBatch } from '@teleskop/utils'
 import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, MachineUnusableReason, ProcessType, ProgramTableRow, TeleskopSettings } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
@@ -270,23 +271,20 @@ export async function upsertTreatments(programs: { programNo: number, programNam
     const existingTreatments = await trx('Treatments')
       .whereIn('TreatmentNo', programNos)
       .andWhere('TreatmentType', 0)
-      .andWhere('TreatmentGroupNo', GENERAL_TREATMENT_GROUPNO)
       .select('TreatmentNo') as { TreatmentNo: number }[]
 
     const existingTreatmentNos = new Set(existingTreatments.map(t => t.TreatmentNo))
     const missingTreatments = programs.filter(p => !existingTreatmentNos.has(p.programNo))
 
     if (missingTreatments.length) {
-      await trx('Treatments').insert(
-        missingTreatments.map(p => ({
-          TreatmentNo: p.programNo,
-          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
-          TreatmentName: p.programName,
-          TreatmentParaCount: 0,
-          ImportState: 1,
-          TreatmentType: 0,
-        })),
-      )
+      await insertBatch(trx, 'Treatments', missingTreatments.map(p => ({
+        TreatmentNo: p.programNo,
+        TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
+        TreatmentName: p.programName,
+        TreatmentParaCount: 0,
+        ImportState: 1,
+        TreatmentType: 0,
+      })))
     }
 
     // Step 3: Insert into Treatment_MGroups for entries not already present
@@ -299,14 +297,12 @@ export async function upsertTreatments(programs: { programNo: number, programNam
     const missingMGroups = programs.filter(p => !existingMGroupSet.has(`${p.programNo}-${p.groupNo}`))
 
     if (missingMGroups.length) {
-      await trx('Treatment_MGroups').insert(
-        missingMGroups.map(p => ({
-          TreatmentNo: p.programNo,
-          MGroupNo: p.groupNo,
-          ImportState: 1,
-          TreatmentType: 0,
-        })),
-      )
+      await insertBatch(trx, 'Treatment_MGroups', missingMGroups.map(p => ({
+        TreatmentNo: p.programNo,
+        MGroupNo: p.groupNo,
+        ImportState: 1,
+        TreatmentType: 0,
+      })))
     }
 
     // Step 4: Clear optimized parameter refs (re-populated by upsertTreatmentParameters if needed)
@@ -318,8 +314,7 @@ export async function upsertTreatments(programs: { programNo: number, programNam
 
   if (trx) {
     await execute(trx)
-  }
-  else {
+  } else {
     await dmExchange.transaction(execute)
   }
 }

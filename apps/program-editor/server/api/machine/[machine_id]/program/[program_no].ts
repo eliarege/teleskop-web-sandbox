@@ -87,6 +87,7 @@ export default defineAuthEventHandler(async (event) => {
           data: error.detail,
         })
       }
+      logger.error({ err: error }, `Failed to update program ${programNo} on machine ${machineId}.`)
 
       throw createError({
         statusCode: 500,

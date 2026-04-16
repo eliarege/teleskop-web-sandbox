@@ -903,7 +903,7 @@ export class MachineController {
    * @returns {Promise<void>}
    */
   @withTransaction
-  async insertProgramToArchive(program: Program, isNewVersion: boolean = true): Promise<void> {
+  async insertProgramToArchive(program: Program, isNewVersion: boolean = true, commands?: MachineCommand[]): Promise<void> {
     const lastVersion: number | null = await this.getLastVersion(program.programNo)
 
     // Son versiyon varsa, tarihini güncelle
@@ -916,7 +916,7 @@ export class MachineController {
       await this.deleteProgramFromArchive(program.programNo, lastVersion)
     }
 
-    const commands = await this.fetchCommands()
+    commands ??= await this.fetchCommands()
     const timestamp = this.getCurrentTimestamp()
 
     const stepsArchive: StepArchiveItem[] = []
@@ -1408,7 +1408,7 @@ export class MachineController {
       }
     }
 
-    await this.insertProgramToArchive(program, isNewVersion)
+    await this.insertProgramToArchive(program, isNewVersion, commands)
     await this.upsertTreatments(program)
   }
 

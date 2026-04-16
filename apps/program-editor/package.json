@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "FORCE_COLOR=1 nuxt dev | pino-pretty",
     "test": "vitest",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
