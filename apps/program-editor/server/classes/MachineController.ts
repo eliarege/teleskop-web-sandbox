@@ -1,11 +1,11 @@
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { ensureTreatmentGroups, fetchTeleskopSettings, getTeleskopSettings, logEditorOperation } from '../functions'
-import { db, dmExchange } from '../database'
-import { withProgramClient, withTransaction } from '../decorators'
+import { fetchTeleskopSettings, getTeleskopSettings, logEditorOperation, upsertTreatments } from '../functions'
+import { db } from '../database'
+import { withDmTransaction, withProgramClient, withTransaction } from '../decorators'
 import { sql } from '../sql'
 import { PError } from '../error'
-import { GENERAL_TREATMENT_GROUPNO, ProgramEditorActivityCodes } from '../constants'
+import { ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
@@ -15,13 +15,15 @@ import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
 export class MachineController {
-  readonly trx: Knex.Transaction
+  trx: Knex.Transaction
+  dmTrx: Knex.Transaction | null
 
   constructor(
     public readonly id: number,
     public readonly client: ProgramClient,
   ) {
     this.trx = db as Knex.Transaction
+    this.dmTrx = null
   }
 
   @withTransaction
@@ -731,6 +733,7 @@ export class MachineController {
    * @param {Program} program - Güncellenmek istenen program
    * @returns {Promise<boolean>} - Programın silinip yeniden eklendiğine dair sonuç
    */
+  @withDmTransaction
   @withTransaction
   async updateProgram(program: Program, isNewVersion: boolean = true): Promise<boolean> {
     const isDeleted = await this.deleteProgramFromDatabase(program.programNo)
@@ -900,7 +903,7 @@ export class MachineController {
    * @returns {Promise<void>}
    */
   @withTransaction
-  async insertProgramToArchive(program: Program, isNewVersion: boolean = true): Promise<void> {
+  async insertProgramToArchive(program: Program, isNewVersion: boolean = true, commands?: MachineCommand[]): Promise<void> {
     const lastVersion: number | null = await this.getLastVersion(program.programNo)
 
     // Son versiyon varsa, tarihini güncelle
@@ -913,7 +916,7 @@ export class MachineController {
       await this.deleteProgramFromArchive(program.programNo, lastVersion)
     }
 
-    const commands = await this.fetchCommands()
+    commands ??= await this.fetchCommands()
     const timestamp = this.getCurrentTimestamp()
 
     const stepsArchive: StepArchiveItem[] = []
@@ -1175,6 +1178,7 @@ export class MachineController {
    * @param program - Program objesi
    * @returns {Promise<void>}
    */
+  @withDmTransaction
   @withTransaction
   async insertProgram(program: Program, isNewVersion: boolean = true): Promise<void> {
     const exists = await this.hasProgram(program.programNo)
@@ -1404,7 +1408,7 @@ export class MachineController {
       }
     }
 
-    await this.insertProgramToArchive(program, isNewVersion)
+    await this.insertProgramToArchive(program, isNewVersion, commands)
     await this.upsertTreatments(program)
   }
 
@@ -1424,6 +1428,7 @@ export class MachineController {
    * @param programNos - Silinecek programın numarası veya numaraları (tekli veya array)
    * @returns {Promise<boolean>} - İşlem başarılıysa true döner
    */
+  @withDmTransaction
   @withTransaction
   async deleteProgramFromDatabase(programNos: number | number[]): Promise<boolean> {
     const programNumbers = Array.isArray(programNos) ? programNos : [programNos]
@@ -1446,6 +1451,13 @@ export class MachineController {
         .where('MACHINEID', this.id)
         .whereIn('PROGNO', programNumbers)
         .del()
+    }
+
+    // Başarılı bir silme olduysa Treatment temizliğini tetikle
+    if (deletedCount > 0) {
+      for (const programNo of programNumbers) {
+        await this.deleteTreatments(programNo)
+      }
     }
 
     return deletedCount > 0
@@ -1782,38 +1794,56 @@ export class MachineController {
   }
 
   /**
-   * Yeni oluşturulan programı Treatments tablosuna ekler.
+   * Programı Treatments tablosuna ekler ve varsa optimizasyon parametrelerini günceller.
    * @param program - Program
    * @returns {Promise<void>}
    */
+  @withDmTransaction
   async upsertTreatments(program: Program): Promise<void> {
-    const config = useRuntimeConfig()
-    if (!config.dmexchangeEnabled)
+    const dmTrx = this.dmTrx
+    if (!dmTrx)
       return
+
+    const groupNo = await this.getMachineGroupNo()
+    if (!isDef(groupNo)) {
+      throw new Error(`Machine ${this.id} not found`)
+    }
+
+    await upsertTreatments([{
+      programNo: program.programNo,
+      programName: program.name,
+      groupNo,
+    }], dmTrx)
 
     const settings = await fetchTeleskopSettings()
+    if (settings.treatmentSettings.optimizedEnable) {
+      await this.upsertTreatmentParameters(program)
+    }
+  }
 
-    if (!settings.treatmentSettings.optimizedEnable)
-      return
+  /**
+   * Programın optimizasyon parametrelerini Treatment_Parameter_Ref tablosuna ekler
+   * ve Treatments tablosundaki TreatmentParaCount değerini günceller.
+   * Yalnızca optimizedEnable aktif olduğunda çağrılmalıdır.
+   * @param program - Program
+   * @returns {Promise<void>}
+   */
+  private async upsertTreatmentParameters(program: Program): Promise<void> {
+    const dmTrx = this.dmTrx!
+    const settings = await fetchTeleskopSettings()
 
-    await ensureTreatmentGroups()
-
-    const treatmentParameters = (await this.fetchTreatmentParameters()).map((parameter) => {
-      return {
-        ...parameter,
-        counter: 0,
-      }
+    let totalOptimizeCount = 0
+    const treatmentRefs = [] as { counter: number, parameterNo: number }[]
+    const teleskopTreatmentParameters = await this.fetchTreatmentParameters()
+    const treatmentParameters = teleskopTreatmentParameters.map((parameter) => {
+      return { ...parameter, counter: 0 }
     })
 
-    const erpTreatmentParameters = await dmExchange('Treatment_Parameter')
+    const erpTreatmentParameters = await dmTrx('Treatment_Parameter')
       .select({
         paramNo: 'TreatmentParaNo',
         paramName: 'TreatmentParaName',
       }) as { paramNo: number, paramName: string }[]
-
-    const treatmentRefs = [] as { counter: number, parameterNo: number }[]
-
-    let totalOptimizeCount = 0
 
     const handleParameter = (command: ProgramStepCommand, parameter: ParameterItem) => {
       const tp = treatmentParameters.find((tp) => {
@@ -1829,22 +1859,18 @@ export class MachineController {
             limit: settings.treatmentSettings.optimizedLimit,
           })
         }
-        if (!settings.treatmentSettings.optimizedEnable || (settings.treatmentSettings.optimizedEnable && parameter.optimized)) {
-          totalOptimizeCount++
-          treatmentRefs.push({
-            counter: tp.counter,
-            parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
-          })
-        }
+        totalOptimizeCount++
+        treatmentRefs.push({
+          counter: tp.counter,
+          parameterNo: erpTreatmentParameters.find(etp => `${tp.paramName}_${tp.counter}` === etp.paramName)?.paramNo || 0,
+        })
       }
     }
 
     for (const step of program.steps) {
-      // Main command
       for (const parameter of step.mainCommand.parameters) {
         handleParameter(step.mainCommand, parameter)
       }
-      // Parallel Commands
       for (const parallelCommand of step.parallelCommands) {
         for (const parameter of parallelCommand.parameters) {
           handleParameter(parallelCommand, parameter)
@@ -1852,79 +1878,75 @@ export class MachineController {
       }
     }
 
-    const groupNo = (await db('BFMACHINES')
-      .first({ groupNo: 'GRUPNO' })
-      .where('MACHINEID', this.id))?.groupNo
+    await dmTrx('Treatments')
+      .update({ TreatmentParaCount: totalOptimizeCount })
+      .where('TreatmentNo', program.programNo)
+      .andWhere('TreatmentType', 0)
 
-    // Not expected
-    if (!isDef(groupNo)) {
-      throw new Error(`Machine ${this.id} not found`)
+    if (treatmentRefs.length) {
+      await dmTrx('Treatment_Parameter_Ref').insert(
+        treatmentRefs.map((ref, index) => ({
+          TreatmentNo: program.programNo,
+          TreatmentParaCounter: index + 1,
+          TreatmentParaNo: ref.parameterNo,
+          ImportState: 1,
+          TreatmentType: 0,
+        })),
+      )
     }
-
-    await dmExchange.transaction(async (trx) => {
-      // Handle Treatment Machine Groups
-
-      const treatment = await trx('Treatments')
-        .where('TreatmentNo', program.programNo)
-        .andWhere('TreatmentType', 0)
-        .first('*')
-
-      if (!treatment) {
-        await trx('Treatments').insert({
-          TreatmentNo: program.programNo,
-          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
-          TreatmentName: program.name,
-          TreatmentParaCount: totalOptimizeCount,
-          ImportState: 1,
-          TreatmentType: 0,
-        })
-
-        await trx('Treatment_MGroups').insert({
-          TreatmentNo: program.programNo,
-          MGroupNo: groupNo,
-          ImportState: 1,
-        })
-      } else {
-        await trx('Treatments').update({
-          TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
-          TreatmentName: program.name,
-          TreatmentParaCount: totalOptimizeCount,
-          ImportState: 1,
-          TreatmentType: 0,
-        })
-          .where('TreatmentNo', program.programNo)
-          .andWhere('TreatmentType', 0)
-
-        await trx('Treatment_Parameter_Ref')
-          .where('TreatmentNo', program.programNo)
-          .del()
-      }
-      if (treatmentRefs.length) {
-        await trx('Treatment_Parameter_Ref').insert(
-          treatmentRefs.map((ref, index) => {
-            return {
-              TreatmentNo: program.programNo,
-              TreatmentParaCounter: index + 1,
-              TreatmentParaNo: ref.parameterNo,
-              ImportState: 1,
-            }
-          }),
-        )
-      }
-    })
   }
 
+  private async getMachineGroupNo(): Promise<number | undefined> {
+    const row = await db('BFMACHINES')
+      .where('MACHINEID', this.id)
+      .first({ groupNo: 'GRUPNO' })
+
+    return row?.groupNo
+  }
+
+  @withDmTransaction
+  @withTransaction
   async deleteTreatments(programNo: number): Promise<void> {
-    await dmExchange.transaction(async (trx) => {
-      await trx('Treatments')
+    const dmTrx = this.dmTrx
+    if (!dmTrx)
+      return
+
+    // Use this.trx so we see within-transaction BF deletions
+    const remainingAnywhere = await this.trx('BFMASTERPRGHEADER')
+      .where('PROGNO', programNo)
+      .first('PROGNO')
+
+    const groupNo = await this.getMachineGroupNo()
+
+    const remainingInGroup = isDef(groupNo)
+      ? await this.trx('BFMASTERPRGHEADER as H')
+        .join('BFMACHINES as M', 'M.MACHINEID', 'H.MACHINEID')
+        .where('H.PROGNO', programNo)
+        .andWhere('M.GRUPNO', groupNo)
+        .first('H.PROGNO')
+      : null
+
+    // Only delete Treatment_MGroups entry for this group when no machine in the group has this program
+    if (!remainingInGroup && isDef(groupNo)) {
+      await dmTrx('Treatment_MGroups')
+        .where('TreatmentNo', programNo)
+        .andWhere('MGroupNo', groupNo)
+        .andWhere('TreatmentType', 0)
+        .del()
+    }
+
+    // Only delete Treatment_Parameter_Ref and Treatments when no machine has this program
+    if (!remainingAnywhere) {
+      await dmTrx('Treatment_Parameter_Ref')
         .where('TreatmentNo', programNo)
         .andWhere('TreatmentType', 0)
         .del()
 
-      await trx('Treatment_Parameter_Ref')
+      await dmTrx('Treatments')
         .where('TreatmentNo', programNo)
+        .andWhere('TreatmentType', 0)
         .del()
-    })
+    }
   }
 
   async fetchTreatmentParameters(): Promise<TreatmentParameter[]> {
@@ -2092,13 +2114,12 @@ export class MachineController {
    * @param {number} machineId - Makine ID'si (opsiyonel, this.id kullanılır)
    * @returns {Promise<boolean>} - Makine erişilebilirse true, değilse false
    */
-  @withTransaction
-  @withProgramClient
   async getMachineStatus(machineId?: number): Promise<boolean> {
     const targetMachineId = machineId || this.id
 
     try {
-      const machine: { ip: string, name: string } = await this.trx('BFMACHINES')
+      const machine: { ip: string, name: string } = await this
+        .trx('BFMACHINES')
         .first({
           ip: 'IP',
           name: 'MACHINECODE',

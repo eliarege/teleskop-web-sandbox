@@ -191,11 +191,6 @@ function onInput(event: Event) {
     model.value = Number.parseFloat(value)
   }
 }
-
-onMounted(() => {
-  if (numberInput.value)
-    numberInput.value.focus()
-})
 </script>
 
 <template>

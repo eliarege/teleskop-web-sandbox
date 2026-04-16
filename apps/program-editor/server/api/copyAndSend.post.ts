@@ -1,6 +1,7 @@
+import type { Logger } from 'pino'
 import type { MachineController } from '../classes/MachineController'
 import { machineStore } from '~/server/classes/MachineStore'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 import { type CopyAndSendResult, JobManager } from '~/server/utils/JobManager'
 import { ProgramStatus } from '~/shared/constants'
 import type { MachineInfo, PasteOptions, Program } from '~/shared/types'
@@ -18,6 +19,7 @@ interface CopyAndSendRequest {
 export default defineAuthEventHandler({
   roles: ['machine-upload'],
   handler: async (event) => {
+    const log = useLogger(event)
     const body = await readBody<CopyAndSendRequest>(event)
     const { programs, sourceMachineId, targetMachines, pasteOption } = body
 
@@ -83,12 +85,12 @@ export default defineAuthEventHandler({
       progress: { total: totalOperations, completed: 0, percentage: 0 },
     })
 
-    logger.info(`User: ${event.context.kauth?.name}. Started copy and send job ${job.jobId} for ${programs.length} programs to ${validTargetMachines.length} machines.`)
+    log.info('Started copy and send job %s for %d programs to %d machines.', job.jobId, programs.length, validTargetMachines.length)
 
     // Async olarak işlemi başlat
-    processCopyAndSendJob(job.jobId, sourceMachine, validTargetMachines, programs, pasteOption)
+    processCopyAndSendJob(job.jobId, sourceMachine, validTargetMachines, programs, pasteOption, log)
       .catch((error) => {
-        logger.error({ error, jobId: job.jobId }, 'Copy and send job failed')
+        log.error({ error, jobId: job.jobId }, 'Copy and send job failed')
         JobManager.completeJob(job.jobId, 'failed')
         JobManager.updateJob(job.jobId, {
           errors: [`Unexpected error: ${error.message}`],
@@ -105,6 +107,7 @@ async function processCopyAndSendJob(
   targetMachines: { id: number, name: string }[],
   programs: { programNo: number, name: string }[],
   pasteOption: PasteOptions,
+  log: Logger,
 ) {
   // Job durumunu running'e çevir
   JobManager.updateJob(jobId, { status: 'running' })
@@ -147,7 +150,7 @@ async function processCopyAndSendJob(
         const targetHasProgram = await targetMachine.hasProgram(programInfo.programNo)
         result.copySkipped = pasteOption === 'skip' && targetHasProgram
         if (result.copySkipped) {
-          logger.debug(`Copy skipped for program ${programInfo.programNo} to machine ${targetId} as it already exists and paste option is 'skip'`)
+          log.debug('Copy skipped for program %d to machine %d as it already exists and paste option is \'skip\'', programInfo.programNo, targetId)
         }
 
         if (!result.copySkipped) {
@@ -201,13 +204,13 @@ async function processCopyAndSendJob(
         result.timestamp = new Date().toISOString()
         if (!result.success) {
           result.error = result.copyError || result.sendError || 'Unknown error'
-          logger.error({
+          log.error({
             error: result.error,
             programNo: programInfo.programNo,
             targetId,
           }, `Failed to copy and send program ${programInfo.programNo} to machine ${targetId}`)
         } else {
-          logger.info(`Successfully copied and sent program ${programInfo.programNo} to machine ${targetId}`)
+          log.info('Successfully copied and sent program %d to machine %d', programInfo.programNo, targetId)
         }
 
         JobManager.addResult(jobId, result)
@@ -217,13 +220,13 @@ async function processCopyAndSendJob(
     // Job'ı tamamla
     JobManager.completeJob(jobId, 'completed')
 
-    logger.info(`Copy and send job ${jobId} completed successfully`)
+    log.info('Copy and send job %s completed successfully', jobId)
   } catch (error) {
     // Job'ı failed olarak işaretle
     JobManager.completeJob(jobId, 'failed')
     JobManager.updateJob(jobId, {
       errors: [`Job failed: ${error instanceof Error ? error.message : 'Unknown error'}`],
     })
-    logger.error({ error, jobId }, 'Copy and send job failed')
+    log.error({ error, jobId }, 'Copy and send job failed')
   }
 }

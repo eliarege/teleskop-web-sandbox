@@ -1,7 +1,9 @@
 import type { Knex } from 'knex'
-import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, MachineUnusableReason, ProcessType, ProgramTableRow, TeleskopSettings, TreatmentGroup } from '../shared/types'
+import { insertBatch } from '@teleskop/utils'
+import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, MachineUnusableReason, ProcessType, ProgramTableRow, TeleskopSettings } from '../shared/types'
 import { PError } from './error'
 import { db, dmExchange } from './database'
+import { GENERAL_TREATMENT_GROUPNO } from './constants'
 import { ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
 
 interface TransactionOptions {
@@ -238,28 +240,83 @@ export async function getGroupIdByMachineId(machineId: number): Promise<number |
   return undefined
 }
 
-export async function ensureTreatmentGroups(): Promise<TreatmentGroup[]> {
-  const config = useRuntimeConfig()
-  if (!config.dmexchangeEnabled)
-    return []
+/**
+ * Inserts programs into the Treatments and Treatment_MGroups tables if not already present,
+ * and clears any existing Treatment_Parameter_Ref rows for the programs.
+ * Does not modify treatment parameters (optimized params are handled separately).
+ *
+ * @param programs - Array of { programNo, programName, groupNo }
+ */
+export async function upsertTreatments(programs: { programNo: number, programName: string, groupNo: number }[], trx?: Knex.Transaction): Promise<void> {
+  if (!dmExchange || !programs.length)
+    return
 
-  const treatmentGroups = await dmExchange('Treatment_Groups')
-    .select({
-      TreatmentGroupNo: 'TreatmentGroupNo',
-      TreatmentGroupName: 'TreatmentGroupName',
-      ImportState: 'ImportState',
-    })
+  const programNos = programs.map(p => p.programNo)
 
-  const hasGeneralGroup = treatmentGroups.find(treatmentGroup => treatmentGroup.TreatmentGroupNo === 1)
-  if (!hasGeneralGroup) {
-    await dmExchange('Treatment_Groups').insert({
-      TreatmentGroupNo: 1,
-      TreatmentGroupName: 'General Program Group',
-      ImportState: 1,
-    })
+  const execute = async (trx: Knex.Transaction) => {
+    // Step 1: Ensure general treatment group exists
+    const hasGeneralGroup = await trx('Treatment_Groups')
+      .where('TreatmentGroupNo', GENERAL_TREATMENT_GROUPNO)
+      .first()
+
+    if (!hasGeneralGroup) {
+      await trx('Treatment_Groups').insert({
+        TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
+        TreatmentGroupName: 'General Program Group',
+        ImportState: 1,
+      })
+    }
+
+    // Step 2: Insert into Treatments for programs not already present
+    const existingTreatments = await trx('Treatments')
+      .whereIn('TreatmentNo', programNos)
+      .andWhere('TreatmentType', 0)
+      .select('TreatmentNo') as { TreatmentNo: number }[]
+
+    const existingTreatmentNos = new Set(existingTreatments.map(t => t.TreatmentNo))
+    const missingTreatments = programs.filter(p => !existingTreatmentNos.has(p.programNo))
+
+    if (missingTreatments.length) {
+      await insertBatch(trx, 'Treatments', missingTreatments.map(p => ({
+        TreatmentNo: p.programNo,
+        TreatmentGroupNo: GENERAL_TREATMENT_GROUPNO,
+        TreatmentName: p.programName,
+        TreatmentParaCount: 0,
+        ImportState: 1,
+        TreatmentType: 0,
+      })))
+    }
+
+    // Step 3: Insert into Treatment_MGroups for entries not already present
+    const existingMGroups = await trx('Treatment_MGroups')
+      .whereIn('TreatmentNo', programNos)
+      .andWhere('TreatmentType', 0)
+      .select('TreatmentNo', 'MGroupNo') as { TreatmentNo: number, MGroupNo: number }[]
+
+    const existingMGroupSet = new Set(existingMGroups.map(m => `${m.TreatmentNo}-${m.MGroupNo}`))
+    const missingMGroups = programs.filter(p => !existingMGroupSet.has(`${p.programNo}-${p.groupNo}`))
+
+    if (missingMGroups.length) {
+      await insertBatch(trx, 'Treatment_MGroups', missingMGroups.map(p => ({
+        TreatmentNo: p.programNo,
+        MGroupNo: p.groupNo,
+        ImportState: 1,
+        TreatmentType: 0,
+      })))
+    }
+
+    // Step 4: Clear optimized parameter refs (re-populated by upsertTreatmentParameters if needed)
+    await trx('Treatment_Parameter_Ref')
+      .whereIn('TreatmentNo', programNos)
+      .andWhere('TreatmentType', 0)
+      .del()
   }
 
-  return treatmentGroups
+  if (trx) {
+    await execute(trx)
+  } else {
+    await dmExchange.transaction(execute)
+  }
 }
 
 export async function fetchTeleskopSettings(): Promise<TeleskopSettings> {

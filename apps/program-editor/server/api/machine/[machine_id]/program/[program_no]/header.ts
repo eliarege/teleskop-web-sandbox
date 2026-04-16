@@ -1,11 +1,13 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError } from '~/server/error'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 import type { ProgramHeader } from '~/shared/types'
 
 export default defineAuthEventHandler({
   roles: ['program-edit'],
   handler: async (event) => {
+    const log = useLogger(event)
+
     if (event.method === 'PUT') {
       const { machine_id } = getRouterParams(event)
       const machineId = Number.parseInt(machine_id)
@@ -27,9 +29,11 @@ export default defineAuthEventHandler({
 
       program.isChanged = true
 
-      logger.info(`User: ${event.context.kauth?.name}. Updating name of program ${program.programNo} of machine ${machineId}.`)
+      log.info('Updating header of program %d on machine %d.', program.programNo, machineId)
 
-      return await machine.updateProgramHeader(program)
+      const result = await machine.updateProgramHeader(program)
+      log.info('Header of program %d updated on machine %d.', program.programNo, machineId)
+      return result
     }
 
     if (event.method === 'GET') {
@@ -37,7 +41,6 @@ export default defineAuthEventHandler({
       const machineId = Number.parseInt(machine_id)
       const programNo = Number.parseInt(program_no)
       const machine = await machineStore.get(machineId)
-      logger.info(`User: ${event.context.kauth?.name}. Fetching header of program ${programNo} of machine ${machineId}.`)
 
       return await machine.fetchProgramHeader(machineId, programNo)
     }

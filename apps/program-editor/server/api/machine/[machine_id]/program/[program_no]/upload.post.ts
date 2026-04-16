@@ -1,11 +1,12 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError, isPError } from '~/server/error'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 import { ProgramStatus } from '~/shared/constants'
 
 export default defineAuthEventHandler({
   roles: ['machine-upload'],
   handler: async (event) => {
+    const log = useLogger(event)
     try {
       const { machine_id, program_no } = getRouterParams(event)
       const machineId = Number(machine_id)
@@ -30,7 +31,7 @@ export default defineAuthEventHandler({
         throw new PError('PROGRAM_HAS_ERRORS', { machineId, programNo })
       }
 
-      logger.info(`User: ${event.context.kauth?.name}. Uploading program ${programNo} of machine ${machineId}.`)
+      log.info('Uploading program %d of machine %d.', programNo, machineId)
 
       const isUploaded = await machine.uploadProgram(program)
       if (isUploaded) {
@@ -38,6 +39,7 @@ export default defineAuthEventHandler({
         program.prgState = ProgramStatus.EXISTS_ON_BOTH
         program.updatedAtTBB = program.updatedAt
         await machine.updateProgramHeader(program)
+        log.info('Program %d uploaded and header updated for machine %d.', programNo, machineId)
       }
 
       return true

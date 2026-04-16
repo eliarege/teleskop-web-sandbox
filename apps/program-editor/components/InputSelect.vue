@@ -29,11 +29,6 @@ watch(() => input.value?.hasError, (value) => {
   }
 })
 
-onMounted(() => {
-  if (input.value)
-    input.value.focus()
-})
-
 onUnmounted(() => {
   editor.errorIds.delete(id)
 })

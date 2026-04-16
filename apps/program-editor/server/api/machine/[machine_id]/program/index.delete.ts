@@ -2,11 +2,12 @@ import { machineStore } from '~/server/classes/MachineStore'
 import { ProgramEditorActivityCodes } from '~/server/constants'
 import { PError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 import type { BulkDeletionResponse, ProgramDeletionSource } from '~/shared/types'
 
 export default defineAuthEventHandler(async (event): Promise<BulkDeletionResponse> => {
   checkPermission(event, 'program-delete')
+  const log = useLogger(event)
 
   const { machine_id } = getRouterParams(event)
   const machineId = Number.parseInt(machine_id)
@@ -27,7 +28,6 @@ export default defineAuthEventHandler(async (event): Promise<BulkDeletionRespons
     throw new PError('INVALID_MACHINE_NUMBER', { machineId })
   }
 
-  const userName = event.context?.kauth?.name
   const shouldDeleteFromMachine = source === 'machine' || source === 'both'
   const shouldDeleteFromDb = source === 'db' || source === 'both'
 
@@ -45,7 +45,7 @@ export default defineAuthEventHandler(async (event): Promise<BulkDeletionRespons
     }
 
     if (!machineStatus) {
-      logger.warn(`Machine ${machineId} is offline, will only delete from database`)
+      log.warn({ machineId }, 'Machine is offline, will only delete from database')
     }
   }
 
@@ -66,7 +66,7 @@ export default defineAuthEventHandler(async (event): Promise<BulkDeletionRespons
         }
       }
     } catch (error) {
-      logger.error(`Error deleting programs from database for machine ${machineId}:`, error)
+      log.error({ err: error, machineId }, 'Error deleting programs from database')
     }
   }
 
@@ -80,7 +80,7 @@ export default defineAuthEventHandler(async (event): Promise<BulkDeletionRespons
         await machine.deleteRemoteProgram(programNo)
         machineDeleted = true
       } catch (error) {
-        logger.error(`Failed to delete program ${programNo} from machine ${machineId}:`, error)
+        log.error({ err: error, machineId, programNo }, 'Failed to delete program from machine')
       }
     }
 
@@ -101,9 +101,9 @@ export default defineAuthEventHandler(async (event): Promise<BulkDeletionRespons
   const totalSuccess = results.filter(r => r.success).length
   const totalFailed = results.filter(r => !r.success).length
 
-  logger.info(
-    `User: ${userName}. Bulk deleted programs from machine ${machineId}. `
-    + `Success: ${totalSuccess}/${programs.length}, Failed: ${totalFailed}`,
+  log.info(
+    { machineId, source, totalSuccess, totalFailed, total: programs.length },
+    'Bulk deleted programs from machine',
   )
 
   return {

@@ -56,6 +56,7 @@ function handleContextMenu(stepId: number) {
       <QItem
         dense
         clickable
+        tabindex="-1"
         class="program-step"
         :active="editor.isStepSelected(step.stepId)"
         active-class="__selected"

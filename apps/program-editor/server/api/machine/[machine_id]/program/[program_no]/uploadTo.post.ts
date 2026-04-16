@@ -1,10 +1,11 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError } from '~/server/error'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 
 export default defineAuthEventHandler({
   roles: ['machine-upload'],
   handler: async (event) => {
+    const log = useLogger(event)
     const { machine_id, program_no } = getRouterParams(event)
     const machineId = Number(machine_id)
     const programNo = Number(program_no)
@@ -25,7 +26,7 @@ export default defineAuthEventHandler({
     }
 
     const { program } = await machineOfProgram.fetchProgram(programNo)
-    logger.info(`User: ${event.context.kauth?.name}. Uploading program ${programNo} of machine ${machineId} to machine ${body.machineId}.`)
+    log.info('Uploading program %d of machine %d to machine %d.', programNo, machineId, body.machineId)
 
     return await machineToUpload.uploadProgram(program)
   },
