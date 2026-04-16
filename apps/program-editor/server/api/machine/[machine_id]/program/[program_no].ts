@@ -1,14 +1,16 @@
+import type { Logger } from 'pino'
 import { machineStore } from '~/server/classes/MachineStore'
 import { ProgramEditorActivityCodes } from '~/server/constants'
 import { PError, isPError } from '~/server/error'
 import { logEditorOperation } from '~/server/functions'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 import { ProgramStatus } from '~/shared/constants'
 import { checkPermission } from '~/server/utils/auth'
 import type { MachineController } from '~/server/classes/MachineController'
 import type { Program } from '~/shared/types'
 
 export default defineAuthEventHandler(async (event) => {
+  const log = useLogger(event)
   const { machine_id, program_no } = getRouterParams(event)
   const machineId = Number(machine_id)
   const programNo = Number(program_no)
@@ -29,7 +31,6 @@ export default defineAuthEventHandler(async (event) => {
   const query = getQuery(event)
 
   if (event.method === 'GET') {
-    logger.info(`User: ${event.context.kauth?.name}. Fetching program ${programNo}.`)
     checkPermission(event, 'program-view')
     try {
       const { program, programError } = await machine.fetchProgram(programNo)
@@ -55,7 +56,7 @@ export default defineAuthEventHandler(async (event) => {
   if (event.method === 'DELETE') {
     checkPermission(event, 'program-delete')
     try {
-      return await handleProgramDeletion(machine, programNo, query, machineId, event.context?.kauth?.name)
+      return await handleProgramDeletion(machine, programNo, query, machineId, log)
     } catch (error) {
       if (isPError(error)) {
         throw createError({
@@ -78,6 +79,7 @@ export default defineAuthEventHandler(async (event) => {
 
     try {
       const { program, isNewVersion } = body
+      log.info('Updating program %d on machine %d.', programNo, machineId)
       return await machine.updateProgram(program, isNewVersion)
     } catch (error) {
       if (isPError(error)) {
@@ -87,7 +89,7 @@ export default defineAuthEventHandler(async (event) => {
           data: error.detail,
         })
       }
-      logger.error({ err: error }, `Failed to update program ${programNo} on machine ${machineId}.`)
+      log.error({ err: error }, 'Failed to update program %d on machine %d.', programNo, machineId)
 
       throw createError({
         statusCode: 500,
@@ -106,7 +108,7 @@ async function handleProgramDeletion(
   programNo: number,
   query: any,
   machineId: number,
-  userName?: string,
+  log: Logger,
 ): Promise<boolean> {
   if (!query?.source) {
     return false
@@ -116,22 +118,22 @@ async function handleProgramDeletion(
   const source = query.source.toString()
 
   if (source.includes('machine')) {
-    await deleteFromMachineIfValid(machine, programNo, prgState, machineId, userName)
+    await deleteFromMachineIfValid(machine, programNo, prgState, machineId, log)
   }
 
   if (source.includes('db')) {
-    return await deleteFromDatabaseIfValid(machine, programNo, prgState, machineId, userName)
+    return await deleteFromDatabaseIfValid(machine, programNo, prgState, machineId, log)
   }
 
   return true
 }
 
-async function deleteFromMachineIfValid(machine: MachineController, programNo: number, prgState: number | null, machineId: number, userName?: string) {
+async function deleteFromMachineIfValid(machine: MachineController, programNo: number, prgState: number | null, machineId: number, log: Logger) {
   if (
     prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER
     || prgState === ProgramStatus.EXISTS_ON_BOTH
   ) {
-    logger.info(`User: ${userName}. Deleted program ${programNo} from machine ${machineId}.`)
+    log.info('Deleting program %d from machine %d.', programNo, machineId)
     await machine.deleteRemoteProgram(programNo)
 
     if (prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
@@ -145,13 +147,13 @@ async function deleteFromDatabaseIfValid(
   programNo: number,
   prgState: number | null,
   machineId: number,
-  userName?: string,
+  log: Logger,
 ): Promise<boolean> {
   if (
     prgState === ProgramStatus.EXISTS_ONLY_ON_DATABASE
     || prgState === ProgramStatus.EXISTS_ON_BOTH
   ) {
-    logger.info(`User: ${userName}. Deleted program ${programNo} from database for machine ${machineId}.`)
+    log.info('Deleting program %d from database for machine %d.', programNo, machineId)
     await logEditorOperation(
       ProgramEditorActivityCodes.PROGRAMDELETED,
       `Machine ${machineId}`,

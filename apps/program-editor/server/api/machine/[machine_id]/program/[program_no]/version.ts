@@ -1,11 +1,12 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError, isPError } from '~/server/error'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 import { checkPermission } from '~/server/utils/auth'
 
 export default defineAuthEventHandler({
   roles: ['program-view'],
   handler: async (event) => {
+    const log = useLogger(event)
     try {
       const { machine_id, program_no } = getRouterParams(event)
       const machineId = Number.parseInt(machine_id)
@@ -25,7 +26,6 @@ export default defineAuthEventHandler({
       }
 
       if (event.method === 'GET') {
-        logger.info(`User: ${event.context.kauth?.name}. Fetching archived program versions of program ${programNo} of machine ${machineId}.`)
         return await machine.fetchAllHeadersOfArchivedProgram(programNo)
       }
 
@@ -37,8 +37,9 @@ export default defineAuthEventHandler({
           throw new PError('INVALID_VERSION_LIST', { versions })
         }
 
+        log.info('Deleting %d versions of program %d from machine %d.', versions.length, programNo, machineId)
         const deletedCount = await machine.deleteVersions(programNo, versions)
-        logger.info(`User: ${event.context.kauth?.name}. Deleted ${deletedCount} versions of program ${programNo} from machine ${machineId}.`)
+        log.info('Deleted %d versions of program %d from machine %d.', deletedCount, programNo, machineId)
 
         return versions
       }

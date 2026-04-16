@@ -20,7 +20,7 @@ export default defineAuthEventHandler(async (event) => {
 
     return await machine.getMachineStatus()
   } catch (error) {
-    logger.error(`Machine ${machineId} status check failed`)
+    logger.error(`Machine ${machineId} status check failed. Reason: %s`, error instanceof Error ? error.message : String(error))
     return false
   }
 })

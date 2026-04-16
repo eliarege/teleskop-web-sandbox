@@ -42,16 +42,22 @@ import { parseMachineTranslations } from './parsers/parseMachineTranslations'
 import { splitLines } from './utils/common'
 
 export interface TbbFtpClientOptions {
+  /** Timeout in ms for idle FTP command responses. */
   timeout?: number
+  /** Timeout in ms for the initial TCP connection. */
+  connectionTimeout?: number
 }
 
 export class TbbFtpClient {
   private host: string
   private client: Client
+  private connectionTimeout: number | undefined
 
   constructor(host: string, options?: TbbFtpClientOptions) {
     this.host = host
     this.client = new Client(options?.timeout)
+    console.log(options)
+    this.connectionTimeout = options?.connectionTimeout
   }
 
   /**
@@ -63,11 +69,31 @@ export class TbbFtpClient {
    * method. In fact, reconnecting is the only way to continue using a closed `Client`.
    */
   async connect(): Promise<void> {
-    await this.client.access({
+    const accessPromise = this.client.access({
       host: this.host,
       user: 'eliar',
       password: 'el1984',
     })
+
+    if (!this.connectionTimeout) {
+      await accessPromise
+      return
+    }
+
+    let timeoutHandle: ReturnType<typeof setTimeout>
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutHandle = setTimeout(() => {
+        this.client.close()
+        reject(new Error(`FTP connection timed out after ${this.connectionTimeout}ms (host: ${this.host})`))
+      }, this.connectionTimeout)
+    })
+
+    console.log(this.connectionTimeout)
+    try {
+      await Promise.race([accessPromise, timeoutPromise])
+    } finally {
+      clearTimeout(timeoutHandle!)
+    }
   }
 
   private async ensureConnected() {

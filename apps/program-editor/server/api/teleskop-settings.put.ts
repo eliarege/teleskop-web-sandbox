@@ -1,13 +1,14 @@
 import { updateTeleskopSettings } from '../functions'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 
 export default defineAuthEventHandler({
   roles: ['teleskop-settings'],
   handler: async (event) => {
+    const log = useLogger(event)
     const body = await readBody(event)
     const id = Number(body.id)
     const value = body.value
-    logger.info(`User: ${event.context.kauth?.name}. Teleskop settings updated. ID: ${id}. Value: ${value}.`)
+    log.info('Teleskop settings updated. ID: %s. Value: %s.', id, value)
 
     return await updateTeleskopSettings(id, value)
   },

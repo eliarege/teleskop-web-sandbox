@@ -1,11 +1,12 @@
 import { machineStore } from '~/server/classes/MachineStore'
 import { PError, isPError } from '~/server/error'
-import logger from '~/server/logger'
+import { useLogger } from '~/server/logger'
 import { checkPermission } from '~/server/utils/auth'
 
 export default defineAuthEventHandler({
   roles: ['program-view'],
   handler: async (event) => {
+    const log = useLogger(event)
     try {
       const { machine_id, program_no, version } = getRouterParams(event)
       const machineId = Number.parseInt(machine_id)
@@ -31,7 +32,6 @@ export default defineAuthEventHandler({
       }
 
       if (event.method === 'GET') {
-        logger.info(`User: ${event.context.kauth?.name}. Fetching archived program ${programNo} of machine ${machineId}.`)
         return await machine.fetchArchivedProgram(programNo, versionNo)
       }
 
@@ -46,19 +46,21 @@ export default defineAuthEventHandler({
 
         newVersion.tbbProgramChangedEvent = isOperatorEditable ? 1 : 0
 
+        log.info('Restoring archived program %d version %d on machine %d.', programNo, versionNo, machineId)
         await machine.withTransaction(async () => {
           await machine.deleteProgramFromDatabase(programNo)
           await machine.insertProgram(newVersion)
         })
 
-        logger.info(`User: ${event.context.kauth?.name}. Archived program ${programNo} updated for machine ${machineId}.`)
+        log.info('Archived program %d version %d restored on machine %d.', programNo, versionNo, machineId)
         return { status: 'success', message: 'Program updated successfully' }
       }
 
       if (event.method === 'DELETE') {
         checkPermission(event, 'program-delete')
-        logger.info(`User: ${event.context.kauth?.name}. Deleting archived program ${programNo} version ${versionNo} of machine ${machineId}.`)
+        log.info('Deleting archived program %d version %d of machine %d.', programNo, versionNo, machineId)
         await machine.deleteVersions(programNo, [versionNo])
+        log.info('Deleted archived program %d version %d of machine %d.', programNo, versionNo, machineId)
         return { success: true }
       }
     } catch (error: PError | unknown) {

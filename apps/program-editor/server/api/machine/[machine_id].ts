@@ -19,7 +19,7 @@ export default defineAuthEventHandler(async (event) => {
 
   const editable = inferBoolean(query.editable as string, false)
   const machineInfo = await machine.getMachineInfo(editable)
-  logger.info(`User: ${event.context.kauth?.name}. Fetching machine ${machineId}.`)
+  logger.debug(`Fetched info of machine ${machineId}`)
 
   return machineInfo
 })

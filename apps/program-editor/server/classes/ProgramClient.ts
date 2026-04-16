@@ -34,7 +34,7 @@ export class T7ProgramClient implements ProgramClient {
 
   async ping(): Promise<boolean> {
     try {
-      const pingFtp = new TbbFtpClient(this.host, { timeout: 5000 })
+      const pingFtp = new TbbFtpClient(this.host, { connectionTimeout: 5000 })
       await pingFtp.connect()
       pingFtp.close()
 
