@@ -1926,6 +1926,15 @@ export class MachineController {
         .first('H.PROGNO')
       : null
 
+    // Only delete Treatment_MGroups entry for this group when no machine in the group has this program
+    if (!remainingInGroup && isDef(groupNo)) {
+      await dmTrx('Treatment_MGroups')
+        .where('TreatmentNo', programNo)
+        .andWhere('MGroupNo', groupNo)
+        .andWhere('TreatmentType', 0)
+        .del()
+    }
+
     // Only delete Treatment_Parameter_Ref and Treatments when no machine has this program
     if (!remainingAnywhere) {
       await dmTrx('Treatment_Parameter_Ref')
@@ -1935,15 +1944,6 @@ export class MachineController {
 
       await dmTrx('Treatments')
         .where('TreatmentNo', programNo)
-        .andWhere('TreatmentType', 0)
-        .del()
-    }
-
-    // Only delete Treatment_MGroups entry for this group when no machine in the group has this program
-    if (!remainingInGroup && isDef(groupNo)) {
-      await dmTrx('Treatment_MGroups')
-        .where('TreatmentNo', programNo)
-        .andWhere('MGroupNo', groupNo)
         .andWhere('TreatmentType', 0)
         .del()
     }
