@@ -1,8 +1,9 @@
 import process from 'node:process'
+import type { Knex } from 'knex'
+import knex from 'knex'
 import { config } from './config'
 import { RollupMigrationSource as TeleskopMigrationSource } from '#migrations/teleskop'
 import { RollupMigrationSource as DmExchangeMigrationSource } from '#migrations/dmexchange'
-import knex, { Knex } from 'knex'
 
 const MIGRATION_TABLE = 'TFMigrations'
 
@@ -65,7 +66,7 @@ async function migrateTeleskop(isDown?: boolean) {
       },
     },
   })
-  await migrate(teleskop, 'Teleskop', new TeleskopMigrationSource(), isDown)
+  await migrate(teleskop, config.teleskopDatabase, new TeleskopMigrationSource(), isDown)
   await teleskop.destroy()
 }
 
