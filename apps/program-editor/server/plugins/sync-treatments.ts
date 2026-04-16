@@ -8,7 +8,7 @@ async function syncMissingTreatments(): Promise<void> {
 
   // Pick one machine per program using a window function (lowest MACHINEID wins)
   const allPrograms = await db
-    .with('prg', (qb) => {
+    .with('programs', (qb) => {
       qb.from('BFMASTERPRGHEADER AS H')
         .join('BFMACHINES AS M', 'M.MACHINEID', 'H.MACHINEID')
         .select({
@@ -20,8 +20,9 @@ async function syncMissingTreatments(): Promise<void> {
         .where('M.INUSE', true)
         .andWhere('M.USEINTELESKOP', true)
     })
-    .select('prg.programNo', 'prg.programName', 'prg.groupNo')
-    .where('prg.rowNumber', 1) as { programNo: number, programName: string, groupNo: number }[]
+    .select('programNo', 'programName', 'groupNo')
+    .from('programs')
+    .where('rowNumber', 1) as { programNo: number, programName: string, groupNo: number }[]
 
   if (!allPrograms.length)
     return
