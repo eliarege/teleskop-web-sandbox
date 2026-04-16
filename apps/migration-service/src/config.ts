@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { defineConfiguration, inferBoolean } from '@teleskop/utils'
 
 export const config = defineConfiguration({
@@ -31,13 +32,13 @@ export const config = defineConfiguration({
     type: 'querystring',
   },
   dmExchangeEnabled: {
-    env: ['DMEXCHANGE_ENABLED', 'NUXT_DMEXCHANGE_ENABLED'],
+    env: ['DMEXCHANGE_INTEGRATION_ENABLED'],
     type: 'boolean',
     default: false,
   },
   dmExchangeHost: {
     env: ['DMEXCHANGE_HOST', 'NUXT_DMEXCHANGE_HOST'],
-    required: inferBoolean(process.env.DMEXCHANGE_ENABLED, false),
+    required: inferBoolean(process.env.DMEXCHANGE_INTEGRATION_ENABLED, false),
   },
   dmExchangePort: {
     env: ['DMEXCHANGE_PORT', 'NUXT_DMEXCHANGE_PORT'],
@@ -46,15 +47,15 @@ export const config = defineConfiguration({
   },
   dmExchangeUser: {
     env: ['DMEXCHANGE_USER', 'NUXT_DMEXCHANGE_USER'],
-    required: inferBoolean(process.env.DMEXCHANGE_ENABLED, false),
+    required: inferBoolean(process.env.DMEXCHANGE_INTEGRATION_ENABLED, false),
   },
   dmExchangePassword: {
     env: ['DMEXCHANGE_PASSWORD', 'NUXT_DMEXCHANGE_PASSWORD'],
-    required: inferBoolean(process.env.DMEXCHANGE_ENABLED, false),
+    required: inferBoolean(process.env.DMEXCHANGE_INTEGRATION_ENABLED, false),
   },
   dmExchangeDatabase: {
     env: ['DMEXCHANGE_DATABASE', 'NUXT_DMEXCHANGE_DATABASE'],
-    required: inferBoolean(process.env.DMEXCHANGE_ENABLED, false),
+    required: inferBoolean(process.env.DMEXCHANGE_INTEGRATION_ENABLED, false),
   },
   dmExchangeInstanceName: {
     env: ['DMEXCHANGE_INSTANCE_NAME', 'NUXT_DMEXCHANGE_INSTANCE_NAME'],
