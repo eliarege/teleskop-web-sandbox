@@ -2114,13 +2114,12 @@ export class MachineController {
    * @param {number} machineId - Makine ID'si (opsiyonel, this.id kullanılır)
    * @returns {Promise<boolean>} - Makine erişilebilirse true, değilse false
    */
-  @withTransaction
-  @withProgramClient
   async getMachineStatus(machineId?: number): Promise<boolean> {
     const targetMachineId = machineId || this.id
 
     try {
-      const machine: { ip: string, name: string } = await this.trx('BFMACHINES')
+      const machine: { ip: string, name: string } = await this
+        .trx('BFMACHINES')
         .first({
           ip: 'IP',
           name: 'MACHINECODE',

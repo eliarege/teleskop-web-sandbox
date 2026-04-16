@@ -13,7 +13,7 @@ import type { MachineCommand, Program, ProgramStepCommand } from '~/shared/types
 import { ParameterType, ProgramStatus } from '~/shared/constants'
 
 export interface ProgramClient {
-  ping: () => Promise<boolean>
+  ping: (timeout?: number) => Promise<boolean>
   connect: () => Promise<void>
   disconnect: () => Promise<void>
   downloadProgram: (programNo: number, commands: MachineCommand[]) => Promise<Program | null>
@@ -32,9 +32,9 @@ export class T7ProgramClient implements ProgramClient {
     this.ftp = new TbbFtpClient(host)
   }
 
-  async ping(): Promise<boolean> {
+  async ping(timeout = 5000): Promise<boolean> {
     try {
-      const pingFtp = new TbbFtpClient(this.host, { connectionTimeout: 5000 })
+      const pingFtp = new TbbFtpClient(this.host, { connectionTimeout: timeout })
       await pingFtp.connect()
       pingFtp.close()
 

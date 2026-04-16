@@ -56,7 +56,6 @@ export class TbbFtpClient {
   constructor(host: string, options?: TbbFtpClientOptions) {
     this.host = host
     this.client = new Client(options?.timeout)
-    console.log(options)
     this.connectionTimeout = options?.connectionTimeout
   }
 
@@ -88,7 +87,6 @@ export class TbbFtpClient {
       }, this.connectionTimeout)
     })
 
-    console.log(this.connectionTimeout)
     try {
       await Promise.race([accessPromise, timeoutPromise])
     } finally {
