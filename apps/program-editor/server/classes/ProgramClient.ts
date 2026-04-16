@@ -29,7 +29,7 @@ export class T7ProgramClient implements ProgramClient {
     readonly id: number,
     readonly host: string,
   ) {
-    this.ftp = new TbbFtpClient(host)
+    this.ftp = new TbbFtpClient(host, { connectionTimeout: 5000 })
   }
 
   async ping(timeout = 5000): Promise<boolean> {
