@@ -4,7 +4,7 @@ import type { CommandParameter, MachineGroup, MachineInfo, MachineTbbModel, Mach
 import { PError } from './error'
 import { db, dmExchange } from './database'
 import { GENERAL_TREATMENT_GROUPNO } from './constants'
-import { ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
+import { PROCESS_TYPE_NAMES, ProgramStatus, TeleskopSettingsIds } from '~/shared/constants'
 
 interface TransactionOptions {
   trx?: Knex.Transaction
@@ -167,11 +167,10 @@ export async function createProcessType(body: { processType: ProcessType }): Pro
 export async function updateProcessType(body: { processType: ProcessType, originalProcessCode?: number }): Promise<boolean> {
   const processType = body.processType
   const originalProcessCode = body.originalProcessCode
-  const whereClause = originalProcessCode || processType.value
+  const whereClause = originalProcessCode ?? processType.value
 
   const result = await db('BFPROCESSTYPES')
     .update({
-      PROCESSCODE: processType.value,
       PROCESSNAME: processType.label.trim(),
       NOTE: processType.description?.trim() || '',
     })
@@ -181,7 +180,26 @@ export async function updateProcessType(body: { processType: ProcessType, origin
 }
 
 export async function deleteProcessType(body: { processCode?: number, PROCESSCODE?: number }): Promise<boolean> {
-  const processCode = body.processCode || body.PROCESSCODE
+  const processCode = body.processCode ?? body.PROCESSCODE
+
+  if (processCode === undefined || processCode === null) {
+    throw createError({ statusCode: 400, statusMessage: 'PROCESS_CODE_REQUIRED' })
+  }
+
+  if (processCode in PROCESS_TYPE_NAMES) {
+    throw createError({ statusCode: 400, statusMessage: 'SYSTEM_PROCESS_TYPE' })
+  }
+
+  const countResult = await db('BFMASTERPRGHEADER')
+    .where('PROCESSCODE', processCode)
+    .count('* as count')
+    .first()
+
+  const count = Number(countResult?.count ?? 0)
+  if (count > 0) {
+    throw createError({ statusCode: 400, statusMessage: 'PROCESS_TYPE_IN_USE' })
+  }
+
   const result = await db
     .del()
     .where('PROCESSCODE', processCode)

@@ -109,3 +109,14 @@ export const commandTypeMaps: CommandTypeMap[] = [
 ]
 
 export const ADDITIONAL_PROCESS_CODE_ILAVE = 7
+
+export const PROCESS_TYPE_NAMES: Record<number, string> = {
+  0: '#dye',
+  1: '#synthetic',
+  2: '#bleaching',
+  3: '#preparation',
+  4: '#washing',
+  5: '#softening',
+  6: '#rinsing',
+  7: '#additional',
+}

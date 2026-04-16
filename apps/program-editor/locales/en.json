@@ -311,7 +311,8 @@
       "title": "Delete Program Type",
       "deletionWarning": "Program type \"{type}\" will be deleted! Are you sure you want to continue?",
       "success": "Program type {no} - {name} is deleted successfully.",
-      "fail": "An error occurred while deleting program type."
+      "fail": "An error occurred while deleting program type.",
+      "errorInUse": "This program type has programs assigned to it and cannot be deleted."
     },
     "updateProcessTypes": {
       "success": "Program types updated successfully.",
@@ -435,6 +436,7 @@
     "sendAllProgramsSuccess": "All programs are sent successfully to machine {machineName}.",
     "sendAllProgramsFailed": "An error occurred while sending all programs to machine {machineName}.",
     "getAllProgramsSuccess": "All programs are retrieved successfully from machine {machineName}.",
+    "getAllProgramsPartialSuccess": "Retrieved {count}/{total} programs from machine {machineName}.",
     "getAllProgramsFailed": "An error occurred while retrieving all programs from machine {machineName}.",
     "copyAndSend": {
       "machineSelection": "Machine Selection",

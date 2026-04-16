@@ -1,4 +1,6 @@
 import type { Buffer } from 'node:buffer'
+import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import type { FileInfo } from 'basic-ftp'
 import { Client } from 'basic-ftp'
@@ -167,6 +169,18 @@ export class TbbFtpClient {
   async list(path: string): Promise<FileInfo[]> {
     await this.ensureConnected()
     return this.client.list(path)
+  }
+
+  /**
+   * Download all files in a remote directory to a temporary local directory.
+   * Returns the local directory path. Caller is responsible for cleanup.
+   * @param remotePath - Remote directory path
+   */
+  async downloadDir(remotePath: string): Promise<string> {
+    await this.ensureConnected()
+    const localDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tbb-ftp-'))
+    await this.client.downloadToDir(localDir, remotePath)
+    return localDir
   }
 
   /**

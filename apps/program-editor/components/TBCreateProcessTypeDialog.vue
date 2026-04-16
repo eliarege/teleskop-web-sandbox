@@ -91,6 +91,8 @@ async function handleApply() {
                 type="number"
                 min="0"
                 :rules="valueRules"
+                :disable="isEditMode"
+                :hint="isEditMode ? t('processTypeDialog.createProcessType.processTypeNoReadOnlyHint') : undefined"
                 dense
                 outlined
               />

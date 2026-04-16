@@ -3,14 +3,20 @@ import type { QTableColumn } from 'quasar'
 import TBCreateProcessTypeDialog from './TBCreateProcessTypeDialog.vue'
 import TBDeleteProcessTypeDialog from './TBDeleteProcessTypeDialog.vue'
 import type { ProcessType } from '~/shared/types'
+import { PROCESS_TYPE_NAMES } from '~/shared/constants'
 
 defineEmits([...useDialogPluginComponent.emits])
 
 const $q = useQuasar()
 const { t } = useI18n()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+const { notifyError } = useNotify()
 
 const editor = useEditorStore()
+
+function isSystemProcessType(value: number): boolean {
+  return value in PROCESS_TYPE_NAMES
+}
 
 const selectedRow = ref<ProcessType[]>([])
 const columns: QTableColumn[] = [
@@ -51,9 +57,18 @@ function handleDeleteProcessType() {
     component: TBDeleteProcessTypeDialog,
     componentProps: { processType: row },
   }).onOk(async () => {
-    await editor.deleteProcessType(row.value)
-    // Silinen kayıt seçimini temizle
-    selectedRow.value = []
+    try {
+      await editor.deleteProcessType(row.value)
+      // Silinen kayıt seçimini temizle
+      selectedRow.value = []
+    } catch (error: any) {
+      const statusMessage = error?.data?.statusMessage || error?.statusMessage || ''
+      if (statusMessage === 'PROCESS_TYPE_IN_USE') {
+        notifyError(t('processTypeDialog.deleteProcessType.errorInUse'))
+      } else {
+        notifyError(t('processTypeDialog.deleteProcessType.fail'))
+      }
+    }
   })
 }
 
@@ -108,7 +123,7 @@ function onRowDoubleClick(event: Event, row: ProcessType) {
             :label="t('delete')"
             class="bg-negative text-white"
             flat
-            :disable="!selectedRow.length"
+            :disable="!selectedRow.length || isSystemProcessType(selectedRow[0]?.value)"
             @click="handleDeleteProcessType"
           />
         </div>

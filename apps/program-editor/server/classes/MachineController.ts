@@ -10,7 +10,7 @@ import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
 import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
-import { AdditiveType, CommandType, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
+import { AdditiveType, CommandType, PROCESS_TYPE_NAMES, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
 
@@ -1136,17 +1136,6 @@ export class MachineController {
    */
   @withTransaction
   private async ensureProcessTypesExistBulk(codes: number[]): Promise<void> {
-    const PROCESS_TYPE_NAMES: Record<number, string> = {
-      0: 'Standart Boyama',
-      1: 'Sentetik/Özel Boyama',
-      2: 'Kasar(Ön İşlem)',
-      3: 'Hazırlık/Yağ Sökümü',
-      4: 'Yıkama(Haslık)',
-      5: 'Yumuşatma',
-      6: 'Durulama/Söküm',
-      7: 'İlave Program',
-    }
-
     const uniqueCodes = [...new Set(codes.filter(code => code != null))]
     if (!uniqueCodes.length)
       return
@@ -1515,20 +1504,19 @@ export class MachineController {
    */
   @withProgramClient
   @withTransaction
-  async downloadAllPrograms(): Promise<{ success: boolean, count: number, message: string }> {
+  async downloadAllPrograms(): Promise<{ success: boolean, count: number, total: number, errors: Array<{ programNo: number, message: string }>, message?: string }> {
     try {
       // Önce program listesini al
       const programNumbers = await this.client.fetchProgramList()
 
       if (programNumbers.length === 0) {
-        return { success: true, count: 0, message: 'No programs found on machine' }
+        return { success: true, count: 0, total: 0, errors: [] }
       }
 
       // Machine commands listesini al
       const commands = await this.fetchCommands()
       let successCount = 0
-      let errorCount = 0
-      const errors: string[] = []
+      const errors: { programNo: number, message: string }[] = []
 
       // 1. Geçiş: tüm programları makineden indir
       const downloadedPrograms: { programNo: number, program: Program }[] = []
@@ -1540,9 +1528,7 @@ export class MachineController {
           }
           downloadedPrograms.push({ programNo, program })
         } catch (error) {
-          errorCount++
-          const errorMsg = `Program ${programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
-          errors.push(errorMsg)
+          errors.push({ programNo, message: error instanceof Error ? error.message : 'Unknown error' })
           logger.error({ error, programNo }, `Failed to download program ${programNo}`)
         }
       }
@@ -1572,29 +1558,29 @@ export class MachineController {
 
           successCount++
         } catch (error) {
-          errorCount++
-          const errorMsg = `Program ${programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
-          errors.push(errorMsg)
-          logger.error({ error, programNo }, `Failed to insert program ${programNo}`)
+          errors.push({ programNo, message: error instanceof Error ? error.message : 'Unknown error' })
+          logger.error({ error, programNo }, `Failed to download program ${programNo}`)
         }
       }
 
-      const message = `Downloaded ${successCount}/${programNumbers.length} programs successfully`
       if (errors.length > 0) {
         logger.warn({ errors }, 'Some programs failed to download')
       }
 
       return {
-        success: errorCount === 0,
+        success: errors.length === 0,
         count: successCount,
-        message: errors.length > 0 ? `${message}. Errors: ${errors.join(', ')}` : message,
+        total: programNumbers.length,
+        errors,
       }
     } catch (error) {
       logger.error({ error }, 'Failed to download all programs from machine')
       return {
         success: false,
         count: 0,
-        message: `Failed to download programs: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        total: 0,
+        errors: [],
+        message: error instanceof Error ? error.message : 'Unknown error',
       }
     }
   }

@@ -314,7 +314,8 @@
       "title": "Program Tipini Sil",
       "deletionWarning": "Program tipi \"{type}\" silinecek! Devam etmek istediğinize emin misiniz?",
       "success": "{no} - {name} program tipi başarıyla silindi.",
-      "fail": "Program tipi silinirken hata oluştu."
+      "fail": "Program tipi silinirken hata oluştu.",
+      "errorInUse": "Bu program tipinde programlar var, silinemez."
     },
     "updateProcessTypes": {
       "success": "Program tipleri başarıyla güncellendi.",
@@ -438,6 +439,7 @@
     "sendAllProgramsSuccess": "Tüm programlar {machineName} makinesine başarıyla gönderildi.",
     "sendAllProgramsFailed": "Tüm programlar {machineName} makinesine gönderilirken hata oluştu.",
     "getAllProgramsSuccess": "Tüm programlar {machineName} makinesinden başarıyla alındı.",
+    "getAllProgramsPartialSuccess": "{count}/{total} program {machineName} makinesinden alındı.",
     "getAllProgramsFailed": "Tüm programlar {machineName} makinesinden alınırken hata oluştu.",
     "copyAndSend": {
       "machineSelection": "Makine Seçimi",

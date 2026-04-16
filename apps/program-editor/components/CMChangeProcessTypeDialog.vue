@@ -91,8 +91,8 @@ const additionalOptions = computed(() => props.options.filter(option => option.v
           class="q-mr-sm bg-primary text-white"
           flat
           @click="onDialogOK({
-            type: selectedOption,
-            additionalType: isIlaveSelected ? selectedAdditionalOption : null,
+            typeId: selectedOption,
+            additionalTypeId: isIlaveSelected ? selectedAdditionalOption : null,
           })"
         />
       </q-card-actions>
