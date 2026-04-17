@@ -3,7 +3,7 @@ import { defineBuildConfig } from 'unbuild'
 import { workspaceExternals } from '@teleskop/build-utils'
 import virtual from '@rollup/plugin-virtual'
 import type { InputPluginOption } from 'rollup'
-import { sqlLoader, buildMigrationVirtualModule } from './build/migrations'
+import { buildMigrationVirtualModule, sqlLoader } from './build/migrations'
 
 const src = join(__dirname, 'src')
 const migrationDir = join(src, 'migrations')

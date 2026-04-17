@@ -23,3 +23,7 @@ export async function up(knex: Knex) {
     await knex('BFPROCESSTYPES').insert(toInsert)
   }
 }
+
+export function down(_knex: Knex) {
+  // Skip down migration
+}
