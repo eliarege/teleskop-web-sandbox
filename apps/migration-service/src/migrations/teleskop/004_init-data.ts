@@ -1,27 +1,28 @@
 import type { Knex } from 'knex'
+import { TeleskopSettings } from './legacy-migrations/enums'
 
 export async function up(knex: Knex) {
   // #region TFTELESKOPSETTINGS
 
   const settings = [
-    { ID: 1, VALUE: '0' },
-    { ID: 2, VALUE: '0' },
-    { ID: 3, VALUE: '0' },
-    { ID: 4, VALUE: '+_' },
-    { ID: 5, VALUE: '1' },
-    { ID: 6, VALUE: '0' },
-    { ID: 7, VALUE: '-1' },
-    { ID: 8, VALUE: '0' },
-    { ID: 9, VALUE: '0' },
-    { ID: 10, VALUE: '0' },
-    { ID: 11, VALUE: '10' },
-    { ID: 12, VALUE: '' },
-    { ID: 13, VALUE: '' },
-    { ID: 14, VALUE: '' },
-    { ID: 15, VALUE: '' },
-    { ID: 16, VALUE: '' },
-    { ID: 17, VALUE: '' },
-    { ID: 18, VALUE: '' },
+    { ID: TeleskopSettings.UserManagentActive, VALUE: '0' },
+    { ID: TeleskopSettings.PhaseModeActive, VALUE: '0' },
+    { ID: TeleskopSettings.CustomErpPrmOptimization, VALUE: '0' },
+    { ID: TeleskopSettings.AllowedCharsForJobOrder, VALUE: '+_' },
+    { ID: TeleskopSettings.RecipeEnterActive, VALUE: '1' },
+    { ID: TeleskopSettings.TimeBasedModeActive, VALUE: '0' },
+    { ID: TeleskopSettings.DyehouseNumber, VALUE: '-1' },
+    { ID: TeleskopSettings.ProcessUsageActive, VALUE: '0' },
+    { ID: TeleskopSettings.SaveIOValuesInDatabase, VALUE: '0' },
+    { ID: TeleskopSettings.StoreRequestsInDatabase, VALUE: '0' },
+    { ID: TeleskopSettings.CommandOptimisationParameterCount, VALUE: '10' },
+    { ID: TeleskopSettings.EditorSelectedCommandIcons, VALUE: '' },
+    { ID: TeleskopSettings.InitialWaterTemperature, VALUE: '' },
+    { ID: TeleskopSettings.IntegrationDatabaseActive, VALUE: '' },
+    { ID: TeleskopSettings.IntegrationDatabaseConnectionString, VALUE: '' },
+    { ID: TeleskopSettings.JoborderBarcodeType, VALUE: '' },
+    { ID: TeleskopSettings.PhaseBigIconsEnabled, VALUE: '' },
+    { ID: TeleskopSettings.PhaseSmallIconsVisible, VALUE: '' },
   ]
 
   const existingSettings = await knex('TFTELESKOPSETTINGS')
