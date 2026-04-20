@@ -437,7 +437,7 @@ function createUnplannedGridColumn(name: string) {
     text: name,
     width: 100,
     align: 'center',
-    renderer: ({ value }: any) => value === 'no-data' || value == null ? t('tooltip.no-data') : value,
+    renderer: ({ value }: any) => value === 'no-data' || value == null ? t('unplanned-grid.no-data') : value,
   }
 }
 
