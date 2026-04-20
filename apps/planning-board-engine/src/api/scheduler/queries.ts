@@ -293,7 +293,6 @@ export async function getBatchNotes(jobOrder: string) {
       showOnScreen: 'p.SHOWONSCREEN',
     }).where('JOBORDER', '=', jobOrder)
 }
-
 async function programQuery({ isActual, planKey, batchKey, machineId }: {
   isActual: boolean
   planKey?: number
@@ -511,7 +510,7 @@ export async function getColumnData(planKey?: number) {
 }
 export async function getDistinctErpParameters() {
   return await knex({ b: 'BFERPPARAMETERDEFINITIONS' })
-    .select({ paramName: 'b.PARAMNAME', paramId: 'b.PARAMID' })
+    .select({ paramName: 'b.PARAMNAME' })
     .distinct()
 }
 export async function getEventTooltipParams(planKey: number, machineId: number) {
