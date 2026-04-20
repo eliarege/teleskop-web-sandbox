@@ -747,10 +747,19 @@ export async function bulkAddErpParameter(paramString: string, machines: number[
       .update({ visible: false })
 
     if (machines.length > 0) {
-      await trx('PTMACHINEERP')
-        .where('paramName', paramString)
-        .whereIn('machineId', machines)
-        .update({ visible: true })
+      // BFERPPARAMETERDEFINITIONS tablosundan seçilen makineler için paramId'leri bul
+      const paramIds = await trx('BFERPPARAMETERDEFINITIONS')
+        .select('PARAMID', 'MACHINEID')
+        .where('PARAMNAME', paramString)
+        .whereIn('MACHINEID', machines)
+
+      // paramId'leri ve machineId'leri kullanarak update yap
+      for (const param of paramIds) {
+        await trx('PTMACHINEERP')
+          .where('paramId', param.PARAMID)
+          .where('machineId', param.MACHINEID)
+          .update({ visible: true })
+      }
     }
   })
 }
