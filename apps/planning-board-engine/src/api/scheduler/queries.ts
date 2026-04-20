@@ -515,16 +515,23 @@ export async function getDistinctErpParameters() {
 }
 export async function getEventTooltipParams(planKey: number, machineId: number) {
   return await knex({ p: 'PTMACHINEERP' })
-    .leftJoin('BFERPPARAMETERDEFINITIONS as b', 'b.PARAMID', 'p.paramId')
-    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'b.PARAMID')
+    .leftJoin(
+      knex('DYBFBATCHPLANPARAMETERS')
+        .select('BATCHPARAMETERID', 'VALUE')
+        .where('PLANKEY', planKey)
+        .as('d'),
+      'd.BATCHPARAMETERID',
+      'p.paramId',
+    )
     .select({
       paramName: 'p.paramName',
-      value: 'd.VALUE',
     })
+    .select(knex.raw(`COALESCE(CONVERT(NVARCHAR(MAX), d.VALUE), 'no-data') AS value`))
     .where('p.machineId', machineId)
-    .andWhere('d.PLANKEY', planKey)
     .andWhere('p.visible', true)
-    .groupBy(['p.paramName', 'd.VALUE'])
+    .groupBy('p.paramId', 'p.paramName')
+    .groupByRaw(`COALESCE(CONVERT(NVARCHAR(MAX), d.VALUE), 'no-data')`)
+    .orderBy('p.paramId')
 }
 export async function taskValid(planKey: number, fabricWeight: number) {
   const [taskPrograms, taskCapacityAgainstMachines] = await Promise.all([

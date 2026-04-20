@@ -41,7 +41,8 @@
     "duration": "Duration",
     "deviation": "Deviation",
     "note": "Notes",
-    "auto-message": "There is no stop reason input!"
+    "auto-message": "There is no stop reason input!",
+    "no-data": "No data"
   },
   "queue-based": {
     "alarm-count": "Total Alarm Count",

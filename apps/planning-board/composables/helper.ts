@@ -73,7 +73,14 @@ export async function eventTooltip(eventRecord: any, scheduler: SchedulerPro) {
     const parameters: any[] = await $keycloak.fetch('/api/tootlipParameters', {
       query: { machineId: eventRecord.originalData.machineId, planKey: eventRecord.originalData.planKey },
     })
-    const parameterValues = parameters.map(param => `${param.paramName}: ${param.value}`).join('<br>')
+    const parameterValues = parameters
+      .map((param) => {
+        const value = param.value === 'no-data' || param.value == null
+          ? $i18n.t('tooltip.no-data')
+          : param.value
+        return `${param.paramName}: ${value}`
+      })
+      .join('<br>')
     const notes = await $keycloak.fetch('/api/note/getNote', {
       query: { jobOrder: eventRecord.originalData.jobOrder },
     })

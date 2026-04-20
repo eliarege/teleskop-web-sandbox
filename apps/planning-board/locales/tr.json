@@ -41,7 +41,8 @@
     "duration": "Süre",
     "deviation": "Gecikme",
     "note": "Notlar",
-    "auto-message": "Duruş sebebi girilmedi!"
+    "auto-message": "Duruş sebebi girilmedi!",
+    "no-data": "Veri yok"
   },
   "queue-based": {
     "alarm-count": "Toplam Alarm",
