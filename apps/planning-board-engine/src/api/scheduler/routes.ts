@@ -481,7 +481,9 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
     async (request, reply) => {
       try {
         const { paramString, machines } = request.body
+        console.log({ paramString, machines })
         await bulkAddErpParameter(paramString, machines)
+        console.log(`Added ${paramString} to machines: ${machines.join(', ')}`)
         return reply.code(200).send('Succesful')
       } catch (err) {
         fastify.log.error(`An error occurred while adding erp parameter: ${err}`)

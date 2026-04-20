@@ -425,27 +425,26 @@ function initialGridColumns() {
   for (let i = 0; i < columnNames.length; i++) {
     const name = columnNames[i]
     // @ts-expect-error missing type
-    grid.columns.add({
-      field: `erpParameters.${name}`,
-      text: name,
-      width: 100,
-      align: 'center',
-    })
+    grid.columns.add(createUnplannedGridColumn(name))
   }
   // @ts-expect-error missing type
   grid.flex = `0 1 ${grid.columns.topColumns.length + 1}00px`
 }
 
+function createUnplannedGridColumn(name: string) {
+  return {
+    field: `erpParameters.${name}`,
+    text: name,
+    width: 100,
+    align: 'center',
+    renderer: ({ value }: any) => value === 'no-data' || value == null ? t('tooltip.no-data') : value,
+  }
+}
+
 async function addGridColumn(data: { id: number, parameterId: number, parameterName: string, visible: boolean }) {
   await unScheduledRefresh().then(() => {
     // @ts-expect-error missing type
-    grid.columns.add({
-      // find field
-      field: `erpParameters.${data.parameterName}`,
-      text: data.parameterName,
-      width: 100,
-      align: 'center',
-    })
+    grid.columns.add(createUnplannedGridColumn(data.parameterName))
     // @ts-expect-error missing type
     grid.flex = `0 1 ${grid.columns.topColumns.length + 1}00px`
   })
