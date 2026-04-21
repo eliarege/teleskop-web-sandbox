@@ -1,4 +1,4 @@
-import { knex } from '~/server/connectionPool'
+import { dmExchangeKnex, knex } from '~/server/connectionPool'
 import { upsertMachineToDmExchange } from '~/server/lib/dmexchange'
 import { machineSchema } from '~/shared/schemas/machine'
 
@@ -35,14 +35,16 @@ export default defineAuthEventHandler(async (event) => {
       PORT: 8080,
     })
 
-    await upsertMachineToDmExchange({
-      machineId: machine.machineId,
-      machineCode: machine.machineCode,
-      groupId: Number(machine.groupId),
-      machineCapacity: machine.machineCapacity,
-      theoricalCharge: machine.theoricalCharge,
-      inUse: machine.inUse,
-    })
+    if (dmExchangeKnex) {
+      await upsertMachineToDmExchange(dmExchangeKnex, {
+        machineId: machine.machineId,
+        machineCode: machine.machineCode,
+        groupId: Number(machine.groupId),
+        machineCapacity: machine.machineCapacity,
+        theoricalCharge: machine.theoricalCharge,
+        inUse: machine.inUse,
+      })
+    }
 
     return insertResult
   })

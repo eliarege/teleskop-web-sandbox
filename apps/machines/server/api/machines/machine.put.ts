@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { knex } from '~/server/connectionPool'
+import { dmExchangeKnex, knex } from '~/server/connectionPool'
 import { isMachineLocked } from '~/server/lib/machine-lock'
 import { upsertMachineToDmExchange } from '~/server/lib/dmexchange'
 import { machineSchema } from '~/shared/schemas/machine'
@@ -52,14 +52,16 @@ export default defineAuthEventHandler(async (event) => {
         THEORETICALSTEAM: machine.theoreticalSteam,
       })
 
-      await upsertMachineToDmExchange({
-        machineId: machine.machineId,
-        machineCode: machine.machineCode,
-        groupId: Number(machine.groupId),
-        machineCapacity: machine.machineCapacity,
-        theoricalCharge: machine.theoricalCharge,
-        inUse: machine.inUse,
-      })
+      if (dmExchangeKnex) {
+        await upsertMachineToDmExchange(dmExchangeKnex, {
+          machineId: machine.machineId,
+          machineCode: machine.machineCode,
+          groupId: Number(machine.groupId),
+          machineCapacity: machine.machineCapacity,
+          theoricalCharge: machine.theoricalCharge,
+          inUse: machine.inUse,
+        })
+      }
 
       return updateResult
     })

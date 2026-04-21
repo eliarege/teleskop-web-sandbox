@@ -1,4 +1,5 @@
-import { knex } from '~/server/connectionPool'
+import { dmExchangeKnex, knex } from '~/server/connectionPool'
+import { upsertMachineGroupToDmExchange } from '~/server/lib/dmexchange'
 
 export default defineAuthEventHandler(async (event) => {
   const { changedGroups } = await readBody(event)
@@ -11,5 +12,8 @@ export default defineAuthEventHandler(async (event) => {
       .update({
         GROUPTYPE: groupType,
       })
+
+    if (dmExchangeKnex)
+      await upsertMachineGroupToDmExchange(dmExchangeKnex, { groupId, groupName })
   }
 })
