@@ -14,6 +14,8 @@ import { createTonelloBatch } from '~/lib/batch'
 import { tryParseNumber } from '~/lib/utils'
 import { getMachineInfo, isTonello } from '~/lib/machine'
 
+const NO_DATA_VALUE = 'no-data'
+
 export async function refreshCustomTables() {
   // refresh PTCOLUMNS table
   const existingPtColumns = await knex('PTCOLUMNS')
@@ -124,44 +126,52 @@ export async function planningBoardStops(startDate: string, endDate: string): Pr
   }))
 }
 export async function getUnplannedEvents() {
-  const events = await knex.raw(/* sql */`
-    SELECT
-      'unplanned' as eventType,
-      d.PLANKEY AS planKey,
-      d.RECORDTIME AS recordTime,
-      d.JOBORDER AS jobOrder,
-      ERPVALUE AS fabricWeight,
-      d.PLANNEDMACHINE AS machineId,
-      d.PRGCOUNT AS programCount,
-      d.PROGRAMNOLIST AS programList,
-      d.PLANNEDSTARTTIME AS startTime,
-      d.NOTE AS note,
-      d.TheoricalDuration AS theoreticalDuration,
-      d.Color AS fabricColor,
-      d.CUSTOMERNAME AS customer,
-      null AS queueNumber,
-      null AS pinned,
-      (
-          SELECT v.parameterName as 'paramName', r.VALUE as 'value'
-          FROM DYBFBATCHPLANPARAMETERS r
-          LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
-          WHERE r.PLANKEY = d.PLANKEY
-          AND v.visible = 1
-          FOR JSON PATH
-      ) as erpParameters
-    FROM DYBFBATCHPLAN d
-    LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.ERPFIELDNAME = 'Weight'
-    WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
-    AND d.PLANKEY not in (select PLANKEY from PTBATCHPLANQUEUE)
-    AND d.LASTFORJOBORDER = 1
-    AND d.ISDELETESENDTOMANUNITES IS NULL OR d.ISDELETESENDTOMANUNITES = 0
-    AND d.CORRECTIONNUMBER = (
-      SELECT MAX(d2.CORRECTIONNUMBER)
-      FROM DYBFBATCHPLAN d2
-      WHERE d2.JOBORDER = d.JOBORDER
-    )
-    ORDER BY d.RECORDTIME DESC
-  `) as {
+  const [visibleColumns, events] = await Promise.all([
+    knex('PTCOLUMNS')
+      .select<{ parameterName: string }[]>('parameterName')
+      .where('visible', true)
+      .orderBy('id'),
+    knex.raw(/* sql */`
+      SELECT
+        'unplanned' as eventType,
+        d.PLANKEY AS planKey,
+        d.RECORDTIME AS recordTime,
+        d.JOBORDER AS jobOrder,
+        ERPVALUE AS fabricWeight,
+        d.PLANNEDMACHINE AS machineId,
+        d.PRGCOUNT AS programCount,
+        d.PROGRAMNOLIST AS programList,
+        d.PLANNEDSTARTTIME AS startTime,
+        d.NOTE AS note,
+        d.TheoricalDuration AS theoreticalDuration,
+        d.Color AS fabricColor,
+        d.CUSTOMERNAME AS customer,
+        null AS queueNumber,
+        null AS pinned,
+        (
+            SELECT v.parameterName as 'paramName', r.VALUE as 'value'
+            FROM DYBFBATCHPLANPARAMETERS r
+            LEFT JOIN PTCOLUMNS v ON v.parameterId = r.BATCHPARAMETERID
+            WHERE r.PLANKEY = d.PLANKEY
+            AND v.visible = 1
+            FOR JSON PATH
+        ) as erpParameters
+      FROM DYBFBATCHPLAN d
+      LEFT JOIN DYBFBATCHPLANERPPARAMETERS c ON c.PLANKEY = d.PLANKEY AND c.ERPFIELDNAME = 'Weight'
+      WHERE d.ISDELETED IS NULL OR d.ISDELETED = 0
+      AND d.PLANKEY not in (select PLANKEY from PTBATCHPLANQUEUE)
+      AND d.LASTFORJOBORDER = 1
+      AND d.ISDELETESENDTOMANUNITES IS NULL OR d.ISDELETESENDTOMANUNITES = 0
+      AND d.CORRECTIONNUMBER = (
+        SELECT MAX(d2.CORRECTIONNUMBER)
+        FROM DYBFBATCHPLAN d2
+        WHERE d2.JOBORDER = d.JOBORDER
+      )
+      ORDER BY d.RECORDTIME DESC
+    `),
+  ]) as [{
+    parameterName: string
+  }[], {
     eventType: string
     planKey: number
     recordTime: Date
@@ -178,17 +188,24 @@ export async function getUnplannedEvents() {
     queueNumber: number | null
     pinned: number | null
     erpParameters: string
-  }[]
+  }[]]
+
+  const defaultErpParameters = Object.fromEntries(
+    visibleColumns.map(({ parameterName }) => [parameterName, NO_DATA_VALUE]),
+  )
 
   return events.map(ev => ({
     ...ev,
     theoreticalDuration: ev.theoreticalDuration === 0 ? 28800 : ev.theoreticalDuration,
-    erpParameters: ev.erpParameters
-      ? Object.fromEntries(
-        (JSON.parse(ev.erpParameters) as { paramName: string, value: string }[])
-          .map(a => [a.paramName, a.value]),
-      )
-      : {},
+    erpParameters: {
+      ...defaultErpParameters,
+      ...(ev.erpParameters
+        ? Object.fromEntries(
+          (JSON.parse(ev.erpParameters) as { paramName: string, value: string }[])
+            .map(a => [a.paramName, a.value]),
+        )
+        : {}),
+    },
   }))
 }
 export async function getTheoreticalDuration(planKey: number) {
@@ -293,7 +310,6 @@ export async function getBatchNotes(jobOrder: string) {
       showOnScreen: 'p.SHOWONSCREEN',
     }).where('JOBORDER', '=', jobOrder)
 }
-
 async function programQuery({ isActual, planKey, batchKey, machineId }: {
   isActual: boolean
   planKey?: number
@@ -511,21 +527,28 @@ export async function getColumnData(planKey?: number) {
 }
 export async function getDistinctErpParameters() {
   return await knex({ b: 'BFERPPARAMETERDEFINITIONS' })
-    .select({ paramName: 'b.PARAMNAME', paramId: 'b.PARAMID' })
+    .select({ paramName: 'b.PARAMNAME' })
     .distinct()
 }
 export async function getEventTooltipParams(planKey: number, machineId: number) {
   return await knex({ p: 'PTMACHINEERP' })
-    .leftJoin('BFERPPARAMETERDEFINITIONS as b', 'b.PARAMID', 'p.paramId')
-    .leftJoin('DYBFBATCHPLANPARAMETERS as d', 'd.BATCHPARAMETERID', 'b.PARAMID')
+    .leftJoin(
+      knex('DYBFBATCHPLANPARAMETERS')
+        .select('BATCHPARAMETERID', 'VALUE')
+        .where('PLANKEY', planKey)
+        .as('d'),
+      'd.BATCHPARAMETERID',
+      'p.paramId',
+    )
     .select({
       paramName: 'p.paramName',
-      value: 'd.VALUE',
     })
+    .select(knex.raw(`COALESCE(CONVERT(NVARCHAR(MAX), d.VALUE), '${NO_DATA_VALUE}') AS value`))
     .where('p.machineId', machineId)
-    .andWhere('d.PLANKEY', planKey)
     .andWhere('p.visible', true)
-    .groupBy(['p.paramName', 'd.VALUE'])
+    .groupBy('p.paramId', 'p.paramName')
+    .groupByRaw(`COALESCE(CONVERT(NVARCHAR(MAX), d.VALUE), '${NO_DATA_VALUE}')`)
+    .orderBy('p.paramId')
 }
 export async function taskValid(planKey: number, fabricWeight: number) {
   const [taskPrograms, taskCapacityAgainstMachines] = await Promise.all([
@@ -718,30 +741,27 @@ export async function addErpParameters(id: number, machineId: number) {
     .andWhere('id', id)
 }
 export async function bulkAddErpParameter(paramString: string, machines: number[]) {
-  const trx = await knex.transaction()
+  await knex.transaction(async (trx) => {
+    await trx('PTMACHINEERP')
+      .where('paramName', paramString)
+      .update({ visible: false })
 
-  try {
     if (machines.length > 0) {
-      await trx('PTMACHINEERP')
-        .update({ visible: false })
-        .where('paramName', paramString)
-      for (const machine of machines) {
-        await trx('PTMACHINEERP')
-          .update({ visible: true })
-          .where('paramName', paramString)
-          .andWhere('machineId', machine)
-      }
-    } else {
-      await trx('PTMACHINEERP')
-        .update({ visible: false })
-        .where('paramName', paramString)
-    }
+      // BFERPPARAMETERDEFINITIONS tablosundan seçilen makineler için paramId'leri bul
+      const paramIds = await trx('BFERPPARAMETERDEFINITIONS')
+        .select('PARAMID', 'MACHINEID')
+        .where('PARAMNAME', paramString)
+        .whereIn('MACHINEID', machines)
 
-    await trx.commit()
-  } catch (error) {
-    await trx.rollback()
-    throw error
-  }
+      // paramId'leri ve machineId'leri kullanarak update yap
+      for (const param of paramIds) {
+        await trx('PTMACHINEERP')
+          .where('paramId', param.PARAMID)
+          .where('machineId', param.MACHINEID)
+          .update({ visible: true })
+      }
+    }
+  })
 }
 
 export async function removeErpParameter(id: number, machineId: number) {

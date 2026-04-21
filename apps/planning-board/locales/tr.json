@@ -3,6 +3,9 @@
   "completedEventTextInfo": "Tamamlanmış İş Emri Metni",
   "ongoingTextInfo": "Devam Eden İş Emri Metni",
   "scrollToNow": "Şimdi",
+  "unplanned-grid": {
+    "no-data": "-"
+  },
   "send-message": {
     "_": "{machineName} Makinesine mesaj gönder.",
     "send": "Gönder",
@@ -41,7 +44,8 @@
     "duration": "Süre",
     "deviation": "Gecikme",
     "note": "Notlar",
-    "auto-message": "Duruş sebebi girilmedi!"
+    "auto-message": "Duruş sebebi girilmedi!",
+    "no-data": "Veri yok"
   },
   "queue-based": {
     "alarm-count": "Toplam Alarm",

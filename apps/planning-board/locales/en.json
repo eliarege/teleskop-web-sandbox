@@ -3,6 +3,9 @@
   "completedEventTextInfo": "Completed Event Text",
   "ongoingTextInfo": "Ongoing Text Info",
   "scrollToNow": "Now",
+  "unplanned-grid": {
+    "no-data": "-"
+  },
   "send-message": {
     "_": "Send a message to Machine {machineName}.",
     "send": "Send",
@@ -41,7 +44,8 @@
     "duration": "Duration",
     "deviation": "Deviation",
     "note": "Notes",
-    "auto-message": "There is no stop reason input!"
+    "auto-message": "There is no stop reason input!",
+    "no-data": "No data"
   },
   "queue-based": {
     "alarm-count": "Total Alarm Count",
