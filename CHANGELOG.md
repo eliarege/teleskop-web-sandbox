@@ -1,8 +1,90 @@
 # Changelog
 
+## 0.74.0 - 2026-04-22
+
+[Compare Changes](9ed2e00f1a797bd2c90b674a5e4cdcb4341def9d...b8c45a240733b4f5a676b877124fc28f44a31645)
+
+### 🚀 Features
+
+- **websockify**: Support VeNCrypt and plain auth ([c184e54](c184e542473a19f982810255f3e7e5c654e65e59))
+- **migrations**: Apply dmexchange migrations if enabled ([51d83ad](51d83ad848b0bb6254868cdfa5a5434c9249258d))
+-  **MM**: Pass embed_token while fetching machine data in iframe page ([8d42f41](8d42f41e1dd8d44b7fd1dc6365244be75dd942dc))
+-  **PB**: Add 'scroll-to-now' button and functionality ([6f29c79](6f29c79af71ee4d1879fbffed81df497c959fa3d))
+-  **MA**: DmExchange integration ([b930b35](b930b353b91adec19949609dc4f5bb9de9e22a56))
+-  **PE**: Ensure process types exist in the database ([bc2e2c4](bc2e2c491cd3a4c435559ca5fc8ea106b250581f))
+-  **PE**: Add migration for process types and update MachineController to use defined names ([fa15f0b](fa15f0b8aba4f5b035d1c69526577c838b67c653))
+-  **PE**: Enhance treatment handling with insert/update logic and cleanup for Treatment_MGroups and Treatment_Parameter_Ref ([c7cd492](c7cd492b2ca6f5303420ce9975a1e91702b25b7b))
+-  **PE**: Optimize treatment deletion logic and add config check for dmexchange ([86ee907](86ee907f460f64b19a715e61e6df889dc154b8a0))
+-  **PE**: Conditionally handle parameters based on optimized treatment settings ([a3922cf](a3922cf72fdcc3f0e5f6cef8eb82561cf88e65e1))
+-  **PE**: Implement treatment synchronization for missing programs and cleanup logic ([e2d3162](e2d31624b3e82d43f2f831c48ee1be64ed4f425f))
+-  **PE**: Implement process type management and enhance program downloading functionality ([e4544ee](e4544eec8f0af2df4ab89dc1f9d97653762f546b))
+-  **PE**: Add method to download all programs with error handling ([92106e3](92106e308b4821cfa0ccc7b584299901406e5427))
+-  **PE**: Enhance program download functionality with error reporting and partial success notifications ([c478c37](c478c374dc475cb9b6197d26643d74bd501aee9c))
+-  **PE**: Update process type names to use shorthand identifiers ([fbb82e1](fbb82e1678a458192521267b77228e2ff8e92401))
+- **migrations**: Added legacy migrations ([06baac8](06baac822b68dd4eb02cc908d7bd44c91ba7de75))
+-  **MA**: Add Machine_Groups dmexchange integration and refactor dmexchange functions ([d7a1793](d7a1793d3118bac70ea24476ca3bb7eb56bff63b))
+-  **AR**: Implement archive step details viewer with batch step resolution ([05b6a3b](05b6a3bb306713ffd70fa01d0658f337d076ad6c))
+- **deployment**: Annotate images with keycloak client metadata ([403ee9e](403ee9eed10643ef27a916f51711bca221c7a10a))
+
+### 🐛 Bug Fixes
+
+-  **MM**: Add refresh functionality for machine data fetching ([2ed2f6d](2ed2f6db84a46eb017f87b77f3e49eafae15b82f))
+-  **MM**: Remove stray character in scheduleRefresh function ([7cffb02](7cffb02cf14d06494450df312d4ee0431acc85f2))
+-  **PT**: Convert values to string before inserting plan parameters ([b6072ea](b6072eaea46ae0634f395804c25d0c4b57bcdddf))
+-  **PE**: Enhance validation rules and replace QSelect with InputSelect for parameter inputs ([250e9be](250e9bee3e9c3b8f735e9dd296df200f0839a78d))
+-  **PE**: Fix graph drawing error ([30326fe](30326fe971191086e13669bb7cfe5d6f7c5784bc))
+- **migration**: Refactor main function to await migration tasks sequentially ([1444c0f](1444c0fab41416bb6bf3e5ec16764e364445b65d))
+-  **MA**: Update database query to use correct table and column names ([19ba3f0](19ba3f0e57731757a714cb5219226211f04aa669))
+- **recipes**: Dyelot_Recipe callOff counter to increment globally across all programs instead of resetting for each program ([a6ee3dc](a6ee3dc0688837a4fbb1a3fc5108da1e5d665991))
+- **recipes**: Dmexchange connection not being updated after user has updated database conn ection parameters ([6982ab7](6982ab7bc3c987a32f2d1b3b7f84b365145c0ab5))
+- **recipes**: Remove unused teleskop database connection parameters from nuxt.config ([b479b4c](b479b4c8ef470b664b9c23fa6483677dfecb35bf))
+- **recipes**: Update Program_order calculation to use programOrder variable ([6a44074](6a4407423e579e13092241fdcf0f866730df11d2))
+- **recipes**: Show repeated programs in recipe PDF/export in correct order ([d5d08d6](d5d08d6e1281450716542944f4bff738928588e8))
+- **release-hotfix**: Enforce execution on 'main' branch only ([b3a961b](b3a961bea9dea44ec95c7052100ae7510c320ed9))
+- **recipes**: Update CAPACITY_THRESHOLD to 1.1 from 0.1 ([8325005](832500533e798aab92db12fb45c32f0eca4dc874))
+- **recipes**: Correct placeholder syntax in CapacityExceeded message ([a568cd6](a568cd67fae8d869651d16bb3b00e58b5df68944))
+-  **PE**: Update ensureProcessTypesExist method to enforce number types for parameters ([5f65768](5f65768eddcc23d076ba92e0207a65f15e19458b))
+-  **PE**: Refactor ensureProcessTypesExist method to handle bulk process type checks and updates ([985b753](985b753640e3c59988198d2eefe7abc1c74404ea))
+-  **PE**: Update delete program dialog messages to reflect single and multiple program deletions ([f0d8d3d](f0d8d3d5fbe589b6f78d3ad057398d21d25b8ca7))
+-  **AR**: Refactor job order navigation to streamline double-click and link actions ([71d991f](71d991f3969cdc420dbe48fa9ecb64278c53abcf))
+-  **PE**: Update process type labels and add rawLabel property for better handling ([52a0aa7](52a0aa7d95fbce21f5247d94719ae26df73c5c6b))
+-  **PE**: Remove process type update logic from migration script ([a8efb64](a8efb6465b24588716de69795ee2ae202ecc15cb))
+- **migration**: Update Teleskop database name to use config variable ([c09761f](c09761f2c0b8af01cb1be3dd55931f6bc93c589f))
+- **migrations**: Update dmExchangeEnabled environment, we dont want to enable dmExchange migrations yet ([ce185d0](ce185d09f5c8a490b857c6b4940f8394d6c17f8f))
+-  **PE**: Simplify treatment optimization logic and reset TreatmentParaCount to zero ([604cfc0](604cfc0250715decc7b475e9ceef1f2a06c2f1c9))
+-  **PE**: Missing from expression in syncMissingTreatments ([785e1d0](785e1d0bc2a7ed40bd8fcf5e3377895d70fda674))
+-  **PE**: Ordering of delete statements while deleting treatments ([2cacd85](2cacd85d0a16d0f7b4d8a38b78ec4714fe7c8f51))
+-  **PE**: Use insertBatch in upsertTreatments to prevent query failures on large inserts ([a343acc](a343accbf82e32bdb5c36ea5cd5b5ca908faa01f))
+-  **PE**: Timeout parameter being ignored in getMachineStatus ([8739fdb](8739fdbcccaac9ff1318d7929c61bcba9adf7a16))
+-  **PE**: Add connection timeout to TbbFtpClient initialization ([7380301](7380301d72805c7463971e5686ebb0da9b956f91))
+-  **PE**: Ensure loading state is reset after updating program headers ([3840b8f](3840b8fef582d6610313d08d912141dff08b808d))
+- **migrations**: Move process-type migration to teleskop directory ([00442b4](00442b435562239e218d3cf0eeb186ffc7d0e6aa))
+- **migrations**: Missing down function export in process-types ([357c43a](357c43a408550e92e3e4a08b576c63595cdd11b8))
+-  **PT**: Adjust select statement in getDistinctErpParameters ([857b4b5](857b4b594c151a918deac668da8ff1dfc596975f))
+-  **PT**: Enhance event tooltip handling and add 'no-data' localization ([4fcccfa](4fcccfa1a4258219f2f86d21c17c99bdac0c0e8d))
+-  **PT**: Refactor getUnplannedEvents to use default 'no-data' values and improve column creation in QueueBased component ([e36b227](e36b227e33898d097c442b880820186435d98c7d))
+-  **PT**: Update bulkAddErpParameter to retrieve paramIds from BFERPPARAMETERDEFINITIONS before updating visibility in PTMACHINEERP ([3487abe](3487abeacb628a6215d8b4d46c2b137ad532ddd2))
+-  **PT**: Update no-data localization key in QueueBased component and locale files ([73ec5c7](73ec5c786522024075c49d6fe2fa0fc02be2f10d))
+
+### 📖 Documentation
+
+- Added erp database integration docs ([b1df3e1](b1df3e1c7f242fad50e422f3c9f7addac069aeb4))
+
+### ♻️ Refactor
+
+-  **PE**: Remove focus logic from input components and enhance validation rules in ProgramStepCommandParameterInput ([f88e82f](f88e82f9a0e70430d4ddac3344468887bc788bb7))
+-  **PE**: Make dmExchange connection and dmTrx lazily nullable ([a9a1de0](a9a1de0cb517bed4949a1fa8b6ed3f648155ffd8))
+-  **PE**: Standardize server-side logging ([df14ca5](df14ca56596fc893eeff346f7126e2508e3ad00d))
+- **migrations**: Replace hardcoded settings with TeleskopSettings enums ([8737845](873784529d5a54efb16aa20e125bdda428785409))
+
+### 🔧 Miscellaneous Tasks
+
+- Update packageManager version to pnpm@10.33.1 ([0224c19](0224c1943c73a18cdda1a3df01d9c1821e2b55ba))
+- Update lockfile ([b8c45a2](b8c45a240733b4f5a676b877124fc28f44a31645))
+
 ## 0.73.1 - 2026-03-13
 
-[Compare Changes](db6af242c841bf1616ce4cd3d4e2fd53001d82ca...fd94301b77378b683bbd34401d0bbf566f9f4240)
+[Compare Changes](db6af242c841bf1616ce4cd3d4e2fd53001d82ca...9ed2e00f1a797bd2c90b674a5e4cdcb4341def9d)
 
 ### 🐛 Bug Fixes
 
