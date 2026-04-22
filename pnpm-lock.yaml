@@ -1462,8 +1462,8 @@ importers:
   packages/tbb-ftp-client:
     dependencies:
       basic-ftp:
-        specifier: 5.0.5
-        version: 5.0.5
+        specifier: 5.3.0
+        version: 5.3.0
     devDependencies:
       '@teleskop/tsconfig':
         specifier: workspace:*
@@ -4179,8 +4179,8 @@ packages:
     resolution: {integrity: sha512-lGe34o6EHj9y3Kts9R4ZYs/Gr+6N7MCaMlIFA3F1R2O5/m7K06AxfSeO5530PEERE6/WyEg3lsuyw4GHlPZHog==}
     engines: {node: ^4.5.0 || >= 5.9}
 
-  basic-ftp@5.0.5:
-    resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
+  basic-ftp@5.3.0:
+    resolution: {integrity: sha512-5K9eNNn7ywHPsYnFwjKgYH8Hf8B5emh7JKcPaVjjrMJFQQwGpwowEnZNEtHs7DfR7hCZsmaK3VA4HUK0YarT+w==}
     engines: {node: '>=10.0.0'}
 
   big-integer@1.6.52:
@@ -12656,7 +12656,7 @@ snapshots:
 
   base64id@2.0.0: {}
 
-  basic-ftp@5.0.5: {}
+  basic-ftp@5.3.0: {}
 
   big-integer@1.6.52: {}
 
@@ -14551,7 +14551,7 @@ snapshots:
 
   get-uri@6.0.5:
     dependencies:
-      basic-ftp: 5.0.5
+      basic-ftp: 5.3.0
       data-uri-to-buffer: 6.0.2
       debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
