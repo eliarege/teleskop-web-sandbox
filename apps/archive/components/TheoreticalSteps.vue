@@ -69,14 +69,3 @@ function handleRowClick(row: any) {
     />
   </div>
 </template>
-
-<style scoped>
-.q-table__card {
-  background-color: transparent;
-}
-
-.custom-table :deep(th),
-.custom-table :deep(td) {
-  font-size: 11px;
-}
-</style>

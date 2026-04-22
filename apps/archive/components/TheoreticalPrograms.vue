@@ -1,31 +1,35 @@
 <script setup lang="ts">
-import type { BatchCommand } from '~/types/archive'
+import type { TheoreticalProgram } from '~/types/archive'
 
 const props = defineProps<{
-  programs: any[]
+  programs: TheoreticalProgram[]
   selectedTime: Date
 }>()
+
+function isSelectedTimeInProgram(prg: TheoreticalProgram): boolean {
+  return props.selectedTime > prg.startTime
+    && props.selectedTime < prg.endTime
+}
 </script>
 
 <template>
-  <div class="flex w-full gap-2 pt-3 px-1">
-    <div
-      v-for="prg of programs"
+  <q-list
+    class="wh-full bg-white overflow-y-auto py-2"
+    dense
+    separator
+  >
+    <q-item
+      v-for="prg in props.programs"
       :key="prg.programNo"
-      class="text-xs item-class w-full px-2 py-0.5"
-      :class="selectedTime > prg.startTime && selectedTime < prg.endTime ? 'text-bold' : ''"
-      dense
+      :class="isSelectedTimeInProgram(prg)
+        ? 'bg-blue-2'
+        : ''"
     >
-      {{ `${prg.programNo} - ${prg.programName}` }}
-    </div>
-  </div>
+      <q-item-section>
+        <span class="text-sm">
+          {{ `${prg.programNo} - ${prg.programName}` }}
+        </span>
+      </q-item-section>
+    </q-item>
+  </q-list>
 </template>
-
-<style scoped>
-.item-class {
-  border-width: 1px;
-  border-color: grey;
-  border-radius: 5px;
-  font-size: small;
-}
-</style>

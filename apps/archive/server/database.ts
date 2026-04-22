@@ -1,7 +1,8 @@
-import Knex from 'knex'
+import type { Knex } from 'knex'
+import knex from 'knex'
 
 const config = useRuntimeConfig()
-const knexConfig: Knex.Knex.Config = {
+const knexConfig: Knex.Config = {
   client: 'mssql',
 }
 
@@ -59,4 +60,4 @@ if (config.teleskopDatabaseUrl) {
   }
 }
 
-export const db = Knex(knexConfig)
+export const db = knex(knexConfig)

@@ -1,79 +1,93 @@
 <script setup lang="ts">
-import { format } from 'date-fns'
 import type { BatchInfo } from '~/types/archive'
 
 const props = defineProps<{
   jobOrderInfo?: BatchInfo
 }>()
+
 const { t } = useI18n()
-
-const keyLabels = computed(() => {
-  const job = props.jobOrderInfo
-
-  return {
-    machineName: t('jobOrderTable.machineName'),
-    machineModel: t('jobOrderTable.model'),
-    operatorName: t('jobOrderTable.operator'),
-    jobOrder: t('jobOrderTable.jobOrder'),
-    startTime: t('jobOrderTable.startTime'),
-    endTime: job?.isCancelled
-      ? t('jobOrderTable.cancelTime')
-      : t('jobOrderTable.endTime'),
-    theoreticalEndTime: t('jobOrderTable.theoreticalEndTime'),
-  }
-})
 
 const theoreticalEndTime = computed(() => {
   const job = props.jobOrderInfo
   if (!job?.startTime || !job?.theoreticalDuration)
     return null
 
-  return new Date(
-    new Date(job.startTime).getTime()
-      + job.theoreticalDuration * 1000,
-  )
+  return new Date(new Date(job.startTime).getTime() + job.theoreticalDuration * 1000)
+})
+
+const timeStatus = computed(() => {
+  const job = props.jobOrderInfo
+  if (!job?.theoreticalDuration)
+    return null
+
+  if (job.endTime && job.deviation !== null && job.deviation !== undefined) {
+    if (job.deviation < 0)
+      return { status: 'early' as const, color: 'positive' as const, deviation: job.deviation }
+    if (job.deviation === 0)
+      return { status: 'onTime' as const, color: 'info' as const, deviation: 0 }
+    return { status: 'late' as const, color: 'negative' as const, deviation: job.deviation }
+  }
+
+  if (!job.endTime && !job.isCancelled && job.startTime) {
+    const elapsed = Math.floor((Date.now() - new Date(job.startTime).getTime()) / 1000)
+    const diff = elapsed - job.theoreticalDuration
+    if (diff > 0)
+      return { status: 'late' as const, color: 'negative' as const, deviation: diff }
+    return { status: 'onTime' as const, color: 'positive' as const, deviation: null }
+  }
+  return null
+})
+
+const infoRows = computed(() => {
+  const job = props.jobOrderInfo
+
+  return [
+    { label: t('jobOrderTable.machineName'), value: job?.machineName },
+    { label: t('jobOrderTable.model'), value: job?.machineModel },
+    { label: t('jobOrderTable.operator'), value: job?.operatorName },
+    { label: t('jobOrderTable.jobOrder'), value: job?.jobOrder },
+    { label: t('jobOrderTable.startTime'), value: formatDuration(job?.startTime) },
+    {
+      label: job?.isCancelled ? t('jobOrderTable.cancelTime') : t('jobOrderTable.endTime'),
+      value: formatDuration(job?.endTime),
+    },
+    {
+      label: t('jobOrderTable.theoreticalEndTime'),
+      value: formatDuration(theoreticalEndTime.value),
+      badge: timeStatus.value?.deviation !== null && timeStatus.value?.deviation !== undefined
+        ? { color: timeStatus.value.color, label: formatDuration(timeStatus.value.deviation) }
+        : null,
+    },
+  ]
 })
 </script>
 
 <template>
-  <div class="border wh-full overflow-y-auto text-xs h-full table-container">
-    <table class="table w-full">
-      <tbody>
-        <tr v-for="(value, key) in keyLabels" :key="`jobOrderInfo${key}`">
-          <td class="px-2 py-0.5 text-left">
-            {{ value }}
-          </td>
-          <td class="px-2 py-0.5 text-left">
-            <span v-if="key === 'theoreticalEndTime' && theoreticalEndTime">
-              {{ format(theoreticalEndTime, 'HH:mm:ss dd/MM/yyyy') }}
-            </span>
-            <span v-else-if="key === 'startTime' || key === 'endTime'">
-              {{ props.jobOrderInfo?.[key] ? format(props.jobOrderInfo[key], 'HH:mm:ss dd/MM/yyyy') : '-' }}
-            </span>
-            <span v-else>
-              {{ props.jobOrderInfo?.[key] }}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <q-list
+    class="wh-full overflow-y-auto bg-white py-2"
+    dense
+    separator
+  >
+    <q-item
+      v-for="(item, index) in infoRows"
+      :key="index"
+    >
+      <q-item-section>
+        <span>
+          {{ item.label }}
+        </span>
+      </q-item-section>
+
+      <q-item-section side>
+        <div class="flex items-center gap-2">
+          <q-badge
+            v-if="item.badge"
+            :color="item.badge.color"
+            :label="item.badge.label"
+          />
+          <span>{{ item.value ?? '-' }}</span>
+        </div>
+      </q-item-section>
+    </q-item>
+  </q-list>
 </template>
-
-<style scoped lang="postcss">
-.table {
-  width: 100%;
-}
-
-.table td {
-  text-align: left;
-  font-size: inherit;
-  border-bottom: 1px solid theme('colors.gray.400');
-}
-
-.table-container {
-  max-height: 100%;
-  overflow-y: auto;
-  font-size: inherit;
-}
-</style>

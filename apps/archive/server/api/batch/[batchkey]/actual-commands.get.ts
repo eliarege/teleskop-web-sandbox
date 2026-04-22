@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
     .select({
       programNo: 'S.PRGNO',
       programName: 'PH.NAME',
+      processType: 'PT.PROCESSNAME',
       programIndex: 'S.PRGINDEX',
       stepNo: 'S.STEPNO',
       parallelStepNo: 'S.PARALLELSTEPNO',
@@ -24,6 +25,7 @@ export default defineEventHandler(async (event) => {
       this.on('S.PRGNO', '=', 'PH.PROGNO')
         .andOn('B.MACHINEID', '=', 'PH.MACHINEID')
     })
+    .join('BFPROCESSTYPES as PT', 'PT.PROCESSCODE', 'PH.PROCESSCODE')
     .where('S.BATCHKEY', batchKey)
     .andWhere('S.STARTTIME', '>=', db.raw('PH.RELEASEDATE'))
     .andWhere((b) => {

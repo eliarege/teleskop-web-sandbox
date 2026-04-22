@@ -1,31 +1,36 @@
 import { db } from '~/server/database'
+import type { ERPParameter } from '~/types/archive'
 
 export default defineEventHandler(async (event) => {
   const batchKey = getBatchKeyParam(event)
-  const parameterIds = (await db('BFERPPARAMETERDEFINITIONS as E')
-    .select('E.PARAMID')
-    .join('BADATA as D', function () {
-      this.on('D.MACHINEID', '=', 'E.MACHINEID')
+
+  if (!batchKey) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request',
     })
-    .where('D.BATCHKEY', '=', batchKey)
-    .andWhere('E.BATCHREPORTVISIBLE', '=', true)
-    .orderBy('E.PARAMID', 'asc')).map(e => e.PARAMID)
-  return await db('BABATCHPARAMETERS as P')
-    .whereIn('P.BATCHPARAMETERID', parameterIds)
+  }
+
+  const result: ERPParameter[] = await db('BABATCHPARAMETERS as P')
     .select({
       parameterId: 'P.BATCHPARAMETERID',
       parameterName: 'P.PARAMSTRING',
       value: 'P.VALUE',
       unit: 'U.UNITTEXT',
     })
-    .whereNull('P.PROGNO')
-    .andWhere('P.BATCHKEY', '=', batchKey)
-    .orderBy('P.BATCHPARAMETERID', 'asc')
+    .join('BADATA as D', 'P.BATCHKEY', 'D.BATCHKEY')
     .join('BFMACHBATCHPARAMETERS as U', function () {
       this.on('U.BATCHPARAMETERID', '=', 'P.BATCHPARAMETERID')
+        .andOn('U.MACHINEID', '=', 'D.MACHINEID')
     })
-    .join('BADATA as D', function () {
-      this.on('P.BATCHKEY', '=', 'D.BATCHKEY')
-        .andOn('D.MACHINEID', '=', 'U.MACHINEID')
+    .join('BFERPPARAMETERDEFINITIONS as E', function () {
+      this.on('E.PARAMID', '=', 'P.BATCHPARAMETERID')
+        .andOn('E.MACHINEID', '=', 'D.MACHINEID')
     })
+    .where('P.BATCHKEY', batchKey)
+    .whereNull('P.PROGNO')
+    .where('E.BATCHREPORTVISIBLE', true)
+    .orderBy('P.BATCHPARAMETERID', 'asc')
+
+  return result
 })

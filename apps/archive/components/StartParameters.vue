@@ -39,36 +39,26 @@ const formattedRows = computed(() => {
 </script>
 
 <template>
-  <div class="border wh-full overflow-y-auto text-xs h-full table-container">
-    <table class="table w-full">
-      <tbody>
-        <tr v-for="(row, index) in formattedRows" :key="index">
-          <td class="px-2 py-0.5 text-left">
-            {{ row.name }}
-          </td>
-          <td class="px-2 py-0.5 text-left">
-            {{ row.value }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <q-list
+    class="wh-full overflow-y-auto bg-white py-2"
+    dense
+    separator
+  >
+    <q-item
+      v-for="(row, index) in formattedRows"
+      :key="index"
+    >
+      <q-item-section>
+        <span class="text-sm">
+          {{ row.name }}
+        </span>
+      </q-item-section>
+
+      <q-item-section side>
+        <span class="text-sm">
+          {{ row.value }}
+        </span>
+      </q-item-section>
+    </q-item>
+  </q-list>
 </template>
-
-<style scoped>
-.table {
-  width: 100%;
-}
-
-.table td {
-  text-align: left;
-  font-size: inherit;
-  border-bottom: 1px solid grey;
-}
-
-.table-container {
-  max-height: 100%;
-  overflow-y: auto;
-  font-size: inherit;
-}
-</style>

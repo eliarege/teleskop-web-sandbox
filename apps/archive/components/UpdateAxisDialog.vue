@@ -7,11 +7,15 @@ const props = defineProps({
   analogInputs: Array<AnalogInputOutputType>,
   analogOutputs: Array<AnalogInputOutputType>,
 })
-const emit = defineEmits([
+
+defineEmits([
   ...useDialogPluginComponent.emits,
 ])
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+
+const $q = useQuasar()
 const { t } = useI18n()
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+
 const settingsStore = userSettingsStore()
 const ioValuesHasSameUnitWithSelected: Ref<Array<{ key: string, selected: boolean, isTaken: boolean, name: string }>> = ref([])
 const buttons = [
@@ -31,8 +35,8 @@ const buttons = [
     onClick: () => ioValuesHasSameUnitWithSelected.value.forEach(io => !io.isTaken ? io.selected = !io.selected : ''),
   },
 ]
-const selectedAxis: Ref<Axis> = ref()
-const $q = useQuasar()
+
+const selectedAxis = ref<Axis>()
 const axisesArray = ref(Array.from(settingsStore.axises).map(el => el[1]))
 
 function getIOIsTaken(key: string, axis: Axis) {
@@ -74,11 +78,12 @@ function getIOValuesOfSelectedAxis(axis: Axis) {
   return ios
 }
 
-function updateSelectedAxis(newVal) {
+function updateSelectedAxis(newVal: Axis) {
   saveCurrentSettings()
   selectedAxis.value = newVal
   ioValuesHasSameUnitWithSelected.value = getIOValuesOfSelectedAxis(selectedAxis.value)
 }
+
 function saveCurrentSettings() {
   if (ioValuesHasSameUnitWithSelected.value.length) {
     const axis = settingsStore.axises.get(selectedAxis.value.name || 'undef')
@@ -106,6 +111,7 @@ function saveCurrentSettings() {
     }
   }
 }
+
 function triggerCreateAxisDialog() {
   saveCurrentSettings()
   $q.dialog({
@@ -131,45 +137,44 @@ function triggerCreateAxisDialog() {
 </script>
 
 <template>
-  <q-dialog
-    ref="dialogRef"
-    persistent
-  >
-    <q-card>
-      <q-card-section class="flex">
-        <div>
-          <div class="text-2xl">
-            {{ t('axisSettings._') }}
-          </div>
-          <div class="text-lg whitespace-normal mt-5 w-140">
-            {{ t('axisSettings.description') }}
-          </div>
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
+    <q-card class="w-120">
+      <q-card-section class="row items-center">
+        <div class="text-h6">
+          {{ t('axisSettings._') }}
         </div>
         <q-space />
-        <!-- <q-btn
-          class="w-10 h-10"
+        <q-btn
+          v-close-popup
+          icon="close"
+          class="color-gray-6"
+          flat
+          round
           dense
-          outline
-          icon="add"
-          @click="triggerCreateAxisDialog"
-        >
-          <q-tooltip class="text-sm">
-            {{ t('axisSettings.add') }}
-          </q-tooltip>
-        </q-btn> -->
+        />
       </q-card-section>
-      <q-card-section>
+
+      <q-card-section class="pt-0">
+        <div class="text-h8 w-100 color-gray-6">
+          {{ t('axisSettings.description') }}
+        </div>
+      </q-card-section>
+
+      <q-card-section class="pt-0">
         <div v-if="axisesArray.length">
           <q-select
             :model-value="selectedAxis"
             :options="axisesArray"
             :option-label="opt => opt.unit === 'undef' ? t('undef') : opt.name === opt.unit ? opt.name : `${opt.name} - ${opt.unit}`"
             :color="selectedAxis?.color"
-            filled
+            outlined
+            options-dense
+            dense
             @update:model-value="newVal => updateSelectedAxis(newVal)"
           />
         </div>
       </q-card-section>
+
       <q-card-section v-if="selectedAxis">
         <div class="w-full m--5 flex">
           <q-space />
@@ -186,12 +191,12 @@ function triggerCreateAxisDialog() {
         </div>
       </q-card-section>
 
-      <q-card-section v-if="selectedAxis">
-        <div class="max-h-100 w-full overflow-y-scroll">
+      <q-card-section v-if="selectedAxis" class="pt-0">
+        <div class="h-60 w-full overflow-y-scroll">
           <div
             v-for="io in ioValuesHasSameUnitWithSelected"
             :key="`io-axis-${io.key}`"
-            class="mb-1 text-xl"
+            class="text-sm cursor-pointer border rounded mb-2 p-2 flex items-center"
             :class="!io.isTaken ? 'cursor-pointer' : ''"
             @click="!io.isTaken ? io.selected = !io.selected : ''"
           >
@@ -201,29 +206,30 @@ function triggerCreateAxisDialog() {
               :label="io.name"
               :disable="io.isTaken"
               dense
-              class="my-3 ml-5"
+              size="sm"
             />
             <q-separator />
           </div>
         </div>
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions
+        align="right"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
+      >
         <q-btn
-          v-close-popup
           :label="t('close')"
-          outline
-          color="black"
-          icon="close"
-          @click="saveCurrentSettings()"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          flat
+          @click="onDialogCancel"
+        />
+        <q-btn
+          :label="t('save')"
+          class="bg-primary text-white"
+          flat
+          @click="() => { saveCurrentSettings(); onDialogOK() }"
         />
       </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
-
-<style scoped>
-  .q-dialog__inner--minimized > div {
-  max-width: none;
-}
-</style>

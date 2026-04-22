@@ -1,15 +1,15 @@
 <script setup lang="ts">
-defineProps({
-  title: String,
-  details: Array<string>,
-})
+defineProps<({
+  title: string
+  details: string[]
+})>()
 
 const expanded = ref(false)
 </script>
 
 <template>
   <div>
-    <div class="cursor-pointer text-bold flex w-full" @click="expanded = !expanded">
+    <div class="cursor-pointer font-bold flex w-full" @click="expanded = !expanded">
       {{ title }}
       <q-space />
       <q-icon

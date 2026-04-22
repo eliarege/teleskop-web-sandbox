@@ -78,10 +78,19 @@ const tasks: Array<{ message: string, method: (event: H3Event, result: Batch) =>
 ]
 
 export default defineEventHandler(async (event) => {
+  const batchKey = Number(getRouterParam(event, 'batchkey'))
+
+  if (!batchKey || Number.isNaN(batchKey)) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid batch key' })
+  }
+
   return taskManager.createTask(event, {
     maxSteps: tasks.length,
     async handler(step) {
-      const result = {}
+      const result: Partial<Batch> = {
+        batchKey,
+      }
+
       for (const task of tasks) {
         if (step.isCancelled()) {
           return

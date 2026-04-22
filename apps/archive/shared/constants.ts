@@ -92,3 +92,11 @@ export const alarmTypes: AlarmType[] = [
   { type: 10, label: 'alarmSettings.10', color: '#00ACC1' },
   { type: 11, label: 'alarmSettings.11sh', color: '#7CB342' },
 ]
+
+export const StepStatus = {
+  NORMAL: 0,
+  ADDED: 1,
+  SKIPPED_OR_PENDING: 2,
+} as const
+
+export type StepStatusType = typeof StepStatus[keyof typeof StepStatus]

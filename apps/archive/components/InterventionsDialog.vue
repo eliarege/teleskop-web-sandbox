@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import jsPDF from 'jspdf'
 import { format } from 'date-fns'
-import autoTable from 'jspdf-autotable'
 import { type QTableColumn, useDialogPluginComponent } from 'quasar'
-import RobotoBold from '@teleskop/nuxt-base/assets/fonts/Roboto-Bold.ttf?base64'
-import RobotoRegular from '@teleskop/nuxt-base/assets/fonts/Roboto-Regular.ttf?base64'
 import type { BatchIntervention } from '~/types/archive'
+import { printJobOrderInterventionReport } from '~/utils/pdf'
 
 const props = defineProps<({
   jobOrderNo: string
@@ -51,116 +48,14 @@ const columns: QTableColumn[] = [
   },
 ]
 
-function createDocument(): jsPDF {
-  const doc = new jsPDF()
-  doc.addFileToVFS('Roboto-Regular.ttf', RobotoRegular)
-  doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal')
-  doc.addFileToVFS('Roboto-Bold.ttf', RobotoBold)
-  doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold')
-  doc.setFont('Roboto', 'normal')
-
-  return doc
-}
-
 function printTable() {
-  const doc = createDocument()
-
-  const pageWidth = doc.internal.pageSize.getWidth()
-  const pageHeight = doc.internal.pageSize.getHeight()
-
-  const jobOrderNo = props.jobOrderNo ?? '-'
-  const startTime = props.startTime ? format(props.startTime, 'dd/MM/yyyy HH:mm:ss') : '-'
-  const endTime = props.endTime ? format(props.endTime, 'dd/MM/yyyy HH:mm:ss') : '-'
-  const cancelTime = props.cancelTime ? format(props.cancelTime, 'dd/MM/yyyy HH:mm:ss') : '-'
-
-  // HEADER
-  doc.setFontSize(14)
-  doc.setFont('Roboto', 'bold')
-  doc.text(t('interventionReport.title'), pageWidth / 2, 15, { align: 'center' })
-
-  // INFO TABLE
-  doc.setFontSize(9)
-  doc.setFont('Roboto', 'normal')
-
-  let y = 25
-
-  const infoData = [
-    [t('interventionReport.jobOrderNo'), jobOrderNo],
-    [t('interventionReport.startTime'), startTime],
-    [t('interventionReport.endTime'), endTime],
-    [t('interventionReport.cancelTime'), cancelTime],
-  ]
-
-  infoData.forEach(([label, value]) => {
-    doc.setFont('Roboto', 'bold')
-    doc.text(label, 15, y)
-    doc.setFont('Roboto', 'normal')
-    doc.text(String(value), 45, y)
-    y += 5
+  printJobOrderInterventionReport({
+    jobOrderNo: props.jobOrderNo,
+    startTime: props.startTime,
+    endTime: props.endTime,
+    cancelTime: props.cancelTime,
+    interventions: props.interventions,
   })
-
-  // MAIN TABLE
-  const tableRows = (props.interventions ?? []).map((int) => {
-    const timeFormatted = format(new Date(int.time), 'dd/MM/yyyy HH:mm:ss')
-    const explanation = Array.isArray(int.explanation)
-      ? int.explanation.join(' | ')
-      : int.explanation ?? '-'
-    const operator = int.operator ?? '-'
-
-    return [timeFormatted, operator, explanation]
-  })
-
-  autoTable(doc, {
-    startY: y,
-    head: [[t('interventionReport.interventionTime'), t('operator'), t('description')]],
-    body: tableRows,
-    styles: {
-      fontSize: 7,
-      font: 'Roboto',
-    },
-    headStyles: {
-      fontSize: 9,
-      font: 'Roboto',
-      fillColor: [230, 230, 230],
-      textColor: 20,
-    },
-    columnStyles: {
-      0: { cellWidth: 35 },
-      1: { cellWidth: 30 },
-    },
-    alternateRowStyles: {
-      fillColor: [245, 248, 255],
-    },
-    margin: { left: 15, right: 15 },
-    theme: 'grid',
-  })
-
-  // FOOTER
-  const pageCount = doc.getNumberOfPages()
-  const printDate = format(new Date(), 'dd/MM/yyyy HH:mm:ss')
-
-  doc.setFontSize(9)
-
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i)
-
-    // Alt çizgi
-    doc.setDrawColor(220)
-    doc.line(15, pageHeight - 15, pageWidth - 15, pageHeight - 15)
-
-    // Basım tarihi (sol)
-    doc.text(printDate, 15, pageHeight - 8)
-
-    // Sayfa numarası (sağ)
-    doc.text(
-      t('interventionReport.page', { n: i }),
-      pageWidth - 15,
-      pageHeight - 8,
-      { align: 'right' },
-    )
-  }
-
-  doc.save(`${t('interventionReport.fileName')}_${jobOrderNo}.pdf`)
 }
 </script>
 

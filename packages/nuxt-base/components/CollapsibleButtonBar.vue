@@ -2,25 +2,24 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { QBtn, QIcon, QItem, QItemSection, QList, QMenu, QTooltip, debounce } from 'quasar'
 import { useResizeObserver } from '@vueuse/core'
-import type { CustomQBtnProps } from '../composables/useContextBar'
 
 export interface CollapsibleButton {
   label?: string | number
   icon?: string
-  tooltip?: string
+  tooltip?: string | number
   shortcut?: string
   disable?: boolean
   visible?: boolean
-  onClick?: () => void
+  onClick?: (...args: any[]) => void
 }
 
 const props = withDefaults(defineProps<{
-  buttons: readonly CustomQBtnProps[]
+  buttons: readonly CollapsibleButton[]
   menuIcon?: string
   menuTooltip?: string
   dense?: boolean
 }>(), {
-  menuIcon: 'more_vert',
+  menuIcon: 'menu',
   menuTooltip: 'Menu',
   dense: false,
 })
@@ -164,7 +163,7 @@ useResizeObserver(container, debounce(() => {
     <template v-else>
       <div
         ref="buttonsContainer"
-        class="flex items-center whitespace-nowrap"
+        class="flex flex-nowrap items-center overflow-hidden whitespace-nowrap"
       >
         <QBtn
           v-for="(button, index) in visibleButtons"
@@ -172,6 +171,8 @@ useResizeObserver(container, debounce(() => {
           :disable="button.disable"
           :icon="button.icon"
           :label="showLabels[index] ? button.label : undefined"
+          :dense="dense"
+          no-wrap
           square
           flat
           @click="button.onClick"

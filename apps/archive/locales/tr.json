@@ -30,6 +30,7 @@
   "ISN": "ISN",
   "materialCode": "Materyal Kodu",
   "materialName": "Materyal Adı",
+  "programNo": "Program No",
   "programName": "Program Adı",
   "jobOrder": "İş Emri",
   "collectionNo": "Parti Numarası",
@@ -62,13 +63,25 @@
   "noAlarm": "Seçili Zamanda Alarm Bulunamadı",
   "processGroup": "İşlem Grubu",
   "operator": "Operatör",
+  "commandInfo": "Komut Bilgisi",
+  "stepDetails": "Adım Detayları",
+  "printedOn": "Basım Tarihi",
+  "page": "Sayfa",
+  "machineNo": "Makine No",
+  "machineName": "Makine Adı",
+  "partyNumber": "Parti No",
+  "jobOrderNo": "İş Emri No",
+  "processType": "İşlem Tipi",
+  "chart": "Grafik",
   "jobOrderSummary": {
+    "_": "İş Emri Özeti",
     "waterTotal": "Toplam Su",
     "electricity": "Elektrik",
     "steam": "Buhar",
     "steamPerWeight": "Kg Buhar / Kg Kumaş",
     "electricityPerWeight": "Kw / Kg Kumaş",
-    "totalWaterPerWeight": "Lt Su / Kg Kumaş"
+    "totalWaterPerWeight": "Lt Su / Kg Kumaş",
+    "fileName": "Is_Emri_Ozeti"
   },
   "axisSettings": {
     "_": "Eksen Ayarları",
@@ -242,7 +255,8 @@
     "programNo": "Program No",
     "programName": "Program İsmi",
     "interventions": "Müdahaleler",
-    "batchInfo": "Batch Bilgileri"
+    "batchInfo": "Batch Bilgileri",
+    "fileName": "Batch_Ozeti"
   },
   "calculatedValues": {
     "DAKIKADA_TAMBUR_DEVRI": "Dakikada Tambur Devri",
@@ -337,7 +351,8 @@
     "_": "İş Emri yüklenirken hata oluştu: {message}",
     "BATCH_NOT_FOUND": "İş Emri bulunamadı",
     "IO_VALUES_NOT_FOUND": "Bu iş emri için IO değerleri bulunamadı",
-    "UNKNOWN_ERROR": "Bilinmeyen bir hata oluştu"
+    "UNKNOWN_ERROR": "Bilinmeyen bir hata oluştu",
+    "noBatchDataForPrint": "Yazdırma için mevcut batch verisi bulunamadı"
   },
   "loading": {
     "loadingMachineInfo": "Makine Bilgileri Yükleniyor",
@@ -362,12 +377,18 @@
   },
   "interventionReport": {
     "title": "İş Emri Müdahale Raporu",
-    "jobOrderNo": "İş Emri No:",
-    "startTime": "Başlama Zamanı:",
-    "endTime": "Bitiş Zamanı:",
-    "cancelTime": "İptal Zamanı:",
+    "jobOrderInfo": "İş Emri Bilgileri",
+    "jobOrderNo": "İş Emri No",
+    "startTime": "Başlama Zamanı",
+    "endTime": "Bitiş Zamanı",
+    "cancelTime": "İptal Zamanı",
     "interventionTime": "Müdahale Zamanı",
-    "page": "Sayfa {n}",
     "fileName": "Is_Emri_Mudahale_Raporu"
+  },
+  "stepDetailsDialog": {
+    "title": "Adım Detayları",
+    "description": "Aşağıda {stepNo} numaralı adım için gerçekleşen ve teorik değerler bulunmaktadır.",
+    "actualStep": "Gerçekleşen {stepNo}. Adım",
+    "theoreticalStep": "Teorik {stepNo}. Adım"
   }
 }

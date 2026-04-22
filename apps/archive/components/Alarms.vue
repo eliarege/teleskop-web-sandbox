@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { format } from 'date-fns'
-import { alarmTypes } from '~/shared/constants'
+import AlarmSettingsDialog from './AlarmSettingsDialog.vue'
 import type { BatchAlarm } from '~/types/archive'
 import { formatDuration } from '~/utils/functions'
 
@@ -16,27 +16,11 @@ const emit = defineEmits<{
 const $q = useQuasar()
 const { t } = useI18n()
 
-const alarmOptions = computed(() =>
-  alarmTypes.map(a => ({
-    label: t(a.label),
-    value: a.type,
-  })),
-)
-
 const settingStore = userSettingsStore()
 
 function toggleAlarmsettings() {
   $q.dialog({
-    title: t('alarmSettings.title'),
-    message: t('alarmSettings.message'),
-    options: {
-      type: 'checkbox',
-      model: [...settingStore.alarmSettings],
-      items: alarmOptions.value,
-    },
-    cancel: true,
-  }).onOk((data) => {
-    settingStore.updateAlarmSettings(data)
+    component: AlarmSettingsDialog,
   })
 }
 
@@ -115,7 +99,6 @@ const rows = computed(() => {
 <template>
   <div class="p-1 wh-full bg-white flex flex-col">
     <div class="flex justify-between items-center text-xs mb-1 flex-shrink-0">
-      <!-- Checkbox for select all -->
       <div>
         <q-checkbox
           :model-value="settingStore.showAllAlarms"
@@ -126,7 +109,6 @@ const rows = computed(() => {
         />
       </div>
 
-      <!-- Settings button -->
       <div>
         <q-btn
           flat
@@ -138,7 +120,6 @@ const rows = computed(() => {
       </div>
     </div>
 
-    <!-- Table for alarms -->
     <q-table
       flat
       bordered
@@ -156,10 +137,3 @@ const rows = computed(() => {
     />
   </div>
 </template>
-
-<style scoped>
-.alarm-table :deep(th),
-.alarm-table :deep(td) {
-  font-size: 11px;
-}
-</style>

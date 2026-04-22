@@ -1,17 +1,23 @@
 <script lang="ts" setup>
 import { format } from 'date-fns'
 import type { QTableColumn } from 'quasar'
-import type { BatchCommand, MachineCommand } from '~/types/archive'
+import StepDetailsDialog from './StepDetailsDialog.vue'
+import type { BatchCommand, MachineCommand, Program } from '~/types/archive'
 import type { DuoAny } from '~/types/utils'
 
 const props = defineProps<{
+  batchKey: number
   commands: DuoAny<BatchCommand>[]
   machineCommands: MachineCommand[]
+  theoreticalPrograms: Program[]
   selectedTime: Date
 }>()
+
 const emit = defineEmits<{
   (e: 'updateSelectedTime', startTime: string): void
 }>()
+
+const $q = useQuasar()
 const { t } = useI18n()
 
 const filteredCommands = computed(() => {
@@ -50,6 +56,47 @@ const cols = computed(() => [
 function handleRowClick(row: any) {
   emit('updateSelectedTime', row.startTime)
 }
+
+async function handleDoubleClick(row: BatchCommand) {
+  try {
+    const actualSteps = await $fetch(`/api/batch/${props.batchKey}/step-details-at-time`, {
+      query: {
+        time: new Date(row.startTime).toISOString(),
+      },
+    })
+
+    const programStep = props.theoreticalPrograms
+      .flatMap(p => p.steps)
+      .find(s => s.mainCommand.commandNo === row.commandNo)
+
+    const mapResultCommandToProgramStepCommand = (cmd: any) => ({
+      commandNo: cmd.commandNo,
+      parameters: cmd.parameters.map((p: any) => ({ index: p.index, value: p.actualValue })),
+      ioList: cmd.ioList.map((io: any) => ({ ioId: 0, ioIndex: io.index, value: io.actualSelections })),
+    })
+
+    const actualProgramStep = {
+      mainCommand: mapResultCommandToProgramStepCommand(actualSteps.mainCommand),
+      parallelCommands: actualSteps.parallelCommands.map(mapResultCommandToProgramStepCommand),
+    }
+
+    $q.dialog({
+      component: StepDetailsDialog,
+      componentProps: {
+        machineCommands: props.machineCommands,
+        theoreticalProgramStep: programStep,
+        actualProgramStep,
+        stepIndex: row.stepNo,
+      },
+    })
+  } catch (error: any) {
+    console.error('Error fetching step details:', error)
+    $q.notify({
+      type: 'negative',
+      message: error?.data?.message || t('stepDetailsDialog.fetchError'),
+    })
+  }
+}
 </script>
 
 <template>
@@ -66,17 +113,7 @@ function handleRowClick(row: any) {
       table-header-class="bg-gray-1 dark:bg-dark-4"
       :pagination="{ rowsPerPage: 0 }"
       @row-click="(e, r) => handleRowClick(r)"
+      @row-dblclick="(e, r) => handleDoubleClick(r)"
     />
   </div>
 </template>
-
-<style scoped>
-.q-table__card {
-  background-color: transparent;
-}
-
-.custom-table :deep(th),
-.custom-table :deep(td) {
-  font-size: 11px;
-}
-</style>

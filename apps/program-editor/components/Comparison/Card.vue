@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { useEditorStore } from '~/composables/editor'
 import type { CommandParameterDiff, MachineCommand, ProgramStepCommandDiff } from '~/shared/types'
 import { ParameterType } from '~/shared/constants'
 
-defineProps<{
+const props = defineProps<{
   resultSide?: ProgramStepCommandDiff | null
   stepIndex: number
 }>()
@@ -18,141 +17,120 @@ function getCommandInfo(commandNo: number): MachineCommand | undefined {
 function getParameterName(commandNo: number, paramIndex: number): string {
   const command = getCommandInfo(commandNo)
   const paramName = command?.parameters[paramIndex]?.name
-  return paramName ? mt(paramName, machine.currentMachine.id) : ''
+  return paramName ? mt(paramName, machine.currentMachine.id) : String(paramIndex)
 }
 
-function getCommandString(commandNo: number): string {
+function getCommandLabel(commandNo: number): string {
   const command = getCommandInfo(commandNo)
-  return command ? `${commandNo} - ${mt(command.name, machine.currentMachine.id)}` : ''
+  return command ? mt(command.name, machine.currentMachine.id) : String(commandNo)
 }
 
 function getParameterValue(param: CommandParameterDiff, commandNo: number): string {
   const machineCommand = machine.currentMachine.commands.get(commandNo)
   const machineParameter = machineCommand?.parameters.find(p => param.index === p.index)
-
   if (machineParameter) {
-    if (machineParameter.type === ParameterType.NUMBER && machineParameter.format === 'DURATION') {
+    if (machineParameter.type === ParameterType.NUMBER && machineParameter.format === 'DURATION')
       return formatDuration(Number(param.value))
-    }
-    if (machineParameter.type === ParameterType.SELECT || machineParameter.type === ParameterType.SELECT_ADDITIVE) {
-      return machineParameter.selections.find(s => s.value === param.value)?.name || ''
-    }
-    if (machineParameter.type === ParameterType.CHECKBOX) {
+    if (machineParameter.type === ParameterType.SELECT || machineParameter.type === ParameterType.SELECT_ADDITIVE)
+      return machineParameter.selections.find(s => s.value === param.value)?.name || String(param.value)
+    if (machineParameter.type === ParameterType.CHECKBOX)
       return param.value
-    }
   }
   return String(param.value)
 }
+
+const isCommandDiff = computed(() => !!props.resultSide?.mainCommand.diff)
+const hasParamDiff = computed(() =>
+  !isCommandDiff.value && (
+    props.resultSide?.mainCommand.parameters.some(p => p.diff)
+    || props.resultSide?.parallelCommands.some(c => c.diff || c.parameters.some(p => p.diff))
+    || false
+  ),
+)
 </script>
 
 <template>
-  <div :id="`command-${stepIndex}`" class="flex">
-    <q-card class="w-full">
-      <q-card-section v-if="resultSide">
-        <!-- Main Command -->
-        <div
-          class="main-command"
-          :class="{
-            'all-red ': resultSide.mainCommand.diff,
-            'bg-white-100': !resultSide.mainCommand.diff,
-          }"
+  <!-- Empty: step exists only on other side -->
+  <div
+    v-if="!resultSide"
+    class="h-full min-h-16 rounded border-2 border-dashed border-red-4/60 dark:border-red-7/40 bg-red-1/30 dark:bg-red-9/10"
+  />
+
+  <!-- Step card -->
+  <div
+    v-else
+    class="rounded border border-gray-3 dark:border-dark-1 overflow-hidden"
+    :class="[
+      isCommandDiff
+        ? 'border-l-3 border-l-red-5 dark:border-l-red-6'
+        : hasParamDiff
+          ? 'border-l-3 border-l-amber-5 dark:border-l-amber-5'
+          : 'border-l-3 border-l-transparent',
+    ]"
+  >
+    <!-- Main command -->
+    <div
+      class="flex items-center gap-2 px-3 py-2"
+      :class="isCommandDiff ? 'bg-red-1/50 dark:bg-red-9/15' : 'bg-gray-1 dark:bg-dark-4'"
+    >
+      <span class="text-gray-4 dark:text-gray-7 shrink-0 w-8 text-right leading-none">
+        {{ resultSide.mainCommand.commandNo }}
+      </span>
+      <span
+        class="font-semibold leading-snug truncate"
+        :class="isCommandDiff ? 'text-red-6 dark:text-red-4' : 'text-gray-9 dark:text-gray-2'"
+      >
+        {{ getCommandLabel(resultSide.mainCommand.commandNo) }}
+      </span>
+    </div>
+
+    <!-- Parameters -->
+    <div
+      v-if="resultSide.mainCommand.parameters.length > 0"
+      class="flex flex-wrap gap-1 px-3 py-1.5 bg-gray-2/40 dark:bg-dark-3/40 border-t border-gray-3/50 dark:border-dark-1/50"
+    >
+      <span
+        v-for="param in resultSide.mainCommand.parameters"
+        :key="param.index"
+        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border"
+        :class="isCommandDiff || param.diff
+          ? 'bg-red-1 dark:bg-red-9/25 text-red-7 dark:text-red-3'
+          : 'bg-light-6 dark:bg-dark-2 text-gray-7 dark:text-gray-3'"
+      >
+        <span class="opacity-60">{{ getParameterName(resultSide.mainCommand.commandNo, param.index) }}</span>
+        <span>{{ getParameterValue(param, resultSide.mainCommand.commandNo) }}</span>
+      </span>
+    </div>
+
+    <!-- Parallel commands -->
+    <div
+      v-if="resultSide.parallelCommands.length > 0"
+      class="px-3 py-1.5 border-t border-gray-3/50 dark:border-dark-1/50 bg-gray-3/20 dark:bg-dark-2/30 space-y-1"
+    >
+      <div
+        v-for="(parallel, idx) in resultSide.parallelCommands"
+        :key="idx"
+        class="flex flex-wrap items-center gap-1"
+      >
+        <span
+          class="text-xs font-medium shrink-0"
+          :class="isCommandDiff || parallel.diff ? 'text-red-6 dark:text-red-4' : 'text-gray-6 dark:text-gray-4'"
         >
-          <div
-            v-if="resultSide.mainCommand"
-            class="text-h6"
-            :class="{ 'text-red  ': resultSide.mainCommand.diff }"
-          >
-            {{ getCommandString(resultSide.mainCommand.commandNo) }}
-          </div>
-        </div>
-
-        <!-- Parameters -->
-        <q-separator v-if="resultSide.mainCommand.parameters.length > 0" class="separator-thick" />
-        <div v-if="resultSide.mainCommand.parameters.length > 0" class="parameters q-py-xs">
-          <q-chip
-            v-for="param in resultSide.mainCommand.parameters"
-            :key="param.index"
-            :color="resultSide.mainCommand.diff ? 'red' : (param.diff ? 'red fw-bold' : 'secondary fw-bold')"
-            text-color="white"
-            class="q-ma-xs fw-bold"
-          >
-            {{ getParameterName(resultSide.mainCommand.commandNo, param.index) }}:
-            {{ getParameterValue(param, resultSide.mainCommand.commandNo) }}
-          </q-chip>
-        </div>
-
-        <!-- Parallel Commands -->
-        <q-separator v-if="resultSide.parallelCommands.length > 0" class="separator-thick" />
-        <div class="q-py-xs" :class="resultSide.parallelCommands.length ? 'parallel-commands' : 'bg-white'">
-          <q-chip
-            v-for="(parallel, idx) in resultSide.parallelCommands"
-            :key="idx"
-            :color="resultSide.mainCommand.diff || parallel.diff ? 'red fw-bold' : 'secondary fw-bold'"
-            text-color="white"
-            class="q-ma-xs "
-          >
-            {{ getCommandString(parallel.commandNo) }}
-            <q-badge
-              v-for="param in parallel.parameters"
-              :key="param.index"
-              color="white"
-              :text-color="resultSide.mainCommand.diff || parallel.diff || param.diff ? 'red fw-bold' : 'secondary fw-bold'"
-              class="q-ml-sm"
-            >
-              {{ getParameterName(parallel.commandNo, param.index) }}:
-              {{ getParameterValue(param, parallel.commandNo) }}
-            </q-badge>
-          </q-chip>
-        </div>
-      </q-card-section>
-    </q-card>
+          <span class="opacity-60 mr-0.5">{{ parallel.commandNo }}</span>
+          {{ getCommandLabel(parallel.commandNo) }}
+        </span>
+        <span
+          v-for="param in parallel.parameters"
+          :key="param.index"
+          class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border"
+          :class="isCommandDiff || parallel.diff || param.diff
+            ? 'bg-red-1 dark:bg-red-9/25 text-red-7 dark:text-red-3'
+            : 'bg-light-6 dark:bg-dark-2 text-gray-6 dark:text-gray-4'"
+        >
+          <span class="opacity-60">{{ getParameterName(parallel.commandNo, param.index) }}</span>
+          <span>{{ getParameterValue(param, parallel.commandNo) }}</span>
+        </span>
+      </div>
+    </div>
   </div>
 </template>
-
-<style scoped lang="postcss">
-.section-grid {
-  display: grid;
-  grid-template-columns: 1fr 7px 1fr;
-  gap: 3px;
-  justify-items: center;
-}
-
-.custom-splitter-horizontal {
-  @apply w-1px h-full border-1 border-black;
-}
-
-.main-command .text-h6 {
-  font-weight: bold;
-}
-
-.all-red {
-  color: red;
-}
-
-.all-red .q-chip {
-  background-color: red !important;
-  color: white !important;
-}
-
-.all-red .q-badge {
-  background-color: white !important;
-  color: red !important;
-}
-
-.text-red {
-  color: red;
-}
-
-.parallel-commands {
-  background-color: lightgray;
-}
-
-.separator-thick {
-  height: 3px;
-  background-color: #a1a0a0;
-}
-
-.q-card {
-  border: 2px solid #3c3a3a;
-}
-</style>

@@ -6,19 +6,25 @@ const props = defineProps({
   analogInputs: Array<AnalogInputOutputType>,
   analogOutputs: Array<AnalogInputOutputType>,
 })
+
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+
 const { t } = useI18n()
+const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+
 const settingsStore = userSettingsStore()
+
 const uniqueUnits: Array<string> = []
 settingsStore.axises.forEach((axis) => {
   if (!uniqueUnits.includes(axis.unit))
     uniqueUnits.push(axis.unit)
 })
-const selectedUnit = ref()
+
 const axisName = ref()
+const selectedUnit = ref()
+
 const ioValuesToSelect = ref([] as { key: string, selected: boolean, isTaken: boolean, name: string }[])
 function getIOStatus(key: string) {
   let isIOTaken = false
@@ -28,6 +34,7 @@ function getIOStatus(key: string) {
   })
   return isIOTaken
 }
+
 function updateSelectedUnit(newVal: string) {
   selectedUnit.value = newVal
   ioValuesToSelect.value = []
@@ -54,6 +61,7 @@ function updateSelectedUnit(newVal: string) {
     })
   }
 }
+
 const isAxisExist = computed(() => !!settingsStore.axises.get(axisName.value))
 const canUserSave = computed(() => !isAxisExist.value && axisName.value && selectedUnit.value)
 </script>
@@ -112,14 +120,13 @@ const canUserSave = computed(() => !isAxisExist.value && axisName.value && selec
       </q-card-section>
       <q-card-actions align="right">
         <q-btn
-          v-close-popup
           :label="t('close')"
           outline
           color="black"
           icon="close"
+          @click="onDialogCancel"
         />
         <q-btn
-          v-close-popup
           :label="t('create')"
           :disable="!canUserSave"
           outline

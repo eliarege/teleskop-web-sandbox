@@ -4,15 +4,10 @@
  * o yüzden gelebilecek feedbackler için hangi partların ne yaptığını açıkladım biraz biraz
  */
 import {
-  type BrushBehavior,
-  type D3BrushEvent,
-  type ScaleLinear,
-  type ScaleTime,
   type Selection,
   axisBottom,
   axisLeft,
   axisRight,
-  brush,
   brushX,
   curveLinear,
   curveStepAfter,
@@ -22,40 +17,37 @@ import {
   max as d3Max,
   min as d3Min,
   select as d3Select,
-  interpolateRgb,
-  interpolateRgbBasis,
   scaleBand,
   scaleLinear,
-  scaleLog,
-  scaleSqrt,
   scaleTime,
-  style,
 } from 'd3'
 import {
-  addHours,
   addMinutes,
-  addSeconds,
   differenceInMilliseconds,
   differenceInMinutes,
-  differenceInSeconds,
   format,
-  formatDuration,
-  intervalToDuration,
 } from 'date-fns'
 import { throttle } from 'quasar'
 import type { QBtnProps } from 'quasar'
+import CollapsibleButtonBar from '@teleskop/nuxt-base/components/CollapsibleButtonBar.vue'
 import AxisesVisibilityDialog from './AxisesVisibilityDialog.vue'
 import ReelDataDialog from './ReelDataDialog.vue'
-import type { Batch, DigitalInputOutputType, LineType, Reel, TheoreticalProgram } from '~/types/archive'
+import ArchiveChartContextMenu from './ArchiveChartContextMenu.vue'
+import StepDetailsDialog from './StepDetailsDialog.vue'
+import Commands from './Commands.vue'
+import type { Batch, DigitalInputOutputType, LineType, TheoreticalProgram } from '~/types/archive'
 import UpdateAxisDialog from '~/components/UpdateAxisDialog.vue'
 import { alarmTypes } from '~/shared/constants'
+import { printChartSVG } from '~/utils/pdf'
 
 const props = defineProps<{
   batch: Batch
   theoreticalPrograms: TheoreticalProgram[]
 }>()
 
+const $q = useQuasar()
 const { t } = useI18n()
+
 const selectedTime = defineModel<Date>({ required: true })
 defineExpose({ resetZoom })
 
@@ -489,15 +481,17 @@ function customizeYAxis(yAxis: any, isRight: boolean, color?: string) {
   yAxis
     ?.selectAll('.tick')
     .append('line')
-    .filter((d, i) => i > 0)
+    .filter((d: any, i: number) => i > 0)
     .attr('class', 'dashed-line')
-    .attr('stroke', color || 'gray')
-    .attr('stroke-dasharray', 4)
-    .attr('opacity', 0.6)
+    .attr('stroke', color || '#9ca3af')
+    .attr('stroke-dasharray', '4,4')
+    .attr('stroke-width', 1)
+    .attr('opacity', 0.7)
     .attr('x1', isRight ? 0 : innerRect.value.width)
     .attr('x2', isRight ? -innerRect.value.width : 0)
     .attr('y1', 0)
     .attr('y2', 0)
+    .style('pointer-events', 'none')
 }
 const selectedX = ref<number | null>(null)
 function formatASCII(asci: string) {
@@ -519,7 +513,13 @@ function getBrush() {
   return brushX()
     .extent([
       [margin.value.left, margin.value.top], // Top-left corner of the brush area
-      [innerRect.value.width + margin.value.left, settingsStore?.bottomChartVisibilityStatus ? innerRect.value.height + margin.value.bottom : innerRect.value.height + margin.value.top], // Bottom-right corner of the brush area
+      [
+        Math.max(innerRect.value.width + margin.value.left, margin.value.left),
+        Math.max(
+          settingsStore?.bottomChartVisibilityStatus ? innerRect.value.height + margin.value.bottom : innerRect.value.height + margin.value.top,
+          margin.value.top,
+        ),
+      ],
     ])
     .on('start', (event) => {
       startX = event.sourceEvent.x
@@ -755,11 +755,11 @@ const tooltipContent = computed(() => {
 })
 
 // Printten önce zoomu resetlemek lazım yoksa zoomlu printler
-onKeyStroke(['p', 'P'], (event: KeyboardEvent) => {
+onKeyStroke(['p', 'P'], async (event: KeyboardEvent) => {
   if (event.ctrlKey) {
     event.preventDefault()
     resetZoom()
-    printChartSVG({
+    await printChartSVG({
       machineId: props.batch.machine.id,
       machineName: props.batch.machine.name,
       jobOrder: props.batch.jobOrderInfo.jobOrder,
@@ -894,7 +894,7 @@ function getArrowPath(x: number, y: number) {
 interface QBtnWithTooltip extends QBtnProps {
   tooltip?: string
 }
-const $q = useQuasar()
+
 const buttons = computed(() =>
   [
     {
@@ -905,7 +905,7 @@ const buttons = computed(() =>
       onClick: async () => {
         resetZoom()
         await nextTick()
-        printChartSVG({
+        await printChartSVG({
           machineId: props.batch.machine.id,
           machineName: props.batch.machine.name,
           jobOrder: props.batch.jobOrderInfo.jobOrder,
@@ -986,310 +986,366 @@ const buttons = computed(() =>
     },
   ] as Array<QBtnWithTooltip>,
 )
+
 const selectedCommand = computed(() => {
   return props.batch.mergedCommands.find((cmd) => {
     return new Date(cmd.startTime) <= selectedTime.value && new Date(cmd.endTime) > selectedTime.value
   })
 })
+
+const contextMenu = ref(false)
+
+function openContextMenu(event: MouseEvent) {
+  handleChartClick(event)
+  contextMenu.value = true
+}
+
+async function handleMenuAction(action: 'stepDetails') {
+  if (action === 'stepDetails' && selectedCommand.value && props.batch.jobOrderInfo.batchKey) {
+    const { commandNo, theoreticalStepNo } = selectedCommand.value
+    const batchKey = props.batch.jobOrderInfo.batchKey
+
+    try {
+      // Fetch step details from API endpoint
+      const actualSteps = await $fetch(`/api/batch/${batchKey}/step-details-at-time`, {
+        query: {
+          time: selectedTime.value.toISOString(),
+        },
+      })
+
+      const programStep = props.batch.theoreticalPrograms
+        .flatMap(p => p.steps)
+        .find(s => s.mainCommand.commandNo === commandNo)
+
+      const mapResultCommandToProgramStepCommand = (cmd: any) => ({
+        commandNo: cmd.commandNo,
+        parameters: cmd.parameters.map((p: any) => ({ index: p.index, value: p.actualValue })),
+        ioList: cmd.ioList.map((io: any) => ({ ioId: 0, ioIndex: io.index, value: io.actualSelections })),
+      })
+
+      const actualProgramStep = {
+        mainCommand: mapResultCommandToProgramStepCommand(actualSteps.mainCommand),
+        parallelCommands: actualSteps.parallelCommands.map(mapResultCommandToProgramStepCommand),
+      }
+
+      $q.dialog({
+        component: StepDetailsDialog,
+        componentProps: {
+          machineCommands: props.batch.machine.commands,
+          theoreticalProgramStep: programStep,
+          actualProgramStep,
+          stepIndex: theoreticalStepNo,
+        },
+      })
+    } catch (error: any) {
+      console.error('Error fetching step details:', error)
+      $q.notify({
+        type: 'negative',
+        message: error?.data?.message || t('stepDetailsDialog.fetchError'),
+      })
+    }
+  }
+}
 </script>
 
 <template>
-  <!-- Chart ile ilgili butonların olduğu alan -->
-  <div class="bg-gray-1">
-    <q-btn
-      v-for="(button, index) in buttons"
-      :key="index"
-      v-bind="button"
-      :label="button.label"
-      class="px-2 text-gray-6"
-      no-caps
-      dense
-    >
-      <q-tooltip v-if="button.tooltip">
-        {{ button.tooltip }}
-      </q-tooltip>
-    </q-btn>
-  </div>
+  <div class="wh-full overflow-hidden" style="display: flex; flex-direction: column;">
+    <!-- Chart ile ilgili butonların olduğu alan -->
+    <div class="shrink-0 w-full">
+      <CollapsibleButtonBar
+        :buttons="buttons"
+      />
+    </div>
 
-  <div ref="chartEl" class="chart bg-white">
-    <!-- Alarm tanımlarının gösterildiği alan -->
-    <g id="top-alarm-defs" style="display: flex; gap: 10px; padding: 10px; font-size: small; margin-bottom: -20px;">
-      <g
-        v-for="alarm of alarmTypes"
-        :key="`alarmType${alarm.type}`"
-        style="display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;"
-      >
-        <g :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
-        <text>
-          {{ t(alarm.label) }}
-        </text>
+    <div ref="chartEl" class="chart bg-white grow min-h-0 w-full">
+      <!-- Alarm tanımlarının gösterildiği alan -->
+      <g id="top-alarm-defs" style="display: flex; gap: 10px; padding: 10px; font-size: small; margin-bottom: -20px;">
+        <g
+          v-for="alarm of alarmTypes"
+          :key="`alarmType${alarm.type}`"
+          style="display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;"
+        >
+          <g :style="{ height: '8px', width: '8px', backgroundColor: alarm.color }" />
+          <text>
+            {{ t(alarm.label) }}
+          </text>
+        </g>
       </g>
-    </g>
 
-    <!-- Chart SVG alanı -->
-    <svg
-      ref="svgRef"
-      :viewBox="`0 0 ${outerWidth} ${outerHeight}`"
-      :width="outerWidth"
-      :height="outerHeight"
-    >
-      <g :clip-path="`url(#${clipId})`">
-        <path
-          v-for="(point, index) in arrowPoints"
-          :key="`arrow-${index}`"
-          :d="getArrowPath(point.x, point.y)"
-          fill="blue"
-          stroke="black"
-          stroke-width="0.5"
-          class="arrow"
-        />
-      </g>
-      <g
-        ref="brushGroup"
+      <!-- Chart SVG alanı -->
+      <svg
+        ref="svgRef"
+        :viewBox="`0 0 ${outerWidth} ${outerHeight}`"
         :width="outerWidth"
         :height="outerHeight"
-      />
-      <defs>
-        <clipPath :id="clipId">
-          <rect :width="innerRectWidth" :height="innerRectHeight" />
-        </clipPath>
-      </defs>
-      <g
-        :transform="`translate(${marginLeft},${marginTop})`"
-        style="cursor: crosshair;"
       >
-        <!-- Axises -->
-        <g
-          ref="xAxisEl"
-          class="x-axis"
-          :transform="`translate(0,${innerRectHeight * chartHeightMultiplier})`"
-        />
-        <g ref="yAxisEl" class="y-axis" />
-        <g
-          v-for="([key, axis], index) in visibleAxisesEntries"
-          :id="`${id}-${formatASCII(key)}`"
-          :key="`${key}-axis`"
-          class="y-axis-right"
-          :transform="`translate(${innerRectWidth + index * 35}, 0)`"
-        >
-          <text
-            :id="`axis-${index}`"
-            fill="black"
-            :y="-5"
-          >
-            {{ axis.unit === "undef" ? t("undef") : axis.unit }}
-          </text>
-        </g>
-        <!-- Lines -->
         <g :clip-path="`url(#${clipId})`">
           <path
-            v-for="(line, index) in lines"
-            :key="`${index}-line`"
-            :d="line.line(dataSet[index]?.io?.ioValues || [])!"
-            fill="none"
-            :stroke="line.isDefault ? 'url(#koko)' : line.color"
-            :stroke-width="line.isDefault ? 1 : 2.5"
-            :stroke-dasharray="line.lineType === 'dashed' ? '4,2' : 'none'"
-            style="pointer-events: none;"
+            v-for="(point, index) in arrowPoints"
+            :key="`arrow-${index}`"
+            :d="getArrowPath(point.x, point.y)"
+            fill="blue"
+            stroke="black"
+            stroke-width="0.5"
+            class="arrow"
           />
-          <g v-for="(line, index) in lines" :key="`${index}-dots`">
-            <g v-if="line.lineType === 'dotted' && dataSet[index]?.io?.ioValues && yScales[index]">
-              <circle
-                v-for="(point, pointIndex) in dataSet[index].io.ioValues"
-                :key="`${index}-${pointIndex}`"
-                :cx="xScale(new Date(point.time))"
-                :cy="yScales[index](point.value)"
-                r="3"
-                :fill="line.color"
-              />
-            </g>
-          </g>
-          <!-- Teorik sıcaklık grafiği -->
-          <linearGradient id="koko">
-            <stop
-              v-for="(point, index) of colorTransitionPortions"
-              :key="`point${index}`"
-              :offset="point"
-              :stop-color="['blue', 'red', 'red', 'blue'][index % 4]"
-            />
-          </linearGradient>
         </g>
-        <!-- Selected time line -->
-        <line
-          v-if="selectedX !== null"
-          id="chart-selected-time-line"
-          :x1="selectedX"
-          :x2="selectedX"
-          y1="0"
-          :y2="
-            settingsStore?.bottomChartVisibilityStatus
-              ? outerHeight - 40
-              : innerRectHeight
-          "
-          stroke="black"
-          stroke-dasharray="4"
-          stroke-width="2"
-        />
-        <!-- Alarm bars -->
-        <g :clip-path="`url(#${clipId})`">
-          <g v-for="barLine in orderedAlarms" :key="`${barLine.alarmNo}-bar`">
-            <rect
-              v-for="(bar, indexBar) in barLine.value"
-              :key="`${indexBar}-${barLine.alarmNo}`"
-              :x="xScale(getBarStartTime(bar.startTime))"
-              :y="barScale(`${barLine.alarmNo}`)"
-              :width="getAlarmWidth(bar.startTime, bar.endTime)"
-              :height="barScale.bandwidth()"
-              :fill="barLine.color"
-              :stroke="barLine.color"
-              style="pointer-events: none;"
-              stroke-width="1"
-            />
-          </g>
-        </g>
-
-        <!-- Tooltip content pixel pixel belirlenir maybe daha iyi bir implementation yapılabilir. -->
         <g
-          v-if="
-            tooltipContent
-              && selectedX !== null
-              && settingsStore.showGraphTooltip
-          "
-          id="chart-tooltip"
-          :transform="`translate(${selectedX + tooltipOffset}, 10)`"
+          ref="brushGroup"
+          :width="outerWidth"
+          :height="outerHeight"
+        />
+        <defs>
+          <clipPath :id="clipId">
+            <rect :width="innerRectWidth" :height="innerRectHeight" />
+          </clipPath>
+        </defs>
+        <g
+          :transform="`translate(${marginLeft},${marginTop})`"
+          style="cursor: crosshair;"
         >
-          <rect
-            class="tooltip-bg"
-            width="240"
-            :height="110 + tooltipContent.data.length * 20"
-            rx="4"
-            fill="white"
-            stroke="gray"
-            stroke-width="1"
-            opacity="0.9"
+          <!-- Axises -->
+          <g
+            ref="xAxisEl"
+            class="x-axis"
+            :transform="`translate(0,${innerRectHeight * chartHeightMultiplier})`"
           />
-          <text
-            v-if="settingsStore.tooltipSettings.includes(4)"
-            x="8"
-            y="20"
+          <g ref="yAxisEl" class="y-axis" />
+          <g
+            v-for="([key, axis], index) in visibleAxisesEntries"
+            :id="`${id}-${formatASCII(key)}`"
+            :key="`${key}-axis`"
+            class="y-axis-right"
+            :transform="`translate(${innerRectWidth + index * 35}, 0)`"
           >
-            {{ format(tooltipContent.time, "HH:mm:ss dd/MM/yyyy") }}
-          </text>
-          <text
-            v-if="settingsStore.tooltipSettings.includes(5)"
-            x="8"
-            y="40"
-          >
-            {{ t("tooltipOptions.timePassed") }}:
-            {{ formatDurationHHMMSS(startTime, tooltipContent.time) }}
-          </text>
-          <text
-            v-if="settingsStore.tooltipSettings.includes(6)"
-            x="8"
-            y="60"
-          >
-            {{ t("tooltipOptions.activeUser") }}:
-            {{ batch.jobOrderInfo?.operatorName }}
-          </text>
-          <text
-            v-if="selectedCommand"
-            x="8"
-            y="80"
-          >
-            {{ t('tooltipOptions.activeCommand') }}:
-            {{ `(${selectedCommand.commandNo}) ${selectedCommand.commandName}` }}
-          </text>
-          <text
-            v-if="selectedCommand"
-            x="8"
-            y="100"
-          >
-            {{ t('tooltipOptions.timeUntilCommandStart') }}:
-            {{ formatDurationHHMMSS(new Date(selectedCommand.startTime), selectedTime) }}
-          </text>
-          <g v-for="(item, index) in tooltipContent.data" :key="index">
             <text
-              x="8"
-              :y="120 + index * 20"
-              class="text-sm"
-              :fill="item.color"
+              :id="`axis-${index}`"
+              fill="black"
+              :y="-5"
             >
-              {{
-                `${item?.value?.name}: ${item?.value?.value?.toFixed(2) || (`${item?.value?.duration} - ${t('cycle')}: ${item.value.count}`)}`
-              }}
+              {{ axis.unit === "undef" ? t("undef") : axis.unit }}
             </text>
           </g>
-        </g>
-
-        <!-- Digital ios -->
-        <g
-          v-if="settingsStore?.bottomChartVisibilityStatus === 1"
-          :transform="`translate(${0}, ${outerHeight * chartHeightMultiplier + 20})`"
-        >
-          <g class="io-status-bars">
-            <template
-              v-for="(io, index) in digitalDataSet"
-              :key="`digital-io-${index}`"
-            >
-              <text :y="index * 20 - 2" style="font-size: x-small">
-                {{ io.name }}
-              </text>
-              <rect
-                v-for="(value, idx) in io.ioValues"
-                :key="`io-${index}-value-${idx}`"
-                :x="xScale(getBarStartTime(value.time))"
-                :width="computeWidth(io.ioValues, idx)"
-                :height="8"
-                :y="index * 20"
-                :fill="value.value ? 'blue' : 'grey'"
-                style="pointer-events: none;"
-                stroke="none"
-              />
-            </template>
-          </g>
-        </g>
-
-        <!-- Reel lines -->
-        <g v-show="settingsStore?.bottomChartVisibilityStatus === 2">
-          <g
-            ref="reelsXAxisEl"
-            class="x-axis"
-            :transform="`translate(0,${outerHeight - 40})`"
-          />
-          <g ref="reelsYAxisEl" class="y-axis-reels" />
+          <!-- Lines -->
           <g :clip-path="`url(#${clipId})`">
             <path
-              v-for="(line, index) in reelLines"
-              :key="`${index}-line-reel`"
-              :d="line.line(reelsDataSet[index]?.cycles || [])!"
+              v-for="(line, index) in lines"
+              :key="`${index}-line`"
+              :d="line.line(dataSet[index]?.io?.ioValues || [])!"
               fill="none"
-              :stroke="line.color"
-              stroke-width="3"
+              :stroke="line.isDefault ? 'url(#koko)' : line.color"
+              :stroke-width="line.isDefault ? 1 : 2.5"
               :stroke-dasharray="line.lineType === 'dashed' ? '4,2' : 'none'"
+              style="pointer-events: none;"
             />
-            <g v-for="(line, index) in reelLines" :key="`${index}-dots-reel`">
-              <g v-if="line.lineType === 'dotted' && reelsDataSet[index]?.cycles">
+            <g v-for="(line, index) in lines" :key="`${index}-dots`">
+              <g v-if="line.lineType === 'dotted' && dataSet[index]?.io?.ioValues && yScales[index]">
                 <circle
-                  v-for="(point, pointIndex) in reelsDataSet[index].cycles"
+                  v-for="(point, pointIndex) in dataSet[index].io.ioValues"
                   :key="`${index}-${pointIndex}`"
-                  :cx="xScale(new Date(point.cycledAt))"
-                  :cy="reelYScale(point.duration)"
+                  :cx="xScale(new Date(point.time))"
+                  :cy="yScales[index](point.value)"
                   r="3"
                   :fill="line.color"
                 />
               </g>
             </g>
+            <!-- Teorik sıcaklık grafiği -->
+            <linearGradient id="koko">
+              <stop
+                v-for="(point, index) of colorTransitionPortions"
+                :key="`point${index}`"
+                :offset="point"
+                :stop-color="['blue', 'red', 'red', 'blue'][index % 4]"
+              />
+            </linearGradient>
+          </g>
+          <!-- Selected time line -->
+          <line
+            v-if="selectedX !== null"
+            id="chart-selected-time-line"
+            :x1="selectedX"
+            :x2="selectedX"
+            y1="0"
+            :y2="
+              settingsStore?.bottomChartVisibilityStatus
+                ? outerHeight - 40
+                : innerRectHeight
+            "
+            stroke="black"
+            stroke-dasharray="4"
+            stroke-width="2"
+          />
+          <!-- Alarm bars -->
+          <g :clip-path="`url(#${clipId})`">
+            <g v-for="barLine in orderedAlarms" :key="`${barLine.alarmNo}-bar`">
+              <rect
+                v-for="(bar, indexBar) in barLine.value"
+                :key="`${indexBar}-${barLine.alarmNo}`"
+                :x="xScale(getBarStartTime(bar.startTime))"
+                :y="barScale(`${barLine.alarmNo}`)"
+                :width="getAlarmWidth(bar.startTime, bar.endTime)"
+                :height="barScale.bandwidth()"
+                :fill="barLine.color"
+                :stroke="barLine.color"
+                style="pointer-events: none;"
+                stroke-width="1"
+              />
+            </g>
+          </g>
+
+          <!-- Tooltip content pixel pixel belirlenir maybe daha iyi bir implementation yapılabilir. -->
+          <g
+            v-if="
+              tooltipContent
+                && selectedX !== null
+                && settingsStore.showGraphTooltip
+            "
+            id="chart-tooltip"
+            :transform="`translate(${selectedX + tooltipOffset}, 10)`"
+          >
+            <rect
+              class="tooltip-bg"
+              width="240"
+              :height="110 + tooltipContent.data.length * 20"
+              rx="4"
+              fill="white"
+              stroke="gray"
+              stroke-width="1"
+              opacity="0.9"
+            />
+            <text
+              v-if="settingsStore.tooltipSettings.includes(4)"
+              x="8"
+              y="20"
+            >
+              {{ format(tooltipContent.time, "HH:mm:ss dd/MM/yyyy") }}
+            </text>
+            <text
+              v-if="settingsStore.tooltipSettings.includes(5)"
+              x="8"
+              y="40"
+            >
+              {{ t("tooltipOptions.timePassed") }}:
+              {{ formatDurationHHMMSS(startTime, tooltipContent.time) }}
+            </text>
+            <text
+              v-if="settingsStore.tooltipSettings.includes(6)"
+              x="8"
+              y="60"
+            >
+              {{ t("tooltipOptions.activeUser") }}:
+              {{ batch.jobOrderInfo?.operatorName }}
+            </text>
+            <text
+              v-if="selectedCommand"
+              x="8"
+              y="80"
+            >
+              {{ t('tooltipOptions.activeCommand') }}:
+              {{ `(${selectedCommand.commandNo}) ${selectedCommand.commandName}` }}
+            </text>
+            <text
+              v-if="selectedCommand"
+              x="8"
+              y="100"
+            >
+              {{ t('tooltipOptions.timeUntilCommandStart') }}:
+              {{ formatDurationHHMMSS(new Date(selectedCommand.startTime), selectedTime) }}
+            </text>
+            <g v-for="(item, index) in tooltipContent.data" :key="index">
+              <text
+                x="8"
+                :y="120 + index * 20"
+                class="text-sm"
+                :fill="item.color"
+              >
+                {{
+                  `${item?.value?.name}: ${item?.value?.value?.toFixed(2) || (`${item?.value?.duration} - ${t('cycle')}: ${item.value.count}`)}`
+                }}
+              </text>
+            </g>
+          </g>
+
+          <!-- Digital ios -->
+          <g
+            v-if="settingsStore?.bottomChartVisibilityStatus === 1"
+            :transform="`translate(${0}, ${outerHeight * chartHeightMultiplier + 20})`"
+          >
+            <g class="io-status-bars">
+              <template
+                v-for="(io, index) in digitalDataSet"
+                :key="`digital-io-${index}`"
+              >
+                <text :y="index * 20 - 2" style="font-size: x-small">
+                  {{ io.name }}
+                </text>
+                <rect
+                  v-for="(value, idx) in io.ioValues"
+                  :key="`io-${index}-value-${idx}`"
+                  :x="xScale(getBarStartTime(value.time))"
+                  :width="computeWidth(io.ioValues, idx)"
+                  :height="8"
+                  :y="index * 20"
+                  :fill="value.value ? 'blue' : 'grey'"
+                  style="pointer-events: none;"
+                  stroke="none"
+                />
+              </template>
+            </g>
+          </g>
+
+          <!-- Reel lines -->
+          <g v-show="settingsStore?.bottomChartVisibilityStatus === 2">
+            <g
+              ref="reelsXAxisEl"
+              class="x-axis"
+              :transform="`translate(0,${outerHeight - 40})`"
+            />
+            <g ref="reelsYAxisEl" class="y-axis-reels" />
+            <g :clip-path="`url(#${clipId})`">
+              <path
+                v-for="(line, index) in reelLines"
+                :key="`${index}-line-reel`"
+                :d="line.line(reelsDataSet[index]?.cycles || [])!"
+                fill="none"
+                :stroke="line.color"
+                stroke-width="3"
+                :stroke-dasharray="line.lineType === 'dashed' ? '4,2' : 'none'"
+              />
+              <g v-for="(line, index) in reelLines" :key="`${index}-dots-reel`">
+                <g v-if="line.lineType === 'dotted' && reelsDataSet[index]?.cycles">
+                  <circle
+                    v-for="(point, pointIndex) in reelsDataSet[index].cycles"
+                    :key="`${index}-${pointIndex}`"
+                    :cx="xScale(new Date(point.cycledAt))"
+                    :cy="reelYScale(point.duration)"
+                    r="3"
+                    :fill="line.color"
+                  />
+                </g>
+              </g>
+            </g>
           </g>
         </g>
-      </g>
-    </svg>
+      </svg>
+      <ArchiveChartContextMenu
+        v-model="contextMenu"
+        @action="handleMenuAction"
+      />
+    </div>
+    <div class="shrink-0 w-full overflow-hidden">
+      <Commands
+        :commands="batch.mergedCommands"
+        :selected-time="selectedTime"
+        @command-clicked="(time: string) => selectedTime = new Date(time)"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .chart {
   padding: 0px !important;
-  width: 100%;
-  height: 100%;
 }
 </style>

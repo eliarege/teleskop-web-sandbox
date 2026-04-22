@@ -28,6 +28,7 @@
   "ISN": "ISN",
   "materialCode": "Material Code",
   "materialName": "Material Name",
+  "programNo": "Program No",
   "programName": "Program Name",
   "jobOrder": "Job Order",
   "collectionNo": "Party No",
@@ -62,6 +63,16 @@
   "noAlarm": "No Alarm At Selected Time",
   "processGroup": "Process Group",
   "operator": "Operator",
+  "commandInfo": "Command Info",
+  "stepDetails": "Step Details",
+  "printedOn": "Printed On",
+  "page": "Page",
+  "machineNo": "Machine No",
+  "machineName": "Machine Name",
+  "partyNumber": "Party Number",
+  "jobOrderNo": "Job Order No",
+  "processType": "Process Type",
+  "chart": "Chart",
   "jobOrderSummarySettings": {
     "_": "Job Order Summary Report Settings",
     "description": "Please select the ERP parameters you want to show on the job order summary report."
@@ -76,12 +87,14 @@
     "axisNameAlreadyExists": "Axis name already exists."
   },
   "jobOrderSummary": {
+    "_": "Job Order Summary",
     "waterTotal": "Total Water",
     "electricity": "Electricity",
     "steam": "Steam",
     "steamPerWeight": "Kg Steam / Kg Fabric",
     "electricityPerWeight": "Kw / Kg Fabric",
-    "totalWaterPerWeight": "Lt Water / Kg Fabric"
+    "totalWaterPerWeight": "Lt Water / Kg Fabric",
+    "fileName": "Job_Order_Summary"
   },
   "panels": {
     "jobOrderInfo": "Job Order Info",
@@ -245,7 +258,8 @@
     "programNo": "Program No",
     "programName": "Program Name",
     "interventions": "Interventions",
-    "batchInfo": "Batch Info"
+    "batchInfo": "Batch Info",
+    "fileName": "Batch_Summary"
   },
   "calculatedValues": {
     "DAKIKADA_TAMBUR_DEVRI": "Drum Revolution Per Minute",
@@ -340,7 +354,8 @@
     "_": "Error while loading Job Order data: {message}",
     "BATCH_NOT_FOUND": "Job Order not found.",
     "IO_VALUES_NOT_FOUND": "IO values not found for this job order.",
-    "UNKNOWN_ERROR": "Unknown error occurred."
+    "UNKNOWN_ERROR": "Unknown error occurred.",
+    "noBatchDataForPrint": "No batch data available for printing."
   },
   "loading": {
     "loadingMachineInfo": "Loading Machine Info",
@@ -365,12 +380,18 @@
   },
   "interventionReport": {
     "title": "Job Order Intervention Report",
-    "jobOrderNo": "Job Order No:",
+    "jobOrderInfo": "Job Order Information",
+    "jobOrderNo": "Job Order No",
     "startTime": "Start Time",
     "endTime": "End Time",
     "cancelTime": "Cancel Time",
     "interventionTime": "Intervention Time",
-    "page": "Page {n}",
     "fileName": "Job_Order_Intervention_Report"
+  },
+  "stepDetailsDialog": {
+    "title": "Step Details",
+    "description": "Below are the actual and theoretical values for step number {stepNo}.",
+    "actualStep": "Actual Step {stepNo}",
+    "theoreticalStep": "Theoretical Step {stepNo}"
   }
 }

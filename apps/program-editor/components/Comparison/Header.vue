@@ -1,61 +1,51 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import type { ProgramInfoHeader } from '~/shared/types'
+import type { ProgramInfoHeader, ProgramStepCommandDiff } from '~/shared/types'
 
 const props = defineProps<{
   programOneHeader: ProgramInfoHeader
   programTwoHeader: ProgramInfoHeader
+  diffResults: [ProgramStepCommandDiff | null, ProgramStepCommandDiff | null][]
 }>()
 
 const { t } = useI18n()
 const machine = useMachineStore()
 
-function editProgram(programNumber: number) {
-  navigateTo(`/machine/${machine.currentMachine.id}/program/${programNumber}`)
+function editProgram(programNo: number) {
+  navigateTo(`/machine/${machine.currentMachine.id}/program/${programNo}`)
 }
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-3">
-    <!-- Program Cards -->
-    <div
-      v-for="(program, index) in [props.programOneHeader, props.programTwoHeader]"
-      :key="index"
-      class="col-6"
-    >
-      <q-card>
-        <q-card-section class="flex justify-between items-center ">
-          <div>
-            <div class="text-md">
-              {{ t('comparisonTable.programName') }}: {{ program.programName }}
-            </div>
-            <div class="text-md">
-              {{ t('comparisonTable.programNo') }}: {{ program.programNo }}
-            </div>
-            <div v-if="program.programVersion" class="text-md">
-              {{ t('comparisonTable.versionNo') }}: {{ program.programVersion }}
-            </div>
-            <div class="text-md">
-              {{ t('comparisonTable.stepCount') }}: {{ program.stepCount }}
-            </div>
+  <div class="space-y-3">
+    <!-- Program cards -->
+    <div class="grid grid-cols-2 gap-3">
+      <div
+        v-for="(program, i) in [props.programOneHeader, props.programTwoHeader]"
+        :key="i"
+        class="flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-gray-3 dark:border-dark-1 bg-gray-1 dark:bg-dark-3"
+      >
+        <div class="space-y-0.5 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-5 dark:text-gray-6 shrink-0">#{{ program.programNo }}</span>
+            <span class="font-semibold text-sm text-gray-9 dark:text-gray-2 truncate">{{ program.programName }}</span>
           </div>
-          <q-btn
-            v-if="program.isValid"
-            color="primary"
-            :label="t('comparisonTable.edit')"
-            @click="editProgram(program.programNo)"
-          />
-        </q-card-section>
-      </q-card>
+          <div class="flex items-center gap-3 text-xs text-gray-5 dark:text-gray-6">
+            <span>{{ t('comparisonTable.stepCount') }}: {{ program.stepCount }}</span>
+            <span v-if="program.programVersion">{{ t('comparisonTable.versionNo') }}: {{ program.programVersion }}</span>
+          </div>
+        </div>
+        <QBtn
+          v-if="program.isValid"
+          flat
+          dense
+          no-caps
+          size="sm"
+          icon="edit"
+          :label="t('comparisonTable.edit')"
+          class="text-primary shrink-0"
+          @click="editProgram(program.programNo)"
+        />
+      </div>
     </div>
   </div>
 </template>
-
-<style scoped lang="postcss">
-.text-md {
-  font-weight: bold;
-}
-.q-card {
-  border: 2px solid #3c3a3a;
-}
-</style>

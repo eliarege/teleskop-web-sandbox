@@ -28,14 +28,22 @@ await machine.fetchMachineGroups()
 await editor.fetchAllProcessTypes()
 editor.isLoading = false
 
-const machineId = Number(isDef(route.params.machine_id))
-
-if (!machineId) {
+async function redirectToFirstMachine() {
   const redirected = await machine.selectFirstUsableMachine()
   if (!redirected) {
     notifyError(t('noUsableMachineFound'))
   }
 }
+
+if (route.path === '/') {
+  await redirectToFirstMachine()
+}
+
+watch(() => route.path, async (path) => {
+  if (path === '/') {
+    await redirectToFirstMachine()
+  }
+})
 
 const tt = (key: string) => toRef(() => t(key))
 

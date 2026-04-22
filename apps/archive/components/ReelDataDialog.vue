@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { QTableColumn } from 'quasar'
 import { useDialogPluginComponent } from 'quasar'
 import { computed } from 'vue'
 import type { Reel } from '~/types/archive'
@@ -7,27 +8,27 @@ const props = defineProps<{
   cycleTimes: Reel[] // Array of reels with cycle data
 }>()
 
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
 const { t } = useI18n()
+const { dialogRef, onDialogHide, onDialogCancel } = useDialogPluginComponent()
 
 // Dynamic Columns: Generate headers dynamically based on reel count
-const dynamicColumns = computed(() => {
-  const baseColumns = [
+const dynamicColumns = computed<QTableColumn[]>(() => {
+  const baseColumns: QTableColumn[] = [
     {
       name: 'index',
       label: `${t('cycleCount')}`,
-      align: 'center',
+      align: 'center' as const,
       field: 'index',
     },
   ]
-  const reelColumns = props.cycleTimes.map((reel, index) => ({
+
+  const reelColumns: QTableColumn[] = props.cycleTimes.map((reel, index) => ({
     name: `reel${index + 1}`,
-    label: h('span', {
-      innerHTML: `${t('reel')} ${index + 1} (${t('sec')})<br>${props.cycleTimes[index].cycles.length} ${t('cycle')}`,
-    }),
+    label: `${t('reel')} ${index + 1}`,
     align: 'center',
     field: `reel${index + 1}`,
   }))
+
   return [...baseColumns, ...reelColumns]
 })
 
@@ -51,44 +52,74 @@ const formattedRows = computed(() => {
 </script>
 
 <template>
-  <q-dialog ref="dialogRef">
-    <q-card>
-      <q-card-section>
-        <div>
-          <div class="text-2xl">
-            {{ t("reelDataDialog") }}
-          </div>
+  <q-dialog ref="dialogRef" @hide="onDialogHide">
+    <q-card class="min-w-[300px]" style="max-width: 90vw;">
+      <q-card-section class="row items-center">
+        <div class="text-h6">
+          {{ t('reelDataDialog') }}
         </div>
+        <q-space />
+        <q-btn
+          v-close-popup
+          icon="close"
+          class="color-gray-6"
+          flat
+          round
+          dense
+        />
       </q-card-section>
 
       <!-- Table Section -->
-      <q-card-section class="max-h-150 w-full overflow-y-scroll">
-        <q-table
-          flat
-          bordered
-          :rows="formattedRows"
-          :columns="dynamicColumns"
-          row-key="index"
-          hide-bottom
-          dense
-          :pagination="{ rowsPerPage: 0 }"
-        >
-          <template #body-cell="props">
-            <q-td :props="props">
-              {{ props.value }}
-            </q-td>
-          </template>
-        </q-table>
+      <q-card-section class="q-pt-none">
+        <div>
+          <q-table
+            flat
+            bordered
+            :rows="formattedRows"
+            :columns="dynamicColumns"
+            row-key="index"
+            class="h-140"
+            table-header-style="position: sticky; top: 0; z-index: 1;"
+            table-header-class="bg-gray-1 dark:bg-dark-4"
+            hide-bottom
+            dense
+            :pagination="{ rowsPerPage: 0 }"
+          >
+            <template #body-cell="slotProps">
+              <q-td :props="slotProps">
+                {{ slotProps.value }}
+              </q-td>
+            </template>
+
+            <template
+              v-for="(reel, index) in props.cycleTimes"
+              :key="`reel-header-${index}`"
+              #[`header-cell-reel${index+1}`]="slotProps"
+            >
+              <q-th :props="slotProps">
+                <div class="column items-center">
+                  <div>
+                    {{ t('reel') }} {{ index + 1 }} ({{ t('sec') }})
+                  </div>
+                  <div class="text-caption">
+                    {{ reel.cycles.length }} {{ t('cycle') }}
+                  </div>
+                </div>
+              </q-th>
+            </template>
+          </q-table>
+        </div>
       </q-card-section>
 
-      <!-- Dialog Actions -->
-      <q-card-actions align="right">
+      <q-card-actions
+        align="right"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
+      >
         <q-btn
-          v-close-popup
           :label="t('close')"
-          outline
-          color="black"
-          icon="close"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-2"
+          flat
+          @click="onDialogCancel"
         />
       </q-card-actions>
     </q-card>

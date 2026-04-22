@@ -7,7 +7,8 @@ defineProps<{
   jobOrderInfo: BatchInfo
   programs: BasicProgram[]
 }>()
-const { t } = useNuxtApp().$i18n
+
+const { t } = useI18n()
 </script>
 
 <template>

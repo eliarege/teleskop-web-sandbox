@@ -1,6 +1,8 @@
 import { addSeconds } from 'date-fns'
 import { sortBy } from 'lodash-es'
 import { db } from '~/server/database'
+import type { StepStatusType } from '~/shared/constants'
+import { StepStatus } from '~/shared/constants'
 
 interface PartialBatch {
   machineId: number
@@ -29,7 +31,7 @@ interface ActualStep {
 
 interface ActualStepDetailed extends ActualStep {
   theoreticalStepNo: number
-  stepStatus: 0 | 1 | 2
+  stepStatus: StepStatusType
   isFinished: boolean
 }
 
@@ -74,7 +76,7 @@ export default defineEventHandler(async (event) => {
 
   for (const step of actualSteps) {
     step.theoreticalStepNo = step.actualStepNo
-    step.stepStatus = 0
+    step.stepStatus = StepStatus.NORMAL // Normal step
     step.isFinished = true
   }
 
@@ -94,7 +96,7 @@ export default defineEventHandler(async (event) => {
         if (step.startTime > change.changeDate) {
           if (step.theoreticalStepNo === change.stepNo) {
             step.theoreticalStepNo -= 0.001
-            step.stepStatus = 1
+            step.stepStatus = StepStatus.ADDED // Added step
           } else if (step.theoreticalStepNo > change.stepNo) {
             step.theoreticalStepNo--
           }
@@ -120,9 +122,9 @@ export default defineEventHandler(async (event) => {
           programNo: ts.programNo,
           startTime: addSeconds(step.startTime, -1),
           endTime: null,
-          stepStatus: 2,
+          stepStatus: StepStatus.SKIPPED_OR_PENDING, // Skipped step
           isFinished: false,
-        } as ActualStepDetailed))
+        } as ActualStepDetailed)),
       )
     }
   }
@@ -137,13 +139,13 @@ export default defineEventHandler(async (event) => {
       .filter(ts => ts.stepNo > maxActualStep)
       .map(ts => ({
         actualStepNo: -1,
-          theoreticalStepNo: ts.stepNo,
-          commandNo: ts.commandNo,
-          programNo: ts.programNo,
-          startTime: addSeconds(maxStartTime, 1),
-          endTime: null,
-          stepStatus: 2,
-          isFinished: false,
+        theoreticalStepNo: ts.stepNo,
+        commandNo: ts.commandNo,
+        programNo: ts.programNo,
+        startTime: addSeconds(maxStartTime, 1),
+        endTime: null,
+        stepStatus: StepStatus.SKIPPED_OR_PENDING, // Pending step
+        isFinished: false,
       } as ActualStepDetailed))
   }
 

@@ -112,6 +112,7 @@ const selectedRow = ref()
 const errorChannel = new BroadcastChannel('archive-error')
 errorChannel.onmessage = (event) => {
   loading.hide()
+  console.error(event.data.message)
   notify({
     color: 'negative',
     position: 'top-right',
