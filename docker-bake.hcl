@@ -41,6 +41,18 @@ variable "APP_ROLES" {
   }
 }
 
+# Whether the Keycloak client for this app is a public (browser) client.
+variable "APP_PUBLIC" {
+  default = "true"
+}
+
+# Whether this app acts as a service that authenticates via client_credentials flow.
+# Service apps get ServiceAccountsEnabled on their Keycloak client and their secret
+# is written to env/service-secrets.env during setup-keycloak.
+variable "APP_SERVICE" {
+  default = "false"
+}
+
 variable "BUILD_DATE" {
   default = timestamp()
 }
@@ -55,11 +67,13 @@ target "_common" {
   }
   cache-from = ["${CI_REGISTRY_IMAGE}/${APP_NAME}:latest"]
   labels = {
-    "com.eliar.manifest.name" = APP_NAME,
-    "com.eliar.manifest.version" = CI_COMMIT_TAG,
-    "com.eliar.manifest.roles" = APP_ROLES,
+    "com.eliar.manifest.name"             = APP_NAME,
+    "com.eliar.manifest.version"          = CI_COMMIT_TAG,
+    "com.eliar.manifest.roles"            = APP_ROLES,
+    "com.eliar.manifest.public"           = APP_PUBLIC,
+    "com.eliar.manifest.service"          = APP_SERVICE,
     "com.eliar.manifest.build.commit_hash" = CI_COMMIT_SHA,
-    "com.eliar.manifest.build.date" = BUILD_DATE
+    "com.eliar.manifest.build.date"       = BUILD_DATE
   }
   secret = [
     "type=env,id=TURBO_TOKEN"
@@ -116,6 +130,10 @@ target "machine-status" {
   args = {
     APP_BUILD_DIR = "dist"
   }
+  variables = {
+    APP_PUBLIC  = "false"
+    APP_SERVICE = "true"
+  }
 }
 
 target "machines" {
@@ -144,6 +162,10 @@ target "planning-board" {
 target "planning-board-engine" {
   inherits = ["_common"]
   target = "node-app"
+  variables = {
+    APP_PUBLIC  = "false"
+    APP_SERVICE = "true"
+  }
 }
 
 target "program-editor" {
