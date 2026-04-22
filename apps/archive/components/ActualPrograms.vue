@@ -5,27 +5,33 @@ const props = defineProps<{
   programs: BasicProgram[]
   selectedTime: Date
 }>()
+
+function isSelectedTimeInProgram(prg: BasicProgram): boolean {
+  const sel = new Date(props.selectedTime).getTime()
+  const start = new Date(prg.startTime).getTime()
+  const end = new Date(prg.endTime).getTime()
+  return sel > start && sel < end
+}
 </script>
 
 <template>
-  <div class="flex w-full gap-2 pt-3 px-1">
-    <div
-      v-for="prg of programs"
+  <q-list
+    class="wh-full bg-white overflow-y-auto py-2"
+    dense
+    separator
+  >
+    <q-item
+      v-for="prg in props.programs"
       :key="prg.programNo"
-      class="text-xs item-class w-full px-2 py-0.5"
-      :class="new Date(selectedTime) > new Date(prg.startTime) && new Date(selectedTime) < new Date(prg.endTime) ? 'text-bold' : ''"
-      dense
+      :class="isSelectedTimeInProgram(prg)
+        ? 'bg-blue-2'
+        : ''"
     >
-      {{ `${prg.programNo} - ${prg.programName}` }}
-    </div>
-  </div>
+      <q-item-section>
+        <span class="text-sm">
+          {{ `${prg.programNo} - ${prg.programName}` }}
+        </span>
+      </q-item-section>
+    </q-item>
+  </q-list>
 </template>
-
-<style scoped>
-.item-class {
-  border-width: 1px;
-  border-color: grey;
-  border-radius: 5px;
-  font-size: small;
-}
-</style>

@@ -1,30 +1,34 @@
 <script setup lang="ts">
 import { useDialogPluginComponent } from 'quasar'
+import type { ERPParameterDefinition } from '../types/archive'
 
-const props = defineProps({
-  erpParameters: Array,
-})
+const props = defineProps<{
+  erpParameters: ERPParameterDefinition[]
+}>()
+
 defineEmits([
   ...useDialogPluginComponent.emits,
 ])
-const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+
 const { t } = useI18n()
-const parameters: Ref<Array<any>> = ref(props.erpParameters)
+const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+
+const parameters = ref<ERPParameterDefinition[]>(props.erpParameters)
 const buttons = [
   {
     icon: 'check',
     tooltip: t('selectAll'),
-    onClick: () => parameters.value.forEach(p => p.BATCHREPORTVISIBLE = true),
+    onClick: () => parameters.value.forEach(p => p.batchReportVisible = true),
   },
   {
     icon: 'remove',
     tooltip: t('dropAll'),
-    onClick: () => parameters.value.forEach(p => p.BATCHREPORTVISIBLE = false),
+    onClick: () => parameters.value.forEach(p => p.batchReportVisible = false),
   },
   {
     icon: 'sync_alt',
     tooltip: t('selectReverse'),
-    onClick: () => parameters.value.forEach(p => p.BATCHREPORTVISIBLE = !p.BATCHREPORTVISIBLE),
+    onClick: () => parameters.value.forEach(p => p.batchReportVisible = !p.batchReportVisible),
   },
 ]
 </script>
@@ -32,21 +36,33 @@ const buttons = [
 <template>
   <q-dialog
     ref="dialogRef"
+    class="select-none"
+    @hide="onDialogHide"
   >
-    <q-card>
+    <q-card class="min-w-120">
       <q-card-section>
-        <div>
-          <div class="text-2xl">
-            {{ t('jobOrderSummarySettings._') }}
-          </div>
-          <div class="text-lg whitespace-normal mt-5 w-140">
-            {{ t('jobOrderSummarySettings.description') }}
-          </div>
+        <div class="text-h6 flex">
+          {{ t('jobOrderSummarySettings._') }}
+          <q-space />
+          <q-btn
+            class="text-gray-4 dark:text-gray-6"
+            icon="close"
+            flat
+            round
+            dense
+            @click="onDialogCancel"
+          />
         </div>
       </q-card-section>
-      <q-card-section>
-        <div class="w-full m--5 flex">
-          <q-space />
+
+      <q-card-section class="pt-0">
+        <div class="text-h8 w-100 color-gray-6">
+          {{ t('jobOrderSummarySettings.description') }}
+        </div>
+      </q-card-section>
+
+      <q-card-section class="pr-10 py-0">
+        <div class="flex justify-end mb-2">
           <q-btn
             v-for="(button, index) in buttons"
             :key="index"
@@ -59,39 +75,40 @@ const buttons = [
           </q-btn>
         </div>
       </q-card-section>
-      <q-card-section>
+
+      <q-card-section class="pt-0">
         <div class="max-h-100 w-full overflow-y-scroll">
           <div
             v-for="param in parameters"
-            :key="`erp-${param.PARAMID}`"
-            class="mb-1 text-xl cursor-pointer"
-            @click="param.BATCHREPORTVISIBLE = !param.BATCHREPORTVISIBLE"
+            :key="`erp-${param.paramId}`"
+            class="text-sm cursor-pointer border rounded mb-2 p-2 flex items-center"
+            @click="param.batchReportVisible = !param.batchReportVisible"
           >
             <q-checkbox
-              v-model="param.BATCHREPORTVISIBLE"
-              :label="param.PARAMNAME"
+              v-model="param.batchReportVisible"
+              :label="param.paramName"
+              size="sm"
               dense
-              class="my-3 ml-5"
             />
-            <q-separator />
           </div>
         </div>
       </q-card-section>
 
-      <q-card-actions align="right">
+      <q-card-actions
+        align="right"
+        class="q-pa-md bg-gray-1 dark:bg-dark-4"
+      >
         <q-btn
-          outline
-          :label="t('save')"
-          color="black"
-          icon="save"
-          @click="onDialogOK(parameters)"
+          class="q-mr-sm bg-gray-2 dark:bg-dark-3 text-dark-4 dark:text-gray-4"
+          :label="t('cancel')"
+          flat
+          @click="onDialogCancel"
         />
         <q-btn
-          v-close-popup
-          :label="t('cancel')"
-          outline
-          color="black"
-          icon="close"
+          :label="t('save')"
+          class="bg-primary text-white"
+          flat
+          @click="onDialogOK(parameters)"
         />
       </q-card-actions>
     </q-card>

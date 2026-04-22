@@ -99,6 +99,13 @@ export default defineEventHandler(async (event) => {
           WHEN PARAMETERTYPE = 3 THEN 'SELECT_ADDITIVE'
         END`,
       ),
+      format: db.raw(`
+          CASE TEMPERATURE
+            WHEN 0 THEN 'NONE'
+            WHEN 1 THEN 'TEMPERATURE'
+            ELSE 'DURATION'
+          END
+        `),
       value: 'VALUE',
       containsVariable: 'CONTAINSVARIABLE',
       useDefault: 'USEDEFAULT',
@@ -165,6 +172,7 @@ export default defineEventHandler(async (event) => {
         index: rawParameter.index,
         name: rawParameter.name,
         type: rawParameter.type,
+        format: rawParameter.format,
         value: rawParameter.value,
         containsVariable: rawParameter.containsVariable,
         useDefault: rawParameter.useDefault,

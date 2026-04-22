@@ -14,7 +14,7 @@ const { t } = useI18n()
 
 <template>
   <q-btn
-    class="w-5 h-5"
+    class="w-5 h-5 rounded-full"
     padding="none"
     :style="{ backgroundColor: setting.color }"
     @click="isDialogOpen = true"
@@ -61,7 +61,7 @@ const { t } = useI18n()
         </q-tab-panel>
 
         <q-tab-panel name="line">
-          <div class="flex gap5">
+          <div class="flex gap-5">
             <q-btn
               dense
               flat

@@ -3,7 +3,6 @@ import { isDef } from '@teleskop/utils'
 import { fetchTeleskopSettings, getTeleskopSettings, logEditorOperation, upsertTreatments } from '../functions'
 import { db } from '../database'
 import { withDmTransaction, withProgramClient, withTransaction } from '../decorators'
-import { sql } from '../sql'
 import { PError } from '../error'
 import { ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
@@ -267,9 +266,9 @@ export class MachineController {
         typeId: 'H.PROCESSCODE',
         additionalTypeId: 'H.ADDITIONALPROCESSCODE',
         operator: 'H.TBBPRGCHANGEDEVENT',
-        updatedAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CHANGEDATE)`),
-        createdAt: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CREATIONDATE)`),
-        updatedAtTBB: this.trx.raw(sql`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.TBBCHANGEDATE)`),
+        updatedAt: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CHANGEDATE)`),
+        createdAt: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CREATIONDATE)`),
+        updatedAtTBB: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.TBBCHANGEDATE)`),
         prgState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
         totalChemReq: 'H.TotalChemReq',
@@ -331,7 +330,7 @@ export class MachineController {
         updatedAt: 'P.CHANGEDATE',
         updatedAtTBB: 'P.TBBCHANGEDATE',
         machineName: 'M.MACHINECODE',
-        tbbProgramChangedEvent: this.trx.raw(sql`CASE P.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
+        tbbProgramChangedEvent: this.trx.raw(`CASE P.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
         totalChemReq: 'P.TotalChemReq',
         totalDyeReq: 'P.TotalDyeReq',
         manChemReq: 'P.ManChemReq',
@@ -527,14 +526,14 @@ export class MachineController {
         icon: this.trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
         programNo: 'P.PROGNO',
         author: 'P.USERNAME',
-        command: 'P.USERCOMMENT',
+        comment: 'P.USERCOMMENT',
         typeId: 'P.PROCESSCODE',
         typeName: 'PT.PROCESSNAME',
         additionalTypeId: 'P.ADDITIONALPROCESSCODE',
         additionalTypeName: 'APT.PROCESSNAME',
         machineId: 'M.MACHINEID',
         machineName: 'M.MACHINECODE',
-        steps: this.trx.raw(sql`ISNULL((
+        steps: this.trx.raw(`ISNULL((
         SELECT commands = ISNULL((
           SELECT s2.COMMANDNO AS commandNo,
           parameters = ISNULL((
@@ -779,7 +778,7 @@ export class MachineController {
         updatedAtTBB: 'H.TBBCHANGEDATE',
         prgState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
-        tbbProgramChangedEvent: this.trx.raw(sql`CASE H.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
+        tbbProgramChangedEvent: this.trx.raw(`CASE H.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
         totalChemReq: 'H.TotalChemReq',
         totalDyeReq: 'H.TotalDyeReq',
         manChemReq: 'H.ManChemReq',

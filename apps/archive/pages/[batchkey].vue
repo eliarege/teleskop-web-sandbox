@@ -1,18 +1,14 @@
 <script lang="ts" setup>
-import { defineComponent, h, ref, shallowRef } from 'vue'
 import type {
   ComponentItemConfig,
   LayoutConfig,
   RowOrColumnItemConfig,
   StackItemConfig,
 } from 'golden-layout'
-import { interpolateRgb } from 'd3'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
-import { breakpointsTailwind } from '@vueuse/core'
-import { addSeconds, format } from 'date-fns'
 import { withBase } from 'ufo'
 import ExpandableMessage from '../components/ExpandableMessage.vue'
-import type { DuoAny, DuoParsed, DuoRaw } from '~/types/utils'
+import type { DuoAny } from '~/types/utils'
 import type {
   AnalogInputOutputType,
   BasicProgram,
@@ -21,12 +17,11 @@ import type {
   BatchCommand,
   BatchInfo,
   BatchParameters,
-  BatchStep,
   BatchValues,
   CalculatedValue,
   Counter,
   DigitalInputOutputType,
-  Machine,
+  ERPParameterDefinition,
   MachineCommand,
   Program,
   Reel,
@@ -42,27 +37,27 @@ import Commands from '~/components/Commands.vue'
 import Alarms from '~/components/Alarms.vue'
 import ActualPrograms from '~/components/ActualPrograms.vue'
 import TheoreticalPrograms from '~/components/TheoreticalPrograms.vue'
-import Chart from '~/components/Chart.vue'
 import ActualSteps from '~/components/ActualSteps.vue'
 import TheoreticalSteps from '~/components/TheoreticalSteps.vue'
-import { printJobOrderSummary, printJoborderRecipe } from '~/utils/functions'
+import { printBatchSummary, printJobOrderSummary, printJoborderRecipe } from '~/utils/pdf'
 import ArchiveChart from '~/components/ArchiveChart.vue'
 import InterventionsDialog from '~/components/InterventionsDialog.vue'
 import JobOrderSummarySettingsDialog from '~/components/JobOrderSummarySettingsDialog.vue'
 import CycleTimes from '~/components/CycleTimes.vue'
 import { insertBatchValues } from '~/shared/io'
+import TooltipOptionsDialog from '~/components/TooltipOptionsDialog.vue'
 
 const { t } = useI18n()
 const $q = useQuasar()
-const config = useRuntimeConfig()
-
 const route = useRoute()
+const config = useRuntimeConfig()
 
 const batchKey = Number(route.params.batchkey)
 const selectedDate = ref(new Date())
 const response = await fetch(withBase(`/api/batch/${batchKey}`, config.app.baseURL))
 const taskId = response.headers.get('Task-ID')
 const batchData = ref<DuoAny<Batch>>()
+
 const settingsStore = userSettingsStore()
 // task'in ilerlemesini takip etmek için yapıldı
 const batchDataPromise = response.json().then((data: TaskResponse<DuoAny<Batch>>): void => {
@@ -391,18 +386,19 @@ watch(
 )
 
 const actualPrograms = computed(() => {
-  const prgs: Array<BasicProgram> = []
+  const prgs: BasicProgram[] = []
   batchData.value?.actualCommands.forEach((step, index, arr) => {
     if (index === 0 || step.programNo !== arr[index - 1].programNo) {
       prgs.push({
         programNo: step.programNo,
         programName: step?.programName,
-        startTime: step.startTime,
+        processType: step?.processType,
+        startTime: step.startTime.toString(),
         endTime: '',
       })
     } else {
       if (step.endTime && prgs.length > 0) {
-        prgs[prgs.length - 1].endTime = step.endTime
+        prgs[prgs.length - 1].endTime = step.endTime.toString()
       }
     }
   })
@@ -421,7 +417,7 @@ const chart = ref<InstanceType<typeof ArchiveChart>>()
 const components: Record<string, () => any> = {
   JobOrderInfo: () =>
     h(JobOrderInfo, {
-      jobOrderInfo: batchData.value?.jobOrderInfo as BatchInfo,
+      jobOrderInfo: batchData.value.jobOrderInfo,
     }),
   StartParameters: () =>
     h(StartParameters, {
@@ -431,9 +427,11 @@ const components: Record<string, () => any> = {
     }),
   ActualSteps: () =>
     h(ActualSteps, {
+      batchKey,
       commands: batchData.value?.actualCommands as DuoAny<BatchCommand>[],
       selectedTime: selectedDate.value,
       machineCommands: batchData.value?.machine.commands as MachineCommand[],
+      theoreticalPrograms: batchData.value?.theoreticalPrograms as Program[],
       onUpdateSelectedTime: (time: string) => updateSelectedTime(time),
     }),
   ActualPrograms: () =>
@@ -752,18 +750,6 @@ const layoutConfig = freezeLayoutConfig({
             ],
           },
           {
-            title: t('panels.commands'),
-            size: '15%',
-            header: {
-              maximise: false,
-            },
-            type: 'component',
-            componentType: 'Commands',
-            componentState: {
-              i18nKey: 'panels.commands',
-            },
-          },
-          {
             size: '25%',
             type: 'row',
             content: [
@@ -816,30 +802,13 @@ function resetLayout() {
 function updateSelectedTime(time: string): any {
   selectedDate.value = new Date(time)
 }
-const tooltipOptions = computed(() => [
-  { label: t('tooltipOptions.markedAnalogInputs'), value: 1 },
-  { label: t('tooltipOptions.markedAnalogOutputs'), value: 2 },
-  { label: t('tooltipOptions.markedCalcualtedValues'), value: 3 },
-  { label: t('tooltipOptions.selectedTime'), value: 4 },
-  { label: t('tooltipOptions.currentDuration'), value: 5 },
-  { label: t('tooltipOptions.activeUser'), value: 6 },
-  { label: t('tooltipOptions.activeCommandTimeInfo'), value: 7 },
-  { label: t('tooltipOptions.manuelMeasuredValues'), value: 8 },
-])
+
 function showTooltipOptionDialog() {
   $q.dialog({
-    title: t('tooltipOptions.title'),
-    message: t('tooltipOptions.message'),
-    options: {
-      type: 'checkbox',
-      model: [...settingsStore.tooltipSettings],
-      items: tooltipOptions.value,
-    },
-    cancel: true,
-  }).onOk((data) => {
-    settingsStore.updateTooltipSettings(data)
+    component: TooltipOptionsDialog,
   })
 }
+
 function showInterventionsDialog() {
   $q.dialog({
     component: InterventionsDialog,
@@ -854,14 +823,16 @@ function showInterventionsDialog() {
     updateSelectedTime(data)
   })
 }
+
 async function showJobOrderSummarySettingsDialog() {
-  const erpParameters = await $fetch(`/api/batch/${batchKey}/erp-parameters`)
+  const erpParameters = await $fetch<ERPParameterDefinition[]>(`/api/batch/${batchKey}/erp-parameters`)
+
   $q.dialog({
     component: JobOrderSummarySettingsDialog,
     componentProps: {
       erpParameters,
     },
-  }).onOk(async (data) => {
+  }).onOk(async (data: ERPParameterDefinition[]) => {
     await $fetch(`/api/batch/${batchKey}/erp-parameters`, {
       method: 'PUT',
       body: {
@@ -874,6 +845,38 @@ async function showJobOrderSummarySettingsDialog() {
 const tt = (key: string) => toRef(() => t(key))
 
 const items = [
+  {
+    label: t('topbar.graph._'),
+    subMenu: {
+      items: [
+        [
+          {
+            label: t('topbar.graph.print'),
+            onClick: async () => {
+              if (!batchData.value) {
+                $q.notify({
+                  color: 'negative',
+                  position: 'top-right',
+                  message: t('error.noBatchDataForPrint'),
+                  icon: 'error',
+                })
+                return
+              }
+
+              await printChartSVG({
+                machineId: batchData.value.machine.id,
+                machineName: batchData.value.machine.name,
+                jobOrder: batchData.value.jobOrderInfo.jobOrder,
+                programNos: batchData.value.theoreticalPrograms.map(p => p.programNo),
+                startTime: batchData.value.jobOrderInfo.startTime,
+                endTime: batchData.value.jobOrderInfo.endTime,
+              })
+            },
+          },
+        ],
+      ],
+    },
+  },
   {
     label: tt('topbar.report._'),
     subMenu: {

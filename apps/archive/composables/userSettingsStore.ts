@@ -24,7 +24,7 @@ export const userSettingsStore = defineStore('settings', () => {
   function getSetting(id: string) {
     const setting = settings.value.get(id)
     if (!setting) {
-      settings.value.set(id, { color: '', selected: false })
+      settings.value.set(id, { color: '', selected: false, axis: '' })
     }
     return settings.value.get(id)!
   }
@@ -55,10 +55,10 @@ export const userSettingsStore = defineStore('settings', () => {
     const setting = getSetting(uid)
     return setting?.color || '#FFFFFF'
   }
-  function updateAlarmSettings(newSettings: Array<number>) {
+  function updateAlarmSettings(newSettings: number[]) {
     alarmSettings.value = newSettings
   }
-  function updateTooltipSettings(newSettings: Array<number>) {
+  function updateTooltipSettings(newSettings: number[]) {
     tooltipSettings.value = newSettings
   }
   function setShowAllAlarms(value: boolean) {

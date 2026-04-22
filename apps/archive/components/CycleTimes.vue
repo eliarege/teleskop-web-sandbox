@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import * as d3 from 'd3'
-import type { AnalogInputOutputType, IOSetting, Reel } from '~/types/archive'
+import type { Reel } from '~/types/archive'
 import { userSettingsStore } from '~/composables/userSettingsStore'
-import { getCommandsWithClosestTime } from '~/utils/functions'
 
 const props = defineProps<{
   cycles: Reel[]
@@ -32,35 +30,50 @@ const cyclesWithClosestCycleCount = computed(() => {
 </script>
 
 <template>
-  <div class="py-2 overflow-y-auto h-full space-y-0.5 divide-y-1 divide-gray-300">
-    <div v-for="cycle in cyclesWithClosestCycleCount" :key="`${cycle.reelNo}reelNo`">
-      <div class="flex items-center flex-nowrap mb-1">
+  <q-list class="py-2 overflow-y-auto h-full bg-white" separator>
+    <q-item
+      v-for="cycle in cyclesWithClosestCycleCount"
+      :key="`${cycle.reelNo}reelNo`"
+      dense
+    >
+      <!-- Checkbox -->
+      <q-item-section side>
         <q-checkbox
           :model-value="settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`).selected"
           dense
-          class="mx-2"
           @update:model-value="
             settingsStore.updateSetting(`cycleTimes_${cycle.reelNo}`, {
               selected: $event,
             })
           "
         />
-        <AxisSettingsButton
-          :setting="settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`)"
-          :command="{ name: `${cycle.reelNo + 1}. ${t('reel')}` }"
-          @update:setting="setting => settingsStore.updateSetting(`cycleTimes_${cycle.reelNo}`, setting)"
-        />
+      </q-item-section>
 
-        <span class="ml-4">
-          {{ `${cycle.reelNo + 1}. ${t("reel")}` }}
+      <!-- Title -->
+      <q-item-section>
+        <div class="row items-center no-wrap">
+          <AxisSettingsButton
+            :setting="settingsStore.getSetting(`cycleTimes_${cycle.reelNo}`)"
+            :command="{ name: `${cycle.reelNo + 1}. ${t('reel')}` }"
+            @update:setting="setting =>
+              settingsStore.updateSetting(`cycleTimes_${cycle.reelNo}`, setting)
+            "
+          />
+
+          <span class="ml-2">
+            {{ `${cycle.reelNo + 1}. ${t("reel")}` }}
+          </span>
+        </div>
+      </q-item-section>
+
+      <!-- Cycle -->
+      <q-item-section side>
+        <span>
+          {{ cycle.closestCount.count + 1 }}. {{ t("cycle") }}
         </span>
-        <q-space />
-        <span class="mr-4">
-          {{ cycle.closestCount.count + 1 }}. {{ `${t('cycle')}` }}
-        </span>
-      </div>
-    </div>
-  </div>
+      </q-item-section>
+    </q-item>
+  </q-list>
 </template>
 
 <style scoped>

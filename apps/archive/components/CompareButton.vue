@@ -5,7 +5,7 @@ const comparison = ref(false)
 </script>
 
 <template>
-  <div class="flex pos-right-2xl fixed ">
+  <div class="flex pos-right-2xl fixed">
     <div class="text-right" />
     <q-checkbox
       v-model="comparison"

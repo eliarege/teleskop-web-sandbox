@@ -2,7 +2,6 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { QBtn, QIcon, QTooltip } from 'quasar'
 import type { CustomQBtnProps } from '../composables/useContextBar'
-import CollapsibleButtonBar from './CollapsibleButtonBar.vue'
 import TBDurationErrorsDialog from './TBDurationErrorsDialog.vue'
 import { calculateProgramDuration } from '~/shared/formula'
 import type { Machine, Program } from '~/shared/types'
@@ -53,13 +52,13 @@ watch(
 </script>
 
 <template>
-  <div class="flex w-full items-center justify-between">
+  <div class="flex w-full flex-nowrap items-center justify-between overflow-hidden">
     <!-- LEFT SIDE -->
     <div class="flex flex-1 items-center">
       <!-- Left Drawer Button -->
       <QBtn
         class="text-gray-6 dark:text-gray-3"
-        icon="menu"
+        icon="i-material-symbols:left-panel-open-outline-rounded"
         square
         flat
         @click="leftDrawerOpen = !leftDrawerOpen"
@@ -69,12 +68,11 @@ watch(
       <CollapsibleButtonBar
         :buttons="visibleContextBarButtons"
         :menu-tooltip="t('contextBar.menuTooltip')"
-        dense
       />
     </div>
 
     <!-- RIGHT SIDE -->
-    <div class="flex items-center justify-end">
+    <div class="flex flex-nowrap items-center justify-end">
       <div
         v-if="props.program.programNo"
         class="flex items-center px-2"
@@ -103,7 +101,7 @@ watch(
       <!-- Right Drawer Button -->
       <QBtn
         class="text-gray-6 dark:text-gray-3"
-        icon="menu"
+        icon="i-material-symbols:right-panel-open-outline-rounded"
         square
         flat
         @click="rightDrawerOpen = !rightDrawerOpen"

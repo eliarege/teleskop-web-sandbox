@@ -23,17 +23,17 @@ async function onMachineClick(machineInfo: MachineInfo, processType?: ProcessTyp
     return
 
   const machineId = machineInfo.id
-  // Process type filtresini güncelle
-  filter.existingFilter.processType = processType ?? undefined
+  const currentMachineId = route.params.machine_id
 
-  const currentMachineId = Number(route.params.machine_id)
-  const machinePath = /^\/machine\/(\d+)$/
+  const isDifferentMachine = String(currentMachineId) !== String(machineId)
+  const isNotOnMachinePage = route.path !== `/machine/${machineId}`
 
-  // Makineler sayfasında değilse veya farklı makine seçildiyse makineyi değiştir
-  if (!machinePath.test(route.path) || currentMachineId !== machineId) {
-    await machine.changeMachine(machineId)
+  if (isNotOnMachinePage || isDifferentMachine) {
     editor.resetProgram()
+    await machine.changeMachine(machineId)
   }
+
+  filter.existingFilter.processType = processType
 }
 
 const thumbStyle = { opacity: '0' }

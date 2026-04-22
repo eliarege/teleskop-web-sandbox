@@ -19,6 +19,10 @@ export function useContextBar(
     },
     { immediate: true },
   )
+
+  onUnmounted(() => {
+    contextBarButtons.value = []
+  })
 }
 
 export function useContextBarState() {

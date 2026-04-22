@@ -1,23 +1,32 @@
 import { db } from '~/server/database'
+import type { RecipeStep } from '~/types/archive'
 
 export default defineEventHandler(async (event) => {
   const batchKey = getBatchKeyParam(event)
-  const planKey = (await db('BADATA as B')
-    .join('DYBFBATCHPLAN as D', function () {
-      this.on('D.JOBORDER', '=', 'B.JOBORDER')
+
+  if (!batchKey) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request',
     })
-    .where('B.BATCHKEY', batchKey)
-    .andWhere('D.lastForJoborder', 1)
-    .first('D.PLANKEY')).PLANKEY
+  }
 
-  // Define a subquery to sum the amounts for each relevant combination
   const consumptionSubQuery = db('DYTACONSUMPTION as c')
-    .select('c.JOBORDERCODE', 'c.programOrder', 'c.programReqOrder', 'c.MATERIALCODE')
-    .sum('c.AMOUNT as totalAmount')
-    .groupBy('c.JOBORDERCODE', 'c.programOrder', 'c.programReqOrder', 'c.MATERIALCODE')
+    .select(
+      'c.JOBORDERCODE',
+      'c.programOrder',
+      'c.programReqOrder',
+      'c.MATERIALCODE',
+    )
+    .sum({ totalAmount: 'c.AMOUNT' })
+    .groupBy(
+      'c.JOBORDERCODE',
+      'c.programOrder',
+      'c.programReqOrder',
+      'c.MATERIALCODE',
+    )
 
-  return await db('dbo.DYBFBATCHORDERRECIPESTEPS as r')
-    .where('r.PLANKEY', planKey)
+  const result: RecipeStep[] = await db('dbo.DYBFBATCHORDERRECIPESTEPS as r')
     .select({
       jobOrder: 'r.JOBORDER',
       recipeType: 'r.RECIPETYPE',
@@ -28,23 +37,35 @@ export default defineEventHandler(async (event) => {
       chemCode: 'r.CHEMCODE',
       materialName: 'm.MATERIALNAME',
       programProcessNo: 'r.REQNO_PROG',
-      amount: 'totalAmount',
+      amount: 'c.totalAmount',
       unit: 'r.otherUnit',
       programNo: 'p.RECIPENO',
       recipeAmount: 'r.AMOUNT',
+    })
+    .join('BADATA as B', 'B.JOBORDER', 'r.JOBORDER')
+    .join('DYBFBATCHPLAN as D', function () {
+      this.on('D.JOBORDER', '=', 'B.JOBORDER')
+        .andOn('D.lastForJoborder', '=', db.raw('1'))
     })
     .leftJoin('dbo.DYBFBATCHORDERRECIPEHEADER as p', function () {
       this.on('r.PLANKEY', '=', 'p.PLANKEY')
         .andOn('r.RCPINDEX', '=', 'p.RCPINDEX')
         .andOn('r.RECIPETYPE', '=', 'p.RECIPETYPE')
     })
-    .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', '=', 'r.CHEMCODE')
+    .leftJoin('DYTFMATERIAL as m', 'm.MATERIALCODE', 'r.CHEMCODE')
     .leftJoin(consumptionSubQuery.as('c'), function () {
       this.on('c.JOBORDERCODE', '=', 'r.JOBORDER')
         .andOn('c.programOrder', '=', 'r.RCPINDEX')
         .andOn('c.programReqOrder', '=', 'r.MAINSTEP')
         .andOn('c.MATERIALCODE', '=', 'r.CHEMCODE')
     })
-    .whereNotNull('REQNO_BATCH')
-    .orderBy(['r.RCPINDEX', 'r.REQNO_PROG', 'r.PARALLELSTEP'])
+    .where('B.BATCHKEY', batchKey)
+    .whereNotNull('r.REQNO_BATCH')
+    .orderBy([
+      { column: 'r.RCPINDEX' },
+      { column: 'r.REQNO_PROG' },
+      { column: 'r.PARALLELSTEP' },
+    ])
+
+  return result
 })

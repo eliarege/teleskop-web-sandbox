@@ -219,7 +219,3 @@ const cells = renderCells(props.rows)
     </tbody>
   </table>
 </template>
-
-<style scoped>
-
-</style>

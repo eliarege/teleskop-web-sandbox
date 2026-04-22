@@ -1,7 +1,9 @@
 import type { ParameterType } from '../utils/formula'
 import type { DDate, NullableDDate } from './utils'
+import type { StepStatusType } from '~/shared/constants'
 
 export interface Batch {
+  batchKey: number
   active: boolean
   lastRecordDate: Date
   machine: Machine
@@ -37,6 +39,7 @@ export interface BatchValues extends ArchivedIoValues {
 export interface BasicProgram {
   programNo: number
   programName?: string
+  processType?: string
   startTime: string
   endTime: string
 }
@@ -117,6 +120,7 @@ export interface MachineCommandParameter {
   index: number
   name: string
   type: typeof ParameterType[keyof typeof ParameterType]
+  format: 'NONE' | 'TEMPERATURE' | 'DURATION'
   value: string
   containsVariable: boolean
   useDefault: boolean
@@ -187,7 +191,7 @@ export interface VirtualInput {
 
 export interface Reel {
   reelNo: number
-  cycles: { count: number, duration: number, cycledAt: DDate }[]
+  cycles: { count: number, duration: number, cycledAt: Date }[]
 }
 
 export interface CalculatedValue {
@@ -260,6 +264,7 @@ export interface BatchInfo {
   actualDuration: number | null
   deviation: number | null
   isCancelled: boolean
+  partyNumber: string
 }
 
 export interface BatchIntervention {
@@ -310,11 +315,12 @@ export interface ERPParameter {
 export interface BatchCommand {
   programNo: number
   programName?: string
+  processType?: string
   programIndex: number
   stepNo: number
   parallelStepNo: number
   commandNo: number
-  startTime: DDate
+  startTime: Date
   endTime: NullableDDate
 }
 
@@ -326,7 +332,7 @@ export interface MergedBatchCommand {
   startTime: string
   endTime: string
   theoreticalDuration: number
-  stepStatus: string
+  stepStatus: StepStatusType
   isFinished: boolean
   commandName?: string
   icon?: string
@@ -416,3 +422,25 @@ export interface TaskStepContext {
 export type TaskResponse<T> =
   | { status: 'success', data: T }
   | { status: 'error', error: { message: string, data: any | null } }
+
+export interface ERPParameterDefinition {
+  paramId: number
+  paramName: string
+  batchReportVisible: boolean
+}
+
+export interface RecipeStep {
+  jobOrder: string
+  recipeType: string
+  processOrder: number
+  ISN: string
+  mainStep: number
+  parallelStep: number
+  chemCode: string
+  materialName: string
+  programProcessNo: string
+  amount: number
+  unit: string
+  programNo: string
+  recipeAmount: number
+}

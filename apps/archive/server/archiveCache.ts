@@ -17,7 +17,7 @@ export const archiveCache = new LRUCache<number, DuoRaw<ArchivedIoValuesWithStar
   max: 100,
   async fetchMethod(key, _, { signal }) {
     const data = await $fetch<DuoRaw<ArchivedIoValuesWithStartTime>>(`${teleskopArchiveServerUrl}/?${key}`, { signal })
-    if (!data.analogValues.length) {
+    if (!data || !data.analogValues?.length) {
       throw new IoValuesNotFoundError(key)
     }
     return data

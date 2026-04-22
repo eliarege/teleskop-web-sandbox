@@ -34,7 +34,7 @@ function updateAxis(setting: IOSetting) {
 </script>
 
 <template>
-  <div class="py-2 overflow-y-auto h-full space-y-0.5 divide-y-1 divide-gray-300">
+  <q-list class="py-2 h-full overflow-y-auto bg-white" separator>
     <IOLine
       v-for="command in commandsWithClosestTime"
       :key="command.ioIndex"
@@ -46,7 +46,7 @@ function updateAxis(setting: IOSetting) {
       @update:setting="(setting: IOSetting) => updateSetting(`${typeKey}_${command.ioIndex}`, setting)"
       @update:axis="(setting: IOSetting) => updateAxis(setting)"
     />
-  </div>
+  </q-list>
 </template>
 
 <style scoped>

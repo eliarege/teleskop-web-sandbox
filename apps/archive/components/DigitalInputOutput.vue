@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import * as d3 from 'd3'
 import { userSettingsStore } from '~/composables/userSettingsStore'
 import type { DigitalInputOutputType, IOSetting } from '~/types/archive'
 
@@ -8,6 +7,7 @@ const props = defineProps<{
   selectedTime: Date
   typeKey: 'digitalInputs' | 'digitalOutputs' | 'digitalOutputsLock'
 }>()
+
 const { t } = useI18n()
 const settingsStore = userSettingsStore()
 
@@ -17,20 +17,25 @@ const commandsWithClosestTime = computed(() => {
 </script>
 
 <template>
-  <div class="py-2 h-full overflow-y-auto space-y-0.5 divide-y-1 divide-gray-300">
-    <div
+  <q-list class="py-2 h-full overflow-y-auto bg-white" separator>
+    <IOLine
       v-for="command in commandsWithClosestTime"
       :key="command.ioIndex"
-    >
-      <IOLine
-        :setting="settingsStore.getSetting(`${typeKey}_${command.ioIndex}`)"
-        :command="command"
-        io-type="Digital"
-        :value="command.closestIoValue.value === 1 ? t('inputOutput.open') : t('inputOutput.closed') "
-        @update:setting="(setting: IOSetting) => settingsStore.setSetting(`${typeKey}_${command.ioIndex}`, setting.color, setting.selected)"
-      />
-    </div>
-  </div>
+      :setting="settingsStore.getSetting(`${typeKey}_${command.ioIndex}`)"
+      :command="command"
+      io-type="Digital"
+      :value="command.closestIoValue.value === 1
+        ? t('inputOutput.open')
+        : t('inputOutput.closed')"
+      @update:setting="(setting: IOSetting) =>
+        settingsStore.setSetting(
+          `${typeKey}_${command.ioIndex}`,
+          setting.color,
+          setting.selected,
+          setting.axis,
+        )"
+    />
+  </q-list>
 </template>
 
 <style scoped>
