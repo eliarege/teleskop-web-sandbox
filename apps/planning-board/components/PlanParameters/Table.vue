@@ -166,9 +166,9 @@ async function saveAllParameters() {
             color="primary"
             :label="isSendMachine ? t('plan-parameters.resend') : t('plan-parameters.confirm')"
             :loading="isLoading"
-            :disable="!isSendMachine && (!parameterData
+            :disable="!isSendMachine && !parameterData
               .filter(e => e.paramStatus !== StartingParameters.NonStartingParameter)
-              .every(e => e.value >= e.paramLowLimit && e.value <= e.paramHighLimit))"
+              .every(e => e.value >= e.paramLowLimit && e.value <= e.paramHighLimit)"
             @click="saveAllParameters()"
           >
             <template #loading>

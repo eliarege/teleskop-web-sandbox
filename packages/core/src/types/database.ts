@@ -204,6 +204,11 @@ export type BFCOMMANDPARAMETERS = {
    * Important for Tonello Integration
    */
   VALUEINDEX: number
+
+  /**
+   * Decimal used for parameter value. Important for Tonello Integration
+   */
+  DECIMALS: number | null
 }
 
 /**

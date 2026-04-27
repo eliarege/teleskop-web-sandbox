@@ -298,7 +298,11 @@ export function transformProgramToTonello(program: Program, commands: MachineCom
             expected: 'number',
           })
         }
-        tonelloStep.params.values[paramDef.valueIndex] = param.value
+        let value = param.value
+        if (paramDef.type === ParameterType.NUMBER && isDef(paramDef.decimals)) {
+          value = Math.floor(value * 10 ** paramDef.decimals)
+        }
+        tonelloStep.params.values[paramDef.valueIndex] = value
       } else {
         tonelloStep.params.bits[paramDef.valueIndex] = param.value ? 1 : 0
       }

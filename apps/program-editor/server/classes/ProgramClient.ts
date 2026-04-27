@@ -267,9 +267,13 @@ export class TonelloProgramClient implements ProgramClient {
           })
         }
 
-        const value = paramDef.type === ParameterType.CHECKBOX
+        let value = paramDef.type === ParameterType.CHECKBOX
           ? tonelloStep.params.bits[paramDef.valueIndex]
           : tonelloStep.params.values[paramDef.valueIndex]
+
+        if (paramDef.type === ParameterType.NUMBER && isDef(paramDef.decimals)) {
+          value /= 10 ** paramDef.decimals
+        }
 
         cmd.parameters.push({
           index: i,
@@ -341,7 +345,12 @@ export class TonelloProgramClient implements ProgramClient {
               expected: 'number',
             })
           }
-          tonelloStep.params.values[paramDef.valueIndex] = param.value
+          let value = param.value
+          if (paramDef.type === ParameterType.NUMBER && isDef(paramDef.decimals)) {
+            value = Math.floor(value * 10 ** paramDef.decimals)
+          }
+
+          tonelloStep.params.values[paramDef.valueIndex] = value
         } else {
           tonelloStep.params.bits[paramDef.valueIndex] = param.value ? 1 : 0
         }

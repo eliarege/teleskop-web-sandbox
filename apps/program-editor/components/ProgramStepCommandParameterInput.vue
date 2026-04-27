@@ -171,6 +171,7 @@ function handleBlur() {
         :rules="rules"
         :label="parameter.name ? mt(parameter.name, machine.currentMachine.id) : undefined"
         type="decimal"
+        :decimals="parameter.decimals"
         :maxlength="10"
         :hide-bottom-space="true"
         :format="parameter.format"

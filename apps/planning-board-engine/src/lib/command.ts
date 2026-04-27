@@ -28,6 +28,7 @@ export interface CommandParameter {
   format: string
   value: string
   valueIndex: number | null
+  decimals: number | null
   minValue: number
   maxValue: number
   containsVariable: boolean
@@ -91,6 +92,7 @@ export async function getMachineCommands(db: Knex, machineId: number): Promise<M
         `),
       value: 'P.VALUE',
       valueIndex: 'P.VALUEINDEX',
+      decimals: 'P.DECIMALS',
       minValue: 'P.PARAMLOWLIMIT',
       maxValue: 'P.PARAMHIGHLIMIT',
       containsVariable: 'P.CONTAINSVARIABLE',
@@ -133,6 +135,7 @@ export async function getMachineCommands(db: Knex, machineId: number): Promise<M
         format: rawParameter.format,
         value: rawParameter.value,
         valueIndex: rawParameter.valueIndex,
+        decimals: rawParameter.decimals,
         minValue: rawParameter.minValue,
         maxValue: rawParameter.maxValue,
         containsVariable: rawParameter.containsVariable,

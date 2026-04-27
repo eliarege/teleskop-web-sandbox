@@ -113,6 +113,7 @@ export interface CommandParameter {
   format: string
   value: string
   valueIndex: number | null
+  decimals: number | null
   minValue: number
   maxValue: number
   containsVariable: boolean

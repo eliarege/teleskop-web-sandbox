@@ -59,7 +59,7 @@ export default defineAuthEventHandler(async (event) => {
       }
       const errors = []
       if (err instanceof DatabaseQueryError) {
-        errors.push(...err.getMssqlErrors().map(e => e.message))
+        errors.push(...err.getMssqlErrors().map(e => `${e.message} (code: ${e.number})`))
       } else {
         errors.push(err instanceof Error ? err.message : 'Unknown error')
       }

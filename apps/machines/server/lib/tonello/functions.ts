@@ -83,6 +83,7 @@ export async function updateTonelloFunctions(
         PARAMETERINDEX: index,
         PARAMETERGROUP: param.row,
         VALUEINDEX: param.index,
+        DECIMALS: null,
       }
 
       if (param.type === 'list') {
@@ -105,9 +106,14 @@ export async function updateTonelloFunctions(
         paramRow.PARAMHIGHLIMIT = 1
         paramRow.PARAMLOWLIMIT = 0
       } else if (param.type === 'value') {
+        const decimals = param.decimals ?? null
+        const min = typeof param.min === 'string' ? Number.parseFloat(param.min) : param.min
+        const max = typeof param.max === 'string' ? Number.parseFloat(param.max) : param.max
+
         paramRow.PARAMETERTYPE = CommandParameterType.NUMBER
-        paramRow.PARAMHIGHLIMIT = typeof param.max === 'string' ? Number.parseFloat(param.max) : param.max
-        paramRow.PARAMLOWLIMIT = typeof param.min === 'string' ? Number.parseFloat(param.min) : param.min
+        paramRow.DECIMALS = decimals
+        paramRow.PARAMLOWLIMIT = min
+        paramRow.PARAMHIGHLIMIT = max
       } else {
         ctx.errors.push({
           code: INVALID_PARAMETER_TYPE_ERROR,

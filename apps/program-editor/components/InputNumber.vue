@@ -1,26 +1,35 @@
 <script setup lang="ts">
 import type { QInput } from 'quasar'
+import type { PropType } from 'vue'
 
-const props = withDefaults(defineProps<{
-  type?: 'decimal' | 'integer' | 'positive-integer'
-  rules?: any
-  maxlength?: number
-  outlined?: boolean
-  dense?: boolean
-  hideBottomSpace?: boolean
-  format?: string
-  disable?: boolean
-  maybeEmpty?: boolean
-  id?: string
-  label?: string
-}>(), {
-  type: 'decimal',
-  rules: () => [],
-  maxlength: 10,
-  outlined: false,
-  dense: false,
-  hideBottomSpace: false,
-  maybeEmpty: false,
+const props = defineProps({
+  type: String as PropType<'decimal' | 'integer' | 'positive-integer'>,
+  rules: {
+    type: Array as PropType<any[]>,
+    default: () => [],
+  },
+  maxlength: {
+    type: Number,
+    default: 10,
+  },
+  outlined: Boolean,
+  dense: Boolean,
+  decimals: {
+    type: [Number, null],
+    default: null,
+    validator(value) {
+      return value === null || (typeof value === 'number' && Number.isInteger(value) && value >= 0)
+    },
+  },
+  hideBottomSpace: Boolean,
+  format: {
+    type: String,
+    default: '',
+  },
+  disable: Boolean,
+  maybeEmpty: Boolean,
+  id: String,
+  label: String,
 })
 
 const emit = defineEmits(['inputBlur'])
@@ -42,7 +51,7 @@ const charRe = computed(() => {
     case 'positive-integer':
       return POSITIVE_INTEGER_RE
     default:
-      return DECIMAL_RE
+      return props.decimals === 0 ? INTEGER_RE : DECIMAL_RE
   }
 })
 
@@ -95,13 +104,19 @@ function onKeydownPreventNonNumerical(event: KeyboardEvent) {
     return event.preventDefault()
   }
 
-  // if (event.key === '0' && value.length && event.target.selectionStart === 0) {
-  //   return event.preventDefault()
-  // }
+  // Ondalık basamak sayısını kontrol et
+  if (props.decimals !== null && props.decimals > 0 && isValidChar && event.key !== '.' && event.key !== '-') {
+    const dotIndex = value.indexOf('.')
+    if (dotIndex !== -1) {
+      const decimalPart = value.slice(dotIndex + 1)
+      const cursorPosition = event.target.selectionStart!
+      const cursorAfterDot = cursorPosition > dotIndex
 
-  // if (value === '0' && event.key !== '.') {
-  //   event.target.value = ''
-  // }
+      if (cursorAfterDot && decimalPart.length >= props.decimals) {
+        return event.preventDefault()
+      }
+    }
+  }
 }
 
 function onPastePreventNonNumerical(event: ClipboardEvent) {
@@ -121,24 +136,25 @@ function onPastePreventNonNumerical(event: ClipboardEvent) {
 
   const handlePaste = (text: string) => {
     event.preventDefault()
-    input.value = input.value.slice(0, input.selectionStart!) + text + input.value.slice(input.selectionEnd!)
+    const newValue = input.value.slice(0, input.selectionStart!) + text + input.value.slice(input.selectionEnd!)
+
+    // Ondalık basamak sayısını kontrol et
+    if (props.decimals !== null && props.decimals > 0) {
+      const dotIndex = newValue.indexOf('.')
+      if (dotIndex !== -1) {
+        const decimalPart = newValue.slice(dotIndex + 1)
+        if (decimalPart.length > props.decimals) {
+          // Ondalık basamak sayısını sınırla
+          input.value = newValue.slice(0, dotIndex + 1) + decimalPart.slice(0, props.decimals)
+          return
+        }
+      }
+    }
+
+    input.value = newValue
   }
 
   handlePaste(data)
-  //   const value = input.value
-  //   const hasMinus = value.includes('-')
-  //   const hasDot = value.includes('.')
-  //   if (hasMinus)
-  //     text.replaceAll('-', '')
-  //   if (hasDot)
-  //     text.replaceAll('.', '')
-
-  // if (!/^[\d.]+$/.test(data)) {
-  //   return event.preventDefault()
-  // }
-
-  // if (props.type === 'decimal' && (data.indexOf('.') !== data.lastIndexOf('.')))
-  //   return event.preventDefault()
 }
 
 function onDrop(event: DragEvent) {
@@ -168,6 +184,14 @@ function onBlurInternal(event: FocusEvent) {
 
   if (value === '-') {
     value = ''
+  }
+
+  // Ondalık basamak sayısını sınırla
+  if (props.decimals !== null && props.decimals > 0 && value.includes('.')) {
+    const [integerPart, decimalPart] = value.split('.')
+    if (decimalPart && decimalPart.length > props.decimals) {
+      value = `${integerPart}.${decimalPart.slice(0, props.decimals)}`
+    }
   }
 
   const parsedValue = Number.parseFloat(value)
