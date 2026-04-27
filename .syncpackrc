@@ -1,6 +1,4 @@
 {
-  "dependencyTypes": ["dev", "prod", "peer"],
-  "lintFormatting": false,
   "semverGroups": [
     {
       "label": "use exact version numbers",
@@ -11,6 +9,11 @@
     }
   ],
   "versionGroups": [
+    {
+      "label": "Ignore everything except dependencies, devDependencies, and peerDependencies",
+      "dependencies": ["!prod", "!dev", "!peer"],
+      "isIgnored": true
+    },
     {
       "label": "New versions of @antfu/eslint-config may add unwanted rules.",
       "packages": ["**"],

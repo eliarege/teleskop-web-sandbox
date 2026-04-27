@@ -14,7 +14,7 @@ if [ -n "$apps_args" ]; then
   IFS=' ' read -r -a apps <<< "$apps_args"
 else
   # Default apps
-  apps=("root")
+  apps=("program-editor" "machines" "planning-board" "planning-board-engine" "recipes" "migration-service")
 fi
 
 filters=()
@@ -22,7 +22,7 @@ for app in "${apps[@]}"; do
   filters+=(--filter "$app")
 done
 
-pnpm run -r "${filters[@]}" build
+pnpm run build "${filters[@]}"
 
 for app in "${apps[@]}"; do
   app_dir="./apps/$app"
@@ -33,7 +33,7 @@ for app in "${apps[@]}"; do
     out_dir=".output"
   fi
   echo "Packing $app from $app_dir/$out_dir"
-  cp -r "$app_dir/$out_dir" "$tmpdir/$app/"
+  cp -rL "$app_dir/$out_dir" "$tmpdir/$app/"
 done
 
 tar --dereference -czf apps.tar.gz -C "$tmpdir" "${apps[@]}"
