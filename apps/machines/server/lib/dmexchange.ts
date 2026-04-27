@@ -5,7 +5,7 @@ type MachineMirrorInput = {
   machineCode: string
   groupId: number
   machineCapacity?: number | null
-  theoricalCharge?: number | null
+  theoreticalCharge?: number | null
   inUse: boolean
 }
 
@@ -25,7 +25,7 @@ export async function upsertMachineToDmExchange(dmKnex: Knex, machine: MachineMi
   const machineName = machine.machineCode
   const groupNo = machine.groupId
   const maxVolume = Number(machine.machineCapacity ?? 0)
-  const maxWeight = Number(machine.theoricalCharge ?? 0)
+  const maxWeight = Number(machine.theoreticalCharge ?? 0)
 
   await dmKnex.transaction(async (dmTrx) => {
     const existingMachine = await dmTrx(dmMachinesTable)

@@ -11,12 +11,12 @@ export default defineAuthEventHandler(async (event) => {
       MACHINECODE: machine.machineCode,
       GRUPNO: machine.groupId,
       TBBMODEL: machine.tbbModel,
-      THEORICALCHARGE: machine.theoricalCharge,
+      THEORICALCHARGE: machine.theoreticalCharge,
       MACHINECAPACITY: machine.machineCapacity,
       IP: machine.ip,
       VERSION: machine.version,
       NOZZLECOUNT: machine.nozzleCount,
-      theoricalChargeDuration: machine.theoricalChargeDuration,
+      theoricalChargeDuration: machine.theoreticalChargeDuration,
       REELCOUNT: machine.reelCount,
       STEAMUNIT: machine.steamUnit,
       INUSE: machine.inUse,
@@ -41,7 +41,7 @@ export default defineAuthEventHandler(async (event) => {
         machineCode: machine.machineCode,
         groupId: Number(machine.groupId),
         machineCapacity: machine.machineCapacity,
-        theoricalCharge: machine.theoricalCharge,
+        theoreticalCharge: machine.theoreticalCharge,
         inUse: machine.inUse,
       })
     }

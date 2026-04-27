@@ -11,8 +11,8 @@ export const machineSchema = z.object({
   reelCount: z.number().int(),
   nozzleCount: z.number().int(),
   ip: z.string().regex(IPV4_RE, 'Invalid IP address'),
-  theoricalCharge: z.number().int().min(1).max(25),
-  theoricalChargeDuration: z.number().int().min(45).max(1440),
+  theoreticalCharge: z.number().int().min(1).max(25),
+  theoreticalChargeDuration: z.number().int().min(45).max(1440),
   steamUnit: z.string().optional(),
   MTTempIo: z.union([z.number(), z.string()]).optional(),
   inUse: z.boolean(),
@@ -28,12 +28,12 @@ export const machineSchema = z.object({
   steamValveDo: z.union([z.number(), z.string()]).optional(),
   version: z.string().optional(),
 }).refine((data) => {
-  // Theoretical charge rule: theoricalCharge * theoricalChargeDuration <= 1440
-  if (data.theoricalCharge && data.theoricalChargeDuration) {
-    return data.theoricalCharge * data.theoricalChargeDuration <= 1440
+  // Theoretical charge rule: theoreticalCharge * theoreticalChargeDuration <= 1440
+  if (data.theoreticalCharge && data.theoreticalChargeDuration) {
+    return data.theoreticalCharge * data.theoreticalChargeDuration <= 1440
   }
   return true
 }, {
   message: 'Theoretical charge exceeds 1 day',
-  path: ['theoricalCharge'],
+  path: ['theoreticalCharge'],
 })

@@ -584,7 +584,7 @@
   "definitionsDownloaded": "Definitions Downloaded",
   "definitionsUploaded": "Definitions Uploaded",
   "errorDuringProcess": "Error During Process",
-  "theoricalChargeValidationError": "Theoretical charge count must be between 1-25, and duration must be between 45 minutes and 24 hours (1440 minutes).",
+  "theoreticalChargeValidationError": "Theoretical charge count must be between 1-25, and duration must be between 45 minutes and 24 hours (1440 minutes).",
   "validationWarning": "Validation Warning",
   "pleaseSelectAtLeastOneSetting": "Please select at least one setting.",
   "pleaseSelectAtLeastOneMachine": "Please select at least one machine.",

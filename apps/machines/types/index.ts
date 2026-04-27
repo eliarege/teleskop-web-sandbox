@@ -8,8 +8,8 @@ export interface Machine {
   tbbModel: string
   plcModel: string
   ip: string
-  theoricalCharge: string
-  theoricalChargeDuration: string
+  theoreticalCharge: string
+  theoreticalChargeDuration: string
   machineCapacity: string
   reelCount: number
   nozzleCount: number

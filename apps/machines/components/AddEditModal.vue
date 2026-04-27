@@ -122,8 +122,8 @@ const theoriticalChargeRule = function (node: FormKitNode) {
   if (!parent)
     return true
 
-  const theo = (parent.value as Machine).theoricalCharge
-  const theoDur = (parent.value as Machine).theoricalChargeDuration
+  const theo = (parent.value as Machine).theoreticalCharge
+  const theoDur = (parent.value as Machine).theoreticalChargeDuration
   if (!theo || !theoDur)
     return true
 
