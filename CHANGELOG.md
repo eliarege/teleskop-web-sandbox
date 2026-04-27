@@ -1,8 +1,26 @@
 # Changelog
 
+## 0.75.0 - 2026-04-27
+
+[Compare Changes](d623b1f6379308eda0fb30f2f92c78090134c0c3...3eda4c4ccbae7ae3eb0993497423e405b41fa2a4)
+
+### 🚀 Features
+
+- Add decimals support for Tonello parameters and update related components ([143a92c](143a92c03dc935ad7b2b267f418929dbef8f99ce))
+
+### 🐛 Bug Fixes
+
+-  **MA**: Correct spelling of 'theoreticalCharge' and 'theoreticalChargeDuration' across multiple files ([f2587d6](f2587d67ea0f5275873f8850444b824967ac60bd))
+-  **MA**: Enhance error handling for tonello sync transactions, improve user facing error messages ([b50b2cf](b50b2cff32a93f91178e6f7c27bd036885622710))
+
+### 🔧 Miscellaneous Tasks
+
+- Update workspace devDependencies to latest versions ([b005780](b005780f9d282b09cb5de739ff3608a8ec0f9ccc))
+- Update migration directory path in generateMigration script to include 'teleskop' ([3eda4c4](3eda4c4ccbae7ae3eb0993497423e405b41fa2a4))
+
 ## 0.74.0 - 2026-04-22
 
-[Compare Changes](9ed2e00f1a797bd2c90b674a5e4cdcb4341def9d...b8c45a240733b4f5a676b877124fc28f44a31645)
+[Compare Changes](9ed2e00f1a797bd2c90b674a5e4cdcb4341def9d...d623b1f6379308eda0fb30f2f92c78090134c0c3)
 
 ### 🚀 Features
 
