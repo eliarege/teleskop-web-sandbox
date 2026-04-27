@@ -8,6 +8,8 @@ import type {
   TonelloInputOutputList,
 } from '@teleskop/core'
 import { insertBatch } from '@teleskop/utils'
+import type { MssqlError } from '~/server/error'
+import { DatabaseQueryError } from '~/server/error'
 
 export async function updateTonelloInputOutputs(
   trx: Knex.Transaction,
@@ -72,15 +74,21 @@ export async function updateTonelloInputOutputs(
     }),
   )
 
-  await trx('BFMACHAIN').delete().where({ MACHINEID: machineId })
-  await trx('BFMACHAOUT').delete().where({ MACHINEID: machineId })
-  await trx('BFMACHDIN').delete().where({ MACHINEID: machineId })
-  await trx('BFMACHDOUT').delete().where({ MACHINEID: machineId })
-  await trx('BFMACHCOUNTER').delete().where({ MACHINEID: machineId })
+  try {
+    await trx('BFMACHAIN').delete().where({ MACHINEID: machineId })
+    await trx('BFMACHAOUT').delete().where({ MACHINEID: machineId })
+    await trx('BFMACHDIN').delete().where({ MACHINEID: machineId })
+    await trx('BFMACHDOUT').delete().where({ MACHINEID: machineId })
+    await trx('BFMACHCOUNTER').delete().where({ MACHINEID: machineId })
 
-  await insertBatch(trx, 'BFMACHAIN', analogInputs)
-  await insertBatch(trx, 'BFMACHAOUT', analogOutputs)
-  await insertBatch(trx, 'BFMACHDIN', digitalInputs)
-  await insertBatch(trx, 'BFMACHDOUT', digitalOutputs)
-  await insertBatch(trx, 'BFMACHCOUNTER', counters)
+    await insertBatch(trx, 'BFMACHAIN', analogInputs)
+    await insertBatch(trx, 'BFMACHAOUT', analogOutputs)
+    await insertBatch(trx, 'BFMACHDIN', digitalInputs)
+    await insertBatch(trx, 'BFMACHDOUT', digitalOutputs)
+    await insertBatch(trx, 'BFMACHCOUNTER', counters)
+  } catch (error) {
+    throw new DatabaseQueryError('Failed to update Tonello input-output configuration', {
+      cause: error as AggregateError | MssqlError,
+    })
+  }
 }

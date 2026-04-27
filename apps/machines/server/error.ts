@@ -16,7 +16,7 @@ export interface MssqlError extends Error {
 
 export class DatabaseQueryError extends Error {
   cause?: AggregateError | MssqlError
-  constructor(message: string, options?: { cause?: AggregateError }) {
+  constructor(message: string, options?: { cause?: AggregateError | MssqlError }) {
     super(message)
     this.name = 'DatabaseQueryError'
     this.cause = options?.cause

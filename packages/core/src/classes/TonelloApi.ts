@@ -1,3 +1,4 @@
+import { inspect } from 'node:util'
 import type { $Fetch } from 'ofetch'
 import { $fetch } from 'ofetch'
 import { format } from 'date-fns'
@@ -75,6 +76,8 @@ export class TonelloApi {
   }
 
   async updateProgram(program: TonelloProgram): Promise<TonelloResponse<void>> {
+    console.log(`Updating program ${program.name} (code: ${program.code})...`)
+    console.log(inspect(program, { depth: null, colors: true }))
     return await this.fetch('/api/v1/putProgram', {
       method: 'POST',
       body: { program },
@@ -82,6 +85,8 @@ export class TonelloApi {
   }
 
   async submitBatch(batch: TonelloBatch): Promise<TonelloResponse<void>> {
+    console.log(`Submitting batch ${batch.name} (code: ${batch.code})...`)
+    console.log(inspect(batch, { depth: null, colors: true }))
     return await this.fetch('/api/v1/putBatch', {
       method: 'POST',
       body: { batch },
@@ -89,6 +94,7 @@ export class TonelloApi {
   }
 
   async deleteBatch(code: string): Promise<TonelloResponse<void>> {
+    console.log(`Deleting batch with code ${code}...`)
     return await this.fetch('/api/v1/deleteBatch', {
       method: 'POST',
       body: { batch: { code } },

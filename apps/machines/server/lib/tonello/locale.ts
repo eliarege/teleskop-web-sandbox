@@ -3,6 +3,8 @@ import { ProjectLocale } from '@teleskop/core'
 import type { ValueOf } from '@teleskop/utils'
 import { insertBatch, isDef } from '@teleskop/utils'
 import type { Knex } from 'knex'
+import type { MssqlError } from '~/server/error'
+import { DatabaseQueryError } from '~/server/error'
 
 export type TonelloLocalizedMessage = {
   locale: TonelloLocale
@@ -102,8 +104,14 @@ export async function updateTonelloProjectTranslations(
     }
   }
 
-  await trx('BFPROJECTTRANSLATIONS').where({ machine_id: machineId }).del()
-  await trx('BFPROJECTMESSAGES').where({ machine_id: machineId }).del()
-  await insertBatch(trx, 'BFPROJECTMESSAGES', messageRows)
-  await insertBatch(trx, 'BFPROJECTTRANSLATIONS', translationRows)
+  try {
+    await trx('BFPROJECTTRANSLATIONS').where({ machine_id: machineId }).del()
+    await trx('BFPROJECTMESSAGES').where({ machine_id: machineId }).del()
+    await insertBatch(trx, 'BFPROJECTMESSAGES', messageRows)
+    await insertBatch(trx, 'BFPROJECTTRANSLATIONS', translationRows)
+  } catch (error) {
+    throw new DatabaseQueryError('Failed to update Tonello project translations', {
+      cause: error as AggregateError | MssqlError,
+    })
+  }
 }

@@ -8,6 +8,8 @@ import {
   INVALID_PARAMETER_TYPE_ERROR,
   MISSING_LOCALE_ERROR,
 } from './errors'
+import type { MssqlError } from '~/server/error'
+import { DatabaseQueryError } from '~/server/error'
 
 export async function updateTonelloMachineParameters(
   trx: Knex.Transaction,
@@ -73,6 +75,12 @@ export async function updateTonelloMachineParameters(
     ctx.messages.push(parseLocalizedString(param.label))
   }
 
-  await trx('BFMACHPARAMETERS').delete().where('MACHINEID', machineId)
-  await insertBatch(trx, 'BFMACHPARAMETERS', rows)
+  try {
+    await trx('BFMACHPARAMETERS').delete().where('MACHINEID', machineId)
+    await insertBatch(trx, 'BFMACHPARAMETERS', rows)
+  } catch (error) {
+    throw new DatabaseQueryError('Failed to update Tonello machine parameters', {
+      cause: error as MssqlError | AggregateError,
+    })
+  }
 }

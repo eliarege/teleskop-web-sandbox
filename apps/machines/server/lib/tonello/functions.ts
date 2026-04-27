@@ -2,7 +2,6 @@ import type { Knex } from 'knex'
 import { insertBatch, isDef } from '@teleskop/utils'
 import { maxBy, minBy } from 'lodash-es'
 import type { BFCOMMANDPARAMETERS, BFMASTERCOMMANDS, TonelloFunction } from '@teleskop/core'
-
 import { CommandParameterType } from '@teleskop/core'
 import type { UpdateContext } from '../types'
 import {
@@ -10,6 +9,8 @@ import {
   MISSING_LOCALE_ERROR,
 } from './errors'
 import { DEFAULT_LOCALE, extractLocalizedMessage, parseLocalizedString } from './locale'
+import type { MssqlError } from '~/server/error'
+import { DatabaseQueryError } from '~/server/error'
 
 const ADDITIVE_FUNCTION_INDEX = 5
 
@@ -138,8 +139,14 @@ export async function updateTonelloFunctions(
     return
   }
 
-  await trx('BFCOMMANDPARAMETERS').delete().where({ MACHINEID: machineId })
-  await trx('BFMASTERCOMMANDS').delete().where({ MACHINEID: machineId })
-  await insertBatch(trx, 'BFMASTERCOMMANDS', commands)
-  await insertBatch(trx, 'BFCOMMANDPARAMETERS', parameters)
+  try {
+    await trx('BFCOMMANDPARAMETERS').delete().where({ MACHINEID: machineId })
+    await trx('BFMASTERCOMMANDS').delete().where({ MACHINEID: machineId })
+    await insertBatch(trx, 'BFMASTERCOMMANDS', commands)
+    await insertBatch(trx, 'BFCOMMANDPARAMETERS', parameters)
+  } catch (error) {
+    throw new DatabaseQueryError('Failed to update Tonello functions', {
+      cause: error as AggregateError | MssqlError,
+    })
+  }
 }
