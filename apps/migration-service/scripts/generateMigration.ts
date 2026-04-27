@@ -8,7 +8,7 @@ if (!process.argv[2]) {
   process.exit(1)
 }
 
-const migrationDir = resolve(import.meta.dirname, '../src/migrations')
+const migrationDir = resolve(import.meta.dirname, '../src/migrations/teleskop')
 const template = `
 import type { Knex } from 'knex'
 
