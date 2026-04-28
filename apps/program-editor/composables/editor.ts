@@ -47,6 +47,7 @@ export const useEditorStore = defineStore('editor', () => {
    */
   function resetProgram(): void {
     program.value = createEmptyProgram()
+    originalProgram.value = createEmptyProgram()
   }
 
   /**

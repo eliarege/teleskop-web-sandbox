@@ -29,8 +29,8 @@ async function onMachineClick(machineInfo: MachineInfo, processType?: ProcessTyp
   const isNotOnMachinePage = route.path !== `/machine/${machineId}`
 
   if (isNotOnMachinePage || isDifferentMachine) {
-    editor.resetProgram()
     await machine.changeMachine(machineId)
+    editor.resetProgram()
   }
 
   filter.existingFilter.processType = processType

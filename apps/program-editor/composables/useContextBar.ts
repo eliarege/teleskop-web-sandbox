@@ -8,10 +8,13 @@ export interface CustomQBtnProps extends QBtnProps {
 }
 
 const contextBarButtons = ref<CustomQBtnProps[]>([])
+let currentOwner: Ref<CustomQBtnProps[]> | ComputedRef<CustomQBtnProps[]> | null = null
 
 export function useContextBar(
   items: Ref<CustomQBtnProps[]> | ComputedRef<CustomQBtnProps[]>,
 ) {
+  currentOwner = items
+
   watch(
     items,
     (newItems) => {
@@ -21,7 +24,10 @@ export function useContextBar(
   )
 
   onUnmounted(() => {
-    contextBarButtons.value = []
+    if (currentOwner === items) {
+      contextBarButtons.value = []
+      currentOwner = null
+    }
   })
 }
 

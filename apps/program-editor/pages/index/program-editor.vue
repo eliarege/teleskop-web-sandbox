@@ -55,10 +55,13 @@ onBeforeRouteLeave((to, from, next) => {
       const saved = await editor.onSubmit()
 
       if (!saved) {
+        next(false)
         return
       }
     }
     next()
+  }).onCancel(() => {
+    next(false)
   })
 })
 
