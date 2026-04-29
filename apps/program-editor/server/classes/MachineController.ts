@@ -8,7 +8,7 @@ import { ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
-import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, ReplaceInProgramsParams, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { AdditiveType, CommandType, PROCESS_TYPE_NAMES, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -2279,6 +2279,164 @@ export class MachineController {
     } catch (error) {
       console.error('Error in findInPrograms:', error)
       throw new Error('Failed to search in programs', { cause: error })
+    }
+  }
+
+  /**
+   * Belirtilen komut numarası ve TBBFUNTIONNAME ile uyumlu makineleri bulur
+   */
+  @withTransaction
+  async findCompatibleMachines(machineId: number, commandNo: number): Promise<number[]> {
+    try {
+      const rows = await this.trx
+        .select('C2.MACHINEID')
+        .from('BFMASTERCOMMANDS as C1')
+        .join('BFMASTERCOMMANDS as C2', function () {
+          this.on('C1.COMMANDNO', '=', 'C2.COMMANDNO')
+            .andOn('C1.TBBFUNTIONNAME', '=', 'C2.TBBFUNTIONNAME')
+        })
+        .join('BFMACHINES as M', 'C2.MACHINEID', 'M.MACHINEID')
+        .where('C1.MACHINEID', machineId)
+        .andWhere('C1.COMMANDNO', commandNo)
+        .andWhere('C1.ACTIVATED', 1)
+        .andWhere('C2.ACTIVATED', 1)
+        .andWhere('M.USEINTELESKOP', 1)
+        .andWhere('M.INUSE', 1)
+        .distinct()
+
+      return rows.map((r: any) => r.MACHINEID)
+    } catch (error) {
+      console.error('Error in findCompatibleMachines:', error)
+      throw new Error('Failed to find compatible machines', { cause: error })
+    }
+  }
+
+  /**
+   * Belirtilen hedeflerdeki program adımlarını yeni değerlerle günceller
+   */
+  @withTransaction
+  async replaceInPrograms(params: ReplaceInProgramsParams): Promise<{ updatedCount: number }> {
+    const { targets, originalCommandNo, replaceValues } = params
+    let updatedCount = 0
+
+    try {
+      for (const target of targets) {
+        for (const value of replaceValues) {
+          if (value.type === 'newCommand') {
+            // Update the command number in BFMASTERSTEPS
+            await this.trx('BFMASTERSTEPS')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                COMMANDNO: originalCommandNo,
+              })
+              .update({ COMMANDNO: value.commandNo })
+
+            // Delete existing parameters for this step
+            await this.trx('BFMASTERSTEPPARAMS')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+              })
+              .del()
+
+            // Delete existing IO selections for this step
+            await this.trx('BFMASTERSTEPSELECTIONLIST')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+              })
+              .del()
+
+            // Insert user-configured parameters
+            if (value.parameters.length > 0) {
+              const paramRows = value.parameters.map(p => ({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                PARAMETERINDEX: p.parameterIndex,
+                VALUE: p.value,
+              }))
+
+              for (let i = 0; i < paramRows.length; i += 50) {
+                const chunk = paramRows.slice(i, i + 50)
+                await this.trx('BFMASTERSTEPPARAMS').insert(chunk)
+              }
+            }
+
+            // Insert user-configured IO selections
+            if (value.ioValues.length > 0) {
+              const ioRows = value.ioValues.map(io => ({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                IOINDEX: io.ioIndex,
+                SELECTIONINDEX: io.selectionIndex,
+                IOTYPE: io.type,
+                SELECTEDIOID: io.physicalId,
+              }))
+
+              for (let i = 0; i < ioRows.length; i += 50) {
+                const chunk = ioRows.slice(i, i + 50)
+                await this.trx('BFMASTERSTEPSELECTIONLIST').insert(chunk)
+              }
+            }
+          } else if (value.type === 'parameter') {
+            // Update parameter value
+            await this.trx('BFMASTERSTEPPARAMS')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                PARAMETERINDEX: value.parameterIndex,
+              })
+              .update({ VALUE: String(value.parameterValue) })
+          } else if (value.type === 'io') {
+            // Delete existing IO selections for this specific IO index
+            await this.trx('BFMASTERSTEPSELECTIONLIST')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                IOINDEX: value.ioIndex,
+              })
+              .del()
+
+            // Insert new IO selections
+            if (value.ioValues.length > 0) {
+              const ioRows = value.ioValues.map((io, index) => ({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                IOINDEX: value.ioIndex,
+                SELECTIONINDEX: index,
+                IOTYPE: io.type - 1,
+                SELECTEDIOID: io.physicalId,
+              }))
+
+              await this.trx('BFMASTERSTEPSELECTIONLIST').insert(ioRows)
+            }
+          }
+        }
+
+        updatedCount++
+      }
+
+      return { updatedCount }
+    } catch (error) {
+      console.error('Error in replaceInPrograms:', error)
+      throw new Error('Failed to replace in programs', { cause: error })
     }
   }
 }

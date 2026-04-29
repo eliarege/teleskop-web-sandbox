@@ -25,6 +25,9 @@ export type ErrorCode =
   | 'MACHINE_PARAMETER_TYPE_ERROR'
   | 'MACHINE_PARAMETER_INVALID'
   | 'PROGRAM_HAS_ERRORS'
+  | 'NO_TARGETS'
+  | 'NO_REPLACE_VALUES'
+  | 'INVALID_PARAMS'
 
 export interface ErrorMachineDetail {
   machineId: number
@@ -192,6 +195,18 @@ export interface ErrorProgramHasErrors extends PError {
   detail: ErrorProgramDetail
 }
 
+export interface ErrorEmptyDetail {}
+
+export interface ErrorNoTargets extends PError {
+  code: 'NO_TARGETS'
+  detail: ErrorEmptyDetail
+}
+
+export interface ErrorNoReplaceValues extends PError {
+  code: 'NO_REPLACE_VALUES'
+  detail: ErrorEmptyDetail
+}
+
 export type AnyError =
   | ErrorMachineNotFound
   | ErrorMachineUnavailable
@@ -214,6 +229,8 @@ export type AnyError =
   | ErrorMachineParameterTypeError
   | ErrorMachineParameterInvalid
   | ErrorProgramHasErrors
+  | ErrorNoTargets
+  | ErrorNoReplaceValues
 
 export class PError extends Error {
   code: ErrorCode
@@ -245,6 +262,9 @@ export class PError extends Error {
   constructor(code: 'MACHINE_PARAMETER_TYPE_ERROR', detail: ErrorMachineParameterTypeDetail)
   constructor(code: 'MACHINE_PARAMETER_INVALID', detail: ErrorMachineParameterDetail & { reason: string })
   constructor(code: 'PROGRAM_HAS_ERRORS', detail: ErrorProgramDetail)
+  constructor(code: 'NO_TARGETS', detail: ErrorEmptyDetail)
+  constructor(code: 'NO_REPLACE_VALUES', detail: ErrorEmptyDetail)
+  constructor(code: 'INVALID_PARAMS', detail: ErrorCommandDetail)
 
   constructor(code: ErrorCode, detail?: any) {
     super(code)

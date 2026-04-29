@@ -119,7 +119,7 @@
     "commandDetails": "Command Details",
     "checkErrors": "Check Errors",
     "isNewVersion": "Is New Version",
-    "findAndReplace": "Find Program",
+    "findAndReplace": "Find and Replace",
     "checkProgram": "Check Program"
   },
   "program": {
@@ -569,6 +569,7 @@
     "machine": {
       "sendAllPrograms": "Send all programs to {name} machine",
       "getAllPrograms": "Get all programs from {name} machine",
+      "findAndReplace": "Find and Replace in {name} machine",
       "copy": "Copy Programs",
       "paste": "Paste Programs",
       "goToMachineApp": "Go to Machine App",
@@ -750,13 +751,14 @@
     "deletedFromDb": "Deleted From DB"
   },
   "findAndReplace": {
-    "title": "Find Program",
+    "title": "Find & Replace",
     "machine": "Machine",
     "programNo": "Program No",
     "program": "Program",
     "step": "Step",
     "actions": "Actions",
     "thisMachine": "This Machine ({machineName})",
+    "compatibleMachines": "Compatible Machines",
     "selectedMachines": "Selected Machines",
     "selectMachine": "Select Machine",
     "machinesSelected": "{count} machines selected",
@@ -790,7 +792,25 @@
     "noMatchingResults": "No matching results found",
     "openProgram": "Open Program",
     "searchError": "Search error occurred",
-    "selectCommand": "Select Command"
+    "selectCommand": "Select Command",
+    "newValues": "New Values",
+    "addNewValue": "Add New Value",
+    "deleteNewValue": "Delete New Value",
+    "deleteSelectedNewValue": "Delete Selected New Value",
+    "newValue": "New Value",
+    "newCommand": "New Command",
+    "newCommandDialog": "New Command",
+    "selectNewCommand": "Select New Command",
+    "commandPreview": "Command Preview",
+    "replace": "Replace",
+    "replaceConfirm": "Replace Confirmation",
+    "replaceConfirmMessage": "{count} program steps will be updated. Do you want to continue?",
+    "replaceSuccess": "Successfully replaced {count} program steps",
+    "replaceError": "An error occurred during replacement",
+    "noNewValues": "Please add at least one new value",
+    "noResultsSelected": "Please select at least one result",
+    "newCommandLabel": "New Command: {commandName}",
+    "selectNewValueParameterOrIO": "Select Parameter or IO"
   },
   "copyStepDialog": {
     "title": "Copy Step",
