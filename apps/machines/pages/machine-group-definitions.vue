@@ -10,6 +10,32 @@ const { data: machineGroups, pending, refresh } = await useAuthFetch<readonly Ma
   default: () => [],
 })
 
+const machineGroupTypeDefinitions = [
+  { groupType: 0, labelKey: 'machineGroupTypeFabricHT' },
+  { groupType: 1, labelKey: 'machineGroupTypeFabricOF' },
+  { groupType: 2, labelKey: 'machineGroupTypeBobbin' },
+  { groupType: 3, labelKey: 'machineGroupTypeSample' },
+  { groupType: 4, labelKey: 'machineGroupTypeFlock' },
+  { groupType: 5, labelKey: 'machineGroupTypeWashing' },
+  { groupType: 6, labelKey: 'machineGroupTypeWashingDyeing' },
+  { groupType: 7, labelKey: 'machineGroupTypeDrying' },
+  { groupType: 9, labelKey: 'machineGroupTypeOther' },
+] as const
+
+type MachineGroupType = (typeof machineGroupTypeDefinitions)[number]['groupType']
+
+type MachineGroupTypeOption = {
+  groupType: MachineGroupType
+  groupName: string
+}
+
+const machineGroupTypeOptions = computed<MachineGroupTypeOption[]>(() => (
+  machineGroupTypeDefinitions.map(({ groupType, labelKey }) => ({
+    groupType,
+    groupName: t(labelKey),
+  }))
+))
+
 const columns = computed<FilterableTableColumn[]>(() => ([
   {
     name: 'groupName',
@@ -25,71 +51,14 @@ const columns = computed<FilterableTableColumn[]>(() => ([
   },
 ]))
 
-const machineGroupTypeMapper = {
-  0: 'Kumaş HT',
-  1: 'Kumaş OF',
-  2: 'Bobin',
-  3: 'Numune',
-  4: 'Flok',
-  5: 'Yıkama',
-  6: 'Yıkama Boyama',
-  7: 'Kurutma',
-  9: 'Diğer',
-}
-
-const machineGroupTypeOptions = [
-  {
-    groupType: 0,
-    groupName: 'Kumaş HT',
-  },
-  {
-    groupType: 1,
-    groupName: 'Kumaş OF',
-  },
-  {
-    groupType: 2,
-    groupName: 'Bobin',
-  },
-
-  {
-    groupType: 3,
-    groupName: 'Numune',
-  },
-
-  {
-    groupType: 4,
-    groupName: 'Flok',
-  },
-
-  {
-    groupType: 5,
-    groupName: 'Yıkama',
-  },
-
-  {
-    groupType: 6,
-    groupName: 'Yıkama Boyama',
-  },
-
-  {
-    groupType: 7,
-    groupName: 'Kurutma',
-  },
-
-  {
-    groupType: 9,
-    groupName: 'Diğer',
-  },
-]
-
 const changedGroups = ref<MachineGroup[]>([])
 const showRenameDialog = ref(false)
 const renameLoading = ref(false)
 const selectedGroupId = ref<number>()
 const groupNameInput = ref('')
 
-async function handleMachineGroupSelect(e: Omit<MachineGroup, 'groupId'>, group: MachineGroup) {
-  group.groupType = e.groupType
+async function handleMachineGroupSelect(groupType: MachineGroupType, group: MachineGroup) {
+  group.groupType = groupType as unknown as MachineGroup['groupType']
   changedGroups.value.push(group)
 }
 
@@ -170,11 +139,13 @@ async function handleSubmit() {
         <template #body-cell-groupType="props">
           <q-td :props="props">
             <q-select
-              :model-value="machineGroupTypeMapper[props.row.groupType as keyof typeof machineGroupTypeMapper]"
+              :model-value="Number(props.row.groupType)"
               :options="machineGroupTypeOptions"
               option-label="groupName"
               option-value="groupType"
-              @update:model-value="(e) => handleMachineGroupSelect(e, props.row)"
+              emit-value
+              map-options
+              @update:model-value="(groupType) => handleMachineGroupSelect(groupType, props.row)"
             />
           </q-td>
         </template>
