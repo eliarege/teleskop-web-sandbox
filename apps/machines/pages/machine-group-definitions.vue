@@ -4,6 +4,7 @@ import type { MachineGroup } from '~/types'
 
 const kc = useKeycloak()
 const { t } = useI18n()
+const { notifySuccess, notifyError } = useNotify()
 
 const { data: machineGroups, pending, refresh } = await useAuthFetch<readonly MachineGroup[]>('/api/machines/machine-groups', {
   default: () => [],
@@ -45,7 +46,6 @@ const machineGroupTypeOptions = [
     groupType: 1,
     groupName: 'Kumaş OF',
   },
-
   {
     groupType: 2,
     groupName: 'Bobin',
@@ -83,10 +83,52 @@ const machineGroupTypeOptions = [
 ]
 
 const changedGroups = ref<MachineGroup[]>([])
+const showRenameDialog = ref(false)
+const renameLoading = ref(false)
+const selectedGroupId = ref<number>()
+const groupNameInput = ref('')
 
 async function handleMachineGroupSelect(e: Omit<MachineGroup, 'groupId'>, group: MachineGroup) {
   group.groupType = e.groupType
   changedGroups.value.push(group)
+}
+
+function handleRenameClick(group: MachineGroup) {
+  selectedGroupId.value = group.groupId
+  groupNameInput.value = group.groupName
+  showRenameDialog.value = true
+}
+
+function closeRenameDialog() {
+  showRenameDialog.value = false
+  selectedGroupId.value = undefined
+  groupNameInput.value = ''
+}
+
+async function handleGroupRename() {
+  if (selectedGroupId.value == null) {
+    return
+  }
+
+  const groupName = groupNameInput.value.trim()
+  if (!groupName) {
+    return
+  }
+
+  try {
+    renameLoading.value = true
+    const response = await kc.fetch<{ message?: string }>('/api/machines/machine-group-rename', {
+      method: 'PUT',
+      body: { id: selectedGroupId.value, groupName },
+    })
+    notifySuccess(t(response?.message || 'GROUP_UPDATED_SUCCESSFULLY'))
+    closeRenameDialog()
+    await refresh()
+  } catch (error: any) {
+    notifyError(t(error?.data?.statusMessage || 'errorOccurred'))
+  } finally {
+    renameLoading.value = false
+  }
 }
 
 async function handleSubmit() {
@@ -110,6 +152,21 @@ async function handleSubmit() {
         bordered
         table-header-class="table-header"
       >
+        <template #body-cell-groupName="props">
+          <q-td :props="props">
+            <div class="row items-center justify-between full-width no-wrap">
+              <span>{{ props.row.groupName }}</span>
+              <q-btn
+                flat
+                dense
+                round
+                size="sm"
+                icon="edit"
+                @click="handleRenameClick(props.row)"
+              />
+            </div>
+          </q-td>
+        </template>
         <template #body-cell-groupType="props">
           <q-td :props="props">
             <q-select
@@ -123,6 +180,40 @@ async function handleSubmit() {
         </template>
       </q-table>
     </q-card-section>
+    <q-dialog v-model="showRenameDialog" @keyup.esc="closeRenameDialog">
+      <q-card style="min-width: 360px;">
+        <q-card-section class="pb-2">
+          <div class="text-h6">
+            {{ t('edit') }}
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <q-input
+            v-model="groupNameInput"
+            :label="t('machineGroupName')"
+            autofocus
+            @keyup.enter="handleGroupRename"
+            @keyup.esc="closeRenameDialog"
+          />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            no-caps
+            :label="t('cancel')"
+            @click="closeRenameDialog"
+          />
+          <q-btn
+            color="primary"
+            no-caps
+            :loading="renameLoading"
+            :disable="!groupNameInput.trim()"
+            :label="t('save')"
+            @click="handleGroupRename"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <q-card-actions align="right" class="mt-4 mr-4">
       <q-btn
         no-caps
