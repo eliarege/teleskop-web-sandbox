@@ -35,7 +35,9 @@ const searchCriteria = ref<{
   }
 }[]>([])
 
-const searchType = ref<string>('1')
+type SearchScope = 'thisMachine' | 'compatibleMachines' | 'selectedMachines'
+
+const searchType = ref<SearchScope>('thisMachine')
 const comparisonType = ref<{ label: string, value: string, symbol: string } | null>(null)
 const startStepNo = ref<number>(1)
 const endStepNo = ref<number>(60)
@@ -494,11 +496,11 @@ async function performSearch() {
 
     let machineIds: number[] = []
 
-    if (searchType.value === '1') {
+    if (searchType.value === 'thisMachine') {
       machineIds = [props.machineId]
-    } else if (searchType.value === '2') {
+    } else if (searchType.value === 'selectedMachines') {
       machineIds = machine.selectedMachines.map(m => m.id)
-    } else if (searchType.value === '3') {
+    } else if (searchType.value === 'compatibleMachines') {
       // Compatible machines: resolve via backend
       const compatResponse = await kc.fetch('/api/search/compatible-machines', {
         method: 'POST',
@@ -704,7 +706,7 @@ async function performReplace() {
                 <div class="flex flex-col gap-1">
                   <q-radio
                     v-model="searchType"
-                    val="1"
+                    val="thisMachine"
                     :label="t('findAndReplace.thisMachine', { machineName: props.machineName })"
                     dense
                   />
@@ -712,23 +714,22 @@ async function performReplace() {
                   <!-- Uyumlu makineler -->
                   <q-radio
                     v-model="searchType"
-                    val="3"
+                    val="compatibleMachines"
                     :label="t('findAndReplace.compatibleMachines')"
                     :disable="!commandNo"
                     dense
                   />
-
                   <div class="flex">
                     <q-radio
                       v-model="searchType"
-                      val="2"
+                      val="selectedMachines"
                       :label="t('findAndReplace.selectedMachines')"
                       dense
                     />
                     <q-space />
                     <q-btn
                       :label="t('findAndReplace.selectMachine')"
-                      :disable="searchType !== '2'"
+                      :disable="searchType !== 'selectedMachines'"
                       color="primary"
                       size="sm"
                       outline
