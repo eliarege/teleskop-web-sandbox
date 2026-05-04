@@ -29,6 +29,7 @@
   "programNotFound": "Program {programNo} makine {machineId} üzerinde bulunamadı.",
   "expand": "Genişlet",
   "collapse": "Daralt",
+  "replace": "Değiştir",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",

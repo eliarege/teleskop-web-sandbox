@@ -898,6 +898,21 @@ export class MachineController {
   }
 
   /**
+   * Belirtilen program numaralarının güncel hallerini arşive kaydeder.
+   * Find-and-replace işlemi tamamlandıktan sonra çağrılır.
+   * @param programNos - Arşivlenecek program numaraları
+   * @returns {Promise<void>}
+   */
+  @withTransaction
+  async archiveUpdatedPrograms(programNos: number[]): Promise<void> {
+    const commands = await this.fetchCommands()
+    for (const programNo of programNos) {
+      const { program } = await this.fetchProgram(programNo)
+      await this.insertProgramToArchive(program, true, commands)
+    }
+  }
+
+  /**
    * Programı arşiv veritabanına ekler
    * @param program - Program objesi
    * @param isNewVersion - Yeni versiyon mu?

@@ -29,6 +29,7 @@
   "programNotFound": "Program {programNo} not found on machine {machineId}.",
   "expand": "Expand",
   "collapse": "Collapse",
+  "replace": "Replace",
   "input": {
     "required": "{field} cannot be empty.",
     "unique": "{field} must be unique.",

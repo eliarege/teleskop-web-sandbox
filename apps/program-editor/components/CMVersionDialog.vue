@@ -18,8 +18,7 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits])
 
 const { t, locale } = useI18n()
-const editor = useEditorStore()
-const { dialogRef, onDialogHide } = useDialogPluginComponent()
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
 const { notifySuccess, notifyError } = useNotify()
 
 const deleteVersionDialogVis = ref(false)
@@ -73,8 +72,9 @@ async function setActiveVersion() {
   try {
     await contextMenuStore.setActiveVersion(props.machine.id, props.program.programNo, version, isOperatorEditable.value)
     await contextMenuStore.fetchVersions(props.machine.id, props.program.programNo)
-    await editor.loadProgram(props.machine.id, props.program.programNo)
+
     notifySuccess(t('contextMenu.version.setActiveSuccess', { version }))
+    onDialogOK()
   } catch (error) {
     console.error('Error setting active version:', error)
     notifyError(t('contextMenu.version.setActiveFail', { version: selectedRows.value[0]?.version }))

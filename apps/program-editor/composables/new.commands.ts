@@ -662,6 +662,7 @@ registerCommand(() => {
           editor.isLoading = true
           try {
             await editor.loadProgram(machine.currentMachine.id, program.programNo)
+            window.location.reload()
           } catch (error) {
             console.error('Error refreshing program:', error)
           } finally {

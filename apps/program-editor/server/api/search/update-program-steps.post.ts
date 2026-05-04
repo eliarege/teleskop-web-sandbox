@@ -50,6 +50,15 @@ export default defineEventHandler(async (event) => {
       })
 
       totalUpdated += result.updatedCount
+
+      // Replace tamamlandıktan sonra etkilenen programları arşive kaydet.
+      // Arşiv işlemi best-effort: başarısız olsa bile replace başarılı sayılır.
+      const uniqueProgramNos = [...new Set(targets.map(t => t.programNo))]
+      try {
+        await machine.archiveUpdatedPrograms(uniqueProgramNos)
+      } catch (archiveError) {
+        logger.error({ error: archiveError, machineId, programNos: uniqueProgramNos }, 'Failed to archive programs after find-and-replace')
+      }
     }
 
     return {
