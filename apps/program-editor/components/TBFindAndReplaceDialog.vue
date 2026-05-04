@@ -634,7 +634,7 @@ async function performReplace() {
         }
       })
 
-      await kc.fetch('/api/search/replace-programs', {
+      await kc.fetch('/api/search/update-program-steps', {
         method: 'POST',
         body: {
           targets,

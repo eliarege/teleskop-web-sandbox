@@ -3,6 +3,17 @@ import { PError, isPError } from '~/server/error'
 import logger from '~/server/logger'
 import type { ReplaceInProgramsParams } from '~/shared/types'
 
+/**
+ * Endpoint: Update Program Steps (Bul ve Değiştir -> Değiştir İşlemi)
+ * Bu endpoint, "Bul ve Değiştir" arayüzünden gelen talepleri işler.
+ * Programın tamamını değiştirmek yerine, SADECE hedeflenen belirli adımların (steps)
+ * içindeki komut, parametre veya IO değerlerini noktasal olarak günceller.
+ * İşleyiş:
+ * 1. Gelen "hedef" listesini (hangi makine, hangi program, hangi adım) veritabanı yorgunluğunu önlemek için makine bazında gruplar.
+ * 2. Belirtilen hedeflerdeki eski değerleri, kullanıcının girdiği yeni değerlerle (replaceValues) değiştirir.
+ * 3. Toplu işlem (bulk update) yapar ve güncellenen toplam kayıt sayısını döner.
+ */
+
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event) as ReplaceInProgramsParams
@@ -31,6 +42,7 @@ export default defineEventHandler(async (event) => {
         continue
       }
 
+      // İlgili makinenin veritabanında toplu güncelleme işlemini tetikler
       const result = await machine.replaceInPrograms({
         targets,
         originalCommandNo: body.originalCommandNo,
@@ -54,7 +66,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    logger.error('Error in replace-programs endpoint:', error)
+    logger.error('Error in update-program-steps endpoint:', error)
     throw createError({
       statusCode: 500,
       message: 'INTERNAL_SERVER_ERROR',
