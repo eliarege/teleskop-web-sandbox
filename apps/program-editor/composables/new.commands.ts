@@ -658,16 +658,11 @@ registerCommand(() => {
             rows: contextMenuStore.programVersions.value,
           },
         }).onOk(async () => {
-          // Dialog closed after successful operation, refresh program
           editor.isLoading = true
-          try {
-            await editor.loadProgram(machine.currentMachine.id, program.programNo)
-            window.location.reload()
-          } catch (error) {
-            console.error('Error refreshing program:', error)
-          } finally {
-            editor.isLoading = false
-          }
+
+          // TODO: İleride sadece ilgili programı yenileyecek bir yapı kurulabilir
+          // Şimdilik en garanti yöntem olan hard reload atıyoruz
+          window.location.reload()
         })
         return true
       } catch (error) {
