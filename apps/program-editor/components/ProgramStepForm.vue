@@ -55,11 +55,11 @@ function deleteParallelStep(stepIndex: number, index: number): void {
 }
 
 function getCommandError(commandId: number) {
-  return errorStore.getCommandErrors(editor.program.programNo, step.stepId, commandId)[0]
+  return errorStore.getCommandErrors(machine.currentMachine.id, editor.program.programNo, step.stepId, commandId)[0]
 }
 
 function removeError(commandId: number) {
-  errorStore.clearCommandErrors(editor.program.programNo, step.stepId, commandId)
+  errorStore.clearCommandErrors(machine.currentMachine.id, editor.program.programNo, step.stepId, commandId)
   editor.errorIds.delete(`${step.stepId}-${commandId}`)
 }
 

@@ -907,17 +907,15 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
+
   return {
     name: 'checkErrors',
-    async execute() {
-      const editor = useEditorStore()
-      const machine = useMachineStore()
-
+    async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
       editor.isLoading = true
       try {
-        for (const { programNo } of editor.selectedPrograms) {
-          await editor.fetchProgram(machine.currentMachine.id, programNo)
-        }
+        const programNos = selectedRows.map(p => p.programNo)
+        await editor.fetchPrograms(machineId, programNos)
       } finally {
         editor.isLoading = false
       }
