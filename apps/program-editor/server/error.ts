@@ -15,6 +15,7 @@ export type ErrorCode =
   | 'INVALID_MACHINE_OR_PROGRAM_NUMBER'
   | 'INVALID_MACHINE_NUMBER'
   | 'INVALID_PROGRAM_NUMBER'
+  | 'INVALID_PROGRAM_NUMBERS'
   | 'INVALID_VERSION_NUMBER'
   | 'INVALID_VERSION_LIST'
   | 'PROGRAM_VERSION_NOT_FOUND'
@@ -36,6 +37,11 @@ export interface ErrorMachineDetail {
 export interface ErrorProgramDetail {
   machineId: number
   programNo: number
+}
+
+export interface ErrorProgramsDetail {
+  machineId: number
+  programNos: number[]
 }
 
 export interface ErrorProgramArchiveDetail {
@@ -160,6 +166,11 @@ export interface ErrorInvalidProgramNumber extends PError {
   detail: ErrorProgramDetail
 }
 
+export interface ErrorInvalidProgramNumbers extends PError {
+  code: 'INVALID_PROGRAM_NUMBERS'
+  detail: ErrorProgramsDetail
+}
+
 export interface ErrorInvalidCommandNumber extends PError {
   code: 'INVALID_COMMAND_NUMBER'
   detail: ErrorCommandDetail
@@ -222,6 +233,7 @@ export type AnyError =
   | ErrorNoCommandsFound
   | ErrorInvalidMachineNumber
   | ErrorInvalidProgramNumber
+  | ErrorInvalidProgramNumbers
   | ErrorInvalidCommandNumber
   | ErrorCommandNotFound
   | ErrorProgramIoNotFound
@@ -252,6 +264,7 @@ export class PError extends Error {
   constructor(code: 'INVALID_MACHINE_OR_PROGRAM_NUMBER', detail: ErrorProgramDetail)
   constructor(code: 'INVALID_MACHINE_NUMBER', detail: ErrorMachineDetail)
   constructor(code: 'INVALID_PROGRAM_NUMBER', detail: ErrorProgramDetail)
+  constructor(code: 'INVALID_PROGRAM_NUMBERS', detail: ErrorProgramsDetail)
   constructor(code: 'INVALID_VERSION_NUMBER', detail: ErrorProgramArchiveDetail)
   constructor(code: 'INVALID_VERSION_LIST', detail: any)
   constructor(code: 'PROGRAM_VERSION_NOT_FOUND', detail: ErrorProgramArchiveDetail)

@@ -49,6 +49,7 @@ export default defineAuthEventHandler(async (event) => {
       throw createError({
         statusCode: 500,
         message: 'INTERNAL_SERVER_ERROR',
+        data: String(error),
       })
     }
   }
@@ -69,6 +70,7 @@ export default defineAuthEventHandler(async (event) => {
       throw createError({
         statusCode: 500,
         message: 'INTERNAL_SERVER_ERROR',
+        data: String(error),
       })
     }
   }
@@ -94,6 +96,7 @@ export default defineAuthEventHandler(async (event) => {
       throw createError({
         statusCode: 500,
         message: 'INTERNAL_SERVER_ERROR',
+        data: String(error),
       })
     }
   }

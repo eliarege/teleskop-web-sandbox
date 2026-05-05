@@ -400,29 +400,114 @@ export class MachineController {
       throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
 
-    program.steps = JSON.parse(program.steps)
-
-    for (const step of program.steps)
-      for (const command of step.commands)
-        for (const io of command.ioList)
-          io.value = JSON.parse(io.value)
-
-    // Sets the program as mainCommand and parallelCommand, assigns commandId
-    for (let i = 0; i < program.steps.length; i++) {
-      const step = program.steps[i]
-      const [mainCommand, ...parallelCommands] = step.commands as ProgramStepCommand[]
-      let commandIdCounter = 0
-      mainCommand.commandId = commandIdCounter++
-      for (const cmd of parallelCommands) {
-        cmd.commandId = commandIdCounter++
-      }
-      program.steps[i] = { stepId: step.stepId, mainCommand, parallelCommands } as ProgramStep
-    }
+    this.deserializeProgramSteps(program)
 
     const commands = await this.fetchCommands()
     const programError = validateProgram(program, commands)
 
     return { program, programError }
+  }
+
+  /**
+   * Birden fazla programı tek sorguda getirir
+   * @param {number[]} programNos - Program numaraları
+   * @returns {Promise<ProgramWithErrors[]>} - Program ve hata bilgileri dizisi
+   */
+  @withTransaction
+  async fetchPrograms(programNos: number[]): Promise<ProgramWithErrors[]> {
+    if (!programNos.length)
+      return []
+
+    const programs = await this.trx
+      .select({
+        name: 'P.NAME',
+        icon: this.trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
+        programNo: 'P.PROGNO',
+        duration: 'P.DURATION',
+        author: 'P.LOCKEDBY',
+        comment: 'P.USERCOMMENT',
+        typeId: 'P.PROCESSCODE',
+        typeName: 'PT.PROCESSNAME',
+        additionalTypeId: 'P.ADDITIONALPROCESSCODE',
+        additionalTypeName: 'APT.PROCESSNAME',
+        machineId: 'M.MACHINEID',
+        prgState: 'P.PRGSTATE',
+        isChanged: 'P.ISCHANGED',
+        createdAt: 'P.CREATIONDATE',
+        updatedAt: 'P.CHANGEDATE',
+        updatedAtTBB: 'P.TBBCHANGEDATE',
+        machineName: 'M.MACHINECODE',
+        tbbProgramChangedEvent: this.trx.raw(`CASE P.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
+        totalChemReq: 'P.TotalChemReq',
+        totalDyeReq: 'P.TotalDyeReq',
+        manChemReq: 'P.ManChemReq',
+        autoChemReq: 'P.AutoChemReq',
+        autoDyeReq: 'P.AutoDyeReq',
+        manDyeReq: 'P.ManDyeReq',
+        saltReq: 'P.TOTALSALTREQ',
+        genericMat1Req: 'P.TOTALGM1REQ',
+        genericMat2Req: 'P.TOTALGM2REQ',
+        steps: this.trx.raw(`ISNULL((
+        SELECT s.MAINSTEP AS stepId, commands = ISNULL((
+          SELECT s2.COMMANDNO AS commandNo,
+          parameters = ISNULL((
+            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index], sp.OPTIMIZED AS optimized
+            FROM BFMASTERSTEPPARAMS sp
+            WHERE s2.MACHINEID = sp.MACHINEID
+              AND s2.PROGNO = sp.PROGNO
+              AND s2.MAINSTEP = sp.MAINSTEP
+              AND s2.PARALELSTEP = sp.PARALELSTEP
+            ORDER BY sp.PARAMETERINDEX
+            FOR JSON AUTO, INCLUDE_NULL_VALUES
+          ), '[]'),
+          ioList = ISNULL((
+            SELECT sio.IOID AS ioId, sio.IOINDEX AS ioIndex,
+            value = ISNULL((
+              SELECT '[' + STRING_AGG('[' + CAST(sel.IOTYPE + 1 AS VARCHAR) + ',' + CAST(sel.SELECTEDIOID AS VARCHAR) + ']', ',') + ']'
+              FROM BFMASTERSTEPSELECTIONLIST sel
+              WHERE sel.MACHINEID = sio.MACHINEID
+                AND sel.PROGNO = sio.PROGNO
+                AND sel.MAINSTEP = sio.MAINSTEP
+                AND sel.PARALELSTEP = sio.PARALELSTEP
+                AND sel.IOINDEX = sio.IOINDEX
+            ), '[]')
+            FROM BFMASTERSTEPINPUTOUTPUTS sio
+            WHERE s2.MACHINEID = sio.MACHINEID
+              AND s2.PROGNO = sio.PROGNO
+              AND s2.MAINSTEP = sio.MAINSTEP
+              AND s2.PARALELSTEP = sio.PARALELSTEP
+            ORDER BY sio.IOINDEX
+            FOR JSON AUTO, INCLUDE_NULL_VALUES
+          ), '[]')
+          FROM BFMASTERSTEPS s2
+          WHERE s.MACHINEID = s2.MACHINEID
+            AND s.PROGNO = s2.PROGNO
+            AND s.MAINSTEP = s2.MAINSTEP
+          ORDER BY s2.PARALELSTEP
+          FOR JSON AUTO, INCLUDE_NULL_VALUES
+        ), '[]')
+        FROM BFMASTERSTEPS s
+        WHERE P.MACHINEID = s.MACHINEID
+          AND P.PROGNO = s.PROGNO
+          AND s.PARALELSTEP = 0
+        ORDER BY s.MAINSTEP
+        FOR JSON AUTO, INCLUDE_NULL_VALUES
+        ), '[]')`),
+      })
+      .from('BFMASTERPRGHEADER AS P')
+      .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
+      .join('BFPROCESSTYPES AS PT', 'PT.PROCESSCODE', 'P.PROCESSCODE')
+      .leftJoin('BFPROCESSTYPES AS APT', 'APT.PROCESSCODE', 'P.ADDITIONALPROCESSCODE')
+      .whereIn('P.PROGNO', programNos)
+      .andWhere('M.MACHINEID', this.id)
+      .orderBy('P.PROGNO')
+
+    const commands = await this.fetchCommands()
+
+    return programs.map((program: any) => {
+      this.deserializeProgramSteps(program)
+      return { program, programError: validateProgram(program, commands) }
+    })
   }
 
   /**
@@ -433,11 +518,6 @@ export class MachineController {
    */
   @withTransaction
   async fetchArchivedProgram(programNo: number, versionNo: number): Promise<{ program: Program }> {
-    const exists = await this.hasProgram(programNo)
-    if (!exists) {
-      throw new PError('PROGRAM_FAILED_TO_LOAD', { machineId: this.id, programNo })
-    }
-
     const [archivedProgram] = await this.trx
       .select({
         name: 'P.NAME',
@@ -511,20 +591,11 @@ export class MachineController {
       .andWhere('M.MACHINEID', this.id)
       .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
 
-    archivedProgram.steps = JSON.parse(archivedProgram.steps)
-
-    for (const step of archivedProgram.steps)
-      for (const command of step.commands)
-        for (const io of command.ioList)
-          io.value = JSON.parse(io.value)
-
-    // Sets the program as mainCommand and parallelCommand
-    for (let i = 0; i < archivedProgram.steps.length; i++) {
-      const step = archivedProgram.steps[i]
-      const [mainCommand, ...parallelCommands] = step.commands as ProgramStepCommand[]
-      const newStep: ProgramStep = { stepId: step.stepId, mainCommand, parallelCommands }
-      archivedProgram.steps[i] = newStep
+    if (!archivedProgram) {
+      throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
+
+    this.deserializeProgramSteps(archivedProgram)
 
     return { program: archivedProgram }
   }
@@ -822,8 +893,8 @@ export class MachineController {
   @withTransaction
   async archiveUpdatedPrograms(programNos: number[]): Promise<void> {
     const commands = await this.fetchCommands()
-    for (const programNo of programNos) {
-      const { program } = await this.fetchProgram(programNo)
+    const programs = await this.fetchPrograms(programNos)
+    for (const { program } of programs) {
       await this.insertProgramToArchive(program, true, commands)
     }
   }
@@ -1051,6 +1122,26 @@ export class MachineController {
           await this.trx.insert(item).into(table)
         }
       }
+    }
+  }
+
+  private deserializeProgramSteps(program: any): void {
+    program.steps = JSON.parse(program.steps)
+
+    for (const step of program.steps)
+      for (const command of step.commands)
+        for (const io of command.ioList)
+          io.value = JSON.parse(io.value)
+
+    for (let i = 0; i < program.steps.length; i++) {
+      const step = program.steps[i]
+      const [mainCommand, ...parallelCommands] = step.commands as ProgramStepCommand[]
+      let commandIdCounter = 0
+      mainCommand.commandId = commandIdCounter++
+      for (const cmd of parallelCommands) {
+        cmd.commandId = commandIdCounter++
+      }
+      program.steps[i] = { stepId: step.stepId, mainCommand, parallelCommands } as ProgramStep
     }
   }
 
