@@ -37,13 +37,7 @@ const columns: QTableColumn<ProgramHeaderArchive>[] = [
   { name: 'version', label: t('versionDialog.version'), field: 'version', align: 'left' },
   { name: 'name', label: t('versionDialog.programName'), field: 'name', align: 'left' },
   { name: 'stepCount', label: t('versionDialog.stepCount'), field: 'stepCount', align: 'center' },
-  { name: 'updatedAt', label: t('versionDialog.updatedAt'), field: 'updatedAt', align: 'right', format: val =>
-    val
-      ? new Date(val).toLocaleString(locale.value, {
-        dateStyle: 'short',
-        timeStyle: 'short',
-      })
-      : '-' },
+  { name: 'updatedAt', label: t('versionDialog.updatedAt'), field: 'updatedAt', align: 'right', format: val => new Date(val).toLocaleString(locale.value) },
 ]
 
 async function handleDelete() {

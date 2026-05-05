@@ -1674,11 +1674,11 @@ export class MachineController {
   /**
    * Belirtilen program numarasına sahip tüm arşivlenmiş programların header bilgilerini getirir.
    * @param programNo - Program numarası
-   * @returns {Promise<ProgramHeader[]>} - Header bilgilerini içeren bir dizi döndürür
+   * @returns {Promise<ProgramHeaderArchive[]>} - Header bilgilerini içeren bir dizi döndürür
    */
   @withTransaction
   async fetchAllHeadersOfArchivedProgram(programNo: number): Promise<ProgramHeaderArchive[]> {
-    return await this.trx
+    const results = await this.trx
       .select({
         name: 'H.NAME',
         version: 'H.MACHINEPRGVERSIONNO',
@@ -1691,6 +1691,20 @@ export class MachineController {
       .where('H.MACHINEID', this.id)
       .andWhere('H.PROGNO', programNo)
       .orderBy('H.MACHINEPRGVERSIONNO', 'asc')
+
+    const config = useRuntimeConfig()
+    const timezone = Number(config.teleskopTimezoneOffset) || 0
+
+    return results.map((row) => {
+      if (row.updatedAt) {
+        const dbDate = new Date(row.updatedAt)
+
+        // TODO: [LEGACY DB WORKAROUND] DB saati hatalı olarak yerel saatte (UTC gibi) tutuyor.
+        // UI'da (+3 saat) çifte fark oluşmaması için değeri gerçek UTC'ye çevirip gönderiyoruz.
+        row.updatedAt = new Date(dbDate.getTime() + timezone * 60000)
+      }
+      return row
+    })
   }
 
   /**
