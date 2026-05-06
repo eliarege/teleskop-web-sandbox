@@ -313,8 +313,8 @@ export class MachineController {
    */
   @withTransaction
   async fetchProgram(programNo: number): Promise<ProgramWithErrors> {
-    const [program] = await this.trx
-      .select({
+    const program = await this.trx
+      .first({
         name: 'P.NAME',
         icon: this.trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
         programNo: 'P.PROGNO',
@@ -342,52 +342,6 @@ export class MachineController {
         saltReq: 'P.TOTALSALTREQ',
         genericMat1Req: 'P.TOTALGM1REQ',
         genericMat2Req: 'P.TOTALGM2REQ',
-        steps: this.trx.raw(`ISNULL((
-        SELECT s.MAINSTEP AS stepId, commands = ISNULL((
-          SELECT s2.COMMANDNO AS commandNo,
-          parameters = ISNULL((
-            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index], sp.OPTIMIZED AS optimized
-            FROM BFMASTERSTEPPARAMS sp
-            WHERE s2.MACHINEID = sp.MACHINEID
-              AND s2.PROGNO = sp.PROGNO
-              AND s2.MAINSTEP = sp.MAINSTEP
-              AND s2.PARALELSTEP = sp.PARALELSTEP
-            ORDER BY sp.PARAMETERINDEX
-            FOR JSON AUTO, INCLUDE_NULL_VALUES
-          ), '[]'),
-          ioList = ISNULL((
-            SELECT sio.IOID AS ioId, sio.IOINDEX AS ioIndex,
-            value = ISNULL((
-              SELECT '[' + STRING_AGG('[' + CAST(sel.IOTYPE + 1 AS VARCHAR) + ',' + CAST(sel.SELECTEDIOID AS VARCHAR) + ']', ',') + ']'
-              FROM BFMASTERSTEPSELECTIONLIST sel
-              WHERE sel.MACHINEID = sio.MACHINEID
-                AND sel.PROGNO = sio.PROGNO
-                AND sel.MAINSTEP = sio.MAINSTEP
-                AND sel.PARALELSTEP = sio.PARALELSTEP
-                AND sel.IOINDEX = sio.IOINDEX
-            ), '[]')
-            FROM BFMASTERSTEPINPUTOUTPUTS sio
-            WHERE s2.MACHINEID = sio.MACHINEID
-              AND s2.PROGNO = sio.PROGNO
-              AND s2.MAINSTEP = sio.MAINSTEP
-              AND s2.PARALELSTEP = sio.PARALELSTEP
-            ORDER BY sio.IOINDEX
-            FOR JSON AUTO, INCLUDE_NULL_VALUES
-          ), '[]')
-          FROM BFMASTERSTEPS s2
-          WHERE s.MACHINEID = s2.MACHINEID
-            AND s.PROGNO = s2.PROGNO
-            AND s.MAINSTEP = s2.MAINSTEP
-          ORDER BY s2.PARALELSTEP
-          FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')
-        FROM BFMASTERSTEPS s
-        WHERE P.MACHINEID = s.MACHINEID
-          AND P.PROGNO = s.PROGNO
-          AND s.PARALELSTEP = 0
-        ORDER BY s.MAINSTEP
-        FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')`),
       })
       .from('BFMASTERPRGHEADER AS P')
       .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
@@ -400,7 +354,154 @@ export class MachineController {
       throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
 
-    this.deserializeProgramSteps(program)
+    const rawCommands = await db
+      .from('BFMASTERSTEPS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        commandNo: 'P.COMMANDNO',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP']) as {
+      mainStep: number
+      parallelStep: number
+      commandNo: number
+    }[]
+
+    const rawParameters = await db
+      .from('BFMASTERSTEPPARAMS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        value: db.raw(`TRY_CAST(REPLACE(P.VALUE, ',', '.')  AS FLOAT)`),
+        index: 'P.PARAMETERINDEX',
+        optimized: 'P.OPTIMIZED',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.PARAMETERINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      value: number
+      index: number
+      optimized: boolean
+    }[]
+
+    const rawIos = await db
+      .from('BFMASTERSTEPINPUTOUTPUTS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioId: 'P.IOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioId: number
+    }[]
+
+    const rawIoSelections = await db
+      .from('BFMASTERSTEPSELECTIONLIST as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioType: db.raw('P.IOTYPE + 1'),
+        ioId: 'P.SELECTEDIOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX', 'P.SELECTIONINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioType: number
+      ioId: number
+    }[]
+
+    let parCursor = 0
+    let iosCursor = 0
+    let selCursor = 0
+
+    program.steps = []
+
+    let currentStepIndex = 0
+    let commandIdCounter = 0
+    let currentStep: ProgramStep = {
+      stepId: 0,
+      mainCommand: null!,
+      parallelCommands: [],
+    }
+    for (let i = 0; i < rawCommands.length; i++) {
+      const rawCommand = rawCommands[i]
+      // Push current step, proceed to next one
+      if (rawCommand.mainStep !== currentStepIndex) {
+        // If mainCommand is not initialised for some reason, skip
+        if (currentStep.mainCommand) {
+          program.steps.push(currentStep as ProgramStep)
+        }
+        currentStepIndex = rawCommand.mainStep
+        commandIdCounter = 0
+        currentStep = {
+          stepId: currentStepIndex,
+          mainCommand: null!,
+          parallelCommands: [],
+        }
+      }
+      const currentCommand: ProgramStepCommand = {
+        commandId: commandIdCounter++,
+        commandNo: rawCommand.commandNo,
+        parameters: [],
+        ioList: [],
+      }
+      if (!currentStep.mainCommand) {
+        currentStep.mainCommand = currentCommand
+      } else {
+        currentStep.parallelCommands.push(currentCommand)
+      }
+      for (;parCursor < rawParameters.length; parCursor++) {
+        const rawParameter = rawParameters[parCursor]
+        if (rawParameter.parallelStep !== rawCommand.parallelStep || rawParameter.mainStep !== rawCommand.mainStep) {
+          break
+        }
+        currentCommand.parameters.push({
+          value: rawParameter.value,
+          index: rawParameter.index,
+          optimized: rawParameter.optimized,
+        })
+      }
+      for (;iosCursor < rawIos.length; iosCursor++) {
+        const rawIo = rawIos[iosCursor]
+        if (rawIo.parallelStep !== rawCommand.parallelStep || rawIo.mainStep !== rawCommand.mainStep) {
+          break
+        }
+        const currentIo: ProgramStepCommand['ioList'][0] = {
+          ioId: rawIo.ioId,
+          ioIndex: rawIo.ioIndex,
+          value: [],
+        }
+        currentCommand.ioList.push(currentIo)
+        for (;selCursor < rawIoSelections.length; selCursor++) {
+          const rawIoSelection = rawIoSelections[selCursor]
+          if (rawIoSelection.ioIndex !== rawIo.ioIndex || rawIoSelection.parallelStep !== rawIo.parallelStep || rawIoSelection.mainStep !== rawIo.mainStep) {
+            break
+          }
+          currentIo.value.push([
+            rawIoSelection.ioType,
+            rawIoSelection.ioId,
+          ])
+        }
+      }
+    }
+    // If mainCommand is not initialised for some reason, skip
+    if (currentStep.mainCommand) {
+      program.steps.push(currentStep as ProgramStep)
+    }
 
     const commands = await this.fetchCommands()
     const programError = validateProgram(program, commands)
@@ -415,8 +516,9 @@ export class MachineController {
    */
   @withTransaction
   async fetchPrograms(programNos: number[]): Promise<ProgramWithErrors[]> {
-    if (!programNos.length)
+    if (programNos.length === 0) {
       return []
+    }
 
     const programs = await this.trx
       .select({
@@ -447,52 +549,6 @@ export class MachineController {
         saltReq: 'P.TOTALSALTREQ',
         genericMat1Req: 'P.TOTALGM1REQ',
         genericMat2Req: 'P.TOTALGM2REQ',
-        steps: this.trx.raw(`ISNULL((
-        SELECT s.MAINSTEP AS stepId, commands = ISNULL((
-          SELECT s2.COMMANDNO AS commandNo,
-          parameters = ISNULL((
-            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index], sp.OPTIMIZED AS optimized
-            FROM BFMASTERSTEPPARAMS sp
-            WHERE s2.MACHINEID = sp.MACHINEID
-              AND s2.PROGNO = sp.PROGNO
-              AND s2.MAINSTEP = sp.MAINSTEP
-              AND s2.PARALELSTEP = sp.PARALELSTEP
-            ORDER BY sp.PARAMETERINDEX
-            FOR JSON AUTO, INCLUDE_NULL_VALUES
-          ), '[]'),
-          ioList = ISNULL((
-            SELECT sio.IOID AS ioId, sio.IOINDEX AS ioIndex,
-            value = ISNULL((
-              SELECT '[' + STRING_AGG('[' + CAST(sel.IOTYPE + 1 AS VARCHAR) + ',' + CAST(sel.SELECTEDIOID AS VARCHAR) + ']', ',') + ']'
-              FROM BFMASTERSTEPSELECTIONLIST sel
-              WHERE sel.MACHINEID = sio.MACHINEID
-                AND sel.PROGNO = sio.PROGNO
-                AND sel.MAINSTEP = sio.MAINSTEP
-                AND sel.PARALELSTEP = sio.PARALELSTEP
-                AND sel.IOINDEX = sio.IOINDEX
-            ), '[]')
-            FROM BFMASTERSTEPINPUTOUTPUTS sio
-            WHERE s2.MACHINEID = sio.MACHINEID
-              AND s2.PROGNO = sio.PROGNO
-              AND s2.MAINSTEP = sio.MAINSTEP
-              AND s2.PARALELSTEP = sio.PARALELSTEP
-            ORDER BY sio.IOINDEX
-            FOR JSON AUTO, INCLUDE_NULL_VALUES
-          ), '[]')
-          FROM BFMASTERSTEPS s2
-          WHERE s.MACHINEID = s2.MACHINEID
-            AND s.PROGNO = s2.PROGNO
-            AND s.MAINSTEP = s2.MAINSTEP
-          ORDER BY s2.PARALELSTEP
-          FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')
-        FROM BFMASTERSTEPS s
-        WHERE P.MACHINEID = s.MACHINEID
-          AND P.PROGNO = s.PROGNO
-          AND s.PARALELSTEP = 0
-        ORDER BY s.MAINSTEP
-        FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')`),
       })
       .from('BFMASTERPRGHEADER AS P')
       .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
@@ -502,12 +558,176 @@ export class MachineController {
       .andWhere('M.MACHINEID', this.id)
       .orderBy('P.PROGNO')
 
-    const commands = await this.fetchCommands()
+    const rawCommands = await db
+      .from('BFMASTERSTEPS as P')
+      .select({
+        progNo: 'P.PROGNO',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        commandNo: 'P.COMMANDNO',
+      })
+      .where('P.MACHINEID', this.id)
+      .whereIn('P.PROGNO', programNos)
+      .orderBy(['P.PROGNO', 'P.MAINSTEP', 'P.PARALELSTEP']) as {
+      progNo: number
+      mainStep: number
+      parallelStep: number
+      commandNo: number
+    }[]
 
-    return programs.map((program: any) => {
-      this.deserializeProgramSteps(program)
-      return { program, programError: validateProgram(program, commands) }
-    })
+    const rawParameters = await db
+      .from('BFMASTERSTEPPARAMS as P')
+      .select({
+        progNo: 'P.PROGNO',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        value: db.raw(`TRY_CAST(REPLACE(P.VALUE, ',', '.')  AS FLOAT)`),
+        index: 'P.PARAMETERINDEX',
+        optimized: 'P.OPTIMIZED',
+      })
+      .where('P.MACHINEID', this.id)
+      .whereIn('P.PROGNO', programNos)
+      .orderBy(['P.PROGNO', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.PARAMETERINDEX']) as {
+      progNo: number
+      mainStep: number
+      parallelStep: number
+      value: number
+      index: number
+      optimized: boolean
+    }[]
+
+    const rawIos = await db
+      .from('BFMASTERSTEPINPUTOUTPUTS as P')
+      .select({
+        progNo: 'P.PROGNO',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioId: 'P.IOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .whereIn('P.PROGNO', programNos)
+      .orderBy(['P.PROGNO', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX']) as {
+      progNo: number
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioId: number
+    }[]
+
+    const rawIoSelections = await db
+      .from('BFMASTERSTEPSELECTIONLIST as P')
+      .select({
+        progNo: 'P.PROGNO',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioType: db.raw('P.IOTYPE + 1'),
+        ioId: 'P.SELECTEDIOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .whereIn('P.PROGNO', programNos)
+      .orderBy(['P.PROGNO', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX', 'P.SELECTIONINDEX']) as {
+      progNo: number
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioType: number
+      ioId: number
+    }[]
+
+    const commands = await this.fetchCommands()
+    const results: ProgramWithErrors[] = []
+
+    let cmdCursor = 0
+    let parCursor = 0
+    let iosCursor = 0
+    let selCursor = 0
+
+    for (const program of programs) {
+      program.steps = []
+
+      let currentStepIndex = 0
+      let commandIdCounter = 0
+      let currentStep: ProgramStep = {
+        stepId: 0,
+        mainCommand: null!,
+        parallelCommands: [],
+      }
+
+      const cmdStart = cmdCursor
+      while (cmdCursor < rawCommands.length && rawCommands[cmdCursor].progNo === program.programNo) {
+        cmdCursor++
+      }
+
+      for (let i = cmdStart; i < cmdCursor; i++) {
+        const rawCommand = rawCommands[i]
+        if (rawCommand.mainStep !== currentStepIndex) {
+          if (currentStep.mainCommand) {
+            program.steps.push(currentStep as ProgramStep)
+          }
+          currentStepIndex = rawCommand.mainStep
+          commandIdCounter = 0
+          currentStep = {
+            stepId: currentStepIndex,
+            mainCommand: null!,
+            parallelCommands: [],
+          }
+        }
+        const currentCommand: ProgramStepCommand = {
+          commandId: commandIdCounter++,
+          commandNo: rawCommand.commandNo,
+          parameters: [],
+          ioList: [],
+        }
+        if (!currentStep.mainCommand) {
+          currentStep.mainCommand = currentCommand
+        } else {
+          currentStep.parallelCommands.push(currentCommand)
+        }
+        for (; parCursor < rawParameters.length; parCursor++) {
+          const rawParameter = rawParameters[parCursor]
+          if (rawParameter.progNo !== program.programNo || rawParameter.parallelStep !== rawCommand.parallelStep || rawParameter.mainStep !== rawCommand.mainStep) {
+            break
+          }
+          currentCommand.parameters.push({
+            value: rawParameter.value,
+            index: rawParameter.index,
+            optimized: rawParameter.optimized,
+          })
+        }
+        for (; iosCursor < rawIos.length; iosCursor++) {
+          const rawIo = rawIos[iosCursor]
+          if (rawIo.progNo !== program.programNo || rawIo.parallelStep !== rawCommand.parallelStep || rawIo.mainStep !== rawCommand.mainStep) {
+            break
+          }
+          const currentIo: ProgramStepCommand['ioList'][0] = {
+            ioId: rawIo.ioId,
+            ioIndex: rawIo.ioIndex,
+            value: [],
+          }
+          currentCommand.ioList.push(currentIo)
+          for (; selCursor < rawIoSelections.length; selCursor++) {
+            const rawIoSelection = rawIoSelections[selCursor]
+            if (rawIoSelection.progNo !== program.programNo || rawIoSelection.ioIndex !== rawIo.ioIndex || rawIoSelection.parallelStep !== rawIo.parallelStep || rawIoSelection.mainStep !== rawIo.mainStep) {
+              break
+            }
+            currentIo.value.push([
+              rawIoSelection.ioType,
+              rawIoSelection.ioId,
+            ])
+          }
+        }
+      }
+      if (currentStep.mainCommand) {
+        program.steps.push(currentStep as ProgramStep)
+      }
+
+      const programError = validateProgram(program, commands)
+      results.push({ program, programError })
+    }
+
+    return results
   }
 
   /**
