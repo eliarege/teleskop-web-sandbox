@@ -59,7 +59,7 @@ const config = defineConfiguration({
     type: 'string',
     default: 'info',
   },
-})
+}).parse()
 
 const logger = pino({ level: config.logLevel })
 const db = Knex({

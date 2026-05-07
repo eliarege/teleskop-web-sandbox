@@ -68,4 +68,4 @@ export const config = defineConfiguration({
     env: ['NODE_ENV'],
     default: 'development',
   },
-})
+}).parse()

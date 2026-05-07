@@ -724,13 +724,26 @@ export async function dataCleanup() {
   }
 }
 
-export async function addBatchNote(jobOrder: string, note: string, userId: number, showOnScreen: boolean) {
+export const UserType = {
+  Application: 0,
+  User: 1,
+} as const
+
+export type UserType = typeof UserType[keyof typeof UserType]
+
+export async function addBatchNote(
+  jobOrder: string, 
+  note: string, 
+  userId: number,
+  userType: UserType,
+  showOnScreen: boolean
+) {
   await knex('dbo.PTBATCHNOTES').insert({
     JOBORDER: jobOrder,
     NOTE: note,
     NOTEDATE: new Date(),
     USERID: userId,
-    USERTYPE: 1,
+    USERTYPE: userType,
     SHOWONSCREEN: showOnScreen,
   })
 }

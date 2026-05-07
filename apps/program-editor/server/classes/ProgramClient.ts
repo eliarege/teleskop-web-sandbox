@@ -185,7 +185,7 @@ export class TonelloProgramClient implements ProgramClient {
     readonly id: number,
     readonly host: string,
   ) {
-    this.api = new TonelloApi(`http://${host}:1234`)
+    this.api = TonelloApi.createFromHostname(host)
   }
 
   async ping(): Promise<boolean> {
@@ -209,7 +209,7 @@ export class TonelloProgramClient implements ProgramClient {
     id: number,
     commands: MachineCommand[],
   ): Promise<Program | null> {
-    const { data: tonelloProgram } = await this.api.fetchProgram(id)
+    const tonelloProgram = await this.api.fetchProgram(id)
     const teleskopProgram: Program = {
       name: tonelloProgram.name,
       author: '',
@@ -362,9 +362,9 @@ export class TonelloProgramClient implements ProgramClient {
   }
 
   async fetchProgramList(): Promise<number[]> {
-    const list = await this.api.fetchProgramsList()
+    const programs = await this.api.fetchProgramList()
     const isIntegerRe = /^\d+$/
-    return list.programs
+    return programs
       .filter(p => isIntegerRe.test(p.code))
       .map(p => Number(p.code))
   }

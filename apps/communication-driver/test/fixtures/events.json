@@ -1,0 +1,1414 @@
+{
+  "result": {
+    "status": "ok",
+    "code": 200,
+    "message": "Ok"
+  },
+  "eventsList": {
+    "from": 0,
+    "events": [
+      {
+        "id": 1,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "1",
+        "value": "1"
+      },
+      {
+        "id": 2,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "3",
+        "value": "1"
+      },
+      {
+        "id": 3,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "4",
+        "value": "1"
+      },
+      {
+        "id": 4,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "5",
+        "value": "1"
+      },
+      {
+        "id": 5,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "6",
+        "value": "1"
+      },
+      {
+        "id": 6,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "4",
+        "ioNum": "1",
+        "value": "1"
+      },
+      {
+        "id": 7,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "15",
+        "value": "1"
+      },
+      {
+        "id": 8,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "4",
+        "ioNum": "16",
+        "value": "1"
+      },
+      {
+        "id": 9,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "19",
+        "value": "1"
+      },
+      {
+        "id": 10,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "21",
+        "value": "1"
+      },
+      {
+        "id": 11,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "22",
+        "value": "1"
+      },
+      {
+        "id": 12,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "23",
+        "value": "1"
+      },
+      {
+        "id": 13,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "24",
+        "value": "1"
+      },
+      {
+        "id": 14,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "26",
+        "value": "1"
+      },
+      {
+        "id": 15,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:45:37+02:00",
+        "ioType": "3",
+        "ioNum": "28",
+        "value": "1"
+      },
+      {
+        "id": 16,
+        "eventValue": 9,
+        "datetime": "2026-05-07T15:45:48+02:00",
+        "batchCode": null
+      },
+      {
+        "id": 17,
+        "eventValue": 10,
+        "datetime": "2026-05-07T15:45:50+02:00",
+        "batchCode": null
+      },
+      {
+        "id": 18,
+        "eventValue": 7,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "batchCode": "474",
+        "operator": 0,
+        "type": 1,
+        "weight": 50.0,
+        "program": 474,
+        "programList": [
+          "100",
+          "200",
+          "300"
+        ]
+      },
+      {
+        "id": 19,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "1",
+        "value": "1"
+      },
+      {
+        "id": 20,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "2",
+        "value": "0"
+      },
+      {
+        "id": 21,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "3",
+        "value": "1"
+      },
+      {
+        "id": 22,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "4",
+        "value": "1"
+      },
+      {
+        "id": 23,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "5",
+        "value": "1"
+      },
+      {
+        "id": 24,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "6",
+        "value": "1"
+      },
+      {
+        "id": 25,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "7",
+        "value": "0"
+      },
+      {
+        "id": 26,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "8",
+        "value": "0"
+      },
+      {
+        "id": 27,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "65",
+        "value": "0"
+      },
+      {
+        "id": 28,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "66",
+        "value": "0"
+      },
+      {
+        "id": 29,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "67",
+        "value": "0"
+      },
+      {
+        "id": 30,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "68",
+        "value": "0"
+      },
+      {
+        "id": 31,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "69",
+        "value": "0"
+      },
+      {
+        "id": 32,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "70",
+        "value": "0"
+      },
+      {
+        "id": 33,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "71",
+        "value": "0"
+      },
+      {
+        "id": 34,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "72",
+        "value": "0"
+      },
+      {
+        "id": 35,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "1",
+        "ioNum": "1",
+        "value": "0"
+      },
+      {
+        "id": 36,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "2",
+        "ioNum": "1",
+        "value": "0"
+      },
+      {
+        "id": 37,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "5",
+        "ioNum": "1",
+        "value": "0"
+      },
+      {
+        "id": 38,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "9",
+        "value": "0"
+      },
+      {
+        "id": 39,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "10",
+        "value": "0"
+      },
+      {
+        "id": 40,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "11",
+        "value": "0"
+      },
+      {
+        "id": 41,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "12",
+        "value": "0"
+      },
+      {
+        "id": 42,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "13",
+        "value": "0"
+      },
+      {
+        "id": 43,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "14",
+        "value": "0"
+      },
+      {
+        "id": 44,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "15",
+        "value": "1"
+      },
+      {
+        "id": 45,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "16",
+        "value": "0"
+      },
+      {
+        "id": 46,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "73",
+        "value": "0"
+      },
+      {
+        "id": 47,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "74",
+        "value": "0"
+      },
+      {
+        "id": 48,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "75",
+        "value": "0"
+      },
+      {
+        "id": 49,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "76",
+        "value": "0"
+      },
+      {
+        "id": 50,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "77",
+        "value": "0"
+      },
+      {
+        "id": 51,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "78",
+        "value": "0"
+      },
+      {
+        "id": 52,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "79",
+        "value": "0"
+      },
+      {
+        "id": 53,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "80",
+        "value": "0"
+      },
+      {
+        "id": 54,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "1",
+        "ioNum": "2",
+        "value": "0"
+      },
+      {
+        "id": 55,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "2",
+        "ioNum": "2",
+        "value": "0"
+      },
+      {
+        "id": 56,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "5",
+        "ioNum": "2",
+        "value": "0"
+      },
+      {
+        "id": 57,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "17",
+        "value": "0"
+      },
+      {
+        "id": 58,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "18",
+        "value": "0"
+      },
+      {
+        "id": 59,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "19",
+        "value": "1"
+      },
+      {
+        "id": 60,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "20",
+        "value": "0"
+      },
+      {
+        "id": 61,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "21",
+        "value": "1"
+      },
+      {
+        "id": 62,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "22",
+        "value": "1"
+      },
+      {
+        "id": 63,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "23",
+        "value": "1"
+      },
+      {
+        "id": 64,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "24",
+        "value": "1"
+      },
+      {
+        "id": 65,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "81",
+        "value": "0"
+      },
+      {
+        "id": 66,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "82",
+        "value": "0"
+      },
+      {
+        "id": 67,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "83",
+        "value": "0"
+      },
+      {
+        "id": 68,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "84",
+        "value": "0"
+      },
+      {
+        "id": 69,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "85",
+        "value": "0"
+      },
+      {
+        "id": 70,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "86",
+        "value": "0"
+      },
+      {
+        "id": 71,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "87",
+        "value": "0"
+      },
+      {
+        "id": 72,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "88",
+        "value": "0"
+      },
+      {
+        "id": 73,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "1",
+        "ioNum": "3",
+        "value": "0"
+      },
+      {
+        "id": 74,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "2",
+        "ioNum": "3",
+        "value": "0"
+      },
+      {
+        "id": 75,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "5",
+        "ioNum": "3",
+        "value": "0"
+      },
+      {
+        "id": 76,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "25",
+        "value": "0"
+      },
+      {
+        "id": 77,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "26",
+        "value": "1"
+      },
+      {
+        "id": 78,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "27",
+        "value": "0"
+      },
+      {
+        "id": 79,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "28",
+        "value": "1"
+      },
+      {
+        "id": 80,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "29",
+        "value": "0"
+      },
+      {
+        "id": 81,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "30",
+        "value": "0"
+      },
+      {
+        "id": 82,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "31",
+        "value": "0"
+      },
+      {
+        "id": 83,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "32",
+        "value": "0"
+      },
+      {
+        "id": 84,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "89",
+        "value": "0"
+      },
+      {
+        "id": 85,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "90",
+        "value": "0"
+      },
+      {
+        "id": 86,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "91",
+        "value": "0"
+      },
+      {
+        "id": 87,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "92",
+        "value": "0"
+      },
+      {
+        "id": 88,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "93",
+        "value": "0"
+      },
+      {
+        "id": 89,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "94",
+        "value": "0"
+      },
+      {
+        "id": 90,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "95",
+        "value": "0"
+      },
+      {
+        "id": 91,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "96",
+        "value": "0"
+      },
+      {
+        "id": 92,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "1",
+        "ioNum": "4",
+        "value": "0"
+      },
+      {
+        "id": 93,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "2",
+        "ioNum": "4",
+        "value": "0"
+      },
+      {
+        "id": 94,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "5",
+        "ioNum": "4",
+        "value": "0"
+      },
+      {
+        "id": 95,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "33",
+        "value": "0"
+      },
+      {
+        "id": 96,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "34",
+        "value": "0"
+      },
+      {
+        "id": 97,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "35",
+        "value": "0"
+      },
+      {
+        "id": 98,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "36",
+        "value": "0"
+      },
+      {
+        "id": 99,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "37",
+        "value": "0"
+      },
+      {
+        "id": 100,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "38",
+        "value": "0"
+      },
+      {
+        "id": 101,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "39",
+        "value": "0"
+      },
+      {
+        "id": 102,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "40",
+        "value": "0"
+      },
+      {
+        "id": 103,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "97",
+        "value": "0"
+      },
+      {
+        "id": 104,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "98",
+        "value": "0"
+      },
+      {
+        "id": 105,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "99",
+        "value": "0"
+      },
+      {
+        "id": 106,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "100",
+        "value": "0"
+      },
+      {
+        "id": 107,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "101",
+        "value": "0"
+      },
+      {
+        "id": 108,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "102",
+        "value": "0"
+      },
+      {
+        "id": 109,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "103",
+        "value": "0"
+      },
+      {
+        "id": 110,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "104",
+        "value": "0"
+      },
+      {
+        "id": 111,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "1",
+        "ioNum": "5",
+        "value": "0"
+      },
+      {
+        "id": 112,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "2",
+        "ioNum": "5",
+        "value": "0"
+      },
+      {
+        "id": 113,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "5",
+        "ioNum": "5",
+        "value": "0"
+      },
+      {
+        "id": 114,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "41",
+        "value": "0"
+      },
+      {
+        "id": 115,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "42",
+        "value": "0"
+      },
+      {
+        "id": 116,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "43",
+        "value": "0"
+      },
+      {
+        "id": 117,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "44",
+        "value": "0"
+      },
+      {
+        "id": 118,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "45",
+        "value": "0"
+      },
+      {
+        "id": 119,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "46",
+        "value": "0"
+      },
+      {
+        "id": 120,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "47",
+        "value": "0"
+      },
+      {
+        "id": 121,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "48",
+        "value": "0"
+      },
+      {
+        "id": 122,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "105",
+        "value": "0"
+      },
+      {
+        "id": 123,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "106",
+        "value": "0"
+      },
+      {
+        "id": 124,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "107",
+        "value": "0"
+      },
+      {
+        "id": 125,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "108",
+        "value": "0"
+      },
+      {
+        "id": 126,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "109",
+        "value": "0"
+      },
+      {
+        "id": 127,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "110",
+        "value": "0"
+      },
+      {
+        "id": 128,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "111",
+        "value": "0"
+      },
+      {
+        "id": 129,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "112",
+        "value": "0"
+      },
+      {
+        "id": 130,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "1",
+        "ioNum": "6",
+        "value": "0"
+      },
+      {
+        "id": 131,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "2",
+        "ioNum": "6",
+        "value": "0"
+      },
+      {
+        "id": 132,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "5",
+        "ioNum": "6",
+        "value": "0"
+      },
+      {
+        "id": 133,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "49",
+        "value": "0"
+      },
+      {
+        "id": 134,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "50",
+        "value": "0"
+      },
+      {
+        "id": 135,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "51",
+        "value": "0"
+      },
+      {
+        "id": 136,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "52",
+        "value": "0"
+      },
+      {
+        "id": 137,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "53",
+        "value": "0"
+      },
+      {
+        "id": 138,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "54",
+        "value": "0"
+      },
+      {
+        "id": 139,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "55",
+        "value": "0"
+      },
+      {
+        "id": 140,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "56",
+        "value": "0"
+      },
+      {
+        "id": 141,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "113",
+        "value": "0"
+      },
+      {
+        "id": 142,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "114",
+        "value": "0"
+      },
+      {
+        "id": 143,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "115",
+        "value": "0"
+      },
+      {
+        "id": 144,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "116",
+        "value": "0"
+      },
+      {
+        "id": 145,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "117",
+        "value": "0"
+      },
+      {
+        "id": 146,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "118",
+        "value": "0"
+      },
+      {
+        "id": 147,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "119",
+        "value": "0"
+      },
+      {
+        "id": 148,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "120",
+        "value": "0"
+      },
+      {
+        "id": 149,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "1",
+        "ioNum": "7",
+        "value": "0"
+      },
+      {
+        "id": 150,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "2",
+        "ioNum": "7",
+        "value": "0"
+      },
+      {
+        "id": 151,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "5",
+        "ioNum": "7",
+        "value": "0"
+      },
+      {
+        "id": 152,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "57",
+        "value": "0"
+      },
+      {
+        "id": 153,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "58",
+        "value": "0"
+      },
+      {
+        "id": 154,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "59",
+        "value": "0"
+      },
+      {
+        "id": 155,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "60",
+        "value": "0"
+      },
+      {
+        "id": 156,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "61",
+        "value": "0"
+      },
+      {
+        "id": 157,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "62",
+        "value": "0"
+      },
+      {
+        "id": 158,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "63",
+        "value": "0"
+      },
+      {
+        "id": 159,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "64",
+        "value": "0"
+      },
+      {
+        "id": 160,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "121",
+        "value": "0"
+      },
+      {
+        "id": 161,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "122",
+        "value": "0"
+      },
+      {
+        "id": 162,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "123",
+        "value": "0"
+      },
+      {
+        "id": 163,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "124",
+        "value": "0"
+      },
+      {
+        "id": 164,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "125",
+        "value": "0"
+      },
+      {
+        "id": 165,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "126",
+        "value": "0"
+      },
+      {
+        "id": 166,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "127",
+        "value": "0"
+      },
+      {
+        "id": 167,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "3",
+        "ioNum": "128",
+        "value": "0"
+      },
+      {
+        "id": 168,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "1",
+        "ioNum": "8",
+        "value": "0"
+      },
+      {
+        "id": 169,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "2",
+        "ioNum": "8",
+        "value": "0"
+      },
+      {
+        "id": 170,
+        "eventValue": 59,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "ioType": "5",
+        "ioNum": "8",
+        "value": "0"
+      },
+      {
+        "id": 171,
+        "eventValue": 19,
+        "datetime": "2026-05-07T15:46:26+02:00",
+        "commandNum": "5",
+        "stepNumTrt": "1",
+        "stepNumAct": "1",
+        "programNum": "100",
+        "programIndex": "1"
+      },
+      {
+        "id": 172,
+        "eventValue": 1,
+        "datetime": "2026-05-07T15:46:29+02:00",
+        "batchCode": "474",
+        "runningProgram": 100,
+        "runningCommand": 5,
+        "requestType": 0,
+        "operationCode": 2,
+        "batchTotRequestCount": 5,
+        "programTotRequestCount": 0,
+        "requestOrder": 1,
+        "tankNr": 0,
+        "priority": 50,
+        "runningProgramIndex": 1,
+        "runningCommandIndex": 1
+      },
+      {
+        "id": 173,
+        "eventValue": 9,
+        "datetime": "2026-05-07T15:46:32+02:00",
+        "batchCode": "474"
+      },
+      {
+        "id": 174,
+        "eventValue": 10,
+        "datetime": "2026-05-07T15:46:34+02:00",
+        "batchCode": "474"
+      }
+    ]
+  }
+}

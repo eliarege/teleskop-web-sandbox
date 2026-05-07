@@ -45,6 +45,7 @@ import {
   updateUnplannedColumns,
   uploadToMachine,
   uploadToTonelloMachine,
+  UserType,
 } from './queries'
 import { remoteShowMessageBody } from '~/composables/soap'
 import { StartingParameters } from '~/composables/enums'
@@ -444,13 +445,13 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
   })
 
   fastify.post<{
-    Body: { jobOrder: string, note: string, showOnScreen: boolean, userId: number }
+    Body: { jobOrder: string, note: string, showOnScreen: boolean, userId: number, userType: UserType }
   }>(
     '/planning_board/batch_notes/add_note',
     async (request, reply) => {
       try {
-        const { jobOrder, note, userId, showOnScreen } = request.body
-        await addBatchNote(jobOrder, note, userId, showOnScreen)
+        const { jobOrder, note, userId, userType, showOnScreen } = request.body
+        await addBatchNote(jobOrder, note, userId, userType, showOnScreen)
         return reply.code(200).send('Succesful!')
       } catch (err) {
         fastify.log.error(`An error occurred while adding batch note: ${err}`)

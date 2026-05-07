@@ -45,7 +45,11 @@ type RuntimeValue<Type, Message extends string> = Type & {
   [message]: Message
 }
 
-export function defineConfiguration<const T extends Record<string, ConfigProps>>(config: T): InferConfigObject<T> {
+export function defineConfiguration<const T extends Record<string, ConfigProps>>(config: T): { parse: () => InferConfigObject<T> } {
+  return { parse: () => parseConfiguration(config) }
+}
+
+function parseConfiguration<const T extends Record<string, ConfigProps>>(config: T): InferConfigObject<T> {
   const output = {} as Record<string, any>
   /* eslint-disable-next-line node/prefer-global/process */
   const process = globalThis.process
@@ -102,7 +106,7 @@ export function defineConfiguration<const T extends Record<string, ConfigProps>>
 
   // Check
   for (const props of postRequiredChecks) {
-    if (props.required(config)) {
+    if (props.required(output)) {
       throw new Error(`Missing env ${props.type || 'string'}: ${props.env}`)
     }
   }
