@@ -611,6 +611,42 @@ interface IOCriteria {
 }
 
 type ComparisonOperator = 'EQUALS' | 'GREATER_THAN' | 'LESS_THAN' | 'BETWEEN'
+
+export interface ReplaceInProgramsParams {
+  targets: ReplaceTarget[]
+  originalCommandNo: number
+  replaceValues: ReplaceValue[]
+}
+
+export interface ReplaceTarget {
+  machineId: number
+  programNo: number
+  stepNo: number
+  parallelStep: number
+}
+
+export type ReplaceValue = ParameterReplaceValue | IOReplaceValue | NewCommandReplaceValue
+
+export interface ParameterReplaceValue {
+  type: 'parameter'
+  parameterIndex: number
+  parameterValue: string
+  parameterType: ParameterTypeValue
+}
+
+export interface IOReplaceValue {
+  type: 'io'
+  ioIndex: number
+  ioValues: { type: number, physicalId: number }[]
+}
+
+export interface NewCommandReplaceValue {
+  type: 'newCommand'
+  commandNo: number
+  commandName: string
+  parameters: { parameterIndex: number, value: string }[]
+  ioValues: { ioIndex: number, selectionIndex: number, type: number, physicalId: number }[]
+}
 // #endregion
 
 type ProgramListMessage = {

@@ -89,14 +89,7 @@ async function loadCommandList() {
 }
 
 async function getPrograms(machineId: number, programNos: number[]): Promise<Program[]> {
-  const programs: Program[] = []
-
-  for (const programNo of programNos) {
-    const program = await editor.fetchProgram(machineId, programNo)
-    programs.push(program)
-  }
-
-  return programs
+  return await editor.fetchPrograms(machineId, programNos)
 }
 
 watch([machineOption, () => machine.selectedMachines], loadData)

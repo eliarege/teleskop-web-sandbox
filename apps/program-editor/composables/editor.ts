@@ -558,6 +558,47 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   /**
+   * Belirtilen makine ID'si ve program numaralarına göre birden fazla program verisini backend'den çeker.
+   *
+   * @param {number} machineId - Programların ait olduğu makinenin ID'si.
+   * @param {number[]} programNos - Getirilecek programların numaraları.
+   *
+   * @returns {Promise<Program[]>} Program verilerini içeren bir dizi döner.
+   */
+  async function fetchPrograms(machineId: number, programNos: number[]): Promise<Program[]> {
+    const errorStore = useErrorStore()
+
+    const response = await kc.fetch<ProgramWithErrors[]>(`/api/machine/${machineId}/programs`, {
+      method: 'POST',
+      body: { programNos },
+    })
+
+    const fetchedPrograms: Program[] = []
+
+    for (const programWithError of response) {
+      const { program, programError } = programWithError
+
+      errorStore.setErrors(machineId, program.programNo, programError.steps)
+
+      lastStepId = 0
+      lastCommandId = 0
+
+      for (const step of program.steps) {
+        step.stepId = lastStepId++
+        step.mainCommand.commandId = lastCommandId++
+        for (const command of step.parallelCommands) {
+          command.commandId = lastCommandId++
+        }
+        lastCommandId = 0
+      }
+
+      fetchedPrograms.push(program)
+    }
+
+    return fetchedPrograms
+  }
+
+  /**
    * Belirtilen makine ID'si ve program numarasına göre program verilerini yükler.
    *
    * @param {number} machineId - Programın ait olduğu makinenin ID'si.
@@ -1075,6 +1116,7 @@ export const useEditorStore = defineStore('editor', () => {
     createEmptyCommand,
     resetProgram,
     fetchProgram,
+    fetchPrograms,
     loadProgram,
     fetchAllPrograms,
     refreshAllPrograms,

@@ -8,7 +8,7 @@ import { ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
-import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, ReplaceInProgramsParams, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { AdditiveType, CommandType, PROCESS_TYPE_NAMES, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -268,9 +268,9 @@ export class MachineController {
         typeId: 'H.PROCESSCODE',
         additionalTypeId: 'H.ADDITIONALPROCESSCODE',
         operator: 'H.TBBPRGCHANGEDEVENT',
-        updatedAt: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CHANGEDATE)`),
-        createdAt: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CREATIONDATE)`),
-        updatedAtTBB: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.TBBCHANGEDATE)`),
+        updatedAt: this.trx.raw(`DATEADD(MINUTE, ?, H.CHANGEDATE)`, [config.teleskopTimezoneOffset]),
+        createdAt: this.trx.raw(`DATEADD(MINUTE, ?, H.CREATIONDATE)`, [config.teleskopTimezoneOffset]),
+        updatedAtTBB: this.trx.raw(`DATEADD(MINUTE, ?, H.TBBCHANGEDATE)`, [config.teleskopTimezoneOffset]),
         prgState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
         totalChemReq: 'H.TotalChemReq',
@@ -510,6 +510,227 @@ export class MachineController {
   }
 
   /**
+   * Birden fazla programı tek sorguda getirir
+   * @param {number[]} programNos - Program numaraları
+   * @returns {Promise<ProgramWithErrors[]>} - Program ve hata bilgileri dizisi
+   */
+  @withTransaction
+  async fetchPrograms(programNos: number[]): Promise<ProgramWithErrors[]> {
+    if (programNos.length === 0) {
+      return []
+    }
+
+    const programs = await this.trx
+      .select({
+        name: 'P.NAME',
+        icon: this.trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
+        programNo: 'P.PROGNO',
+        duration: 'P.DURATION',
+        author: 'P.LOCKEDBY',
+        comment: 'P.USERCOMMENT',
+        typeId: 'P.PROCESSCODE',
+        typeName: 'PT.PROCESSNAME',
+        additionalTypeId: 'P.ADDITIONALPROCESSCODE',
+        additionalTypeName: 'APT.PROCESSNAME',
+        machineId: 'M.MACHINEID',
+        prgState: 'P.PRGSTATE',
+        isChanged: 'P.ISCHANGED',
+        createdAt: 'P.CREATIONDATE',
+        updatedAt: 'P.CHANGEDATE',
+        updatedAtTBB: 'P.TBBCHANGEDATE',
+        machineName: 'M.MACHINECODE',
+        tbbProgramChangedEvent: this.trx.raw(`CASE P.TBBPRGCHANGEDEVENT WHEN 0 THEN 0 ELSE 1 END`),
+        totalChemReq: 'P.TotalChemReq',
+        totalDyeReq: 'P.TotalDyeReq',
+        manChemReq: 'P.ManChemReq',
+        autoChemReq: 'P.AutoChemReq',
+        autoDyeReq: 'P.AutoDyeReq',
+        manDyeReq: 'P.ManDyeReq',
+        saltReq: 'P.TOTALSALTREQ',
+        genericMat1Req: 'P.TOTALGM1REQ',
+        genericMat2Req: 'P.TOTALGM2REQ',
+      })
+      .from('BFMASTERPRGHEADER AS P')
+      .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
+      .join('BFPROCESSTYPES AS PT', 'PT.PROCESSCODE', 'P.PROCESSCODE')
+      .leftJoin('BFPROCESSTYPES AS APT', 'APT.PROCESSCODE', 'P.ADDITIONALPROCESSCODE')
+      .whereIn('P.PROGNO', programNos)
+      .andWhere('M.MACHINEID', this.id)
+      .orderBy('P.PROGNO')
+
+    const rawCommands = await db
+      .from('BFMASTERSTEPS as P')
+      .select({
+        progNo: 'P.PROGNO',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        commandNo: 'P.COMMANDNO',
+      })
+      .where('P.MACHINEID', this.id)
+      .whereIn('P.PROGNO', programNos)
+      .orderBy(['P.PROGNO', 'P.MAINSTEP', 'P.PARALELSTEP']) as {
+      progNo: number
+      mainStep: number
+      parallelStep: number
+      commandNo: number
+    }[]
+
+    const rawParameters = await db
+      .from('BFMASTERSTEPPARAMS as P')
+      .select({
+        progNo: 'P.PROGNO',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        value: db.raw(`TRY_CAST(REPLACE(P.VALUE, ',', '.')  AS FLOAT)`),
+        index: 'P.PARAMETERINDEX',
+        optimized: 'P.OPTIMIZED',
+      })
+      .where('P.MACHINEID', this.id)
+      .whereIn('P.PROGNO', programNos)
+      .orderBy(['P.PROGNO', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.PARAMETERINDEX']) as {
+      progNo: number
+      mainStep: number
+      parallelStep: number
+      value: number
+      index: number
+      optimized: boolean
+    }[]
+
+    const rawIos = await db
+      .from('BFMASTERSTEPINPUTOUTPUTS as P')
+      .select({
+        progNo: 'P.PROGNO',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioId: 'P.IOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .whereIn('P.PROGNO', programNos)
+      .orderBy(['P.PROGNO', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX']) as {
+      progNo: number
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioId: number
+    }[]
+
+    const rawIoSelections = await db
+      .from('BFMASTERSTEPSELECTIONLIST as P')
+      .select({
+        progNo: 'P.PROGNO',
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioType: db.raw('P.IOTYPE + 1'),
+        ioId: 'P.SELECTEDIOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .whereIn('P.PROGNO', programNos)
+      .orderBy(['P.PROGNO', 'P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX', 'P.SELECTIONINDEX']) as {
+      progNo: number
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioType: number
+      ioId: number
+    }[]
+
+    const commands = await this.fetchCommands()
+    const results: ProgramWithErrors[] = []
+
+    let cmdCursor = 0
+    let parCursor = 0
+    let iosCursor = 0
+    let selCursor = 0
+
+    for (const program of programs) {
+      program.steps = []
+
+      let currentStepIndex = 0
+      let commandIdCounter = 0
+      let currentStep: ProgramStep = {
+        stepId: 0,
+        mainCommand: null!,
+        parallelCommands: [],
+      }
+
+      const cmdStart = cmdCursor
+      while (cmdCursor < rawCommands.length && rawCommands[cmdCursor].progNo === program.programNo) {
+        cmdCursor++
+      }
+
+      for (let i = cmdStart; i < cmdCursor; i++) {
+        const rawCommand = rawCommands[i]
+        if (rawCommand.mainStep !== currentStepIndex) {
+          if (currentStep.mainCommand) {
+            program.steps.push(currentStep as ProgramStep)
+          }
+          currentStepIndex = rawCommand.mainStep
+          commandIdCounter = 0
+          currentStep = {
+            stepId: currentStepIndex,
+            mainCommand: null!,
+            parallelCommands: [],
+          }
+        }
+        const currentCommand: ProgramStepCommand = {
+          commandId: commandIdCounter++,
+          commandNo: rawCommand.commandNo,
+          parameters: [],
+          ioList: [],
+        }
+        if (!currentStep.mainCommand) {
+          currentStep.mainCommand = currentCommand
+        } else {
+          currentStep.parallelCommands.push(currentCommand)
+        }
+        for (; parCursor < rawParameters.length; parCursor++) {
+          const rawParameter = rawParameters[parCursor]
+          if (rawParameter.progNo !== program.programNo || rawParameter.parallelStep !== rawCommand.parallelStep || rawParameter.mainStep !== rawCommand.mainStep) {
+            break
+          }
+          currentCommand.parameters.push({
+            value: rawParameter.value,
+            index: rawParameter.index,
+            optimized: rawParameter.optimized,
+          })
+        }
+        for (; iosCursor < rawIos.length; iosCursor++) {
+          const rawIo = rawIos[iosCursor]
+          if (rawIo.progNo !== program.programNo || rawIo.parallelStep !== rawCommand.parallelStep || rawIo.mainStep !== rawCommand.mainStep) {
+            break
+          }
+          const currentIo: ProgramStepCommand['ioList'][0] = {
+            ioId: rawIo.ioId,
+            ioIndex: rawIo.ioIndex,
+            value: [],
+          }
+          currentCommand.ioList.push(currentIo)
+          for (; selCursor < rawIoSelections.length; selCursor++) {
+            const rawIoSelection = rawIoSelections[selCursor]
+            if (rawIoSelection.progNo !== program.programNo || rawIoSelection.ioIndex !== rawIo.ioIndex || rawIoSelection.parallelStep !== rawIo.parallelStep || rawIoSelection.mainStep !== rawIo.mainStep) {
+              break
+            }
+            currentIo.value.push([
+              rawIoSelection.ioType,
+              rawIoSelection.ioId,
+            ])
+          }
+        }
+      }
+      if (currentStep.mainCommand) {
+        program.steps.push(currentStep as ProgramStep)
+      }
+
+      const programError = validateProgram(program, commands)
+      results.push({ program, programError })
+    }
+
+    return results
+  }
+
+  /**
    * Program numarası ve versiyon numarasına göre arşivlenmiş programı getirir
    * @param {number} programNo - Program numarası
    * @param {number} versionNo - Program versiyon numarası
@@ -517,13 +738,8 @@ export class MachineController {
    */
   @withTransaction
   async fetchArchivedProgram(programNo: number, versionNo: number): Promise<{ program: Program }> {
-    const exists = await this.hasProgram(programNo)
-    if (!exists) {
-      throw new PError('PROGRAM_FAILED_TO_LOAD', { machineId: this.id, programNo })
-    }
-
-    const [archivedProgram] = await this.trx
-      .select({
+    const program = await this.trx
+      .first({
         name: 'P.NAME',
         icon: this.trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
         programNo: 'P.PROGNO',
@@ -535,57 +751,6 @@ export class MachineController {
         additionalTypeName: 'APT.PROCESSNAME',
         machineId: 'M.MACHINEID',
         machineName: 'M.MACHINECODE',
-        steps: this.trx.raw(`ISNULL((
-        SELECT commands = ISNULL((
-          SELECT s2.COMMANDNO AS commandNo,
-          parameters = ISNULL((
-            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index]
-            FROM BAMASTERSTEPPARAMS sp
-            WHERE s2.MACHINEID = sp.MACHINEID
-              AND s2.PROGNO = sp.PROGNO
-              AND s2.MAINSTEP = sp.MAINSTEP
-              AND s2.PARALELSTEP = sp.PARALELSTEP
-              AND s2.MACHINEPRGVERSIONNO = sp.MACHINEPRGVERSIONNO
-            ORDER BY sp.PARAMETERINDEX
-            FOR JSON AUTO, INCLUDE_NULL_VALUES
-          ), '[]'),
-          ioList = ISNULL((
-            SELECT sio.IOID AS ioId, sio.IOINDEX AS ioIndex,
-            value = ISNULL((
-              SELECT '[' + STRING_AGG('[' + CAST(sel.IOTYPE + 1 AS VARCHAR) + ',' + CAST(sel.SELECTEDIOID AS VARCHAR) + ']', ',') + ']'
-              FROM BAMASTERSTEPSELECTIONLIST sel
-              WHERE sel.MACHINEID = sio.MACHINEID
-                AND sel.PROGNO = sio.PROGNO
-                AND sel.MAINSTEP = sio.MAINSTEP
-                AND sel.PARALELSTEP = sio.PARALELSTEP
-                AND sel.IOINDEX = sio.IOINDEX
-                AND sel.MACHINEPRGVERSIONNO = sio.MACHINEPRGVERSIONNO
-            ), '[]')
-            FROM BAMASTERSTEPINPUTOUTPUTS sio
-            WHERE s2.MACHINEID = sio.MACHINEID
-              AND s2.PROGNO = sio.PROGNO
-              AND s2.MAINSTEP = sio.MAINSTEP
-              AND s2.PARALELSTEP = sio.PARALELSTEP
-              AND s2.MACHINEPRGVERSIONNO = sio.MACHINEPRGVERSIONNO
-            ORDER BY sio.IOINDEX
-            FOR JSON AUTO, INCLUDE_NULL_VALUES
-          ), '[]')
-          FROM BAMASTERSTEPS s2
-          WHERE s.MACHINEID = s2.MACHINEID
-            AND s.PROGNO = s2.PROGNO
-            AND s.MAINSTEP = s2.MAINSTEP
-            AND s.MACHINEPRGVERSIONNO = s2.MACHINEPRGVERSIONNO
-          ORDER BY s2.PARALELSTEP
-          FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')
-        FROM BAMASTERSTEPS s
-        WHERE P.MACHINEID = s.MACHINEID
-          AND P.PROGNO = s.PROGNO
-          AND s.PARALELSTEP = 0
-          AND P.MACHINEPRGVERSIONNO = s.MACHINEPRGVERSIONNO
-        ORDER BY s.MAINSTEP
-        FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')`),
       })
       .from('BAMASTERPRGHEADER AS P')
       .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
@@ -595,22 +760,161 @@ export class MachineController {
       .andWhere('M.MACHINEID', this.id)
       .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
 
-    archivedProgram.steps = JSON.parse(archivedProgram.steps)
-
-    for (const step of archivedProgram.steps)
-      for (const command of step.commands)
-        for (const io of command.ioList)
-          io.value = JSON.parse(io.value)
-
-    // Sets the program as mainCommand and parallelCommand
-    for (let i = 0; i < archivedProgram.steps.length; i++) {
-      const step = archivedProgram.steps[i]
-      const [mainCommand, ...parallelCommands] = step.commands as ProgramStepCommand[]
-      const newStep: ProgramStep = { stepId: step.stepId, mainCommand, parallelCommands }
-      archivedProgram.steps[i] = newStep
+    if (!program) {
+      throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
 
-    return { program: archivedProgram }
+    const rawCommands = await db
+      .from('BAMASTERSTEPS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        commandNo: 'P.COMMANDNO',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP']) as {
+      mainStep: number
+      parallelStep: number
+      commandNo: number
+    }[]
+
+    const rawParameters = await db
+      .from('BAMASTERSTEPPARAMS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        value: db.raw(`TRY_CAST(REPLACE(P.VALUE, ',', '.')  AS FLOAT)`),
+        index: 'P.PARAMETERINDEX',
+        optimized: 'P.OPTIMIZED',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.PARAMETERINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      value: number
+      index: number
+      optimized: boolean
+    }[]
+
+    const rawIos = await db
+      .from('BAMASTERSTEPINPUTOUTPUTS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioId: 'P.IOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioId: number
+    }[]
+
+    const rawIoSelections = await db
+      .from('BAMASTERSTEPSELECTIONLIST as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioType: db.raw('P.IOTYPE + 1'),
+        ioId: 'P.SELECTEDIOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX', 'P.SELECTIONINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioType: number
+      ioId: number
+    }[]
+
+    let parCursor = 0
+    let iosCursor = 0
+    let selCursor = 0
+
+    program.steps = []
+
+    let currentStepIndex = 0
+    let commandIdCounter = 0
+    let currentStep: ProgramStep = {
+      stepId: 0,
+      mainCommand: null!,
+      parallelCommands: [],
+    }
+    for (let i = 0; i < rawCommands.length; i++) {
+      const rawCommand = rawCommands[i]
+      if (rawCommand.mainStep !== currentStepIndex) {
+        if (currentStep.mainCommand) {
+          program.steps.push(currentStep as ProgramStep)
+        }
+        currentStepIndex = rawCommand.mainStep
+        commandIdCounter = 0
+        currentStep = {
+          stepId: currentStepIndex,
+          mainCommand: null!,
+          parallelCommands: [],
+        }
+      }
+      const currentCommand: ProgramStepCommand = {
+        commandId: commandIdCounter++,
+        commandNo: rawCommand.commandNo,
+        parameters: [],
+        ioList: [],
+      }
+      if (!currentStep.mainCommand) {
+        currentStep.mainCommand = currentCommand
+      } else {
+        currentStep.parallelCommands.push(currentCommand)
+      }
+      for (;parCursor < rawParameters.length; parCursor++) {
+        const rawParameter = rawParameters[parCursor]
+        if (rawParameter.parallelStep !== rawCommand.parallelStep || rawParameter.mainStep !== rawCommand.mainStep) {
+          break
+        }
+        currentCommand.parameters.push({
+          value: rawParameter.value,
+          index: rawParameter.index,
+          optimized: rawParameter.optimized,
+        })
+      }
+      for (;iosCursor < rawIos.length; iosCursor++) {
+        const rawIo = rawIos[iosCursor]
+        if (rawIo.parallelStep !== rawCommand.parallelStep || rawIo.mainStep !== rawCommand.mainStep) {
+          break
+        }
+        const currentIo: ProgramStepCommand['ioList'][0] = {
+          ioId: rawIo.ioId,
+          ioIndex: rawIo.ioIndex,
+          value: [],
+        }
+        currentCommand.ioList.push(currentIo)
+        for (;selCursor < rawIoSelections.length; selCursor++) {
+          const rawIoSelection = rawIoSelections[selCursor]
+          if (rawIoSelection.ioIndex !== rawIo.ioIndex || rawIoSelection.parallelStep !== rawIo.parallelStep || rawIoSelection.mainStep !== rawIo.mainStep) {
+            break
+          }
+          currentIo.value.push([
+            rawIoSelection.ioType,
+            rawIoSelection.ioId,
+          ])
+        }
+      }
+    }
+    if (currentStep.mainCommand) {
+      program.steps.push(currentStep as ProgramStep)
+    }
+
+    return { program }
   }
 
   /**
@@ -895,6 +1199,21 @@ export class MachineController {
       .andWhere('PROGNO', programNo)
       .whereIn('MACHINEPRGVERSIONNO', versionsToDelete)
       .del()
+  }
+
+  /**
+   * Belirtilen program numaralarının güncel hallerini arşive kaydeder.
+   * Find-and-replace işlemi tamamlandıktan sonra çağrılır.
+   * @param programNos - Arşivlenecek program numaraları
+   * @returns {Promise<void>}
+   */
+  @withTransaction
+  async archiveUpdatedPrograms(programNos: number[]): Promise<void> {
+    const commands = await this.fetchCommands()
+    const programs = await this.fetchPrograms(programNos)
+    for (const { program } of programs) {
+      await this.insertProgramToArchive(program, true, commands)
+    }
   }
 
   /**
@@ -1659,16 +1978,17 @@ export class MachineController {
   /**
    * Belirtilen program numarasına sahip tüm arşivlenmiş programların header bilgilerini getirir.
    * @param programNo - Program numarası
-   * @returns {Promise<ProgramHeader[]>} - Header bilgilerini içeren bir dizi döndürür
+   * @returns {Promise<ProgramHeaderArchive[]>} - Header bilgilerini içeren bir dizi döndürür
    */
   @withTransaction
   async fetchAllHeadersOfArchivedProgram(programNo: number): Promise<ProgramHeaderArchive[]> {
-    return await this.trx
+    const config = useRuntimeConfig()
+    const results = await this.trx
       .select({
         name: 'H.NAME',
         version: 'H.MACHINEPRGVERSIONNO',
         stepCount: 'H.TOTALSTEP',
-        updatedAt: 'H.CHANGEDATE',
+        updatedAt: this.trx.raw('DATEADD(MINUTE, ?, H.CHANGEDATE)', [config.timezoneOffsetSeconds]),
       })
       .from('BAMASTERPRGHEADER AS H')
       .join('BFPROCESSTYPES AS PT', 'PT.PROCESSCODE', 'H.PROCESSCODE')
@@ -1676,6 +1996,8 @@ export class MachineController {
       .where('H.MACHINEID', this.id)
       .andWhere('H.PROGNO', programNo)
       .orderBy('H.MACHINEPRGVERSIONNO', 'asc')
+
+    return results
   }
 
   /**
@@ -2279,6 +2601,164 @@ export class MachineController {
     } catch (error) {
       console.error('Error in findInPrograms:', error)
       throw new Error('Failed to search in programs', { cause: error })
+    }
+  }
+
+  /**
+   * Belirtilen komut numarası ve TBBFUNTIONNAME ile uyumlu makineleri bulur
+   */
+  @withTransaction
+  async findCompatibleMachines(machineId: number, commandNo: number): Promise<number[]> {
+    try {
+      const rows = await this.trx
+        .select('C2.MACHINEID')
+        .from('BFMASTERCOMMANDS as C1')
+        .join('BFMASTERCOMMANDS as C2', function () {
+          this.on('C1.COMMANDNO', '=', 'C2.COMMANDNO')
+            .andOn('C1.TBBFUNTIONNAME', '=', 'C2.TBBFUNTIONNAME')
+        })
+        .join('BFMACHINES as M', 'C2.MACHINEID', 'M.MACHINEID')
+        .where('C1.MACHINEID', machineId)
+        .andWhere('C1.COMMANDNO', commandNo)
+        .andWhere('C1.ACTIVATED', 1)
+        .andWhere('C2.ACTIVATED', 1)
+        .andWhere('M.USEINTELESKOP', 1)
+        .andWhere('M.INUSE', 1)
+        .distinct()
+
+      return rows.map((r: any) => r.MACHINEID)
+    } catch (error) {
+      console.error('Error in findCompatibleMachines:', error)
+      throw new Error('Failed to find compatible machines', { cause: error })
+    }
+  }
+
+  /**
+   * Belirtilen hedeflerdeki program adımlarını yeni değerlerle günceller
+   */
+  @withTransaction
+  async replaceInPrograms(params: ReplaceInProgramsParams): Promise<{ updatedCount: number }> {
+    const { targets, originalCommandNo, replaceValues } = params
+    let updatedCount = 0
+
+    try {
+      for (const target of targets) {
+        for (const value of replaceValues) {
+          if (value.type === 'newCommand') {
+            // Update the command number in BFMASTERSTEPS
+            await this.trx('BFMASTERSTEPS')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                COMMANDNO: originalCommandNo,
+              })
+              .update({ COMMANDNO: value.commandNo })
+
+            // Delete existing parameters for this step
+            await this.trx('BFMASTERSTEPPARAMS')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+              })
+              .del()
+
+            // Delete existing IO selections for this step
+            await this.trx('BFMASTERSTEPSELECTIONLIST')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+              })
+              .del()
+
+            // Insert user-configured parameters
+            if (value.parameters.length > 0) {
+              const paramRows = value.parameters.map(p => ({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                PARAMETERINDEX: p.parameterIndex,
+                VALUE: p.value,
+              }))
+
+              for (let i = 0; i < paramRows.length; i += 50) {
+                const chunk = paramRows.slice(i, i + 50)
+                await this.trx('BFMASTERSTEPPARAMS').insert(chunk)
+              }
+            }
+
+            // Insert user-configured IO selections
+            if (value.ioValues.length > 0) {
+              const ioRows = value.ioValues.map(io => ({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                IOINDEX: io.ioIndex,
+                SELECTIONINDEX: io.selectionIndex,
+                IOTYPE: io.type,
+                SELECTEDIOID: io.physicalId,
+              }))
+
+              for (let i = 0; i < ioRows.length; i += 50) {
+                const chunk = ioRows.slice(i, i + 50)
+                await this.trx('BFMASTERSTEPSELECTIONLIST').insert(chunk)
+              }
+            }
+          } else if (value.type === 'parameter') {
+            // Update parameter value
+            await this.trx('BFMASTERSTEPPARAMS')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                PARAMETERINDEX: value.parameterIndex,
+              })
+              .update({ VALUE: String(value.parameterValue) })
+          } else if (value.type === 'io') {
+            // Delete existing IO selections for this specific IO index
+            await this.trx('BFMASTERSTEPSELECTIONLIST')
+              .where({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                IOINDEX: value.ioIndex,
+              })
+              .del()
+
+            // Insert new IO selections
+            if (value.ioValues.length > 0) {
+              const ioRows = value.ioValues.map((io, index) => ({
+                MACHINEID: target.machineId,
+                PROGNO: target.programNo,
+                MAINSTEP: target.stepNo,
+                PARALELSTEP: target.parallelStep,
+                IOINDEX: value.ioIndex,
+                SELECTIONINDEX: index,
+                IOTYPE: io.type - 1,
+                SELECTEDIOID: io.physicalId,
+              }))
+
+              await this.trx('BFMASTERSTEPSELECTIONLIST').insert(ioRows)
+            }
+          }
+        }
+
+        updatedCount++
+      }
+
+      return { updatedCount }
+    } catch (error) {
+      console.error('Error in replaceInPrograms:', error)
+      throw new Error('Failed to replace in programs', { cause: error })
     }
   }
 }

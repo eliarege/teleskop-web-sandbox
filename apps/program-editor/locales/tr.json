@@ -29,6 +29,7 @@
   "programNotFound": "Program {programNo} makine {machineId} üzerinde bulunamadı.",
   "expand": "Genişlet",
   "collapse": "Daralt",
+  "replace": "Değiştir",
   "input": {
     "required": "{field} boş olamaz.",
     "unique": "{field} benzersiz olmalıdır.",
@@ -119,7 +120,7 @@
     "commandDetails": "Komut Detayları",
     "checkErrors": "Hata Kontrolü",
     "isNewVersion": "Yeni Versiyon mu?",
-    "findAndReplace": "Program Ara",
+    "findAndReplace": "Bul ve Değiştir",
     "checkProgram": "Programı Kontrol Et"
   },
   "program": {
@@ -586,6 +587,7 @@
     "machine": {
       "sendAllPrograms": "{name} makinesine tüm programları gönder",
       "getAllPrograms": "{name} makinesinden tüm programları al",
+      "findAndReplace": "{name} makinesinde bul ve değiştir",
       "copy": "Programları Kopyala",
       "paste": "Programları Yapıştır",
       "goToMachineApp": "Makineler Uygulamasına Git",
@@ -766,13 +768,14 @@
     "deletedFromDb": "Veritabanından Silindi"
   },
   "findAndReplace": {
-    "title": "Program Ara",
+    "title": "Bul ve Değiştir",
     "machine": "Makine",
     "programNo": "Program No",
     "program": "Program",
     "step": "Adım",
     "actions": "İşlemler",
     "thisMachine": "Bu Makine ({machineName})",
+    "compatibleMachines": "Uyumlu Makineler",
     "selectedMachines": "Seçili Makineler",
     "selectMachine": "Makine Seçiniz",
     "machinesSelected": "{count} makine seçildi",
@@ -806,7 +809,25 @@
     "noMatchingResults": "Eşleşen sonuç bulunamadı",
     "openProgram": "Programı Aç",
     "searchError": "Arama sırasında hata oluştu",
-    "selectCommand": "Komut Seçiniz"
+    "selectCommand": "Komut Seçiniz",
+    "newValues": "Yeni Değerler",
+    "addNewValue": "Yeni Değer Ekle",
+    "deleteNewValue": "Yeni Değeri Sil",
+    "deleteSelectedNewValue": "Seçili Yeni Değeri Sil",
+    "newValue": "Yeni Değer",
+    "newCommand": "Yeni Komut",
+    "newCommandDialog": "Yeni Komut",
+    "selectNewCommand": "Yeni Komut Seçiniz",
+    "commandPreview": "Komut Önizleme",
+    "replace": "Değiştir",
+    "replaceConfirm": "Değiştirme Onayı",
+    "replaceConfirmMessage": "{count} program adımı güncellenecek. Devam etmek istiyor musunuz?",
+    "replaceSuccess": "{count} program adımı başarıyla güncellendi",
+    "replaceError": "Değiştirme sırasında hata oluştu",
+    "noNewValues": "Lütfen en az bir yeni değer ekleyin",
+    "noResultsSelected": "Lütfen en az bir sonuç seçin",
+    "newCommandLabel": "Yeni Komut: {commandName}",
+    "selectNewValueParameterOrIO": "Parametre/IO Seçiniz"
   },
   "copyStepDialog": {
     "title": "Adım Kopyala",

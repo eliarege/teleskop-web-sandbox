@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
-import type { MachineGroup, MachineInfo, ProcessType, ProgramTableRow } from '~/shared/types'
+import TBFindAndReplaceDialog from './TBFindAndReplaceDialog.vue'
+import type { Machine, MachineGroup, MachineInfo, ProcessType, ProgramTableRow } from '~/shared/types'
 import { useMachineStatusStore } from '~/composables/machine'
 
 type GroupContext = { type: 'group', group: MachineGroup, machine?: never, processType?: never }
@@ -11,6 +12,7 @@ type ContextMenuProps = GroupContext | MachineContext | ProcessTypeContext
 
 const props = defineProps<ContextMenuProps>()
 
+const $q = useQuasar()
 const { t } = useI18n()
 const appList = useAppList()
 const editor = useEditorStore()
@@ -128,6 +130,32 @@ const machineItems = computed(() => {
           await contextMenuStore.getAllPrograms({ id: machine.id, name: machine.name })
           await editor.refreshAllPrograms()
         }
+      },
+    },
+    {
+      label: t('machineContextMenu.machine.findAndReplace', { name: machine.name }),
+      icon: 'find_replace',
+      disabled: isMachineDisabled,
+      onClick: async () => {
+        const machineStore = useMachineStore()
+        let targetMachine: Machine
+
+        if (machine.id !== machineStore.currentMachine.id) {
+          targetMachine = await machineStore.fetchMachine(props.machine.id)
+        } else {
+          targetMachine = machineStore.currentMachine
+        }
+
+        $q.dialog({
+          component: TBFindAndReplaceDialog,
+          componentProps: {
+            machineId: targetMachine.id,
+            machineName: targetMachine.name,
+            machineCommands: targetMachine.commands,
+          },
+        }).onOk(async () => {
+          await editor.refreshAllPrograms()
+        })
       },
     },
     {

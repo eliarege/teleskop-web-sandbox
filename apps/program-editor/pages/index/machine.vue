@@ -307,7 +307,13 @@ interface ProgramTableColumn extends Omit<QTableColumn, 'label'> {
 function getErrorCount(rowProgram: ProgramTableRow): number {
   const errorStore = useErrorStore()
   const error = errorStore.errors.find(e => e.machineId === machineId && e.programNo === rowProgram.programNo)
-  return error ? error.steps.length : 0
+
+  if (!error)
+    return 0
+
+  return error.steps.reduce((total, step) => {
+    return total + (step.commands?.length || 0)
+  }, 0)
 }
 
 function getProcessTypeName(typeValue: number): string {

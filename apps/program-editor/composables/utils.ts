@@ -231,12 +231,16 @@ export const useErrorStore = defineStore('program-errors', () => {
     localStorage.setItem('program-errors', JSON.stringify(newVal))
   }, { deep: true })
 
-  function getProgramErrors(programNo: number): ProgramError[] {
-    return errors.value.filter(p => p.programNo === programNo)
+  function findProgram(machineId: number, programNo: number) {
+    return errors.value.find(p => p.machineId === machineId && p.programNo === programNo)
+  }
+
+  function getProgramErrors(machineId: number, programNo: number): ProgramError | undefined {
+    return findProgram(machineId, programNo)
   }
 
   function setErrors(machineId: number, programNo: number, stepErrors: StepError[]) {
-    const index = errors.value.findIndex(p => p.programNo === programNo)
+    const index = errors.value.findIndex(p => p.machineId === machineId && p.programNo === programNo)
 
     if (stepErrors.length === 0) {
       if (index !== -1) {
@@ -252,51 +256,68 @@ export const useErrorStore = defineStore('program-errors', () => {
     }
   }
 
-  function clearStepErrors(programNo: number, stepId: number) {
-    const programErrors = errors.value.find(p => p.programNo === programNo)
-    if (programErrors) {
-      programErrors.steps = programErrors.steps.filter(s => s.stepId !== stepId)
+  function clearStepErrors(machineId: number, programNo: number, stepId: number) {
+    const program = findProgram(machineId, programNo)
+    if (program) {
+      program.steps = program.steps.filter(s => s.stepId !== stepId)
     }
   }
 
-  function clearCommandErrors(programNo: number, stepId: number, commandId: number) {
-    const program = errors.value.find(p => p.programNo === programNo)
+  function clearCommandErrors(machineId: number, programNo: number, stepId: number, commandId: number) {
+    const program = findProgram(machineId, programNo)
+
     if (program) {
-      program.steps = program.steps
-        .map((step) => {
-          if (step.stepId === stepId) {
-            step.commands = step.commands.filter(c => c.commandId !== commandId)
-          }
-          return step
-        })
-        .filter(step => step.commands?.length > 0)
+      const step = program.steps.find(s => s.stepId === stepId)
+
+      if (step && step.commands) {
+        step.commands = step.commands.filter(c => c.commandId !== commandId)
+
+        if (step.commands.length === 0) {
+          program.steps = program.steps.filter(s => s.stepId !== stepId)
+        }
+      }
     }
   }
 
   function getStepErrors(machineId: number, programNo: number, stepId: number): StepError[] {
-    const program = errors.value.find(p => p.machineId === machineId && p.programNo === programNo)
+    const program = findProgram(machineId, programNo)
     return program?.steps.filter(s => s.stepId === stepId) ?? []
   }
 
-  function getCommandErrors(programNo: number, stepId: number, commandId: number): CommandError[] {
-    const program = errors.value.find(p => p.programNo === programNo)
+  function getCommandErrors(machineId: number, programNo: number, stepId: number, commandId: number): CommandError[] {
+    const program = findProgram(machineId, programNo)
     const step = program?.steps.find(s => s.stepId === stepId)
-    return step?.commands.filter(c => c.commandId === commandId) ?? []
+    return step?.commands?.filter(c => c.commandId === commandId) ?? []
   }
 
-  function addError(machineId: number, programNo: number, stepError: StepError[]) {
-    errors.value.push({ machineId, programNo, steps: stepError })
+  function addError(machineId: number, programNo: number, stepErrors: StepError[]) {
+    const program = findProgram(machineId, programNo)
+    if (program) {
+      program.steps.push(...stepErrors)
+    } else {
+      errors.value.push({ machineId, programNo, steps: stepErrors })
+    }
   }
 
-  function clearErrors(programNumber?: number) {
-    if (programNumber !== undefined) {
-      errors.value = errors.value.filter(p => p.programNo !== programNumber)
+  function clearErrors(machineId?: number, programNo?: number) {
+    if (machineId !== undefined && programNo !== undefined) {
+      errors.value = errors.value.filter(p => !(p.machineId === machineId && p.programNo === programNo))
     } else {
       errors.value = []
     }
   }
 
-  return { errors, getProgramErrors, setErrors, clearStepErrors, clearCommandErrors, getStepErrors, getCommandErrors, addError, clearErrors }
+  return {
+    errors,
+    getProgramErrors,
+    setErrors,
+    clearStepErrors,
+    clearCommandErrors,
+    getStepErrors,
+    getCommandErrors,
+    addError,
+    clearErrors,
+  }
 })
 
 export const useProgramFilterStore = defineStore('filter', () => {

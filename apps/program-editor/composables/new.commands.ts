@@ -658,15 +658,11 @@ registerCommand(() => {
             rows: contextMenuStore.programVersions.value,
           },
         }).onOk(async () => {
-          // Dialog closed after successful operation, refresh program
           editor.isLoading = true
-          try {
-            await editor.loadProgram(machine.currentMachine.id, program.programNo)
-          } catch (error) {
-            console.error('Error refreshing program:', error)
-          } finally {
-            editor.isLoading = false
-          }
+
+          // TODO: İleride sadece ilgili programı yenileyecek bir yapı kurulabilir
+          // Şimdilik en garanti yöntem olan hard reload atıyoruz
+          window.location.reload()
         })
         return true
       } catch (error) {
@@ -911,17 +907,15 @@ registerCommand(() => {
 })
 
 registerCommand(() => {
+  const editor = useEditorStore()
+
   return {
     name: 'checkErrors',
-    async execute() {
-      const editor = useEditorStore()
-      const machine = useMachineStore()
-
+    async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
       editor.isLoading = true
       try {
-        for (const { programNo } of editor.selectedPrograms) {
-          await editor.fetchProgram(machine.currentMachine.id, programNo)
-        }
+        const programNos = selectedRows.map(p => p.programNo)
+        await editor.fetchPrograms(machineId, programNos)
       } finally {
         editor.isLoading = false
       }

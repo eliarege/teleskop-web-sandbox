@@ -18,8 +18,7 @@ const props = defineProps<{
 defineEmits([...useDialogPluginComponent.emits])
 
 const { t, locale } = useI18n()
-const editor = useEditorStore()
-const { dialogRef, onDialogHide } = useDialogPluginComponent()
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
 const { notifySuccess, notifyError } = useNotify()
 
 const deleteVersionDialogVis = ref(false)
@@ -38,13 +37,7 @@ const columns: QTableColumn<ProgramHeaderArchive>[] = [
   { name: 'version', label: t('versionDialog.version'), field: 'version', align: 'left' },
   { name: 'name', label: t('versionDialog.programName'), field: 'name', align: 'left' },
   { name: 'stepCount', label: t('versionDialog.stepCount'), field: 'stepCount', align: 'center' },
-  { name: 'updatedAt', label: t('versionDialog.updatedAt'), field: 'updatedAt', align: 'right', format: val =>
-    val
-      ? new Date(val).toLocaleString(locale.value, {
-        dateStyle: 'short',
-        timeStyle: 'short',
-      })
-      : '-' },
+  { name: 'updatedAt', label: t('versionDialog.updatedAt'), field: 'updatedAt', align: 'right', format: val => new Date(val).toLocaleString(locale.value) },
 ]
 
 async function handleDelete() {
@@ -73,8 +66,9 @@ async function setActiveVersion() {
   try {
     await contextMenuStore.setActiveVersion(props.machine.id, props.program.programNo, version, isOperatorEditable.value)
     await contextMenuStore.fetchVersions(props.machine.id, props.program.programNo)
-    await editor.loadProgram(props.machine.id, props.program.programNo)
+
     notifySuccess(t('contextMenu.version.setActiveSuccess', { version }))
+    onDialogOK()
   } catch (error) {
     console.error('Error setting active version:', error)
     notifyError(t('contextMenu.version.setActiveFail', { version: selectedRows.value[0]?.version }))
