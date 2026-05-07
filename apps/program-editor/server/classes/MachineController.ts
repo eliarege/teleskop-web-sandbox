@@ -268,9 +268,9 @@ export class MachineController {
         typeId: 'H.PROCESSCODE',
         additionalTypeId: 'H.ADDITIONALPROCESSCODE',
         operator: 'H.TBBPRGCHANGEDEVENT',
-        updatedAt: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CHANGEDATE)`),
-        createdAt: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.CREATIONDATE)`),
-        updatedAtTBB: this.trx.raw(`DATEADD(MINUTE, ${config.teleskopTimezoneOffset}, H.TBBCHANGEDATE)`),
+        updatedAt: this.trx.raw(`DATEADD(MINUTE, ?, H.CHANGEDATE)`, [config.teleskopTimezoneOffset]),
+        createdAt: this.trx.raw(`DATEADD(MINUTE, ?, H.CREATIONDATE)`, [config.teleskopTimezoneOffset]),
+        updatedAtTBB: this.trx.raw(`DATEADD(MINUTE, ?, H.TBBCHANGEDATE)`, [config.teleskopTimezoneOffset]),
         prgState: 'H.PRGSTATE',
         isChanged: 'H.ISCHANGED',
         totalChemReq: 'H.TotalChemReq',
@@ -738,8 +738,8 @@ export class MachineController {
    */
   @withTransaction
   async fetchArchivedProgram(programNo: number, versionNo: number): Promise<{ program: Program }> {
-    const [archivedProgram] = await this.trx
-      .select({
+    const program = await this.trx
+      .first({
         name: 'P.NAME',
         icon: this.trx.raw('CASE P.ICONNAME WHEN \'\' THEN \'null\' END'),
         programNo: 'P.PROGNO',
@@ -751,57 +751,6 @@ export class MachineController {
         additionalTypeName: 'APT.PROCESSNAME',
         machineId: 'M.MACHINEID',
         machineName: 'M.MACHINECODE',
-        steps: this.trx.raw(`ISNULL((
-        SELECT commands = ISNULL((
-          SELECT s2.COMMANDNO AS commandNo,
-          parameters = ISNULL((
-            SELECT TRY_CAST(REPLACE(sp.VALUE, ',', '.')  AS FLOAT) AS value, sp.PARAMETERINDEX AS [index]
-            FROM BAMASTERSTEPPARAMS sp
-            WHERE s2.MACHINEID = sp.MACHINEID
-              AND s2.PROGNO = sp.PROGNO
-              AND s2.MAINSTEP = sp.MAINSTEP
-              AND s2.PARALELSTEP = sp.PARALELSTEP
-              AND s2.MACHINEPRGVERSIONNO = sp.MACHINEPRGVERSIONNO
-            ORDER BY sp.PARAMETERINDEX
-            FOR JSON AUTO, INCLUDE_NULL_VALUES
-          ), '[]'),
-          ioList = ISNULL((
-            SELECT sio.IOID AS ioId, sio.IOINDEX AS ioIndex,
-            value = ISNULL((
-              SELECT '[' + STRING_AGG('[' + CAST(sel.IOTYPE + 1 AS VARCHAR) + ',' + CAST(sel.SELECTEDIOID AS VARCHAR) + ']', ',') + ']'
-              FROM BAMASTERSTEPSELECTIONLIST sel
-              WHERE sel.MACHINEID = sio.MACHINEID
-                AND sel.PROGNO = sio.PROGNO
-                AND sel.MAINSTEP = sio.MAINSTEP
-                AND sel.PARALELSTEP = sio.PARALELSTEP
-                AND sel.IOINDEX = sio.IOINDEX
-                AND sel.MACHINEPRGVERSIONNO = sio.MACHINEPRGVERSIONNO
-            ), '[]')
-            FROM BAMASTERSTEPINPUTOUTPUTS sio
-            WHERE s2.MACHINEID = sio.MACHINEID
-              AND s2.PROGNO = sio.PROGNO
-              AND s2.MAINSTEP = sio.MAINSTEP
-              AND s2.PARALELSTEP = sio.PARALELSTEP
-              AND s2.MACHINEPRGVERSIONNO = sio.MACHINEPRGVERSIONNO
-            ORDER BY sio.IOINDEX
-            FOR JSON AUTO, INCLUDE_NULL_VALUES
-          ), '[]')
-          FROM BAMASTERSTEPS s2
-          WHERE s.MACHINEID = s2.MACHINEID
-            AND s.PROGNO = s2.PROGNO
-            AND s.MAINSTEP = s2.MAINSTEP
-            AND s.MACHINEPRGVERSIONNO = s2.MACHINEPRGVERSIONNO
-          ORDER BY s2.PARALELSTEP
-          FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')
-        FROM BAMASTERSTEPS s
-        WHERE P.MACHINEID = s.MACHINEID
-          AND P.PROGNO = s.PROGNO
-          AND s.PARALELSTEP = 0
-          AND P.MACHINEPRGVERSIONNO = s.MACHINEPRGVERSIONNO
-        ORDER BY s.MAINSTEP
-        FOR JSON AUTO, INCLUDE_NULL_VALUES
-        ), '[]')`),
       })
       .from('BAMASTERPRGHEADER AS P')
       .join('BFMACHINES AS M', 'M.MACHINEID', 'P.MACHINEID')
@@ -811,13 +760,161 @@ export class MachineController {
       .andWhere('M.MACHINEID', this.id)
       .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
 
-    if (!archivedProgram) {
+    if (!program) {
       throw new PError('PROGRAM_NOT_FOUND', { machineId: this.id, programNo })
     }
 
-    this.deserializeProgramSteps(archivedProgram)
+    const rawCommands = await db
+      .from('BAMASTERSTEPS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        commandNo: 'P.COMMANDNO',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP']) as {
+      mainStep: number
+      parallelStep: number
+      commandNo: number
+    }[]
 
-    return { program: archivedProgram }
+    const rawParameters = await db
+      .from('BAMASTERSTEPPARAMS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        value: db.raw(`TRY_CAST(REPLACE(P.VALUE, ',', '.')  AS FLOAT)`),
+        index: 'P.PARAMETERINDEX',
+        optimized: 'P.OPTIMIZED',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.PARAMETERINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      value: number
+      index: number
+      optimized: boolean
+    }[]
+
+    const rawIos = await db
+      .from('BAMASTERSTEPINPUTOUTPUTS as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioId: 'P.IOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioId: number
+    }[]
+
+    const rawIoSelections = await db
+      .from('BAMASTERSTEPSELECTIONLIST as P')
+      .select({
+        mainStep: 'P.MAINSTEP',
+        parallelStep: 'P.PARALELSTEP',
+        ioIndex: 'P.IOINDEX',
+        ioType: db.raw('P.IOTYPE + 1'),
+        ioId: 'P.SELECTEDIOID',
+      })
+      .where('P.MACHINEID', this.id)
+      .andWhere('P.PROGNO', programNo)
+      .andWhere('P.MACHINEPRGVERSIONNO', versionNo)
+      .orderBy(['P.MAINSTEP', 'P.PARALELSTEP', 'P.IOINDEX', 'P.SELECTIONINDEX']) as {
+      mainStep: number
+      parallelStep: number
+      ioIndex: number
+      ioType: number
+      ioId: number
+    }[]
+
+    let parCursor = 0
+    let iosCursor = 0
+    let selCursor = 0
+
+    program.steps = []
+
+    let currentStepIndex = 0
+    let commandIdCounter = 0
+    let currentStep: ProgramStep = {
+      stepId: 0,
+      mainCommand: null!,
+      parallelCommands: [],
+    }
+    for (let i = 0; i < rawCommands.length; i++) {
+      const rawCommand = rawCommands[i]
+      if (rawCommand.mainStep !== currentStepIndex) {
+        if (currentStep.mainCommand) {
+          program.steps.push(currentStep as ProgramStep)
+        }
+        currentStepIndex = rawCommand.mainStep
+        commandIdCounter = 0
+        currentStep = {
+          stepId: currentStepIndex,
+          mainCommand: null!,
+          parallelCommands: [],
+        }
+      }
+      const currentCommand: ProgramStepCommand = {
+        commandId: commandIdCounter++,
+        commandNo: rawCommand.commandNo,
+        parameters: [],
+        ioList: [],
+      }
+      if (!currentStep.mainCommand) {
+        currentStep.mainCommand = currentCommand
+      } else {
+        currentStep.parallelCommands.push(currentCommand)
+      }
+      for (;parCursor < rawParameters.length; parCursor++) {
+        const rawParameter = rawParameters[parCursor]
+        if (rawParameter.parallelStep !== rawCommand.parallelStep || rawParameter.mainStep !== rawCommand.mainStep) {
+          break
+        }
+        currentCommand.parameters.push({
+          value: rawParameter.value,
+          index: rawParameter.index,
+          optimized: rawParameter.optimized,
+        })
+      }
+      for (;iosCursor < rawIos.length; iosCursor++) {
+        const rawIo = rawIos[iosCursor]
+        if (rawIo.parallelStep !== rawCommand.parallelStep || rawIo.mainStep !== rawCommand.mainStep) {
+          break
+        }
+        const currentIo: ProgramStepCommand['ioList'][0] = {
+          ioId: rawIo.ioId,
+          ioIndex: rawIo.ioIndex,
+          value: [],
+        }
+        currentCommand.ioList.push(currentIo)
+        for (;selCursor < rawIoSelections.length; selCursor++) {
+          const rawIoSelection = rawIoSelections[selCursor]
+          if (rawIoSelection.ioIndex !== rawIo.ioIndex || rawIoSelection.parallelStep !== rawIo.parallelStep || rawIoSelection.mainStep !== rawIo.mainStep) {
+            break
+          }
+          currentIo.value.push([
+            rawIoSelection.ioType,
+            rawIoSelection.ioId,
+          ])
+        }
+      }
+    }
+    if (currentStep.mainCommand) {
+      program.steps.push(currentStep as ProgramStep)
+    }
+
+    return { program }
   }
 
   /**
@@ -1342,26 +1439,6 @@ export class MachineController {
           await this.trx.insert(item).into(table)
         }
       }
-    }
-  }
-
-  private deserializeProgramSteps(program: any): void {
-    program.steps = JSON.parse(program.steps)
-
-    for (const step of program.steps)
-      for (const command of step.commands)
-        for (const io of command.ioList)
-          io.value = JSON.parse(io.value)
-
-    for (let i = 0; i < program.steps.length; i++) {
-      const step = program.steps[i]
-      const [mainCommand, ...parallelCommands] = step.commands as ProgramStepCommand[]
-      let commandIdCounter = 0
-      mainCommand.commandId = commandIdCounter++
-      for (const cmd of parallelCommands) {
-        cmd.commandId = commandIdCounter++
-      }
-      program.steps[i] = { stepId: step.stepId, mainCommand, parallelCommands } as ProgramStep
     }
   }
 
@@ -1905,12 +1982,13 @@ export class MachineController {
    */
   @withTransaction
   async fetchAllHeadersOfArchivedProgram(programNo: number): Promise<ProgramHeaderArchive[]> {
+    const config = useRuntimeConfig()
     const results = await this.trx
       .select({
         name: 'H.NAME',
         version: 'H.MACHINEPRGVERSIONNO',
         stepCount: 'H.TOTALSTEP',
-        updatedAt: 'H.CHANGEDATE',
+        updatedAt: this.trx.raw('DATEADD(MINUTE, ?, H.CHANGEDATE)', [config.timezoneOffsetSeconds]),
       })
       .from('BAMASTERPRGHEADER AS H')
       .join('BFPROCESSTYPES AS PT', 'PT.PROCESSCODE', 'H.PROCESSCODE')
@@ -1919,19 +1997,7 @@ export class MachineController {
       .andWhere('H.PROGNO', programNo)
       .orderBy('H.MACHINEPRGVERSIONNO', 'asc')
 
-    const config = useRuntimeConfig()
-    const timezone = Number(config.teleskopTimezoneOffset) || 0
-
-    return results.map((row) => {
-      if (row.updatedAt) {
-        const dbDate = new Date(row.updatedAt)
-
-        // TODO: [LEGACY DB WORKAROUND] DB saati hatalı olarak yerel saatte (UTC gibi) tutuyor.
-        // UI'da (+3 saat) çifte fark oluşmaması için değeri gerçek UTC'ye çevirip gönderiyoruz.
-        row.updatedAt = new Date(dbDate.getTime() + timezone * 60000)
-      }
-      return row
-    })
+    return results
   }
 
   /**
