@@ -1,8 +1,45 @@
 # Changelog
 
+## 0.76.0 - 2026-05-07
+
+[Compare Changes](c3b222a779d4e3bd1a4e8c4003492e69300bb4d4...3ad51b70c3d55894b4b99aecdbdba22b6404b13a)
+
+### 🚀 Features
+
+-  **MA**: Implement machine group renaming functionality with error handling ([0255183](025518392b7ae5269eb5d4bca298b8702b13bec3))
+-  **MA**: Add machine group type definitions and update selection handling ([30d10ca](30d10ca25faaa42448cd9399eedf76c6046568c9))
+-  **PE**: Implement Find and Replace functionality in Program Editor ([78b6459](78b64594ac5a2087e608ffe01a50096e8b881cf4)), Co-authored-by:Copilot <copilot@github.com>
+- **communication-driver**: Implement communication driver service ([4278830](4278830906ab36b5b04b66af3023d90f9187fe72))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Ensure program reset and context bar cleanup on machine change and route leave ([55e595a](55e595a659067d344dc36a0d3f812d8fea9522aa))
+-  **MA**: Fixed starting parameter selection ([42b9582](42b95825251b18f1960b8750c15e3038503a2062)), Co-authored-by:Copilot <copilot@github.com>
+-  **PE**: Update searchType to use descriptive enums ([bceb292](bceb2920a9f4e4627efd37dc7d8f8d33af6b6b4d)), Co-authored-by:Copilot <copilot@github.com>
+-  **PE**: Update API endpoint for replacing program steps ([19da2a3](19da2a3e07f4afbefdcd479f07ec77e4fa364bb6)), Co-authored-by:Copilot <copilot@github.com>
+-  **PE**: Add archiving of updated programs after find-and-replace operation ([29067bc](29067bccc4e84fc69c76666398ae8840e272319a))
+-  **PE**: Update return type in archive program and adjust timezone for updatedAt ([edb8095](edb80956eaac16bc9186525c67e40c1f457282cd))
+-  **PE**: Add TODO note and removed loadProgram function ([3ae1be4](3ae1be4f0a357be12c60cdc18b12c41546e1497c))
+-  **PE**: Optimize fetchProgram method ([9bf0415](9bf0415b35ed665d9ba96a39df1a55aaaf949fcc))
+-  **PE**: Implement fetchPrograms function to retrieve multiple programs in a single request ([e4bd546](e4bd5461f98d108333e97a865fc1dee101914e9a))
+-  **PE**: Update error handling to include machineId in error management functions ([984074a](984074a6666cb8173cfb123ebb3cbc2f7ad836b8))
+-  **PE**: Refactor fetchProgram and fetchPrograms methods for improved data retrieval and structure ([2785e4b](2785e4b6ed56b6de9d81b0798d70e5e55f352513))
+
+### 📖 Documentation
+
+- Update commit message guidelines and allowed types ([5ca3d07](5ca3d0730cc3e13716ef9b5ddfae20087693f5cb))
+
+### ♻️ Refactor
+
+-  **PE**: Rewrite fetchArchivedProgram to use separate queries like fetchProgram ([a5625ac](a5625acea33499c203e868fcd44068f344202210))
+
+### 🔧 Miscellaneous Tasks
+
+- Update lockfile ([3ad51b7](3ad51b70c3d55894b4b99aecdbdba22b6404b13a))
+
 ## 0.75.0 - 2026-04-27
 
-[Compare Changes](d623b1f6379308eda0fb30f2f92c78090134c0c3...3eda4c4ccbae7ae3eb0993497423e405b41fa2a4)
+[Compare Changes](d623b1f6379308eda0fb30f2f92c78090134c0c3...c3b222a779d4e3bd1a4e8c4003492e69300bb4d4)
 
 ### 🚀 Features
 
