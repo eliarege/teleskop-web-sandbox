@@ -7,7 +7,7 @@ export default defineAuthEventHandler(async (event) => {
 
   try {
     if (tbbModel === 'Tonello') {
-      const api = new TonelloApi(`http://${ip}:1234`)
+      const api = TonelloApi.createFromHostname(ip)
       await api.fetchDatetime()
     } else {
       await $fetch(`http://${ip}:8080`, {

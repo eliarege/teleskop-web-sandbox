@@ -39,6 +39,7 @@ const newNote = reactive({
   note: '',
   showOnScreen: true,
   userId: 1, // TODO: ADD USER ID
+  userType: 1
 })
 
 function addNote() {

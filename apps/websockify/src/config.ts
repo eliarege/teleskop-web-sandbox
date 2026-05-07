@@ -123,4 +123,4 @@ export const config = defineConfiguration({
     type: 'string',
     env: 'KC_DEV_TOKEN',
   },
-})
+}).parse()

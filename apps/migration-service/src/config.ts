@@ -76,4 +76,4 @@ export const config = defineConfiguration({
     type: 'boolean',
     default: false,
   },
-})
+}).parse()

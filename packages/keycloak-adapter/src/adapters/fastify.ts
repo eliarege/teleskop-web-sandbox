@@ -11,6 +11,7 @@ export interface FastifyAdapterConfig {
   clientId: string
   accessRole?: string | null
   global?: boolean
+  publicRoutes?: string[]
 }
 
 export interface KeycloakAuthOptions {
@@ -87,7 +88,8 @@ export const fastifyAdapter = fp<FastifyAdapterConfig>((fastify, config, done) =
 
   fastify.addHook('onRoute', (options) => {
     const auth = options.auth ?? config.global ?? false
-    if (auth) {
+    const isPublicRoute = config.publicRoutes?.some(route => options.url?.startsWith(route))
+    if (auth && !isPublicRoute) {
       addRequestHook(options, createRequestHook(typeof auth === 'boolean' ? {} : auth))
     }
   })

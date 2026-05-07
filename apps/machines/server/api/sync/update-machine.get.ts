@@ -137,7 +137,7 @@ export default defineAuthEventHandler(async (event) => {
           ])
         })
       } else {
-        const api = new TonelloApi(`http://${machine.host}:1234`)
+        const api = TonelloApi.createFromHostname(machine.host)
         const updateCtx: UpdateContext = {
           errors: [],
           messages: [],
@@ -153,7 +153,7 @@ export default defineAuthEventHandler(async (event) => {
         ctx.state.progress(trxOffsetProgress)
         ctx.logger.info(ctx.t('projectUpload.tonelloMachineDataFetched'))
 
-        const parameters = config.data.pages.flatMap(p => p.params)
+        const parameters = config.pages.flatMap(p => p.params)
 
         const throwOnError = (updateCtx: UpdateContext) => {
           if (updateCtx.errors.length > 0) {
@@ -168,14 +168,14 @@ export default defineAuthEventHandler(async (event) => {
           {
             message: 'functions',
             fn: async (trx) => {
-              await updateTonelloFunctions(trx, machineId, functions.data, updateCtx)
+              await updateTonelloFunctions(trx, machineId, functions, updateCtx)
               throwOnError(updateCtx)
             },
           },
           {
             message: 'input-outputs',
             fn: async (trx) => {
-              await updateTonelloInputOutputs(trx, machineId, ioList.data)
+              await updateTonelloInputOutputs(trx, machineId, ioList)
               throwOnError(updateCtx)
             },
           },

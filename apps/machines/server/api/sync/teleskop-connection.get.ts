@@ -12,7 +12,7 @@ export default defineAuthEventHandler(async (event) => {
   const { ip, model } = querySchema.parse(query)
   try {
     if (model === 'Tonello') {
-      const api = new TonelloApi(`http://${ip}:1234`)
+      const api = TonelloApi.createFromHostname(ip)
       await api.fetchDatetime()
       return { status: 'ok' }
     } else {

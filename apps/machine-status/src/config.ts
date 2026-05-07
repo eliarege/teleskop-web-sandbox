@@ -69,7 +69,7 @@ export const config = defineConfiguration({
     type: 'integer',
     default: -180,
   },
-})
+}).parse()
 
 /** Returns `true` if `teleskopConnectionString` is not defined. */
 function teleskopRequired(cfg: Record<string, any>) {

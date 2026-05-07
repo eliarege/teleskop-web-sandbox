@@ -1,34 +1,16 @@
+import type { TonelloChemicalRequestStatus, TonelloChemicalRequestType, TonelloEventCode, TonelloIoType } from './tonello.enums'
+
+// #region Types
+
 export type TonelloLocale =
   | 'ENU'
   | 'ITA'
   | string & NonNullable<unknown>
 
-export type TonelloResponse<T = unknown, DataKey extends string = 'data'> = {
-  result: TonelloResponseResult
-} & (T extends null ? Record<string, never> : { [K in DataKey]: T })
-
-export type TonelloResponseWithoutWrapper<T extends Record<string, any>> = T & {
-  result: TonelloResponseResult
-}
-
-export interface TonelloResponseResult {
-  status: string
-  code: number
-  message: string
-}
-
 export interface TonelloEventList {
   from: number
   to: number
   events: TonelloEvent[]
-}
-
-export interface TonelloEvent {
-  id: number
-  /** Event type, personally it should be named `type` */
-  eventValue: number
-  datetime: string
-  params: Record<string, unknown>
 }
 
 export interface TonelloMachineStatus {
@@ -81,11 +63,6 @@ export interface TonelloBatch {
   }[]
 }
 
-export interface TonelloProgramList {
-  programsCount: number
-  programs: TonelloProgramHeader[]
-}
-
 export interface TonelloProgramHeader {
   code: string
   name: string
@@ -117,10 +94,10 @@ export interface TonelloProgramStep {
 }
 
 export interface TonelloInputOutputValues {
-  digitalInputs: TDigitalValue[]
-  digitalOutputs: TDigitalValue[]
-  analogInputs: TAnalogValue[]
-  analogOutputs: TAnalogValue[]
+  digitalInputs: TonelloDigitalValue[]
+  digitalOutputs: TonelloDigitalValue[]
+  analogInputs: TonelloAnalogValue[]
+  analogOutputs: TonelloAnalogValue[]
 }
 
 export interface TonelloInputOutputList {
@@ -146,12 +123,12 @@ export interface TonelloDigital {
   label: string
 }
 
-export type TAnalogValue = {
+export type TonelloAnalogValue = {
   code: string
   value: number
 } | null
 
-export type TDigitalValue = {
+export type TonelloDigitalValue = {
   code: string
   value: boolean
 } | null
@@ -232,11 +209,11 @@ export interface TonelloFunctionParameterValue extends TonelloFunctionParameterB
 /** What are additives? */
 export interface TonelloFunctionParameterAdditive extends TonelloFunctionParameterBase {
   type: 'additive'
-  /** TODO: Meaning? */
+  /** Not important */
   section: string
   min: string
   max: string
-  /** Offset in this context? */
+  /** Not important */
   offset: string
   options: {
     value: number
@@ -254,6 +231,16 @@ interface TonelloFunctionParameterBase {
 export interface TonelloDateTime {
   date: string
   time: string
+}
+
+/**
+ * We send the event back as response to chemical requests, but with some additional fields
+ * to inform tonello about the status of the request (accepted, rejected, error, etc) and an optional message in case of error or rejection
+ */
+export type TonelloChemicalRequestResponse = TonelloChemicalRequestEvent & {
+  state: TonelloChemicalRequestStatus
+  /** Error message if any */
+  message: string
 }
 
 export type TAlarmType = 'alarm' | 'ozoneWarning' | 'warning' | 'timeoutWarning'
@@ -337,3 +324,135 @@ export interface TonelloMachineStatus {
   functions: number
   pH: number
 }
+
+// #endregion
+
+// #region API Response Types
+
+export type TonelloResponse<T = unknown, DataKey extends string = 'data'> = {
+  result: TonelloResponseResult
+} & (T extends null ? Record<string, never> : { [K in DataKey]: T })
+
+export interface TonelloResponseResult {
+  status: string
+  code: number
+  message: string
+}
+
+export interface TonelloDatetimeResponse {
+  dateTime: string
+}
+
+export interface TonelloAlarmListResponse {
+  alarms: TonelloAlarm[]
+}
+
+export interface TonelloProgramListResponse {
+  result: TonelloResponseResult
+  programs: TonelloProgram[]
+  programsCount: number
+}
+
+export interface TonelloEventListResponse {
+  result: TonelloResponseResult
+  eventsList: {
+    from: number
+    events: TonelloEvent[]
+  }
+}
+
+// #endregion
+// #region Events
+
+export interface TonelloBaseEvent {
+  id: number
+  eventValue: TonelloEventCode
+  datetime: Date
+}
+
+export interface TonelloBatchEndEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.BatchEndEvent
+  batchCode: string
+}
+
+export interface TonelloBatchCancelledEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.BatchCancelledEvent
+  batchCode: string
+}
+
+export interface TonelloBatchStartEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.BatchStartEvent
+  batchCode: string
+  operator: number
+  type: number
+  weight: number
+  program: number
+  programList: string[]
+}
+
+export interface TonelloCommandStartEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.CommandStartEvent
+  commandNum: number
+  stepNumTrt: number
+  stepNumAct: number
+  programNum: number
+  /** Starts from 1 */
+  programIndex: number
+}
+
+export interface TonelloCommandFinishEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.CommandFinishEvent
+  commandNum: number
+  stepNumTrt: number
+  stepNumAct: number
+  programNum: number
+  /** Starts from 1 */
+  programIndex: number
+}
+
+export interface TonelloBatchStoppedEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.BatchStoppedEvent
+  batchCode: string
+}
+
+export interface TonelloBatchContinueEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.BatchContinueEvent
+  batchCode: string
+}
+
+export interface TonelloIoValueChangedEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.IoValueChangedEvent
+  ioType: TonelloIoType
+  /** Starts from 1 */
+  ioNum: string
+  value: string
+}
+
+export interface TonelloChemicalRequestEvent extends TonelloBaseEvent {
+  eventValue: typeof TonelloEventCode.ChemicalRequestEvent
+  batchCode: string
+  runningProgram: number
+  runningCommand: number
+  requestType: TonelloChemicalRequestType
+  operationCode: number
+  batchTotRequestCount: number
+  programTotRequestCount: number
+  requestOrder: number
+  tankNr: number
+  priority: number
+  runningProgramIndex: number
+  runningCommandIndex: number
+}
+
+export type TonelloEvent =
+  | TonelloBatchStartEvent
+  | TonelloBatchEndEvent
+  | TonelloBatchStoppedEvent
+  | TonelloBatchContinueEvent
+  | TonelloBatchCancelledEvent
+  | TonelloCommandStartEvent
+  | TonelloCommandFinishEvent
+  | TonelloChemicalRequestEvent
+  | TonelloIoValueChangedEvent
+
+// #endregion

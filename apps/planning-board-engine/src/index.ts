@@ -28,6 +28,7 @@ if (config.keycloakEnabled) {
     clientId: config.keycloakClientId,
     accessRole: KC_ACCESS_ROLE,
     global: true,
+    publicRoutes: ['/planning_board/batch_notes/add_note', '/planning_board/unplan'],
   })
 }
 

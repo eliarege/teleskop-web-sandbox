@@ -136,6 +136,14 @@ target "machine-status" {
   }
 }
 
+target "communication-driver" {
+  inherits = ["_common"]
+  target = "node-app"
+  args = {
+    APP_BUILD_DIR = "dist"
+  }
+}
+
 target "machines" {
   inherits = ["_common"]
   target = "nuxt-app"
