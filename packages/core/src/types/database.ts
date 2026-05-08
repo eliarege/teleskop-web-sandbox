@@ -334,3 +334,19 @@ export type BFMACHBATCHPARAMETERS = {
   MACHINECONSTANTFORHIGHLIMIT?: number | null
   VISIBILITY?: boolean | null
 }
+
+export type BFMACHBATCHPARAMETERTYPES = {
+  MACHINEID: number
+  PARAMTYPEID: number
+  PARAMID: number
+}
+
+export type BFERPPARAMETERDEFINITIONS = {
+  PARAMID: number
+  PARAMNAME: string
+  PARAMTYPE: number
+  ERPFIELDNAME: string
+  PartyNoParam: boolean
+  PARAMNAMEEn: string
+  MACHINEID: number
+}
