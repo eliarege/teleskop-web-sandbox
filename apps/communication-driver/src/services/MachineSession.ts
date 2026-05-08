@@ -54,6 +54,7 @@ import {
   diffInSeconds,
   extractDateString,
   mapRequestStatusToTonello,
+  mapTonelloAutoModeToAutoManualStatus,
   mapTonelloChemicalRequestType,
   mapTonelloIoType,
 } from '../utils'
@@ -192,12 +193,27 @@ export class MachineSession {
     const lastDate = this.status.lastEventDate ?? extractDateString(new Date())
     const lastId = this.status.lastEventId ?? 0
 
+    // Check Manual Status
+    try {
+      const status = await this.api.fetchStatus()
+      this.status.runningAutoManStatus = mapTonelloAutoModeToAutoManualStatus(status.autoMode)
+      await this.deps.machineStatusRepository.update(this.machineId, {
+        runningAutoManStatus: this.status.runningAutoManStatus,
+      })
+    } catch (err) {
+      this.logger.warn(
+        { machineId: this.machineId },
+        'Failed to update auto-manual status: %s', (err as Error)?.message || 'Unknown error'
+      )
+    }
+
+    // Fetch events
     let fetchResult: { from: number, events: TonelloEvent[] }
     try {
       fetchResult = await this.api.fetchEvents(lastDate, lastId)
     } catch (err) {
       this.logger.warn(
-        { machineId: this.machineId }, 
+        { machineId: this.machineId },
         'Failed to fetch events from machine: %s', (err as Error)?.message || 'Unknown error'
       )
       await this.deps.machineStatusRepository.update(this.machineId, {

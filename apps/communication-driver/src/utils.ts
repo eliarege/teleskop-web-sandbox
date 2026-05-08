@@ -1,7 +1,7 @@
 import type { TonelloIoType } from '@teleskop/core'
-import { TonelloChemicalRequestStatus, TonelloChemicalRequestType } from '@teleskop/core'
+import { TonelloAutoMode, TonelloChemicalRequestStatus, TonelloChemicalRequestType } from '@teleskop/core'
 import type { IoType } from './db/enums'
-import { MaterialType, RequestStatus } from './db/enums'
+import { AutoManualStatus, MaterialType, RequestStatus } from './db/enums'
 
 /**
  * Formats a Date to a `'yyyy-MM-dd'` string, used as the `date` param
@@ -34,6 +34,16 @@ export function mapTonelloIoType(type: TonelloIoType): IoType {
   // TonelloIoType: '1'=AnalogInput, '2'=AnalogOutput, '3'=DigitalInput, '4'=DigitalOutput, '5'=Counter
   // IoType: AnalogInput=1, AnalogOutput=2, DigitalInput=3, DigitalOutput=4, Counter=5
   return Number(type) as IoType
+}
+
+export function mapTonelloAutoModeToAutoManualStatus(autoMode: TonelloAutoMode): AutoManualStatus {
+  // TonelloAutoMode: '0'=False, '1'=True
+  // AutoManualStatus: Unknown=-1, Auto=0, Manual=1
+  if (autoMode === TonelloAutoMode.True)
+    return AutoManualStatus.Auto
+  if (autoMode === TonelloAutoMode.False)
+    return AutoManualStatus.Manual
+  return AutoManualStatus.Unknown
 }
 
 /** Maps `RequestStatus` to `TonelloChemicalRequestStatus` for sending responses back to the machine. */

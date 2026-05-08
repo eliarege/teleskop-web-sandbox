@@ -1,4 +1,4 @@
-import type { TonelloChemicalRequestStatus, TonelloChemicalRequestType, TonelloEventCode, TonelloIoType } from './tonello.enums'
+import type { TonelloAutoMode, TonelloChemicalRequestStatus, TonelloChemicalRequestType, TonelloEventCode, TonelloIoType } from './tonello.enums'
 
 // #region Types
 
@@ -33,7 +33,7 @@ export interface TonelloMachineStatus {
   o3alarms: number
   curVol: number
   step: number
-  autoMode: string
+  autoMode: TonelloAutoMode
   lot: string
   kgs: number
   curTemp: number
@@ -287,44 +287,6 @@ export interface TonelloMachineParameterList extends TonelloFunctionParameterBas
 export interface TonelloMachineParameterBit extends TonelloFunctionParameterBase {
   type: 'bit'
   value: boolean
-}
-
-export interface TonelloMachineStatus {
-  activeFunctions: string
-  lifeminutes: number
-  stepType: number
-  activeRequests: string
-  pcVersion: string
-  mxCurTemp2: number
-  plcVersion: string
-  warnings1: number
-  nextBatchReady: string
-  endOfProgram: string
-  programName: string
-  conductivity: number
-  oscillation: number
-  curRpm: number
-  curoperator: string
-  alarms: number
-  o3alarms: number
-  curVol: number
-  step: number
-  autoMode: string
-  lot: string
-  kgs: number
-  curTemp: number
-  steps: number
-  programTime: number
-  mxCurVol1: number
-  mxCurVol2: number
-  setTemp: number
-  mxCurTemp1: number
-  setRpm: number
-  setVol: number
-  programRunning: string
-  warnings2: number
-  functions: number
-  pH: number
 }
 
 // #endregion

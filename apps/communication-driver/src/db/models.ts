@@ -7,10 +7,9 @@
  *  - Insert / update data types
  */
 
-import type { Buffer } from 'node:buffer'
 import type {
+  AutoManualStatus,
   BatchStartEndState,
-  BinaryFileType,
   CancelDetail,
   ConnectionStatus,
   MaterialType,
@@ -405,7 +404,7 @@ export interface MachineStatus {
   /** Job order status on the machine: `0` idle · `1` stopped · `2` running. */
   runningBatchStatus: number | null
   /** Auto/manual mode: `-1` unknown · `0` manual · `1` automatic. */
-  runningAutoManStatus: number | null
+  runningAutoManStatus: AutoManualStatus | null
   runningProgramNo: number | null
   runningProgramName: string | null
   runningStepNo: number | null

@@ -47,3 +47,12 @@ export const TonelloChemicalRequestType = {
 
 /* eslint-disable-next-line ts/no-redeclare */
 export type TonelloChemicalRequestType = typeof TonelloChemicalRequestType[keyof typeof TonelloChemicalRequestType]
+
+
+export const TonelloAutoMode = {
+  False: '0',
+  True: '1',
+} as const
+
+/* eslint-disable-next-line ts/no-redeclare */
+export type TonelloAutoMode = typeof TonelloAutoMode[keyof typeof TonelloAutoMode]

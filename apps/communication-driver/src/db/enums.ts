@@ -88,3 +88,12 @@ export const CancelDetail = {
 
 /* eslint-disable-next-line ts/no-redeclare */
 export type CancelDetail = (typeof CancelDetail)[keyof typeof CancelDetail]
+
+export const AutoManualStatus = {
+  Unknown: -1,
+  Auto: 0,
+  Manual: 1,
+} as const
+
+/* eslint-disable-next-line ts/no-redeclare */
+export type AutoManualStatus = (typeof AutoManualStatus)[keyof typeof AutoManualStatus]
