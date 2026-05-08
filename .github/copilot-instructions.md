@@ -36,6 +36,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 | PB         | `planning-board-engine`         |
 | PE         | `program-editor`                |
 | RE         | `recipes`                       |
+| CD         | `communication-driver`          |
 | migrations | `migration-service`             |
 
 Other apps and packages should always use full name for scopes.
