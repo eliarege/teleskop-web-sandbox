@@ -1,7 +1,7 @@
 {
   "name": "@teleskop/nuxt-base",
   "type": "module",
-  "version": "0.76.0",
+  "version": "0.77.0",
   "private": true,
   "license": "UNLICENSED",
   "main": "./nuxt.config.ts",

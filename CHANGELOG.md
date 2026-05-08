@@ -1,8 +1,27 @@
 # Changelog
 
+## 0.77.0 - 2026-05-08
+
+[Compare Changes](d3b5e6ce00bd3f81cab0f092ae802a99d7da5a91...3bdb46cb7b02a2dd3aeb8eba827da4a8c6827913)
+
+### 🚀 Features
+
+- Add Tonello machine archive support via BADATA_FILES ([d065da6](d065da6557b251c35931e4215cf0bacdb7ee6462))
+
+### 🐛 Bug Fixes
+
+-  **CD**: Improve error logging for fetchEvents failure in MachineSession ([3b5c58b](3b5c58ba5f57f396cb9d173c2ef806e6ad61ff9b))
+-  **AR**: Adjust style for explanation column in InterventionsDialog ([4c71b30](4c71b30f3e881d4e17a416f4aff6e74b05a32e5b))
+-  **MM**: Handle null stop and manual reason dates in Info.vue ([59a5782](59a578205d834d34de0513800247bacc477167c0))
+- **TonelloApi**: Correct `getProgram` response shape ([3bdb46c](3bdb46cb7b02a2dd3aeb8eba827da4a8c6827913))
+
+### 📖 Documentation
+
+- Add communication-driver scope to commit message guidelines ([fd11dff](fd11dffd4dc2bb5050dfa6392c1f3e6e5ec5c764))
+
 ## 0.76.0 - 2026-05-07
 
-[Compare Changes](c3b222a779d4e3bd1a4e8c4003492e69300bb4d4...3ad51b70c3d55894b4b99aecdbdba22b6404b13a)
+[Compare Changes](c3b222a779d4e3bd1a4e8c4003492e69300bb4d4...d3b5e6ce00bd3f81cab0f092ae802a99d7da5a91)
 
 ### 🚀 Features
 
