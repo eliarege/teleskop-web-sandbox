@@ -21,9 +21,9 @@ export async function up(knex: Knex) {
   for (const column of COLUMNS) {
     const constraintName = await findDefaultConstraintName(knex, column)
     if (constraintName) {
-      await knex.raw(`ALTER TABLE ?? DROP CONSTRAINT ??`, [TABLE, constraintName])
+      await knex.raw(`ALTER TABLE [${TABLE}] DROP CONSTRAINT [${constraintName}]`)
     }
-    await knex.raw(`ALTER TABLE ?? ADD DEFAULT ? FOR ??`, [TABLE, NEW_DEFAULT, column])
+    await knex.raw(`ALTER TABLE [${TABLE}] ADD DEFAULT '${NEW_DEFAULT}' FOR [${column}]`)
   }
 }
 
