@@ -13,6 +13,11 @@ function toBoolean(value: string | boolean | undefined): boolean {
 
 export const isDmExchangeEnabled = toBoolean(config.dmexchangeEnabled)
 
+console.log(isDmExchangeEnabled
+    ? 'DmExchange connection pool enabled'
+    : 'DmExchange connection pool disabled'
+)
+
 const knex = Knex({
   client: 'mssql',
   connection: {
@@ -32,13 +37,13 @@ const dmExchangeKnex = isDmExchangeEnabled
   ? Knex({
       client: 'mssql',
       connection: {
-        host: config.dmExchangeHost,
-        port: Number(config.dmExchangePort),
-        user: config.dmExchangeUser,
-        password: String(config.dmExchangePassword),
-        database: config.dmExchangeDatabase,
+        host: config.dmexchangeHost,
+        port: Number(config.dmexchangePort),
+        user: config.dmexchangeUser,
+        password: String(config.dmexchangePassword),
+        database: config.dmexchangeDatabase,
         options: {
-          instanceName: config.dmExchangeInstanceName,
+          instanceName: config.dmexchangeInstanceName,
           trustServerCertificate: true,
         },
       },
