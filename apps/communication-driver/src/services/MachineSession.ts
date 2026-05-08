@@ -511,7 +511,7 @@ export class MachineSession {
         state: BatchStartEndState.Start,
         date: event.datetime,
         programNoList: this.status.runningProgramNoList,
-        totalRequestCount: 0,
+        totalRequestCount: -1,
       },
       trx,
     )
@@ -619,7 +619,7 @@ export class MachineSession {
         state: BatchStartEndState.End,
         date: endTime,
         programNoList: this.status.runningProgramNoList ?? [],
-        totalRequestCount: 0,
+        totalRequestCount: -1,
       },
       trx,
     )
