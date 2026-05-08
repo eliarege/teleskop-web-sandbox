@@ -68,6 +68,8 @@ export interface TonelloProgramHeader {
   name: string
 }
 
+export type TonelloProgramResponse = { program: TonelloProgram }
+
 export interface TonelloProgram {
   /** TODO: Tell tonello to make this number */
   code: string

@@ -15,6 +15,7 @@ import type {
   TonelloMachineStatus,
   TonelloProgram,
   TonelloProgramListResponse,
+  TonelloProgramResponse,
   TonelloResponse,
 } from '../tonello.types'
 
@@ -93,8 +94,8 @@ export class TonelloApi {
   }
 
   async fetchProgram(code: string | number): Promise<TonelloProgram> {
-    const { data } = await this.fetch<TonelloResponse<TonelloProgram>>('/api/v1/getProgram', { query: { code } })
-    return data
+    const response = await this.fetch<TonelloResponse<TonelloProgramResponse>>('/api/v1/getProgram', { query: { code } })
+    return response.data.program
   }
 
   async fetchProgramList(): Promise<TonelloProgram[]> {
