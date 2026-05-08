@@ -49,7 +49,7 @@ async function setCompatibilityLevel(db: Knex, dbName: string, level: number) {
   }
 }
 
-async function migrateTeleskop(isDown?: boolean) {
+async function migrateTeleskop(isDown?: boolean): Promise<boolean> {
   const teleskop = knex({
     client: 'mssql',
     connection: {
@@ -66,14 +66,19 @@ async function migrateTeleskop(isDown?: boolean) {
       },
     },
   })
-  await migrate(teleskop, config.teleskopDatabase, new TeleskopMigrationSource(), isDown)
-  await teleskop.destroy()
+  const success = await migrate(
+    teleskop,
+    config.teleskopDatabase,
+    new TeleskopMigrationSource(),
+    isDown
+  )
+  return success
 }
 
-async function migrateDmExchange(isDown?: boolean) {
+async function migrateDmExchange(isDown?: boolean): Promise<boolean> {
   if (!config.dmExchangeEnabled) {
     console.log('DM Exchange migration is disabled, skipping...')
-    return
+    return true
   }
   const dmExchange = knex({
     client: 'mssql',
@@ -91,15 +96,23 @@ async function migrateDmExchange(isDown?: boolean) {
       },
     },
   })
-  await migrate(dmExchange, config.dmExchangeDatabase!, new DmExchangeMigrationSource(), isDown)
-  await dmExchange.destroy()
+  const success = await migrate(
+    dmExchange,
+    config.dmExchangeDatabase!,
+    new DmExchangeMigrationSource(),
+    isDown
+  )
+  return success
 }
 
 async function main() {
   const isDown = process.argv.includes('down')
-  await migrateTeleskop(isDown)
+  let success = await migrateTeleskop(isDown)
   if (config.dmExchangeEnabled) {
-    await migrateDmExchange(isDown)
+    success = await migrateDmExchange(isDown)
+  }
+  if (!success) {
+    throw new Error('Migration process failed')
   }
 }
 
