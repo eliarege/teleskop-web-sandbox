@@ -272,6 +272,9 @@ importers:
       '@tediousjs/connection-string':
         specifier: 0.6.0
         version: 0.6.0
+      '@teleskop/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@teleskop/utils':
         specifier: workspace:*
         version: link:../../packages/utils
@@ -1249,6 +1252,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@teleskop/utils':
+        specifier: workspace:*
+        version: link:../utils
       date-fns:
         specifier: 4.1.0
         version: 4.1.0
