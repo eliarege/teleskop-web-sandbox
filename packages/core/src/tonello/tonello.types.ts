@@ -13,7 +13,7 @@ export interface TonelloEventList {
   events: TonelloEvent[]
 }
 
-export interface TonelloMachineStatus {
+export type TonelloMachineStatus = {
   activeFunctions: string
   lifeminutes: number
   stepType: number
@@ -49,7 +49,7 @@ export interface TonelloMachineStatus {
   warnings2: number
   functions: number
   pH: number
-}
+} | null
 
 export interface TonelloBatch {
   code: string

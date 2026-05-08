@@ -196,10 +196,12 @@ export class MachineSession {
     // Check Manual Status
     try {
       const status = await this.api.fetchStatus()
-      this.status.runningAutoManStatus = mapTonelloAutoModeToAutoManualStatus(status.autoMode)
-      await this.deps.machineStatusRepository.update(this.machineId, {
-        runningAutoManStatus: this.status.runningAutoManStatus,
-      })
+      if (status) {
+        this.status.runningAutoManStatus = mapTonelloAutoModeToAutoManualStatus(status.autoMode)
+        await this.deps.machineStatusRepository.update(this.machineId, {
+          runningAutoManStatus: this.status.runningAutoManStatus,
+        })
+      }
     } catch (err) {
       this.logger.warn(
         { machineId: this.machineId },
