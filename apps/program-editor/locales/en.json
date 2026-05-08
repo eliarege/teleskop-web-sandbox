@@ -152,6 +152,7 @@
     "isOnline": "Machine {machineName} is online",
     "isOffline": "Machine {machineName} is offline",
     "connecting": "Connecting...",
+    "connectionFailed": "Machine {machineName} connection failed",
     "unusableReason": {
       "NO_COMMANDS": "Machine has no commands defined. Please update commands from Machines application.",
       "NO_COMMAND_TYPES": "Machine has no command types defined. Please update command types from Machines application."
