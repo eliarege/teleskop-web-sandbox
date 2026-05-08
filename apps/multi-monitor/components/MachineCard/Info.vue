@@ -4,6 +4,7 @@ import { useStorage } from '@vueuse/core'
 import { AlarmStatus, AutoManualStatus, BatchStatus, ConnectionStatus, RequestStatus } from '~/shared/enums'
 import type { MachineData } from '~/shared/types'
 import { useDataStore } from '~/store/Datas'
+
 interface CardInfoProps {
   colors: {
     backGround: string
@@ -39,12 +40,16 @@ function reqStatus(params: number) {
 }
 
 const stopReasonElapsedTime = computed(() => {
+  if (props.machine.stopReasonDateTime === null)
+    return ''
   const givenDate = new Date(props.machine.stopReasonDateTime)
   const elapsed = Date.now() - givenDate.getTime()
   return formatDuration(elapsed)
 })
 
 const manualReasonElapsedTime = computed(() => {
+  if (props.machine.manualReasonDateTime === null)
+    return ''
   const givenDate = new Date(props.machine.manualReasonDateTime)
   const elapsed = Date.now() - givenDate.getTime()
   return formatDuration(elapsed)
@@ -201,6 +206,7 @@ const infoTextColor = computed(() => {
       :style="{ background: colors.itemBackGround, color: determineTextColor(colors.itemBackGround) }"
     >
       <q-tooltip
+        v-if="machine.stopReason"
         transition-show="scale"
         class="text-black e-border bg-white"
         :offset="[3, 3]"
@@ -229,6 +235,7 @@ const infoTextColor = computed(() => {
           <span>
             {{ manualReasonElapsedTime }} &nbsp;
             <q-tooltip
+              v-if="machine.manualReason"
               transition-show="scale"
               class="text-black e-border bg-white"
               :offset="[3, 3]"
@@ -242,6 +249,7 @@ const infoTextColor = computed(() => {
           <span>{{ machine.stopReason }}</span>
           <span> {{ stopReasonElapsedTime }} &nbsp;
             <q-tooltip
+              v-if="stopReasonElapsedTime"
               transition-show="scale"
               class="text-black e-border bg-white"
               :offset="[3, 3]"
