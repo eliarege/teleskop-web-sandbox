@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "date-fns": "4.1.0",
-    "ofetch": "1.4.1"
+    "ofetch": "1.4.1",
+    "@teleskop/utils": "workspace:*"
   },
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",

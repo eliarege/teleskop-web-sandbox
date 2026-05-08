@@ -7,7 +7,8 @@ import { insertBatch, isDef } from '@teleskop/utils'
 import { config } from '~/config'
 import { knex } from '~/knexConfig'
 import { logger } from '~/composables/logger'
-import { BatchParameterType, StartingParameters } from '~/composables/enums'
+import { StartingParameters } from '~/composables/enums'
+import { BatchParameterType } from '@teleskop/core'
 import { getManyMachineProgram, parseProgramListString } from '~/lib/program'
 import { getMachineCommands } from '~/lib/command'
 import { createTonelloBatch } from '~/lib/batch'
@@ -732,8 +733,8 @@ export const UserType = {
 export type UserType = typeof UserType[keyof typeof UserType]
 
 export async function addBatchNote(
-  jobOrder: string, 
-  note: string, 
+  jobOrder: string,
+  note: string,
   userId: number,
   userType: UserType,
   showOnScreen: boolean

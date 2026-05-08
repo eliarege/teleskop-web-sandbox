@@ -23,6 +23,7 @@
     "@fastify/cors": "9.0.1",
     "@tediousjs/connection-string": "0.6.0",
     "@teleskop/utils": "workspace:*",
+    "@teleskop/core": "workspace:*",
     "fastify": "4.26.2",
     "http-graceful-shutdown": "3.1.13",
     "kysely": "0.27.4",

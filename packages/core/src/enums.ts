@@ -1,3 +1,5 @@
+import type { ValueOf } from '@teleskop/utils'
+
 export const ProjectLocale = {
   Turkish: 0,
   English: 1,
@@ -20,11 +22,15 @@ export const ProjectLocale = {
   French: 18,
 } as const
 
+export type ProjectLocale = ValueOf<typeof ProjectLocale>
+
 export const MachineConstantType = {
   NUMBER: 1,
   LIST: 2,
   BIT: 3,
 }
+
+export type MachineConstantType = ValueOf<typeof MachineConstantType>
 
 export const CommandParameterType = {
   NUMBER: 0,
@@ -32,3 +38,19 @@ export const CommandParameterType = {
   CHECKBOX: 2,
   SELECT_ADDITIVE: 3,
 } as const
+
+export type CommandParameterType = ValueOf<typeof CommandParameterType>
+
+export const BatchParameterType = {
+  FabricWeight: 0,
+  MTFlotteRatio: 1,
+  PartCount: 2,
+  PartyNumber: 3,
+  AccompanyNumber: 4,
+  ClothLength: 5,
+  Customer: 6,
+  CustomerOrder: 7,
+  FabricType: 8,
+} as const
+
+export type BatchParameterType = ValueOf<typeof BatchParameterType>

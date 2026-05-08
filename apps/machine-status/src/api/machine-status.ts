@@ -5,7 +5,7 @@ import pMemoize from 'p-memoize'
 import { LRUCache } from 'lru-cache'
 import { config } from '../config'
 import type { TeleskopDatabase } from '../types'
-import { BatchParameterType } from '../enums'
+import { BatchParameterType } from '@teleskop/core'
 
 interface MachineStatus {
   id: number

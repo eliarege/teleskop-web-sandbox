@@ -1,4 +1,4 @@
-import type { BFMACHBATCHPARAMETERS } from '@teleskop/core'
+import { BatchParameterType, type BFMACHBATCHPARAMETERS } from '@teleskop/core'
 import type { Knex } from 'knex'
 import type { MssqlError } from '~/server/error'
 import { DatabaseQueryError } from '~/server/error'
@@ -20,7 +20,7 @@ export async function updateTonelloBatchParameters(
       BATCHSTART: true,
       RECIPE: false,
       DEFAULTVALUE: -9999,
-      PARAMETERTYPE: 1,
+      PARAMETERTYPE: BatchParameterType.FabricWeight,
       SELECTIONLIST: 'YOK',
       SELECTIONVALUES: 'YOK',
       UNITCODE: 1,

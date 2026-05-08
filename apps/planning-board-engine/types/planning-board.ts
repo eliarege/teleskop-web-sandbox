@@ -1,5 +1,6 @@
 import type { ValueOf } from '@teleskop/utils'
-import type { BatchParameterType, StartingParameters } from '~/composables/enums'
+import type { StartingParameters } from '~/composables/enums'
+import { BatchParameterType } from '@teleskop/core'
 
 export interface QueueBasedBaseEventRaw {
   eventType: 'planned' | 'finished' | 'ongoing' | 'stop' | 'unplanned'

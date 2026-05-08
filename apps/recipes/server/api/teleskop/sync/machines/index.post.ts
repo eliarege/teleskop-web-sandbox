@@ -1,9 +1,9 @@
 import { dmsDB, getTeleskopDB } from '~/server/connectionPool'
 
 const machineParams = {
-  machine_name: 'MACHINENAME',
+  machine_name: 'MACHINECODE',
   machine_id: 'MACHINEID',
-  controller_type: 'CONTROLLERTYPE',
+  capacity: 'MACHINECAPACITY',
 }
 
 const parameterGroupParams = {
@@ -34,15 +34,11 @@ export default defineEventHandler(async () => {
   try {
     const teleskopDB = await getTeleskopDB()
 
-    const machines = await teleskopDB('dbo.DYTFMACHINES')
+    const machines = await teleskopDB('dbo.BFMACHINES')
       .select(machineParams)
-    const capacities = await teleskopDB('dbo.BFMACHINES')
-      .select(['MACHINEID', 'MACHINECAPACITY'])
-    const capacityMap = Object.fromEntries(
-      capacities.map(row => [row.MACHINEID, row.MACHINECAPACITY]),
-    )
+
     machines.forEach((machine) => {
-      machine.capacity = capacityMap[machine.machine_id] ?? null
+      machine.controllerType = 1
     })
 
     const parameterGroups = await teleskopDB('dbo.BFTREATMENTPARAMETERGROUPS')
