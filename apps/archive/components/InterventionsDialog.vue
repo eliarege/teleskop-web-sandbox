@@ -44,6 +44,7 @@ const columns: QTableColumn[] = [
     align: 'left',
     label: t('description'),
     field: 'explanation',
+    style: 'max-width: 300px; white-space: normal;',
     format: (val: string[]) => val.join(' | '),
   },
 ]
