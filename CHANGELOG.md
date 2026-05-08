@@ -1,8 +1,35 @@
 # Changelog
 
+## 0.78.0 - 2026-05-08
+
+[Compare Changes](6286b26f1ba07fd2ebc459577845acfcdc40384a...0f7942238f8d55c610cb18880a655757a76131a2)
+
+### 🚀 Features
+
+- **migration**: Add migration to set default dates for TFMACHINESTATUS ([27a1f0d](27a1f0d01e7f5bb490a47bc4d1d6052c18fb34f3))
+-  **CD**: Update MachineSession to handle auto/manual status on every poll ([64803a9](64803a9c41e53d5f0d76d80ba0ed4faa3e7c61b6))
+- **migrations**: Alter TOTALREQUESTCOUNT to int in BASTARTEND ([6820f59](6820f599e28909480f4ef3604d5a2f44f73260ad))
+-  **MA**: Add mock kg values for paramtypes and erpparamdefs tables in tonello integration ([1076af4](1076af42309be042065d60cea3e7e95d07d57488))
+
+### 🐛 Bug Fixes
+
+- **migration**: Process exiting with success code even if migration fails ([bdcb646](bdcb6467a111d31bc7f9e23394d078142518956b))
+- **migration**: Update raw SQL queries to use bracket notation for table and constraint names ([47f6867](47f6867b54d9f4a37b870dd622be489c6e4ae005))
+-  **MA**: Standardize dmexchange configuration property names to lowercase ([726bff6](726bff606cc920a614490c5356ab16dcdf5d3ba0))
+-  **MA**: Standardize dmexchange configuration property name to lowercase (cont) ([29d14b4](29d14b4d9dcabaebbd39df34cf5d4f587abfed69))
+-  **MA**: Standardize dmexchange configuration property names to lowercase and add logging for connection pool status ([f3a5944](f3a59449595654f4818cdad8d5fdb2d5c3f106ec))
+-  **MA**: Add null check for machine status before updating runningAutoManStatus ([a8981c9](a8981c98ea9d90a6e51bd26f1f0bfaf1c5d9a82e))
+-  **CD**: Update totalRequestCount to -1 for batch start and end events ([ba3dc1d](ba3dc1d6135780738945ee45511deca99458b435))
+- **core**: Add BatchParameterType to core enums and update imports across modules ([6ae1ca5](6ae1ca5f976b25e8bcd3402a18ac7e5c6f6f9577))
+-  **PE**: Add connection failed message for machine status ([0f79422](0f7942238f8d55c610cb18880a655757a76131a2))
+
+### 🔧 Miscellaneous Tasks
+
+- Update lockfile ([0873618](087361801283a453020e2140bd810a3180235555))
+
 ## 0.77.0 - 2026-05-08
 
-[Compare Changes](d3b5e6ce00bd3f81cab0f092ae802a99d7da5a91...3bdb46cb7b02a2dd3aeb8eba827da4a8c6827913)
+[Compare Changes](d3b5e6ce00bd3f81cab0f092ae802a99d7da5a91...6286b26f1ba07fd2ebc459577845acfcdc40384a)
 
 ### 🚀 Features
 

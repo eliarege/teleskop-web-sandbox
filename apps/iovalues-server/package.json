@@ -1,7 +1,7 @@
 {
   "name": "iovalues-server",
   "type": "module",
-  "version": "0.77.0",
+  "version": "0.78.0",
   "private": true,
   "description": "",
   "license": "UNLICENSED",
