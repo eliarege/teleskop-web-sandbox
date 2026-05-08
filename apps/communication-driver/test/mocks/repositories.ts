@@ -59,6 +59,7 @@ export function makeBatchDataRepository(
     setCancelTime: vi.fn().mockResolvedValue(undefined),
     setFinishReasonId: vi.fn().mockResolvedValue(undefined),
     markAdditionStarted: vi.fn().mockResolvedValue(undefined),
+    getNextBatchReference: vi.fn().mockResolvedValue('REF-001'),
     ...overrides,
   }
 }
@@ -177,7 +178,8 @@ export function makeBatchDataFilesRepository(
   overrides?: Partial<BatchDataFilesRepository>,
 ): BatchDataFilesRepository {
   return {
-    insert: vi.fn().mockResolvedValue(undefined),
+    insertAnalogValues: vi.fn().mockResolvedValue(undefined),
+    insertDigitalValues: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   }
 }

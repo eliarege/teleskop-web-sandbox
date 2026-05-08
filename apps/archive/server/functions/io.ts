@@ -1,8 +1,8 @@
 import { subMinutes } from 'date-fns'
 import { LRUCache } from 'lru-cache'
 import { isDef } from '@teleskop/utils'
-import { IOType } from '../utils/constants'
-import { archiveCache } from '../archiveCache'
+import { BinaryFileType, IOType } from '../utils/constants'
+import { archiveCache, ArchivedIoValuesWithStartTime } from '../archiveCache'
 import { db } from '~/server/database'
 import type {
   AnalogInputOutputType,
@@ -23,6 +23,11 @@ import type {
 import type { DuoAny, DuoParsed, DuoRaw } from '~/types/utils'
 import { insertAnalogInputValues, insertAnalogOutputValues, insertCalculatedValues, insertCounterValues, insertDigitalInputValues, insertDigitalOutputLockValues, insertDigitalOutputValues, insertReelCycleTimes, insertVirtualInputValues } from '~/shared/io'
 import { calculatedValueKeys } from '~/shared/constants'
+import { gunzip } from 'zlib'
+import { promisify } from 'util'
+import { getMachineModelByBatchKey } from './machine'
+
+const pGunzip = promisify(gunzip)
 
 interface BatchValueOptions {
   isActive?: boolean | null
@@ -51,7 +56,11 @@ export async function getBatchIoValues(batchKey: number, options = {} as BatchVa
 
 /** Arşivlenen bir iş emrinin IO değerlerini, arşiv sunucusundan alır. */
 export async function getArchivedBatchIoValues(batchKey: number, since?: Date | null): Promise<DuoRaw<ArchivedIoValues>> {
-  const values = await archiveCache.fetch(batchKey)
+  const model = await getMachineModelByBatchKey(batchKey)
+
+  const values = model === 'Tonello'
+    ? await getArchivedBatchIoValuesFromBatchFiles(batchKey)
+    : await archiveCache.fetch(batchKey)
 
   if (values && since && new Date(values.startTime) < since) {
     const avLastIndex = values.analogValues.findLastIndex(v => new Date(v.logtime) < since)
@@ -78,6 +87,7 @@ export async function getArchivedBatchIoValues(batchKey: number, since?: Date | 
       }
   }
 }
+
 /** Aktif olan iş emrinin IO ve tur süreleri verilerini döner */
 export async function getActiveBatchIoValues(batchKey: number, since?: Date | null): Promise<DuoParsed<ArchivedIoValues>> {
   return {
@@ -463,4 +473,58 @@ export async function getActiveCalculatedValues(batchKey: number, since?: Date |
   }
 
   return await query
+}
+/**
+ * Şimdilik sadece Tonello makineleri için geçerli olan bir fonksiyon.
+ * BADATA_FILES tablosuna iletişim sürücüsünün NodeJS sürümü yazar.
+ * Bu sürüm ise mevcut durumda (0.76.x) sadece Tonello makinelerinde kullanılır.
+ */
+export async function getArchivedBatchIoValuesFromBatchFiles(batchKey: number): Promise<DuoRaw<ArchivedIoValuesWithStartTime>> {
+  const config = useRuntimeConfig()
+  const batchStartTimeResult = await db
+    .from('BADATA')
+    .first({ 
+      startTime: db.raw('DATEADD(MINUTE, ?, STARTTIME)', config.teleskopTimezoneOffset)
+    })
+    .where('BATCHKEY', batchKey) as { startTime: Date } | null | undefined
+
+  if (!batchStartTimeResult) {
+    throw createError({
+      statusCode: 404,
+      message: 'BATCH_NOT_FOUND',
+    })
+  }
+
+  const batchFiles = await db
+    .from('BADATA_FILES')
+    .select({
+      fileType: 'FILETYPE',
+      fileContent: 'FILECONTENT',
+    })
+    .where('BATCHKEY', batchKey)
+    .whereIn('FILETYPE', [BinaryFileType.AnalogIO_JSON, BinaryFileType.DigitalIO_JSON])
+
+  const analogValuesZip = batchFiles.find(f => f.fileType === BinaryFileType.AnalogIO_JSON)?.fileContent
+  const digitalValuesZip = batchFiles.find(f => f.fileType === BinaryFileType.DigitalIO_JSON)?.fileContent
+    
+  let analogValues: DuoRaw<ArchivedAnalogValue>[] = []
+  let digitalValues: DuoRaw<ArchivedDigitalValue>[] = []
+
+  if (analogValuesZip) {
+    const analogValuesBuffer = await pGunzip(analogValuesZip)
+    analogValues = JSON.parse(analogValuesBuffer.toString('utf-8'))
+  }
+  if (digitalValuesZip) {
+    const digitalValuesBuffer = await pGunzip(digitalValuesZip)
+    digitalValues = JSON.parse(digitalValuesBuffer.toString('utf-8'))
+  }
+
+  return {
+    startTime: batchStartTimeResult.startTime.toISOString(),
+    analogValues,
+    digitalValues,
+    virtualInputValues: [],
+    cycleTimes: [],
+    calculatedValues: [],
+  }
 }

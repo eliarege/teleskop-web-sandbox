@@ -774,11 +774,6 @@ export const BATCH_DATA_FILES_COLUMNS = {
   fileContent: 'FILECONTENT',
 } as const satisfies Record<string, string>
 
-export interface BatchDataFileInsert {
-  batchKey: number
-  fileType: BinaryFileType
-  fileContent: Buffer
-}
 
 // ── BASETPOINTCHANGES ─────────────────────────────────────────────────────────
 

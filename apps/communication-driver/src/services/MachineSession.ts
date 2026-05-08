@@ -21,7 +21,6 @@ import type { Logger } from 'pino'
 import {
   BatchStartEndState,
   BatchStatus,
-  BinaryFileType,
   CancelDetail,
   ConnectionStatus,
   RequestStatus,
@@ -968,25 +967,11 @@ export class MachineSession {
       this.deps.digitalIoValueRepository.findByBatchKey(batchKey, trx),
     ])
     if (analogValues.length) {
-      await this.deps.batchDataFilesRepository.insert(
-        {
-          batchKey,
-          fileType: BinaryFileType.AnalogIO_JSON,
-          fileContent: gzipSync(Buffer.from(JSON.stringify(analogValues))),
-        },
-        trx,
-      )
+      await this.deps.batchDataFilesRepository.insertAnalogValues(batchKey, analogValues, trx)
       await this.deps.analogIoValueRepository.deleteByBatchKey(batchKey, trx)
     }
     if (digitalValues.length) {
-      await this.deps.batchDataFilesRepository.insert(
-        {
-          batchKey,
-          fileType: BinaryFileType.DigitalIO_JSON,
-          fileContent: gzipSync(Buffer.from(JSON.stringify(digitalValues))),
-        },
-        trx,
-      )
+      await this.deps.batchDataFilesRepository.insertDigitalValues(batchKey, digitalValues, trx)
       await this.deps.digitalIoValueRepository.deleteByBatchKey(batchKey, trx)
     }
   }

@@ -16,6 +16,9 @@ export type ArchivedIoValuesWithStartTime = ArchivedIoValues & { startTime: stri
 export const archiveCache = new LRUCache<number, DuoRaw<ArchivedIoValuesWithStartTime>>({
   max: 100,
   async fetchMethod(key, _, { signal }) {
+    if (!teleskopArchiveServerUrl) {
+      throw new Error('Teleskop archive server URL is not configured')
+    }
     const data = await $fetch<DuoRaw<ArchivedIoValuesWithStartTime>>(`${teleskopArchiveServerUrl}/?${key}`, { signal })
     if (!data || !data.analogValues?.length) {
       throw new IoValuesNotFoundError(key)

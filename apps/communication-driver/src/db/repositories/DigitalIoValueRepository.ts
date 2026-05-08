@@ -9,7 +9,7 @@ import {
   type DigitalIoValueRaw,
 } from '../models'
 
-function booleanArrayToHex(arr: boolean[]): string {
+export function booleanArrayToHex(arr: boolean[]): string {
   const padded = [...arr]
   while (padded.length % 4 !== 0) padded.push(false)
   let result = ''
@@ -24,7 +24,7 @@ function booleanArrayToHex(arr: boolean[]): string {
   return result
 }
 
-function hexToBooleanArray(hex: string): boolean[] {
+export function hexToBooleanArray(hex: string): boolean[] {
   const result: boolean[] = []
   for (const char of hex) {
     const nibble = Number.parseInt(char, 16)
