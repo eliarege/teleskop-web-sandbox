@@ -11,7 +11,7 @@ function toBoolean(value: string | boolean | undefined): boolean {
   return false
 }
 
-export const isDmExchangeEnabled = toBoolean(config.dmExchangeEnabled)
+export const isDmExchangeEnabled = toBoolean(config.dmexchangeEnabled)
 
 const knex = Knex({
   client: 'mssql',
