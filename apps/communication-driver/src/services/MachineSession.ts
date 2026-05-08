@@ -197,7 +197,10 @@ export class MachineSession {
     try {
       fetchResult = await this.api.fetchEvents(lastDate, lastId)
     } catch (err) {
-      this.logger.warn({ err, machineId: this.machineId }, 'fetchEvents failed')
+      this.logger.warn(
+        { machineId: this.machineId }, 
+        'Failed to fetch events from machine: %s', (err as Error)?.message || 'Unknown error'
+      )
       await this.deps.machineStatusRepository.update(this.machineId, {
         connectionStatus: ConnectionStatus.NotConnected,
       })
