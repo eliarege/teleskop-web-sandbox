@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConnectionStatus, RequestStatus } from '../src/db/enums'
 import type { BatchData } from '../src/db/models'
 import { MachineSession } from '../src/services/MachineSession'
-import { makeSession, makeTestContainer, mockTonelloApi } from './helpers/container'
+import { makeSession, makeTestContainer } from './helpers/container'
 import {
   analogIoChangedEvent,
   batchCancelledEvent,
@@ -726,7 +726,6 @@ describe('machineSession initialization', () => {
   })
 
   it('throws during init when MachineStatus row is not found', async () => {
-    mockTonelloApi()
     const { cradle } = makeTestContainer({
       machineStatusRepository: makeMachineStatusRepository({
         findByMachineId: vi.fn().mockResolvedValue(undefined),

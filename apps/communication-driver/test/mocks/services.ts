@@ -1,4 +1,3 @@
-import type { TonelloEvent } from '@teleskop/core'
 import type { Knex } from 'knex'
 import { vi } from 'vitest'
 import type { PlanningBoardService } from '../../src/services/PlanningBoardService'
@@ -17,14 +16,6 @@ export function makeKnex(trx: Knex.Transaction): Knex {
   return {
     transaction: vi.fn().mockResolvedValue(trx),
   } as unknown as Knex
-}
-
-/** Creates a TonelloApi mock with controllable `fetchEvents` and `submitChemicalRequestStatus`. */
-export function makeTonelloApiClass(events: TonelloEvent[] = []) {
-  return {
-    fetchEvents: vi.fn().mockResolvedValue({ from: 0, events }),
-    submitChemicalRequestStatus: vi.fn().mockResolvedValue(undefined),
-  }
 }
 
 export function makePlanningBoardService(

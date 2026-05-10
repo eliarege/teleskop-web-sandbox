@@ -1,5 +1,5 @@
 import type { TonelloEvent } from '@teleskop/core'
-import { TonelloApi } from '@teleskop/core'
+import { TonelloApi, TonelloAutoMode } from '@teleskop/core'
 import { asValue, createContainer } from 'awilix'
 import pino from 'pino'
 import { vi } from 'vitest'
@@ -31,6 +31,9 @@ import { makeKnex, makePlanningBoardService, makeTrx } from '../mocks/services'
 export function mockTonelloApi(events: TonelloEvent[] = []) {
   const mock = {
     fetchEvents: vi.fn().mockResolvedValue({ from: 0, events }),
+    fetchStatus: vi.fn().mockResolvedValue({
+      autoMode: TonelloAutoMode.True,
+    }),
     submitChemicalRequestStatus: vi.fn().mockResolvedValue(undefined),
   }
   vi.spyOn(TonelloApi, 'createFromHostname').mockReturnValue(mock as unknown as TonelloApi)
