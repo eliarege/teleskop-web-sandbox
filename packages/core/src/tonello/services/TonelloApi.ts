@@ -73,7 +73,8 @@ export class TonelloApi {
     return data
   }
 
-  async fetchStatus(): Promise<TonelloMachineStatus> {
+  // Bug on Tonello side, status may return `null`, add it just in case
+  async fetchStatus(): Promise<TonelloMachineStatus | null> {
     const { data } = await this.fetch<TonelloResponse<TonelloMachineStatus>>('/api/v1/getStatus')
     return data
   }

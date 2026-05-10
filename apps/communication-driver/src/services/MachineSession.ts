@@ -1,5 +1,3 @@
-import { Buffer } from 'node:buffer'
-import { gzipSync } from 'node:zlib'
 import {
   TonelloApi,
   TonelloChemicalRequestStatus,
@@ -27,13 +25,11 @@ import {
   RequestType,
 } from '../db/enums'
 import type {
-  AnalogIoValue,
   BatchData,
   BatchDataInsert,
   BatchDataUpdate,
   BatchStepInsert,
   ChemicalRequestStringResponseParsed,
-  DigitalIoValue,
   Machine,
   MachineStatus,
 } from '../db/models'
@@ -115,15 +111,21 @@ export class MachineSession {
   /** When true, all events are skipped until the next `BatchStartEvent` (missed-event recovery). */
   private skipUntilNextBatchStart = false
 
+  private logger: Logger
+
+  private lastStatusWarnAt = 0
+  private readonly lastStatusWarnDelay = 60_000
+
   private pollingTimer: ReturnType<typeof setTimeout> | null = null
   private pollingInterval = 0
 
   constructor(
     readonly machine: Machine,
-    private readonly logger: Logger,
+    logger: Logger,
     private readonly deps: MachineSessionDeps,
   ) {
     this.api = TonelloApi.createFromHostname(machine.ipAddress)
+    this.logger = logger.child({ machineId: machine.machineId })
   }
 
   get machineId(): number {
@@ -148,17 +150,13 @@ export class MachineSession {
     if (status.runningBatchKey !== null) {
       this.activeBatch = (await this.deps.batchDataRepository.findByKey(status.runningBatchKey)) ?? null
       if (!this.activeBatch) {
-        this.logger.warn(
-          { machineId: this.machineId },
-          'runningBatchKey set in status but BatchData not found, clearing',
-        )
+        this.logger.warn('runningBatchKey set in status but BatchData not found, clearing')
         this.status.runningBatchKey = null
       }
     }
 
     this.logger.info(
       {
-        machineId: this.machineId,
         lastEventId: status.lastEventId,
         lastEventDate: status.lastEventDate,
       },
@@ -193,48 +191,52 @@ export class MachineSession {
     const lastDate = this.status.lastEventDate ?? extractDateString(new Date())
     const lastId = this.status.lastEventId ?? 0
 
-    // Check Manual Status
-    try {
-      const status = await this.api.fetchStatus()
-      if (status) {
-        this.status.runningAutoManStatus = mapTonelloAutoModeToAutoManualStatus(status.autoMode)
-        await this.deps.machineStatusRepository.update(this.machineId, {
-          runningAutoManStatus: this.status.runningAutoManStatus,
-        })
-      }
-    } catch (err) {
-      this.logger.warn(
-        { machineId: this.machineId },
-        'Failed to update auto-manual status: %s', (err as Error)?.message || 'Unknown error'
-      )
-    }
-
-    // Fetch events
     let fetchResult: { from: number, events: TonelloEvent[] }
+
+    // Check events
     try {
       fetchResult = await this.api.fetchEvents(lastDate, lastId)
     } catch (err) {
-      this.logger.warn(
-        { machineId: this.machineId },
-        'Failed to fetch events from machine: %s', (err as Error)?.message || 'Unknown error'
-      )
-      await this.deps.machineStatusRepository.update(this.machineId, {
-        connectionStatus: ConnectionStatus.NotConnected,
-      })
-      this.status.connectionStatus = ConnectionStatus.NotConnected
+      if (this.status.connectionStatus !== ConnectionStatus.NotConnected) {
+        this.status.connectionStatus = ConnectionStatus.NotConnected
+        await this.deps.machineStatusRepository.update(this.machineId, {
+          connectionStatus: ConnectionStatus.NotConnected,
+        }).catch((err) => {
+          this.logger.error({ err }, 'Failed to update machine status on connection error')
+        })
+        this.logger.warn({ err }, 'Failed to fetch data from machine')
+      }
       return
     }
+
+    const machineStatus = await this.api.fetchStatus().catch((err) => {
+      this.handleFetchStatusError(err)
+      return null
+    })
 
     const { events } = fetchResult
     const wasDisconnected = this.status.connectionStatus !== ConnectionStatus.Connected
 
+    if (machineStatus) {
+      this.status.runningAutoManStatus = mapTonelloAutoModeToAutoManualStatus(machineStatus.autoMode)
+      await this.deps.machineStatusRepository.update(this.machineId, {
+        runningAutoManStatus: this.status.runningAutoManStatus,
+      }).catch((err) => {
+        this.logger.error({ err }, 'Failed to update machine auto/manual status')
+      })
+    }
+
+    if (wasDisconnected) {
+      this.status.connectionStatus = ConnectionStatus.Connected
+      this.logger.info('Connection to machine re-established')
+      await this.deps.machineStatusRepository.update(this.machineId, {
+        connectionStatus: ConnectionStatus.Connected,
+      }).catch((err) => {
+        this.logger.error({ err }, 'Failed to update machine connection status')
+      })
+    }
+
     if (events.length === 0) {
-      if (wasDisconnected) {
-        await this.deps.machineStatusRepository.update(this.machineId, {
-          connectionStatus: ConnectionStatus.Connected,
-        })
-        this.status.connectionStatus = ConnectionStatus.Connected
-      }
       return
     }
 
@@ -255,7 +257,7 @@ export class MachineSession {
       // Detect missed events - if the first returned event skips ahead in ID space
       if (hasMissedEvents) {
         this.logger.warn(
-          { machineId: this.machineId, expectedId: lastId + 1, receivedId: firstEventId },
+          { expectedId: lastId + 1, receivedId: firstEventId },
           'Missed events detected - skipping to next BatchStartEvent',
         )
         await this.finalizeOnMissedEvents(events[0].datetime, trx)
@@ -283,10 +285,7 @@ export class MachineSession {
       }
     } catch (err) {
       await trx.rollback()
-      this.logger.error(
-        { err, machineId: this.machineId },
-        'Error processing event batch - transaction rolled back',
-      )
+      this.logger.error({ err }, 'Error processing event batch - transaction rolled back')
     }
   }
 
@@ -298,7 +297,7 @@ export class MachineSession {
     trx: Knex.Transaction,
   ): Promise<void> {
     let pendingDigitalDatetime: number | null = null
-    this.logger.debug({ machineId: this.machineId, eventCount: events.length }, 'Processing event batch')
+    this.logger.debug({ eventCount: events.length }, 'Processing event batch')
 
     for (const event of events) {
       if (event.eventValue === TonelloEventCode.IoValueChangedEvent) {
@@ -350,7 +349,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.skipUntilNextBatchStart && event.eventValue !== TonelloEventCode.BatchStartEvent) {
       this.logger.debug(
-        { machineId: this.machineId, eventId: event.id, eventValue: event.eventValue },
+        { eventId: event.id, eventValue: event.eventValue },
         'Skipping event - waiting for BatchStartEvent',
       )
       return
@@ -380,7 +379,7 @@ export class MachineSession {
         break
       default:
         this.logger.debug(
-          { machineId: this.machineId, eventValue: event.eventValue },
+          { eventValue: event.eventValue },
           'Unhandled event type - ignoring',
         )
     }
@@ -400,7 +399,7 @@ export class MachineSession {
       && this.activeBatch.jobOrder === event.batchCode
     ) {
       this.logger.warn(
-        { machineId: this.machineId, batchCode: event.batchCode, eventId: event.id },
+        { batchCode: event.batchCode, eventId: event.id },
         'Duplicate BatchStartEvent received - ignoring',
       )
       return
@@ -416,7 +415,7 @@ export class MachineSession {
       && this.activeBatch.cancelTime === null
     ) {
       this.logger.warn(
-        { machineId: this.machineId, prevBatchKey: this.activeBatch.batchKey },
+        { prevBatchKey: this.activeBatch.batchKey },
         'Previous batch was not completed - force-cancelling before new batch start',
       )
       await this.deps.batchDataRepository.update(
@@ -533,7 +532,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null) {
       this.logger.warn(
-        { machineId: this.machineId, batchCode: event.batchCode, eventId: event.id },
+        { batchCode: event.batchCode, eventId: event.id },
         'BatchEndEvent received with no active batch - ignoring',
       )
       return
@@ -565,7 +564,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null) {
       this.logger.warn(
-        { machineId: this.machineId, batchCode: event.batchCode, eventId: event.id },
+        { batchCode: event.batchCode, eventId: event.id },
         'BatchCancelledEvent received with no active batch - ignoring',
       )
       return
@@ -664,7 +663,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null) {
       this.logger.debug(
-        { machineId: this.machineId, eventId: event.id },
+        { eventId: event.id },
         'CommandStartEvent ignored - no active batch',
       )
       return
@@ -674,7 +673,6 @@ export class MachineSession {
       if (this.activeStep.stepNo === event.stepNumAct) {
         this.logger.warn(
           {
-            machineId: this.machineId,
             runningCommandNo: this.activeStep.commandNo,
             newCommandNo: event.commandNum,
           },
@@ -686,7 +684,6 @@ export class MachineSession {
       // Tonello bug: CommandFinish was not sent for the previous step - close it now
       this.logger.warn(
         {
-          machineId: this.machineId,
           prevStepNo: this.activeStep.stepNo,
           prevCommandNo: this.activeStep.commandNo,
           newStepNo: event.stepNumAct,
@@ -743,7 +740,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null || this.activeStep === null) {
       this.logger.debug(
-        { machineId: this.machineId, eventId: event.id },
+        { eventId: event.id },
         'CommandFinishEvent ignored - no active batch or command',
       )
       return
@@ -752,7 +749,6 @@ export class MachineSession {
     if (event.commandNum !== this.activeStep.commandNo) {
       this.logger.warn(
         {
-          machineId: this.machineId,
           expected: this.activeStep.commandNo,
           received: event.commandNum,
         },
@@ -783,7 +779,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null) {
       this.logger.debug(
-        { machineId: this.machineId, eventId: event.id },
+        { eventId: event.id },
         'ChemicalRequestEvent ignored - no active batch',
       )
       return
@@ -903,7 +899,7 @@ export class MachineSession {
 
       if (!originalEvent) {
         this.logger.warn(
-          { machineId: this.machineId, requestKey, responseId: response.id },
+          { requestKey, responseId: response.id },
           'No pending chemical request found for response - skipping',
         )
         continue
@@ -920,12 +916,12 @@ export class MachineSession {
           message,
         })
         this.logger.debug(
-          { machineId: this.machineId, requestKey, status },
+          { requestKey, status },
           'Chemical request response sent to machine',
         )
       } catch (err) {
         this.logger.error(
-          { err, machineId: this.machineId, requestKey },
+          { err, requestKey },
           'Failed to send chemical request response to machine',
         )
       }
@@ -991,6 +987,21 @@ export class MachineSession {
     if (digitalValues.length) {
       await this.deps.batchDataFilesRepository.insertDigitalValues(batchKey, digitalValues, trx)
       await this.deps.digitalIoValueRepository.deleteByBatchKey(batchKey, trx)
+    }
+  }
+
+  /**
+   * Handles errors that occur while fetching the machine status.
+   * Not a critical failure, should not dictate the connection status on its own.
+   * Throttled to avoid log spam if the machine is running but has intermittent issues with the status endpoint.
+   */
+  private handleFetchStatusError(err: unknown): void {
+    if (this.status.connectionStatus !== ConnectionStatus.NotConnected) {
+      const now = Date.now()
+      if (now - this.lastStatusWarnAt >= this.lastStatusWarnDelay) {
+        this.logger.warn({ err }, 'Failed to fetch machine status')
+        this.lastStatusWarnAt = now
+      }
     }
   }
 }
