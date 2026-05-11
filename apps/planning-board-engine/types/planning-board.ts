@@ -141,3 +141,8 @@ export interface PlanParameter extends StartingParameter {
 export interface ValidatedPlanParameter extends PlanParameter {
   paramStatus: ValueOf<typeof StartingParameters>
 }
+
+export type ScheduleUnplannedResult =
+  | { code: 'DONE' }
+  | { code: 'UPLOAD_FAILED' }
+  | { code: 'MISSING_PARAMETERS', parameters: ValidatedPlanParameter[] }

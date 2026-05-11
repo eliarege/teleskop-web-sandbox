@@ -167,3 +167,8 @@ export interface PlanParameterProps {
     machineIp?: string
   }
 }
+
+export type ScheduleUnplannedResult =
+  | { code: 'DONE' }
+  | { code: 'UPLOAD_FAILED' }
+  | { code: 'MISSING_PARAMETERS', parameters: PlanParameters[] }

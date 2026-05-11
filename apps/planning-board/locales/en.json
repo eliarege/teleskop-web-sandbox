@@ -28,7 +28,9 @@
     "_": "Send to machine",
     "upload-success": "Joborder upload successfully completed",
     "no-program": "This machine does not have required programs",
-    "fail": "Could not access the machine!"
+    "fail": "Could not access the machine!",
+    "schedule-fail": "Failed to schedule job order",
+    "machine-upload-fail": "Job order scheduled but could not be sent to machine"
   },
   "app": {
     "name": "Planning Board"

@@ -28,7 +28,9 @@
     "_": "Makineye gönder",
     "upload-success": "İş emri yükleme başarıyla tamamlandı",
     "no-program": "Bu cihazda gerekli programlar yok",
-    "fail": "Makineye erişim sağlanamadı!"
+    "fail": "Makineye erişim sağlanamadı!",
+    "schedule-fail": "İş emri planlanamadı",
+    "machine-upload-fail": "İş emri planlandı ancak makineye gönderilemedi"
   },
   "app": {
     "name": "Planlama Tahtası"

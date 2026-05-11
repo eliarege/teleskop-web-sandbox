@@ -1,5 +1,5 @@
 import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
-import type { ValidatedPlanParameter } from 'types/planning-board'
+import type { ScheduleUnplannedResult, ValidatedPlanParameter } from 'types/planning-board'
 import { TonelloApi } from '@teleskop/core'
 import { getEveryPlanParameter, getJobOrderWithPlanKey, getPlanParameters, getRequiredStartingParametersForPrograms, getStartingParametersWithValues, isEveryStartParameterRequired, uploadToMachine, uploadToTonelloMachine } from '../queries'
 import type {
@@ -129,19 +129,28 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           planParameters = await getStartingParametersWithValues(parameters, planKey)
         }
 
-        if (planParameters.every(e => e.paramStatus === StartingParameters.Correct)) {
+        const result: ScheduleUnplannedResult = await (async () => {
+          if (!planParameters.every(e => e.paramStatus === StartingParameters.Correct)) {
+            return { code: 'MISSING_PARAMETERS' as const, parameters: planParameters.filter(p => p.paramStatus !== StartingParameters.Correct) }
+          }
           await queueUnplannedEvent(newEvent)
           if (config.nodeEnv === 'development') {
-            return reply.code(200).send('DONE')
-          } else if (isTonello(machineInfo)) {
-            const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
-            await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder.code, planParameters)
-          } else {
-            await uploadToMachine(machineInfo.host, planParameters, programNoList, jobOrder.code)
+            return { code: 'DONE' as const }
           }
-          return reply.code(200).send('DONE')
-        }
-        return reply.code(200).send(planParameters.filter(p => p.paramStatus !== StartingParameters.Correct))
+          try {
+            if (isTonello(machineInfo)) {
+              const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
+              await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder.code, planParameters)
+            } else {
+              await uploadToMachine(machineInfo.host, planParameters, programNoList, jobOrder.code)
+            }
+            return { code: 'DONE' as const }
+          } catch (uploadErr) {
+            fastify.log.error(`Job order scheduled but machine upload failed: ${uploadErr}`)
+            return { code: 'UPLOAD_FAILED' as const }
+          }
+        })()
+        return reply.code(200).send(result)
       } catch (err) {
         fastify.log.error(`An error occurred while scheduling events: ${err}`)
         return reply.code(500).send({ error: `An error occurred while scheduling events: ${err}` })

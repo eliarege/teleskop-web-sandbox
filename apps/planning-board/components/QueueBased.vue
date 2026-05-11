@@ -1023,19 +1023,23 @@ onMounted(async () => {
           return
         const targetEvent = setTargetEvent(mouseX, schedule, machine)
         const machineEvents = schedule.events.filter(e => e.resourceId === machine.id)
-        if (targetEvent) {
-          setDropLocation(mouseX, targetEvent, schedule, task, machineEvents)
-          await handleSchedule(schedule, task, machine, grid, refreshScheduler)
-        } else {
-          const machineEvents = events.filter(e => e.resourceId === machine.id)
-          if (machineEvents.length === 0) {
+        try {
+          if (targetEvent) {
+            setDropLocation(mouseX, targetEvent, schedule, task, machineEvents)
             await handleSchedule(schedule, task, machine, grid, refreshScheduler)
           } else {
-            task.startDate = new Date()
-            task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
-            task.queueNumber = 1
-            await handleSchedule(schedule, task, machine, grid, refreshScheduler)
+            const machineEvents = events.filter(e => e.resourceId === machine.id)
+            if (machineEvents.length === 0) {
+              await handleSchedule(schedule, task, machine, grid, refreshScheduler)
+            } else {
+              task.startDate = new Date()
+              task.endDate = addSeconds(task.startDate, task.theoreticalDuration)
+              task.queueNumber = 1
+              await handleSchedule(schedule, task, machine, grid, refreshScheduler)
+            }
           }
+        } catch {
+          // Error already reported via Toast inside handleSchedule; prevent crash
         }
       }
       schedule.features.eventTooltip.disabled = true

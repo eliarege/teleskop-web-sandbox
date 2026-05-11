@@ -1,9 +1,8 @@
 import type { SchedulerPro, SchedulerResourceModel } from '@bryntum/schedulerpro'
 import { DateHelper, Toast } from '@bryntum/schedulerpro'
 import { addMinutes, addSeconds, differenceInMilliseconds, differenceInSeconds } from 'date-fns'
-import { UploadJoborder } from '~/shared/constants'
 import { getRecipeUnitById } from '~/shared/enums'
-import type { PlanParameters } from '~/shared/types'
+import type { ScheduleUnplannedResult } from '~/shared/types'
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
@@ -249,14 +248,26 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
   const { setPlanParameters } = usePlanParametersModal()
   const machineEvents = machine.events.filter((e: any) => e.resourceId === machine.id)
 
-  await schedule.scheduleEvent({
-    eventRecord: task,
-    startDate: task.startDate,
-    resourceRecord: machine,
-  }).catch(err => Toast.show(`Scheduling Failed: ${err}`))
+  try {
+    await schedule.scheduleEvent({
+      eventRecord: task,
+      startDate: task.startDate,
+      resourceRecord: machine,
+    })
+  } catch (err) {
+    Toast.show(`Scheduling Failed: ${err}`)
+    throw err
+  }
 
   grid.store.remove(task)
   task.assign(machine)
+
+  async function rollback() {
+    task.unassign(machine)
+    grid.store.add(task)
+    await refreshScheduler()
+    schedule.renderRows()
+  }
 
   if (machineEvents.length === 0) {
     const newEvent = {
@@ -264,10 +275,16 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       planKey: task.id,
       machineId: machine.id,
     }
-    await $keycloak.fetch('/api/queueBased/scheduleUnplannedFutureEvents', {
-      method: 'POST',
-      body: { newEvent },
-    })
+    try {
+      await $keycloak.fetch('/api/queueBased/scheduleUnplannedFutureEvents', {
+        method: 'POST',
+        body: { newEvent },
+      })
+    } catch (err) {
+      Toast.show($i18n.t('upload-joborder.schedule-fail'))
+      await rollback()
+      throw err
+    }
     Toast.show($i18n.t('upload-joborder.upload-success'))
     refreshScheduler()
     schedule.renderRows()
@@ -278,44 +295,77 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       machineId: machine.id,
       queueNumber: task.queueNumber || 1,
     }
-    const res: PlanParameters[] | string = await $keycloak.fetch('/api/queueBased/scheduleUnplannedEvents', {
-      method: 'POST',
-      body: { newEvent },
-    })
-    if (typeof res !== 'string' && res.some(f => f.value === null)) {
-      const uploadData = {
-        program: newEvent.program,
-        machineId: newEvent.machineId,
-        planKey: newEvent.planKey,
-      }
-      const onComplete = async () => {
-        const finalRes: PlanParameters[] | string = await $keycloak.fetch('/api/queueBased/scheduleUnplannedEvents', {
-          method: 'POST',
-          body: { newEvent },
-        })
-        if (finalRes === UploadJoborder.MissingParameter || (typeof finalRes !== 'string' && finalRes.some((f: PlanParameters) => f.value === null))) {
-          Toast.show('Cannot schedule due to missing parameters')
-        } else {
-          Toast.show($i18n.t('upload-joborder.upload-success'))
+    let res: ScheduleUnplannedResult
+    try {
+      res = await $keycloak.fetch('/api/queueBased/scheduleUnplannedEvents', {
+        method: 'POST',
+        body: { newEvent },
+      })
+    } catch (err) {
+      Toast.show($i18n.t('upload-joborder.schedule-fail'))
+      await rollback()
+      throw err
+    }
+
+    switch (res.code) {
+      case 'DONE':
+        Toast.show($i18n.t('upload-joborder.upload-success'))
+        refreshScheduler()
+        schedule.renderRows()
+        break
+
+      case 'UPLOAD_FAILED':
+        Toast.show($i18n.t('upload-joborder.machine-upload-fail'))
+        refreshScheduler()
+        schedule.renderRows()
+        break
+
+      case 'MISSING_PARAMETERS': {
+        const uploadData = {
+          program: newEvent.program,
+          machineId: newEvent.machineId,
+          planKey: newEvent.planKey,
         }
-        refreshScheduler()
-        schedule.renderRows()
+        const onComplete = async () => {
+          let finalRes: ScheduleUnplannedResult
+          try {
+            finalRes = await $keycloak.fetch('/api/queueBased/scheduleUnplannedEvents', {
+              method: 'POST',
+              body: { newEvent },
+            })
+          } catch {
+            Toast.show($i18n.t('upload-joborder.schedule-fail'))
+            refreshScheduler()
+            schedule.renderRows()
+            return
+          }
+          switch (finalRes.code) {
+            case 'DONE':
+              Toast.show($i18n.t('upload-joborder.upload-success'))
+              break
+            case 'UPLOAD_FAILED':
+              Toast.show($i18n.t('upload-joborder.machine-upload-fail'))
+              break
+            case 'MISSING_PARAMETERS':
+              Toast.show('Cannot schedule due to missing parameters')
+              break
+          }
+          refreshScheduler()
+          schedule.renderRows()
+        }
+        const onCancel = async () => {
+          task.unassign(machine)
+          grid.store.add(task)
+          await $keycloak.fetch('/api/unplan', {
+            method: 'PUT',
+            query: { planKey: newEvent.planKey },
+          })
+          refreshScheduler()
+          schedule.renderRows()
+        }
+        setPlanParameters(true, newEvent.planKey, newEvent.machineId, newEvent.program, false, res.parameters, false, uploadData, onComplete, onCancel)
+        break
       }
-      const onCancel = async () => {
-        task.unassign(machine)
-        grid.store.add(task)
-        await $keycloak.fetch('/api/unplan', {
-          method: 'PUT',
-          query: { planKey: newEvent.planKey },
-        })
-        refreshScheduler()
-        schedule.renderRows()
-      }
-      setPlanParameters(true, newEvent.planKey, newEvent.machineId, newEvent.program, false, res, false, uploadData, onComplete, onCancel)
-    } else {
-      Toast.show($i18n.t('upload-joborder.upload-success'))
-      refreshScheduler()
-      schedule.renderRows()
     }
   }
 }
