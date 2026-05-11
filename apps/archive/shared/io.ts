@@ -100,7 +100,7 @@ export function insertVirtualInputValues(virtualInputs: DuoAny<VirtualInput>[], 
 export function insertDigitalInputValues(digitalInputs: DuoAny<DigitalInputOutputType>[], digitalValues: DuoAny<ArchivedDigitalValue>[]) {
   const binaryValues = digitalValues.map((div) => {
     return {
-      DI: hexToBinary(div.DI),
+      DI: div.DI ? hexToBinary(div.DI) : '',
       logtime: div.logtime,
     }
   })
@@ -120,7 +120,7 @@ export function insertDigitalInputValues(digitalInputs: DuoAny<DigitalInputOutpu
 export function insertDigitalOutputValues(digitalOutputs: DuoAny<DigitalInputOutputType>[], digitalValues: DuoAny<ArchivedDigitalValue>[]) {
   const binaryValues = digitalValues.map((div) => {
     return {
-      DOF: hexToBinary(div.DOF),
+      DOF: div.DOF ? hexToBinary(div.DOF) : '',
       logtime: div.logtime,
     }
   })
@@ -140,7 +140,7 @@ export function insertDigitalOutputValues(digitalOutputs: DuoAny<DigitalInputOut
 export function insertDigitalOutputLockValues(digitalOutputLocks: DuoAny<DigitalInputOutputType>[], digitalValues: DuoAny<ArchivedDigitalValue>[]) {
   const binaryValues = digitalValues.map((div) => {
     return {
-      DOL: hexToBinary(div.DOL),
+      DOL: div.DOL ? hexToBinary(div.DOL) : '',
       logtime: div.logtime,
     }
   })

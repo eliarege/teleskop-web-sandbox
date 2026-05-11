@@ -355,9 +355,9 @@ export interface ArchivedAnalogValue {
 
 export interface ArchivedDigitalValue {
   logtime: DDate
-  DI: string
-  DOF: string
-  DOL: string
+  DI: string | null
+  DOF: string | null
+  DOL: string | null
 }
 
 export interface ArchivedVirtualInputValue {
