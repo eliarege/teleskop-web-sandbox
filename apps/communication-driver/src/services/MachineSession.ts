@@ -17,6 +17,7 @@ import type {
 import type { Knex } from 'knex'
 import type { Logger } from 'pino'
 import {
+  AutoManualStatus,
   BatchStartEndState,
   BatchStatus,
   CancelDetail,
@@ -218,9 +219,18 @@ export class MachineSession {
     const wasDisconnected = this.status.connectionStatus !== ConnectionStatus.Connected
 
     if (machineStatus) {
-      this.status.runningAutoManStatus = mapTonelloAutoModeToAutoManualStatus(machineStatus.autoMode)
+      const autoManStatus = mapTonelloAutoModeToAutoManualStatus(machineStatus.autoMode)
+      if (autoManStatus === AutoManualStatus.Auto) {
+        this.status.manualReasonDateTime = null
+      } else if (autoManStatus === AutoManualStatus.Manual) {
+        this.status.manualReasonDateTime = new Date()
+      }
+      this.status.runningAutoManStatus = autoManStatus
+      this.status.currentTemperature = machineStatus.curTemp
       await this.deps.machineStatusRepository.update(this.machineId, {
+        manualReasonDateTime: this.status.manualReasonDateTime,
         runningAutoManStatus: this.status.runningAutoManStatus,
+        currentTemperature: this.status.currentTemperature,
       }).catch((err) => {
         this.logger.error({ err }, 'Failed to update machine auto/manual status')
       })
