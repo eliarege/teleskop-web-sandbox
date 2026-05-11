@@ -38,8 +38,12 @@ const machineData = computed(() => {
       runningStartTime: machine.runningStartTime
         ? new Date(machine.runningStartTime)
         : null,
-      stopReasonDateTime: new Date(machine.stopReasonDateTime),
-      manualReasonDateTime: new Date(machine.stopReasonDateTime),
+      stopReasonDateTime: machine.stopReasonDateTime
+        ? new Date(machine.stopReasonDateTime)
+        : null,
+      manualReasonDateTime: machine.manualReasonDateTime
+        ? new Date(machine.manualReasonDateTime)
+        : null,
       runningStartHour: machine.runningStartTime
         ? format(new Date(machine.runningStartTime), 'MM-dd HH:mm:ss')
         : '-',
