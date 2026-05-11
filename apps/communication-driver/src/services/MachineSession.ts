@@ -6,8 +6,10 @@ import {
 } from '@teleskop/core'
 import type {
   TonelloBatchCancelledEvent,
+  TonelloBatchContinueEvent,
   TonelloBatchEndEvent,
   TonelloBatchStartEvent,
+  TonelloBatchStoppedEvent,
   TonelloChemicalRequestEvent,
   TonelloCommandFinishEvent,
   TonelloCommandStartEvent,
@@ -385,7 +387,10 @@ export class MachineSession {
         await this.handleChemicalRequest(event, trx)
         break
       case TonelloEventCode.BatchContinueEvent:
+        this.handleBatchContinue(event)
+        break
       case TonelloEventCode.BatchStoppedEvent:
+        this.handleBatchStopped(event)
         break
       default:
         this.logger.debug(
@@ -640,7 +645,7 @@ export class MachineSession {
     this.status.runningJobOrder = null
     this.status.runningJobOrderStartTime = null
     this.status.runningBatchKey = null
-    this.status.runningBatchStatus = null
+    this.status.runningBatchStatus = BatchStatus.Idle
     this.status.runningProgramNo = null
     this.status.runningProgramName = null
     this.status.runningProgramNoList = null
@@ -877,6 +882,23 @@ export class MachineSession {
     )
   }
 
+
+  // ── Batch Stopped ─────────────────────────────────────────────────────────
+  private handleBatchStopped(_event: TonelloBatchStoppedEvent): void {
+    if (this.activeBatch === null)
+      return
+
+    this.status.runningBatchStatus = BatchStatus.Paused
+  }
+
+  // ── Batch Continue ─────────────────────────────────────────────────────────
+  private handleBatchContinue(_event: TonelloBatchContinueEvent): void {
+    if (this.activeBatch === null)
+      return
+
+    this.status.runningBatchStatus = BatchStatus.Running
+  }
+
   private async flushDigitalBatch(datetime: Date, trx: Knex.Transaction): Promise<void> {
     if (this.activeBatch === null) {
       return
@@ -974,7 +996,7 @@ export class MachineSession {
       this.activeProgramIndex = null
       this.status.runningBatchKey = null
       this.status.runningJobOrder = null
-      this.status.runningBatchStatus = null
+      this.status.runningBatchStatus = BatchStatus.Idle
     }
   }
 
