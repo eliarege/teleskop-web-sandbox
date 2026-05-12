@@ -1040,18 +1040,30 @@ export interface ChemicalRequestString {
   isRequest: boolean
 }
 
-export interface ChemicalRequestStringParsed {
-  requestType: RequestType
+export interface ChemicalRequestStringParsedBase {
   priority: number
   machineNo: number
   tankNo: number
   jobOrder: string
   programNo: number
-  requestOrderInBatch: number
-  requestOrderInProgram: number
-  totalRequestsInProgram: number
+  /**
+   * This value stores different information depending on the request type:
+   * - If request type is chemical, this value stores the order of the chemical request in the program
+   * - If request type is dye, this value stores the order of the dye request in the batch
+   */
+  requestOrder: number
+  /**
+   * This value stores different information depending on the request type:
+   * - If request type is chemical, this value stores total chemical requests in program
+   * - If request type is dye, this value stores total dye requests in batch
+   * */
+  totalRequests: number
   materialType: MaterialType
   programIndex: number
+}
+
+export interface ChemicalRequestStringParsed extends ChemicalRequestStringParsedBase {
+  requestType: RequestType
 }
 
 /**
@@ -1059,18 +1071,8 @@ export interface ChemicalRequestStringParsed {
  * The REQUEST string has the same field order as a request, except the first field
  * is the `RequestStatus` value instead of `requestType`.
  */
-export interface ChemicalRequestStringResponseParsed {
+export interface ChemicalRequestStringResponseParsed extends ChemicalRequestStringParsedBase {
   status: RequestStatus
-  priority: number
-  machineNo: number
-  tankNo: number
-  jobOrder: string
-  programNo: number
-  requestOrderInBatch: number
-  requestOrderInProgram: number
-  totalRequestsInProgram: number
-  materialType: MaterialType
-  programIndex: number
 }
 
 export type ChemicalRequestStringInsert = Omit<ChemicalRequestString, 'id' | 'request'> &
@@ -1091,12 +1093,25 @@ export const CHEMICAL_REQUEST_COLUMNS = {
   targetRecipe: 'TargetRECIPE',
   tankNo: 'TankNo',
   priority: 'PRIORITY',
-  totalRequestsInProgram: 'TotalNumberOfRequest',
+  totalRequests: 'TotalNumberOfRequest',
   programNo: 'ProgramNo',
   commandNo: 'COMMANDNO',
   status: 'STATUS',
   tonelloEvent: 'TonelloEvent',
 } as const satisfies Record<string, string>
+
+/** Temporary solution to extend TonelloChemicalRequestEvent with custom fields. */
+export type ExtendedTonelloChemicalRequestEvent = TonelloChemicalRequestEvent & {
+  custom: {
+    /** Tonello currently does not provide this value. */
+    requestOrderInProgram: number
+    /**
+     * Tonello currently provides this data incorrectly. It sums both types of requests while it should but sum of requests of the same type.
+     * For now, we calculate this value on our side but we should verify with Tonello and remove this workaround if they fix it.
+     */
+    totalRequestsInProgram: number
+  }
+}
 
 export interface ChemicalRequest {
   id: number
@@ -1109,11 +1124,11 @@ export interface ChemicalRequest {
   targetRecipe: number
   tankNo: number
   priority: number
-  totalRequestsInProgram: number
+  totalRequests: number
   programNo: number
   commandNo: number
   status: RequestStatus | null
-  tonelloEvent: TonelloChemicalRequestEvent | null
+  tonelloEvent: ExtendedTonelloChemicalRequestEvent | null
 }
 
 export interface ChemicalRequestInsert {
@@ -1126,11 +1141,11 @@ export interface ChemicalRequestInsert {
   targetRecipe: number
   tankNo: number
   priority: number
-  totalRequestsInProgram: number
+  totalRequests: number
   programNo: number
   commandNo: number
   status?: RequestStatus
-  tonelloEvent?: TonelloChemicalRequestEvent | null
+  tonelloEvent?: ExtendedTonelloChemicalRequestEvent | null
 }
 
 // ── BFMASTERCOMMANDS ──────────────────────────────────────────────────────────

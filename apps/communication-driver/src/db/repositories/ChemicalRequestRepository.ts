@@ -63,7 +63,7 @@ export class KnexChemicalRequestRepository implements ChemicalRequestRepository 
       TargetRECIPE: data.targetRecipe,
       TankNo: data.tankNo,
       PRIORITY: data.priority,
-      TotalNumberOfRequest: data.totalRequestsInProgram,
+      TotalNumberOfRequest: data.totalRequests,
       ProgramNo: data.programNo,
       COMMANDNO: data.commandNo,
       STATUS: data.status ?? null,

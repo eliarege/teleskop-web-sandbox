@@ -18,9 +18,9 @@ function buildRequestString(data: ChemicalRequestStringParsed): string {
     data.tankNo,
     data.jobOrder,
     data.programNo,
-    data.requestOrderInBatch,
-    data.requestOrderInProgram,
-    data.totalRequestsInProgram,
+    data.requestOrder,
+    data.requestOrder,
+    data.totalRequests,
     data.materialType,
     data.programIndex,
   ].join(',')
@@ -28,7 +28,7 @@ function buildRequestString(data: ChemicalRequestStringParsed): string {
 
 /**
  * Parses a response REQUEST string written by Dispensing Manager.
- * Format: `status,priority,machineNo,tankNo,jobOrder,programNo,requestOrderInBatch,requestOrderInProgram,totalRequestsInProgram,materialType,programIndex`
+ * Format: `status,priority,machineNo,tankNo,jobOrder,programNo,requestOrderInBatch,requestOrderInProgram,totalRequests,materialType,programIndex`
  * The first field is a `RequestStatus` value; all other fields mirror the original request.
  */
 function parseResponseString(raw: string): ChemicalRequestStringResponseParsed {
@@ -40,9 +40,8 @@ function parseResponseString(raw: string): ChemicalRequestStringResponseParsed {
     tankNo: Number(parts[3]),
     jobOrder: parts[4],
     programNo: Number(parts[5]),
-    requestOrderInBatch: Number(parts[6]),
-    requestOrderInProgram: Number(parts[7]),
-    totalRequestsInProgram: Number(parts[8]),
+    requestOrder: Number(parts[6]), // part 6 and 7 are same for legacy reasons
+    totalRequests: Number(parts[8]),
     materialType: Number(parts[9]) as ChemicalRequestStringResponseParsed['materialType'],
     programIndex: Number(parts[10]),
   }

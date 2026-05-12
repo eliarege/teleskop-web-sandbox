@@ -24,6 +24,7 @@ import {
   BatchStatus,
   CancelDetail,
   ConnectionStatus,
+  MaterialType,
   RequestStatus,
   RequestType,
 } from '../db/enums'
@@ -33,8 +34,10 @@ import type {
   BatchDataUpdate,
   BatchStepInsert,
   ChemicalRequestStringResponseParsed,
+  ExtendedTonelloChemicalRequestEvent,
   Machine,
   MachineStatus,
+  ProgramHeader,
 } from '../db/models'
 import type { AnalogIoValueRepository } from '../db/repositories/AnalogIoValueRepository'
 import type { BatchDataRepository } from '../db/repositories/BatchDataRepository'
@@ -109,7 +112,10 @@ export class MachineSession {
   }).fill(false)
 
   /** In-memory map of pending chemical requests, keyed by a normalized request string (all fields after the type/status). */
-  private readonly pendingChemicalRequests = new Map<string, { id: number, event: TonelloChemicalRequestEvent }>()
+  private readonly pendingChemicalRequests = new Map<string, {
+    id: number,
+    event: ExtendedTonelloChemicalRequestEvent
+  }>()
 
   /** When true, all events are skipped until the next `BatchStartEvent` (missed-event recovery). */
   private skipUntilNextBatchStart = false
@@ -158,17 +164,18 @@ export class MachineSession {
   }
 
   private buildChemicalRequestLookupKeyFromEvent(
-    event: TonelloChemicalRequestEvent,
+    event: ExtendedTonelloChemicalRequestEvent,
   ): string {
+    const { requestOrder, totalRequests } = this.getDispensingRequestDetails(event)
     return [
       event.priority,
       this.machineId,
       event.tankNr,
       event.batchCode,
       event.runningProgram,
-      event.requestOrder,
-      event.requestOrder,
-      event.batchTotRequestCount,
+      requestOrder,
+      requestOrder,
+      totalRequests,
       mapTonelloChemicalRequestType(event.requestType),
       event.runningProgramIndex,
     ].join(',')
@@ -183,9 +190,9 @@ export class MachineSession {
       parsed.tankNo,
       parsed.jobOrder,
       parsed.programNo,
-      parsed.requestOrderInBatch,
-      parsed.requestOrderInProgram,
-      parsed.totalRequestsInProgram,
+      parsed.requestOrder,
+      parsed.requestOrder,
+      parsed.totalRequests,
       parsed.materialType,
       parsed.programIndex,
     ].join(',')
@@ -857,14 +864,15 @@ export class MachineSession {
     }
 
     const batchKey = this.activeBatch.batchKey
-    const targetRecipe = mapTonelloChemicalRequestType(event.requestType)
+    const materialType = mapTonelloChemicalRequestType(event.requestType)
+    const extendedEvent = await this.extendChemicalRequestEvent(event)
 
     this.status.requestBatchKey = batchKey
     this.status.requestJobOrder = event.batchCode
     this.status.requestRecipeIndex = event.runningProgramIndex
     this.status.requestOrderIndex = event.requestOrder
     this.status.requestOperationCode = event.operationCode
-    this.status.requestTargetRecipe = targetRecipe
+    this.status.requestTargetRecipe = materialType
     this.status.requestTankNo = event.tankNr
     this.status.requestPriority = event.priority
     this.status.requestTotalCount = event.batchTotRequestCount
@@ -872,25 +880,28 @@ export class MachineSession {
     this.status.requestCommandNo = event.runningCommand
     this.status.requestStatus = RequestStatus.New
 
+    const { requestOrder, totalRequests } = this.getDispensingRequestDetails(extendedEvent)
+
     const id = await this.deps.chemicalRequestRepository.insert(
       {
         batchKey,
         requestTime: event.datetime,
         jobOrder: event.batchCode,
         recipeIndex: event.runningProgramIndex,
-        requestOrderIndex: event.requestOrder,
+        requestOrderIndex: requestOrder,
         operationCode: event.operationCode,
-        targetRecipe,
+        targetRecipe: materialType,
         tankNo: event.tankNr,
         priority: event.priority,
-        totalRequestsInProgram: event.programTotRequestCount,
+        totalRequests,
         programNo: event.runningProgram,
         commandNo: event.runningCommand,
         status: RequestStatus.New,
-        tonelloEvent: event,
+        tonelloEvent: extendedEvent,
       },
       trx,
     )
+
 
     await this.deps.chemicalRequestStringRepository.insert(
       {
@@ -903,17 +914,16 @@ export class MachineSession {
         tankNo: event.tankNr,
         jobOrder: event.batchCode,
         programNo: event.runningProgram,
-        requestOrderInBatch: event.requestOrder,
-        requestOrderInProgram: event.requestOrder,
-        totalRequestsInProgram: event.batchTotRequestCount,
-        materialType: targetRecipe,
+        requestOrder,
+        totalRequests,
+        materialType,
         programIndex: event.runningProgramIndex,
       },
       trx,
     )
 
-    const requestKey = this.buildChemicalRequestLookupKeyFromEvent(event)
-    this.pendingChemicalRequests.set(requestKey, { id, event })
+    const requestKey = this.buildChemicalRequestLookupKeyFromEvent(extendedEvent)
+    this.pendingChemicalRequests.set(requestKey, { id, event: extendedEvent })
   }
 
   // ── IO Value Changed ────────────────────────────────────────────────────────
@@ -1101,6 +1111,82 @@ export class MachineSession {
       if (now - this.lastStatusWarnAt >= this.lastStatusWarnDelay) {
         this.logger.warn({ err }, 'Failed to fetch machine status')
         this.lastStatusWarnAt = now
+      }
+    }
+  }
+
+  private async extendChemicalRequestEvent(event: TonelloChemicalRequestEvent): Promise<ExtendedTonelloChemicalRequestEvent> {
+    const programList = this.status.runningProgramNoList ?? []
+    const programIndex = event.runningProgramIndex
+    const unqProgramList = [...new Set(programList)]
+
+    // Fetch amount of chemical/dye requests for each program in the batch
+    const headers = await Promise.all(
+      unqProgramList.map((programNo) =>
+        this.deps.programHeaderRepository.findByMachineAndProgramNo(this.machineId, programNo)
+      )
+    ) as ProgramHeader[]
+
+    if (headers.some((p) => !p)) {
+      this.logger.warn(
+        { programList },
+        'Failed to fetch all programs for chemical request event - cannot extend with request index info',
+      )
+      return { ...event, custom: { requestOrderInProgram: 0, totalRequestsInProgram: 0 } }
+    }
+
+    const materialType = mapTonelloChemicalRequestType(event.requestType)
+
+    const programs = headers.map((header) => {
+      const requestCount = materialType === MaterialType.Chemical
+        ? header.autoChemReq
+        : header.autoDyeReq
+      return { programNo: header.programNo, requestCount }
+    })
+
+    // ProgramIndex starts from 1
+    const cumulativeRequestsPrior = programs
+      .slice(0, programIndex - 1)
+      .reduce((a, p) => a + p.requestCount, 0)
+
+    const currentProgram = programs[programIndex]
+
+    if (!currentProgram) {
+      this.logger.warn(
+        { programList, programIndex },
+        `Invalid program index on chemical request event - cannot extend with request index info`,
+      )
+      return { ...event, custom: { requestOrderInProgram: 0, totalRequestsInProgram: 0 } }
+    }
+
+    return {
+      ...event,
+      custom: {
+        requestOrderInProgram: event.requestOrder - cumulativeRequestsPrior,
+        totalRequestsInProgram: currentProgram.requestCount,
+      },
+    }
+  }
+
+  /**
+   * Returns the request-order fields used to match Tonello chemical requests with
+   * Dispensing Manager responses.
+   *
+   * Tonello reports chemical and dye requests differently:
+   * - Chemical requests must be matched using the program-scoped request order and total.
+   * - Dye requests already use the batch-scoped values.
+   */
+  private getDispensingRequestDetails(event: ExtendedTonelloChemicalRequestEvent): { requestOrder: number, totalRequests: number } {
+    const materialType = mapTonelloChemicalRequestType(event.requestType)
+    if (materialType === MaterialType.Chemical) {
+      return {
+        requestOrder: event.custom.requestOrderInProgram,
+        totalRequests: event.custom.totalRequestsInProgram,
+      }
+    } else {
+      return {
+        requestOrder: event.requestOrder,
+        totalRequests: event.batchTotRequestCount,
       }
     }
   }
