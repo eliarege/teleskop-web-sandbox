@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import '@formkit/themes/genesis'
 import { breakpointsTailwind } from '@vueuse/core'
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
+import { toValue } from 'vue'
 
 const { t } = useI18n()
 const $q = useQuasar()
@@ -244,8 +244,8 @@ const itemsMobile = [
           <TopbarButton
             v-for="(item, index) in items"
             :key="index"
-            :label="item.subMenu ? unref(item.label) : ''"
-            :disable="unref(item.disabled) || (item.to && resolveItemPath(item.to) === normalizePath(route.path))"
+            :label="item.subMenu ? toValue(item.label) : ''"
+            :disable="toValue(item.disabled) || (item.to && resolveItemPath(item.to) === normalizePath(route.path))"
           >
             <TopbarMenu
               v-if="item.subMenu"
@@ -253,10 +253,10 @@ const itemsMobile = [
             />
             <NuxtLink
               v-else
-              :to="unref(item.to)"
+              :to="toValue(item.to)"
               exact-active-class="font-bold opacity-80"
             >
-              {{ unref(item.label) }}
+              {{ toValue(item.label) }}
             </NuxtLink>
           </TopbarButton>
         </template>

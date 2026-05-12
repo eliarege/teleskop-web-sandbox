@@ -6,14 +6,15 @@ import { FetchError } from 'ofetch'
 import defu from 'defu'
 import type { ZodIssue } from 'zod'
 import type { Machine } from '~/types'
-import { steamUnitOptions, tbbModelOptions } from '~/shared/constants'
+import { washingGroupTypes, steamUnitOptions, tbbModelOptions } from '~/shared/constants'
+import type { MachineGroupType } from '@teleskop/core'
 
 const props = defineProps<{
   title: string
   isEdit: boolean
   initialData?: Machine
   formClass?: string
-  machineGroups: { label: string, value: number | string }[]
+  machineGroups: { label: string, value: number, groupType: MachineGroupType }[]
   mtTempIoOptions: { machineId: number, label: string, value: number | string }[]
   steamValveDoOptions: { machineId: number, label: string, value: number | string }[]
   machines: Machine[]
@@ -44,6 +45,16 @@ const steamUnitOptionsWithEmpty = computed(() => {
     { label: '---', value: '' },
     ...steamUnitOptions.map(option => ({ label: option, value: option })),
   ]
+})
+
+// FormKit mutates machineGroup objects when used as options, so we create new objects to avoid mutating the original machineGroups
+const formMachineGroups = computed(() => {
+  return klona(props.machineGroups)
+})
+
+const isWashingGroup = computed(() => {
+  const selectedGroup = props.machineGroups.find(g => g.value === formData.value.groupId)
+  return selectedGroup && washingGroupTypes.includes(selectedGroup.groupType)
 })
 
 const {
@@ -131,6 +142,11 @@ const theoriticalChargeRule = function (node: FormKitNode) {
 }
 
 async function onSubmitForm(data: any, node: FormKitNode) {
+  if (isWashingGroup.value) {
+    data.reelCount = 0
+    data.nozzleCount = 0
+    data.reserveTank = true
+  }
   const id = initialMachineId || data.machineId
   try {
     if (props.isEdit) {
@@ -182,7 +198,7 @@ const networkConnectionMessage = ref({
   class: '',
 })
 
-async function checkNetworkConnection(formData: Machine) {
+async function checkNetworkConnection(machine: Machine) {
   try {
     networkConnectionMessage.value.message = t('tryingConnection')
     networkConnectionMessage.value.class = 'text-black'
@@ -190,8 +206,8 @@ async function checkNetworkConnection(formData: Machine) {
       method: 'POST',
       retry: false,
       body: {
-        ip: formData.ip,
-        tbbModel: formData.tbbModel,
+        ip: machine.ip,
+        tbbModel: machine.tbbModel,
       },
     })
     networkConnectionMessage.value.message = (t('connection-successful'))
@@ -205,7 +221,7 @@ async function checkNetworkConnection(formData: Machine) {
   }
 }
 
-async function checkTeleskopConnection(formData: Machine) {
+async function checkTeleskopConnection(machine: Machine) {
   try {
     teleskopConnectionMessage.value.message = t('tryingConnection')
     teleskopConnectionMessage.value.class = 'text-black'
@@ -213,8 +229,8 @@ async function checkTeleskopConnection(formData: Machine) {
       method: 'GET',
       retry: false,
       query: {
-        ip: formData.ip,
-        model: formData.tbbModel,
+        ip: machine.ip,
+        model: machine.tbbModel,
       },
     })
     teleskopConnectionMessage.value.message = t('connection-successful')
@@ -233,12 +249,12 @@ const versionInfoMessage = ref({
   color: '',
 })
 
-async function getVersionInfo(formData: Machine) {
-  if (!formData.ip) {
+async function getVersionInfo(machine: Machine) {
+  if (!machine.ip) {
     notifyError(t('ipRequired'))
     return
   }
-  if (formData.tbbModel === 'Tonello') {
+  if (machine.tbbModel === 'Tonello') {
     return
   }
 
@@ -250,12 +266,12 @@ async function getVersionInfo(formData: Machine) {
       method: 'POST',
       retry: false,
       body: {
-        ip: formData.ip,
+        ip: machine.ip,
       },
     })
 
     if (response.version) {
-      formData.version = response.version
+      machine.version = response.version
       versionInfoMessage.value.message = t('versionInfoReceived')
       versionInfoMessage.value.color = 'text-primary'
     }
@@ -319,7 +335,7 @@ async function getVersionInfo(formData: Machine) {
               type="select"
               name="groupId"
               :label="t('machineGroup')"
-              :options="machineGroups"
+              :options="formMachineGroups"
               validation="required"
               :validation-label="t('machineGroup')"
             />
@@ -340,6 +356,7 @@ async function getVersionInfo(formData: Machine) {
               :validation-label="t('machineCapacity')"
             />
             <FormKit
+              v-if="!isWashingGroup"
               type="number"
               name="reelCount"
               number="integer"
@@ -348,6 +365,7 @@ async function getVersionInfo(formData: Machine) {
               :validation-label="t('reelCount')"
             />
             <FormKit
+              v-if="!isWashingGroup"
               type="number"
               name="nozzleCount"
               number="integer"
@@ -509,6 +527,7 @@ async function getVersionInfo(formData: Machine) {
                 :label="t('additionalTank4')"
               />
               <FormKit
+                v-if="!isWashingGroup"
                 type="checkbox"
                 name="reserveTank"
                 :label="t('reserveTank')"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MachineGroupType } from '@teleskop/core'
 import type { FilterableTableColumn } from '@teleskop/nuxt-base'
 import type { MachineGroup } from '~/types'
 
@@ -11,18 +12,16 @@ const { data: machineGroups, pending, refresh } = await useAuthFetch<readonly Ma
 })
 
 const machineGroupTypeDefinitions = [
-  { groupType: 0, labelKey: 'machineGroupTypeFabricHT' },
-  { groupType: 1, labelKey: 'machineGroupTypeFabricOF' },
-  { groupType: 2, labelKey: 'machineGroupTypeBobbin' },
-  { groupType: 3, labelKey: 'machineGroupTypeSample' },
-  { groupType: 4, labelKey: 'machineGroupTypeFlock' },
-  { groupType: 5, labelKey: 'machineGroupTypeWashing' },
-  { groupType: 6, labelKey: 'machineGroupTypeWashingDyeing' },
-  { groupType: 7, labelKey: 'machineGroupTypeDrying' },
-  { groupType: 9, labelKey: 'machineGroupTypeOther' },
+  { groupType: MachineGroupType.FabricHT, labelKey: 'machineGroupTypeFabricHT' },
+  { groupType: MachineGroupType.FabricOF, labelKey: 'machineGroupTypeFabricOF' },
+  { groupType: MachineGroupType.Bobbin, labelKey: 'machineGroupTypeBobbin' },
+  { groupType: MachineGroupType.Sample, labelKey: 'machineGroupTypeSample' },
+  { groupType: MachineGroupType.Flock, labelKey: 'machineGroupTypeFlock' },
+  { groupType: MachineGroupType.Washing, labelKey: 'machineGroupTypeWashing' },
+  { groupType: MachineGroupType.WashingDyeing, labelKey: 'machineGroupTypeWashingDyeing' },
+  { groupType: MachineGroupType.Drying, labelKey: 'machineGroupTypeDrying' },
+  { groupType: MachineGroupType.Other, labelKey: 'machineGroupTypeOther' },
 ] as const
-
-type MachineGroupType = (typeof machineGroupTypeDefinitions)[number]['groupType']
 
 type MachineGroupTypeOption = {
   groupType: MachineGroupType
@@ -48,6 +47,7 @@ const columns = computed<FilterableTableColumn[]>(() => ([
     label: t('groupType'),
     field: (row: MachineGroup) => row.groupType,
     align: 'left',
+    style: 'width: 50%;',
   },
 ]))
 
@@ -56,6 +56,10 @@ const showRenameDialog = ref(false)
 const renameLoading = ref(false)
 const selectedGroupId = ref<number>()
 const groupNameInput = ref('')
+
+function backToHome() {
+  navigateTo('/')
+}
 
 async function handleMachineGroupSelect(groupType: MachineGroupType, group: MachineGroup) {
   group.groupType = groupType as unknown as MachineGroup['groupType']
@@ -189,7 +193,7 @@ async function handleSubmit() {
       <q-btn
         no-caps
         :label="t('cancel')"
-        @click="$router.go(0)"
+        @click="backToHome"
       />
       <q-btn
         color="primary"

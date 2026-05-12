@@ -54,3 +54,18 @@ export const BatchParameterType = {
 } as const
 
 export type BatchParameterType = ValueOf<typeof BatchParameterType>
+
+export const MachineGroupType = {
+  FabricHT: 0,
+  FabricOF: 1,
+  Bobbin: 2,
+  Sample: 3,
+  Flock: 4,
+  Washing: 5,
+  WashingDyeing: 6,
+  Drying: 7,
+  Other: 9,
+} as const
+
+export type MachineGroupType = ValueOf<typeof MachineGroupType>
+

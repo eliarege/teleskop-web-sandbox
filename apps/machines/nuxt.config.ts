@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   formkit: {
     autoImport: true,
   },
+  css: ['@formkit/themes/genesis'],
   ssr: false,
   devtools: { enabled: true },
   extends: ['@teleskop/nuxt-base'],

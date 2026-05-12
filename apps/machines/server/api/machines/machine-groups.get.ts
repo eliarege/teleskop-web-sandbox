@@ -1,10 +1,14 @@
 import { knex } from '~/server/connectionPool'
 
 export default defineAuthEventHandler(async () => {
-  const machineGroups: string[] = await knex('BFMACHGROUP').select({
+  const machineGroups = await knex('BFMACHGROUP').select({
     groupName: 'GROUPNAME',
     groupId: 'GROUPID',
     groupType: 'GROUPTYPE',
-  })
+  }) as {
+    groupId: number
+    groupName: string
+    groupType: number
+  }[]
   return machineGroups
 })

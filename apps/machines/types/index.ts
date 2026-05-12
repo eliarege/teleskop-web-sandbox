@@ -1,3 +1,4 @@
+import type { MachineGroupType } from '@teleskop/core'
 import type { QTableProps } from 'quasar'
 
 export interface Machine {
@@ -304,7 +305,7 @@ export interface Formula {
 export interface MachineGroup {
   groupId: number
   groupName: string
-  groupType: string
+  groupType: MachineGroupType
 }
 
 export interface CommandTimeoutReason {
@@ -380,8 +381,8 @@ export interface MachineTableColumn extends Omit<QTableColumn, 'label'> {
   sortable?: boolean
   visible?: MaybeRefOrGetter<boolean>
   align?: 'left' | 'right' | 'center'
-  format?: (value: Date, row: Machine) => string
-  tooltip?: (value: Date, row: Machine) => string
+  format?: (value: any, row: Machine) => string
+  tooltip?: (value: any, row: Machine) => string
 }
 
 export type QTableColumn<

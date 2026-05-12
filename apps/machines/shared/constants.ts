@@ -1,3 +1,10 @@
+import { MachineGroupType } from "@teleskop/core"
+
+export const washingGroupTypes = [
+  MachineGroupType.Washing,
+  MachineGroupType.WashingDyeing,
+] as readonly MachineGroupType[]
+
 export const tbbModelOptions = [
   'TBB6500',
   'TBB7000',

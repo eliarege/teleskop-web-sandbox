@@ -2,6 +2,7 @@
 import { useMagicKeys, whenever } from '@vueuse/core'
 import { withQuery } from 'ufo'
 import AddEditModal from '../components/AddEditModal.vue'
+import { washingGroupTypes } from '~/shared/constants'
 import type { Machine, MachineGroup, MachineTableColumn } from '~/types'
 
 const kc = useKeycloak()
@@ -110,6 +111,13 @@ const columns = ref([
     field: 'reelCount',
     align: 'left',
     visible: anyMachineHasReels,
+    format: (val: number, row: Machine) => {
+      const group = machineGroups.value.find(g => g.groupId === row.groupId)
+      if (group && washingGroupTypes.includes(group.groupType)) {
+        return '-'
+      }
+      return String(val)
+    },
   },
   {
     name: 'ip',
@@ -137,7 +145,11 @@ function showAddModal() {
     componentProps: {
       title: t('addMachine'),
       isEdit: false,
-      machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
+      machineGroups: machineGroups.value.map(m => ({
+        label: m.groupName,
+        value: m.groupId,
+        groupType: m.groupType
+      })),
       mtTempIoOptions: [],
       steamValveDoOptions: [],
       machines: machines.value,
@@ -153,7 +165,11 @@ function showEditModal(machine: Machine) {
       title: t('editMachine'),
       initialData: machine,
       isEdit: true,
-      machineGroups: machineGroups.value.map(m => ({ label: m.groupName, value: m.groupId })),
+      machineGroups: machineGroups.value.map(m => ({
+        label: m.groupName,
+        value: m.groupId,
+        groupType: m.groupType
+      })),
       mtTempIoOptions: machine.MTOptions.map(o => ({
         label: o.name,
         value: o.id,
