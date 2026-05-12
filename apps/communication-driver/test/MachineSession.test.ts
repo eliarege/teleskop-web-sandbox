@@ -1,4 +1,4 @@
-import { TonelloChemicalRequestStatus, TonelloIoType } from '@teleskop/core'
+import { TonelloChemicalRequestStatus, TonelloChemicalRequestType, TonelloIoType } from '@teleskop/core'
 import pino from 'pino'
 /**
  * MachineSession event-processing tests.
@@ -7,7 +7,7 @@ import pino from 'pino'
  * then inspects which repository methods were called and with what arguments.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ConnectionStatus, RequestStatus } from '../src/db/enums'
+import { ConnectionStatus, MaterialType, RequestStatus } from '../src/db/enums'
 import type { BatchData } from '../src/db/models'
 import { MachineSession } from '../src/services/MachineSession'
 import { makeSession, makeTestContainer } from './helpers/container'
@@ -22,11 +22,12 @@ import {
   digitalIoChangedEvent,
   events,
   machineId,
+  makeChemicalResponse,
   makeDate,
   makeMachine,
   resetIds,
 } from './mocks/fixtures'
-import { makeAnalogIoValueRepository, makeBatchDataRepository, makeChemicalRequestRepository, makeDigitalIoValueRepository, makeMachineStatusRepository } from './mocks/repositories'
+import { makeAnalogIoValueRepository, makeBatchDataRepository, makeChemicalRequestRepository, makeDigitalIoValueRepository, makeMachineStatusRepository, makeProgramHeaderRepository } from './mocks/repositories'
 
 beforeEach(() => {
   resetIds()
@@ -52,7 +53,7 @@ async function runPoll(ctx: { session: MachineSession }): Promise<void> {
 describe('batchStartEvent', () => {
   it('inserts a batch and updates in-memory status', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ORDER-1')),
+      events: events(batchStartEvent({ batchCode: 'ORDER-1' })),
     })
 
     await runPoll(ctx)
@@ -70,7 +71,7 @@ describe('batchStartEvent', () => {
   it('links the planned machine when job order is in the plan', async () => {
     const plannedBatch = { planKey: 55, plannedMachine: 99, jobOrder: 'ORDER-P' } as any
     const ctx = await makeSession({
-      events: events(batchStartEvent('ORDER-P')),
+      events: events(batchStartEvent({ batchCode: 'ORDER-P' })),
     })
     vi.mocked(ctx.cradle.batchPlanRepository.findLatestByJobOrder).mockResolvedValue(plannedBatch)
 
@@ -96,7 +97,7 @@ describe('batchStartEvent', () => {
     // Supply findByKey BEFORE init() runs so activeBatch is loaded on first init
     const ctx = await makeSession({
       status: { runningBatchKey: 900 },
-      events: events(batchStartEvent('NEW')),
+      events: events(batchStartEvent({ batchCode: 'NEW' })),
       deps: {
         batchDataRepository: makeBatchDataRepository({
           findByKey: vi.fn().mockResolvedValue(prevBatch),
@@ -132,7 +133,7 @@ describe('batchStartEvent', () => {
 
     const ctx = await makeSession({
       status: { runningBatchKey: 900 },
-      events: events(batchStartEvent('NEW')),
+      events: events(batchStartEvent({ batchCode: 'NEW' })),
       deps: {
         batchDataRepository: makeBatchDataRepository({
           findByKey: vi.fn().mockResolvedValue(prevBatch),
@@ -154,7 +155,7 @@ describe('batchStartEvent', () => {
               programNo: 100,
               commandNo: 1,
               status: RequestStatus.New,
-              tonelloEvent: chemicalRequestEvent(1, 'OLD', 0),
+              tonelloEvent: chemicalRequestEvent({ requestOrder: 1, batchCode: 'OLD', offsetSeconds: 0 }),
             },
           ]),
         }),
@@ -169,19 +170,7 @@ describe('batchStartEvent', () => {
         {
           id: 50,
           batchKey: 900,
-          parsed: {
-            status: RequestStatus.Completed,
-            priority: 50,
-            machineNo: machineId,
-            tankNo: 7,
-            jobOrder: 'OLD',
-            programNo: 100,
-            requestOrderInBatch: 1,
-            requestOrderInProgram: 1,
-            totalRequestsInProgram: 1,
-            materialType: 0,
-            programIndex: 0,
-          },
+          parsed: makeChemicalResponse({ status: RequestStatus.Completed, jobOrder: 'OLD' }),
         },
       ]),
     ).resolves.not.toThrow()
@@ -191,14 +180,14 @@ describe('batchStartEvent', () => {
 
   it('ignores a duplicate BatchStartEvent for the same job order', async () => {
     // First poll: start batch
-    const ctx = await makeSession({ events: events(batchStartEvent('ALPHA')) })
+    const ctx = await makeSession({ events: events(batchStartEvent({ batchCode: 'ALPHA' })) })
     await runPoll(ctx)
     expect(ctx.cradle.batchDataRepository.insertAndReturn).toHaveBeenCalledTimes(1)
 
     // Second poll: another BatchStartEvent for the same code
     ctx.tonelloApi.fetchEvents.mockResolvedValue({
       from: 0,
-      events: events(batchStartEvent('ALPHA')),
+      events: events(batchStartEvent({ batchCode: 'ALPHA' })),
     })
     vi.mocked(ctx.cradle.machineStatusRepository.update).mockClear()
     await runPoll(ctx)
@@ -215,7 +204,7 @@ describe('batchStartEvent', () => {
 describe('batchEndEvent', () => {
   it('finalizes batch, creates a BatchStop, and clears in-memory state', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ALPHA', 0), batchEndEvent('ALPHA', 100)),
+      events: events(batchStartEvent({ batchCode: 'ALPHA' }), batchEndEvent({ batchCode: 'ALPHA', offsetSeconds: 100 })),
     })
 
     await runPoll(ctx)
@@ -233,9 +222,9 @@ describe('batchEndEvent', () => {
   it('clears pending chemical requests on batch end', async () => {
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        chemicalRequestEvent(1, 'ALPHA', 15),
-        batchEndEvent('ALPHA', 100),
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        chemicalRequestEvent({ requestOrder: 1, batchCode: 'ALPHA', offsetSeconds: 15 }),
+        batchEndEvent({ batchCode: 'ALPHA', offsetSeconds: 100 }),
       ),
     })
 
@@ -247,19 +236,7 @@ describe('batchEndEvent', () => {
         {
           id: 50,
           batchKey: 1001,
-          parsed: {
-            status: RequestStatus.Completed,
-            priority: 50,
-            machineNo: machineId,
-            tankNo: 7,
-            jobOrder: 'ALPHA',
-            programNo: 100,
-            requestOrderInBatch: 1,
-            requestOrderInProgram: 1,
-            totalRequestsInProgram: 3,
-            materialType: 0,
-            programIndex: 0,
-          },
+          parsed: makeChemicalResponse({ status: RequestStatus.Completed }),
         },
       ]),
     ).resolves.not.toThrow()
@@ -268,7 +245,7 @@ describe('batchEndEvent', () => {
   })
 
   it('is ignored when no active batch is running', async () => {
-    const ctx = await makeSession({ events: events(batchEndEvent('GHOST')) })
+    const ctx = await makeSession({ events: events(batchEndEvent({ batchCode: 'GHOST' })) })
 
     await runPoll(ctx)
 
@@ -291,10 +268,10 @@ describe('batchEndEvent', () => {
         }),
       },
       events: events(
-        batchStartEvent('ALPHA', 0),
-        analogIoChangedEvent(1, '12.5', TonelloIoType.AnalogInput, 10),
-        digitalIoChangedEvent(2, '1', TonelloIoType.DigitalInput, 15),
-        batchEndEvent('ALPHA', 100),
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        analogIoChangedEvent({ ioNum: 1, value: '12.5', type: TonelloIoType.AnalogInput, offsetSeconds: 10 }),
+        digitalIoChangedEvent({ ioNum: 2, value: '1', type: TonelloIoType.DigitalInput, offsetSeconds: 15 }),
+        batchEndEvent({ batchCode: 'ALPHA', offsetSeconds: 100 }),
       ),
     })
 
@@ -318,7 +295,7 @@ describe('batchEndEvent', () => {
 describe('batchCancelledEvent', () => {
   it('sets cancelTime and cancelDetail, then finalizes', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ALPHA', 0), batchCancelledEvent('ALPHA', 100)),
+      events: events(batchStartEvent({ batchCode: 'ALPHA' }), batchCancelledEvent({ batchCode: 'ALPHA', offsetSeconds: 100 })),
     })
 
     await runPoll(ctx)
@@ -339,7 +316,7 @@ describe('batchCancelledEvent', () => {
 describe('commandStartEvent / CommandFinishEvent', () => {
   it('inserts a BatchStep on command start', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ALPHA', 0), commandStartEvent(3, 101, 2, 10)),
+      events: events(batchStartEvent({ batchCode: 'ALPHA' }), commandStartEvent({ commandNum: 3, programNum: 101, programIndex: 2, stepNumAct: 10 })),
     })
 
     await runPoll(ctx)
@@ -356,9 +333,9 @@ describe('commandStartEvent / CommandFinishEvent', () => {
   it('sets endTime on command finish using the composite key', async () => {
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        commandStartEvent(3, 101, 2, 10),
-        commandFinishEvent(3, 101, 2, 20),
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        commandStartEvent({ commandNum: 3, programNum: 101, programIndex: 2, stepNumAct: 10 }),
+        commandFinishEvent({ commandNum: 3, programNum: 101, programIndex: 2, stepNumAct: 20 }),
       ),
     })
 
@@ -386,9 +363,9 @@ describe('commandStartEvent / CommandFinishEvent', () => {
   it('ignores duplicate CommandStartEvent while a command is already running if it has same stepNumAct', async () => {
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        commandStartEvent(3, 101, 2, 10),
-        commandStartEvent(4, 101, 3, 10), // second start without finish
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        commandStartEvent({ commandNum: 3, programNum: 101, programIndex: 2, stepNumAct: 10 }),
+        commandStartEvent({ commandNum: 4, programNum: 101, programIndex: 3, stepNumAct: 10 }), // second start without finish
       ),
     })
 
@@ -405,9 +382,9 @@ describe('commandStartEvent / CommandFinishEvent', () => {
     const date = makeDate(offset)
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        commandStartEvent(3, 101, 2, 10, offset - 50),
-        commandStartEvent(4, 101, 3, 15, offset),
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        commandStartEvent({ commandNum: 3, programNum: 101, programIndex: 2, stepNumAct: 10, offsetSeconds: offset - 50 }),
+        commandStartEvent({ commandNum: 4, programNum: 101, programIndex: 3, stepNumAct: 15, offsetSeconds: offset }),
       ),
     })
 
@@ -427,9 +404,9 @@ describe('commandStartEvent / CommandFinishEvent', () => {
   it('logs a warning when CommandFinish commandNum does not match active step', async () => {
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        commandStartEvent(3, 101, 2, 10),
-        commandFinishEvent(99, 101, 2, 20), // mismatched commandNum
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        commandStartEvent({ commandNum: 3, programNum: 101, programIndex: 2, stepNumAct: 10 }),
+        commandFinishEvent({ commandNum: 99, programNum: 101, programIndex: 2, stepNumAct: 20 }), // mismatched commandNum
       ),
     })
 
@@ -442,9 +419,9 @@ describe('commandStartEvent / CommandFinishEvent', () => {
   it('closes open commands when batch ends', async () => {
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        commandStartEvent(3, 101, 2, 10),
-        batchEndEvent('ALPHA', 100), // ends without CommandFinish
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        commandStartEvent({ commandNum: 3, programNum: 101, programIndex: 2, stepNumAct: 10 }),
+        batchEndEvent({ batchCode: 'ALPHA', offsetSeconds: 100 }), // ends without CommandFinish
       ),
     })
 
@@ -465,7 +442,7 @@ describe('commandStartEvent / CommandFinishEvent', () => {
 describe('chemicalRequestEvent', () => {
   it('inserts ChemicalRequest and ChemicalRequestString rows', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ALPHA', 0), chemicalRequestEvent(1, 'ALPHA', 15)),
+      events: events(batchStartEvent({ batchCode: 'ALPHA' }), chemicalRequestEvent({ requestOrder: 1, batchCode: 'ALPHA', offsetSeconds: 15 })),
     })
 
     await runPoll(ctx)
@@ -480,7 +457,7 @@ describe('chemicalRequestEvent', () => {
 
     const strArg = vi.mocked(ctx.cradle.chemicalRequestStringRepository.insert).mock.calls[0][0]
     expect(strArg.isRequest).toBe(true)
-    expect(strArg.requestOrderInBatch).toBe(1)
+    expect(strArg.requestOrder).toBe(1)
   })
 
   it('is ignored when no active batch', async () => {
@@ -500,8 +477,8 @@ describe('ioValueChanged — analog', () => {
   it('inserts an AnalogIoValue row for AnalogInput events', async () => {
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        analogIoChangedEvent(3, '12.5', TonelloIoType.AnalogInput, 5),
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        analogIoChangedEvent({ ioNum: 3, value: '12.5', type: TonelloIoType.AnalogInput }),
       ),
     })
 
@@ -516,7 +493,7 @@ describe('ioValueChanged — analog', () => {
 
   it('does not insert analog values when no active batch', async () => {
     const ctx = await makeSession({
-      events: events(analogIoChangedEvent(3, '12.5', TonelloIoType.AnalogInput, 5)),
+      events: events(analogIoChangedEvent({ ioNum: 3, value: '12.5', type: TonelloIoType.AnalogInput })),
     })
 
     await runPoll(ctx)
@@ -534,10 +511,10 @@ describe('ioValueChanged — digital batching', () => {
     const sameOffset = 5
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        digitalIoChangedEvent(1, '1', TonelloIoType.DigitalInput, sameOffset),
-        digitalIoChangedEvent(2, '1', TonelloIoType.DigitalInput, sameOffset),
-        digitalIoChangedEvent(3, '0', TonelloIoType.DigitalOutput, sameOffset),
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        digitalIoChangedEvent({ ioNum: 1, value: '1', type: TonelloIoType.DigitalInput, offsetSeconds: sameOffset }),
+        digitalIoChangedEvent({ ioNum: 2, value: '1', type: TonelloIoType.DigitalInput, offsetSeconds: sameOffset }),
+        digitalIoChangedEvent({ ioNum: 3, value: '0', type: TonelloIoType.DigitalOutput, offsetSeconds: sameOffset }),
       ),
     })
 
@@ -553,9 +530,9 @@ describe('ioValueChanged — digital batching', () => {
   it('flushes separate DigitalIoValue rows for events with different datetimes', async () => {
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        digitalIoChangedEvent(1, '1', TonelloIoType.DigitalInput, 5),
-        digitalIoChangedEvent(2, '1', TonelloIoType.DigitalInput, 10), // different time
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        digitalIoChangedEvent({ ioNum: 1, value: '1', type: TonelloIoType.DigitalInput, offsetSeconds: 5 }),
+        digitalIoChangedEvent({ ioNum: 2, value: '1', type: TonelloIoType.DigitalInput, offsetSeconds: 10 }), // different time
       ),
     })
 
@@ -567,8 +544,8 @@ describe('ioValueChanged — digital batching', () => {
   it('accumulates state across polls — digital values persist in memory', async () => {
     const ctx = await makeSession({
       events: events(
-        batchStartEvent('ALPHA', 0),
-        digitalIoChangedEvent(6, '1', TonelloIoType.DigitalInput, 5),
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        digitalIoChangedEvent({ ioNum: 6, value: '1', type: TonelloIoType.DigitalInput }),
       ),
     })
 
@@ -582,8 +559,8 @@ describe('ioValueChanged — digital batching', () => {
       from: 0,
       events: events(
         // runPoll needs the last event to advance so it doesnt think it missed events
-        digitalIoChangedEvent(6, '1', TonelloIoType.DigitalInput, 5),
-        digitalIoChangedEvent(6, '0', TonelloIoType.DigitalInput, 15),
+        digitalIoChangedEvent({ ioNum: 6, value: '1', type: TonelloIoType.DigitalInput }),
+        digitalIoChangedEvent({ ioNum: 6, value: '0', type: TonelloIoType.DigitalInput, offsetSeconds: 15 }),
       ),
     })
     await runPoll(ctx)
@@ -620,7 +597,7 @@ describe('missed events recovery', () => {
 
     // The first event id from fixture starts at 1 (resetIds was called in beforeEach)
     // We need a gap: lastEventId=100, first received=120
-    const gappedEvent = { ...batchStartEvent('NEW', 200), id: 120 }
+    const gappedEvent = { ...batchStartEvent({ batchCode: 'NEW', offsetSeconds: 200 }), id: 120 }
     ctx.tonelloApi.fetchEvents.mockResolvedValue({ from: 0, events: [gappedEvent] })
 
     await runPoll(ctx)
@@ -648,7 +625,7 @@ describe('missed events recovery', () => {
 
     // Simulate a gap: event IDs jump from 50 to 80, with a CommandStart then a BatchStart
     const skippedCommand = { ...commandStartEvent(), id: 80 }
-    const resumingBatch = { ...batchStartEvent('FRESH', 200), id: 81 }
+    const resumingBatch = { ...batchStartEvent({ batchCode: 'FRESH', offsetSeconds: 200 }), id: 81 }
     ctx.tonelloApi.fetchEvents.mockResolvedValue({
       from: 0,
       events: [skippedCommand, resumingBatch],
@@ -703,7 +680,10 @@ describe('fetchEvents failure', () => {
 describe('chemical request response routing', () => {
   it('sends the response back to the machine API for a known pending request', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ALPHA', 0), chemicalRequestEvent(1, 'ALPHA', 15)),
+      events: events(
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        chemicalRequestEvent({ requestOrder: 1, batchCode: 'ALPHA', offsetSeconds: 15 })
+      ),
     })
 
     await runPoll(ctx)
@@ -714,19 +694,7 @@ describe('chemical request response routing', () => {
       {
         id: 99,
         batchKey,
-        parsed: {
-          status: RequestStatus.Completed,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'ALPHA',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 3,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Completed }),
       },
     ])
 
@@ -740,7 +708,7 @@ describe('chemical request response routing', () => {
 
   it('sets message and Error state for a Cancelled request', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ALPHA', 0), chemicalRequestEvent(1, 'ALPHA', 15)),
+      events: events(batchStartEvent({ batchCode: 'ALPHA' }), chemicalRequestEvent({ requestOrder: 1, batchCode: 'ALPHA', offsetSeconds: 15 })),
     })
 
     await runPoll(ctx)
@@ -751,19 +719,7 @@ describe('chemical request response routing', () => {
       {
         id: 100,
         batchKey,
-        parsed: {
-          status: RequestStatus.Cancelled,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'ALPHA',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 3,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Cancelled }),
       },
     ])
 
@@ -775,7 +731,7 @@ describe('chemical request response routing', () => {
   })
 
   it('skips responses for unknown request keys and does not crash', async () => {
-    const ctx = await makeSession({ events: events(batchStartEvent('ALPHA', 0)) })
+    const ctx = await makeSession({ events: events(batchStartEvent({ batchCode: 'ALPHA', offsetSeconds: 0 })) })
     await runPoll(ctx)
 
     await expect(
@@ -783,19 +739,7 @@ describe('chemical request response routing', () => {
         {
           id: 50,
           batchKey: 1001,
-          parsed: {
-            status: RequestStatus.Completed,
-            priority: 50,
-            machineNo: machineId,
-            tankNo: 7,
-            jobOrder: 'ALPHA',
-            programNo: 100,
-            requestOrderInBatch: 99, // no matching request
-            requestOrderInProgram: 99,
-            totalRequestsInProgram: 1,
-            materialType: 0,
-            programIndex: 0,
-          },
+          parsed: makeChemicalResponse({ status: RequestStatus.Completed, requestOrder: 99, totalRequests: 1 }),
         },
       ]),
     ).resolves.not.toThrow()
@@ -805,7 +749,7 @@ describe('chemical request response routing', () => {
 
   it('removes the request from the pending map after a terminal response', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ALPHA', 0), chemicalRequestEvent(1, 'ALPHA', 15)),
+      events: events(batchStartEvent({ batchCode: 'ALPHA' }), chemicalRequestEvent({ requestOrder: 1, batchCode: 'ALPHA', offsetSeconds: 15 })),
     })
     await runPoll(ctx)
 
@@ -815,19 +759,7 @@ describe('chemical request response routing', () => {
       {
         id: 99,
         batchKey,
-        parsed: {
-          status: RequestStatus.Completed,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'ALPHA',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 3,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Completed }),
       },
     ])
 
@@ -837,19 +769,7 @@ describe('chemical request response routing', () => {
       {
         id: 100,
         batchKey,
-        parsed: {
-          status: RequestStatus.Completed,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'ALPHA',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 3,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Completed }),
       },
     ])
 
@@ -858,7 +778,7 @@ describe('chemical request response routing', () => {
 
   it('keeps the request in the pending map after a non-terminal response', async () => {
     const ctx = await makeSession({
-      events: events(batchStartEvent('ALPHA', 0), chemicalRequestEvent(1, 'ALPHA', 15)),
+      events: events(batchStartEvent({ batchCode: 'ALPHA' }), chemicalRequestEvent({ requestOrder: 1, batchCode: 'ALPHA', offsetSeconds: 15 })),
     })
     await runPoll(ctx)
 
@@ -868,19 +788,7 @@ describe('chemical request response routing', () => {
       {
         id: 99,
         batchKey,
-        parsed: {
-          status: RequestStatus.Started,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'ALPHA',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 3,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Started }),
       },
     ])
 
@@ -893,24 +801,77 @@ describe('chemical request response routing', () => {
       {
         id: 100,
         batchKey,
-        parsed: {
-          status: RequestStatus.Completed,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'ALPHA',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 3,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Completed }),
       },
     ])
 
     expect(ctx.tonelloApi.submitChemicalRequestStatus).toHaveBeenCalledOnce()
     expect(ctx.cradle.chemicalRequestRepository.updateStatus).toHaveBeenCalledWith(1, RequestStatus.Completed)
+  })
+
+  it('routes Dye requests using batch-scoped requestOrder and totalRequests', async () => {
+    // Dye requests: the response must carry the raw batch-scoped values from the event.
+    const ctx = await makeSession({
+      events: events(
+        batchStartEvent({ batchCode: 'ALPHA' }),
+        chemicalRequestEvent({ requestOrder: 2, batchCode: 'ALPHA', batchTotRequestCount: 5 }),
+      ),
+    })
+    await runPoll(ctx)
+
+    const batchKey = ctx.session.runningBatchKey!
+
+    // A response with the correct batch-scoped values (requestOrder=2, totalRequests=5) must match.
+    await ctx.session.handleChemicalRequestResponses([{
+      id: 99,
+      batchKey,
+      parsed: makeChemicalResponse({ status: RequestStatus.Completed, requestOrder: 2, totalRequests: 5 }),
+    }])
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).toHaveBeenCalledOnce()
+  })
+
+  it('routes Chemical requests using program-scoped requestOrder and totalRequests', async () => {
+    // Chemical requests: the response must carry the program-scoped values derived by extendChemicalRequestEvent.
+    // Set up the batch with one program so extendChemicalRequestEvent can compute the program-scoped values.
+    const ctx = await makeSession({
+      events: events(
+        // TODO: Create multi program batch test
+        batchStartEvent({ batchCode: 'ALPHA', programList: ['100'] }),
+        chemicalRequestEvent({
+          requestOrder: 1,
+          batchCode: 'ALPHA',
+          requestType: TonelloChemicalRequestType.Chemical,
+        }),
+      ),
+      deps: {
+        programHeaderRepository: makeProgramHeaderRepository({
+          findByMachineAndProgramNo: vi.fn().mockResolvedValue({
+            programNo: 100,
+            name: 'MockProgram',
+            autoChemReq: 2,
+            autoDyeReq: 0,
+          }),
+        }),
+      },
+    })
+    await runPoll(ctx)
+
+    const batchKey = ctx.session.runningBatchKey!
+
+    // A response with program-scoped values (requestOrder=1, totalRequests=2, Chemical type) must match.
+    await ctx.session.handleChemicalRequestResponses([{
+      id: 99,
+      batchKey,
+      parsed: makeChemicalResponse({
+        status: RequestStatus.Completed,
+        materialType: MaterialType.Chemical,
+        requestOrder: 1,
+        totalRequests: 2,
+      }),
+    }])
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).toHaveBeenCalledOnce()
   })
 })
 
@@ -971,7 +932,7 @@ describe('machineSession initialization', () => {
     // Supply findByKey BEFORE init() so activeBatch is loaded from DB at startup
     const ctx = await makeSession({
       status: { runningBatchKey: 777 },
-      events: events(batchEndEvent('RESUMED', 100)),
+      events: events(batchEndEvent({ batchCode: 'RESUMED', offsetSeconds: 100 })),
       deps: {
         batchDataRepository: makeBatchDataRepository({
           findByKey: vi.fn().mockResolvedValue(existingBatch),
@@ -999,7 +960,7 @@ describe('machineSession initialization', () => {
       cancelTime: null,
     } as unknown as BatchData
 
-    const requestEvent = chemicalRequestEvent(1, 'RESUMED', 15)
+    const requestEvent = chemicalRequestEvent({ requestOrder: 1, batchCode: 'RESUMED', offsetSeconds: 15 })
     const ctx = await makeSession({
       status: { runningBatchKey: 777 },
       deps: {
@@ -1035,19 +996,7 @@ describe('machineSession initialization', () => {
       {
         id: 50,
         batchKey: 777,
-        parsed: {
-          status: RequestStatus.Completed,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'RESUMED',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 3,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Completed, jobOrder: 'RESUMED' }),
       },
     ])
 
@@ -1066,7 +1015,7 @@ describe('machineSession initialization', () => {
       cancelTime: null,
     } as unknown as BatchData
 
-    const requestEvent = chemicalRequestEvent(1, 'RESUMED', 15)
+    const requestEvent = chemicalRequestEvent({ requestOrder: 1, batchCode: 'RESUMED', offsetSeconds: 15 })
     const ctx = await makeSession({
       status: { runningBatchKey: 777 },
       deps: {
@@ -1119,19 +1068,7 @@ describe('machineSession initialization', () => {
       {
         id: 50,
         batchKey: 777,
-        parsed: {
-          status: RequestStatus.Completed,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'RESUMED',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 1,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Completed, jobOrder: 'RESUMED', totalRequests: 1 }),
       },
     ])
 
@@ -1184,19 +1121,7 @@ describe('machineSession initialization', () => {
       {
         id: 50,
         batchKey: 777,
-        parsed: {
-          status: RequestStatus.Completed,
-          priority: 50,
-          machineNo: machineId,
-          tankNo: 7,
-          jobOrder: 'RESUMED',
-          programNo: 100,
-          requestOrderInBatch: 1,
-          requestOrderInProgram: 1,
-          totalRequestsInProgram: 1,
-          materialType: 0,
-          programIndex: 0,
-        },
+        parsed: makeChemicalResponse({ status: RequestStatus.Completed, jobOrder: 'RESUMED', totalRequests: 1 }),
       },
     ])
 
@@ -1210,7 +1135,7 @@ describe('machineSession initialization', () => {
 
 describe('transaction handling', () => {
   it('commits the transaction after a successful event batch', async () => {
-    const ctx = await makeSession({ events: events(batchStartEvent('ALPHA')) })
+    const ctx = await makeSession({ events: events(batchStartEvent({ batchCode: 'ALPHA' })) })
 
     await runPoll(ctx)
 
@@ -1219,7 +1144,7 @@ describe('transaction handling', () => {
   })
 
   it('rolls back the transaction when a repository throws', async () => {
-    const ctx = await makeSession({ events: events(batchStartEvent('ALPHA')) })
+    const ctx = await makeSession({ events: events(batchStartEvent({ batchCode: 'ALPHA' })) })
     vi.mocked(ctx.cradle.batchDataRepository.insertAndReturn).mockRejectedValue(
       new Error('DB error'),
     )

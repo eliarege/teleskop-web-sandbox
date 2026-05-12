@@ -9,8 +9,8 @@ import type {
   TonelloIoValueChangedEvent,
 } from '@teleskop/core'
 import { TonelloChemicalRequestType, TonelloEventCode, TonelloIoType } from '@teleskop/core'
-import { ConnectionStatus } from '../../src/db/enums'
-import type { Machine, MachineStatus } from '../../src/db/models'
+import { ConnectionStatus, MaterialType, RequestStatus } from '../../src/db/enums'
+import type { ChemicalRequestStringResponseParsed, ExtendedTonelloChemicalRequestEvent, Machine, MachineStatus } from '../../src/db/models'
 
 let _eventId = 1
 export function nextId(): number {
@@ -141,7 +141,12 @@ export function makeMachineStatus(overrides?: Partial<MachineStatus>): MachineSt
 
 // ── Event builders ────────────────────────────────────────────────────────────
 
-export function batchStartEvent(batchCode = 'ALPHA', offsetSeconds = 0): TonelloBatchStartEvent {
+export function batchStartEvent(opts: {
+  batchCode?: string
+  offsetSeconds?: number
+  programList?: string[]
+} = {}): TonelloBatchStartEvent {
+  const { batchCode = 'ALPHA', offsetSeconds = 0, programList = [] } = opts
   return {
     id: nextId(),
     eventValue: TonelloEventCode.BatchStartEvent,
@@ -151,12 +156,16 @@ export function batchStartEvent(batchCode = 'ALPHA', offsetSeconds = 0): Tonello
     type: 1,
     weight: 200,
     program: 0,
-    programList: [],
+    programList,
     rawDatetime: '',
   }
 }
 
-export function batchEndEvent(batchCode = 'ALPHA', offsetSeconds = 100): TonelloBatchEndEvent {
+export function batchEndEvent(opts: {
+  batchCode?: string
+  offsetSeconds?: number
+} = {}): TonelloBatchEndEvent {
+  const { batchCode = 'ALPHA', offsetSeconds = 100 } = opts
   return {
     id: nextId(),
     eventValue: TonelloEventCode.BatchEndEvent,
@@ -166,10 +175,11 @@ export function batchEndEvent(batchCode = 'ALPHA', offsetSeconds = 100): Tonello
   }
 }
 
-export function batchCancelledEvent(
-  batchCode = 'ALPHA',
-  offsetSeconds = 100,
-): TonelloBatchCancelledEvent {
+export function batchCancelledEvent(opts: {
+  batchCode?: string
+  offsetSeconds?: number
+} = {}): TonelloBatchCancelledEvent {
+  const { batchCode = 'ALPHA', offsetSeconds = 100 } = opts
   return {
     id: nextId(),
     eventValue: TonelloEventCode.BatchCancelledEvent,
@@ -179,13 +189,14 @@ export function batchCancelledEvent(
   }
 }
 
-export function commandStartEvent(
-  commandNum = 1,
-  programNum = 100,
-  programIndex = 1,
-  stepNumAct = 1,
-  offsetSeconds = 10,
-): TonelloCommandStartEvent {
+export function commandStartEvent(opts: {
+  commandNum?: number
+  programNum?: number
+  programIndex?: number
+  stepNumAct?: number
+  offsetSeconds?: number
+} = {}): TonelloCommandStartEvent {
+  const { commandNum = 1, programNum = 100, programIndex = 1, stepNumAct = 1, offsetSeconds = 10 } = opts
   return {
     id: nextId(),
     eventValue: TonelloEventCode.CommandStartEvent,
@@ -199,13 +210,14 @@ export function commandStartEvent(
   }
 }
 
-export function commandFinishEvent(
-  commandNum = 1,
-  programNum = 100,
-  programIndex = 1,
-  stepNumAct = 1,
-  offsetSeconds = 20,
-): TonelloCommandFinishEvent {
+export function commandFinishEvent(opts: {
+  commandNum?: number
+  programNum?: number
+  programIndex?: number
+  stepNumAct?: number
+  offsetSeconds?: number
+} = {}): TonelloCommandFinishEvent {
+  const { commandNum = 1, programNum = 100, programIndex = 1, stepNumAct = 1, offsetSeconds = 20 } = opts
   return {
     id: nextId(),
     eventValue: TonelloEventCode.CommandFinishEvent,
@@ -219,11 +231,30 @@ export function commandFinishEvent(
   }
 }
 
-export function chemicalRequestEvent(
-  requestOrder = 1,
-  batchCode = 'ALPHA',
-  offsetSeconds = 15,
-): TonelloChemicalRequestEvent {
+export function chemicalRequestEvent(opts: {
+  requestOrder?: number
+  batchCode?: string
+  offsetSeconds?: number
+  requestType?: TonelloChemicalRequestType
+  tankNr?: number
+  priority?: number
+  batchTotRequestCount?: number
+  /** Overrides the computed program-scoped request order stored in `custom`. Relevant for Chemical requests restored from DB. */
+  customRequestOrderInProgram?: number
+  /** Overrides the computed program-scoped total stored in `custom`. Relevant for Chemical requests restored from DB. */
+  customTotalRequestsInProgram?: number
+} = {}): ExtendedTonelloChemicalRequestEvent {
+  const {
+    requestOrder = 1,
+    batchCode = 'ALPHA',
+    offsetSeconds = 15,
+    requestType = TonelloChemicalRequestType.Dye,
+    tankNr = 7,
+    priority = 50,
+    batchTotRequestCount = 3,
+    customRequestOrderInProgram = requestOrder,
+    customTotalRequestsInProgram = 1,
+  } = opts
   return {
     id: nextId(),
     eventValue: TonelloEventCode.ChemicalRequestEvent,
@@ -231,26 +262,31 @@ export function chemicalRequestEvent(
     batchCode,
     runningProgram: 100,
     runningCommand: 1,
-    requestType: TonelloChemicalRequestType.Chemical,
+    requestType,
     operationCode: 42,
-    batchTotRequestCount: 3,
+    batchTotRequestCount,
     programTotRequestCount: 1,
     requestOrder,
-    tankNr: 7,
-    priority: 50,
+    tankNr,
+    priority,
     runningProgramIndex: 0,
     runningCommandIndex: 0,
     rawDatetime: '',
+    custom: {
+      requestOrderInProgram: customRequestOrderInProgram,
+      totalRequestsInProgram: customTotalRequestsInProgram,
+    },
   }
 }
 
-export function digitalIoChangedEvent(
-  /** Should start from 1 */
-  ioNum: number,
-  value: '0' | '1',
-  type: TonelloIoType,
-  offsetSeconds = 5,
-): TonelloIoValueChangedEvent {
+export function digitalIoChangedEvent(opts: {
+  /** 1-based IO number */
+  ioNum: number
+  value: '0' | '1'
+  type: TonelloIoType
+  offsetSeconds?: number
+}): TonelloIoValueChangedEvent {
+  const { ioNum, value, type, offsetSeconds = 5 } = opts
   return {
     id: nextId(),
     eventValue: TonelloEventCode.IoValueChangedEvent,
@@ -262,12 +298,13 @@ export function digitalIoChangedEvent(
   }
 }
 
-export function analogIoChangedEvent(
-  ioNum: number,
-  value: string,
-  type: TonelloIoType = TonelloIoType.AnalogInput,
-  offsetSeconds = 5,
-): TonelloIoValueChangedEvent {
+export function analogIoChangedEvent(opts: {
+  ioNum: number
+  value: string
+  type?: TonelloIoType
+  offsetSeconds?: number
+}): TonelloIoValueChangedEvent {
+  const { ioNum, value, type = TonelloIoType.AnalogInput, offsetSeconds = 5 } = opts
   return {
     id: nextId(),
     eventValue: TonelloEventCode.IoValueChangedEvent,
@@ -276,6 +313,34 @@ export function analogIoChangedEvent(
     ioNum: String(ioNum),
     value,
     rawDatetime: '',
+  }
+}
+
+/**
+ * Builds a parsed Dispensing Manager response that matches the defaults of
+ * `chemicalRequestEvent` (Dye type, requestOrder=1, batchTotRequestCount=3).
+ * Override only the fields relevant to each test.
+ */
+export function makeChemicalResponse(opts: {
+  status?: RequestStatus
+  materialType?: MaterialType
+  requestOrder?: number
+  totalRequests?: number
+  priority?: number
+  jobOrder?: string
+  programIndex?: number
+} = {}): ChemicalRequestStringResponseParsed {
+  return {
+    status: opts.status ?? RequestStatus.Completed,
+    priority: opts.priority ?? 50,
+    machineNo: machineId,
+    tankNo: 7,
+    jobOrder: opts.jobOrder ?? 'ALPHA',
+    programNo: 100,
+    requestOrder: opts.requestOrder ?? 1,
+    totalRequests: opts.totalRequests ?? 3,
+    materialType: opts.materialType ?? MaterialType.Dye,
+    programIndex: opts.programIndex ?? 0,
   }
 }
 
