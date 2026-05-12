@@ -108,8 +108,8 @@ export class MachineSession {
     length: DIGITAL_IO_ARRAY_SIZE,
   }).fill(false)
 
-  /** In-memory map of pending chemical requests, keyed by `${batchKey}:${requestOrderIndex}`. */
-  private readonly pendingChemicalRequests = new Map<string, TonelloChemicalRequestEvent>()
+  /** In-memory map of pending chemical requests, keyed by a normalized request string (all fields after the type/status). */
+  private readonly pendingChemicalRequests = new Map<string, { id: number, event: TonelloChemicalRequestEvent }>()
 
   /** When true, all events are skipped until the next `BatchStartEvent` (missed-event recovery). */
   private skipUntilNextBatchStart = false
@@ -140,6 +140,57 @@ export class MachineSession {
     return this.activeBatch?.batchKey ?? null
   }
 
+  private async restorePendingChemicalRequests(batchKey: number): Promise<void> {
+    const requests = await this.deps.chemicalRequestRepository.findByBatchKey(batchKey)
+    for (const req of requests) {
+      if (req.status === RequestStatus.Completed || req.status === RequestStatus.Cancelled) {
+        continue
+      }
+      if (!req.tonelloEvent) {
+        this.logger.warn({ requestId: req.id }, 'Pending chemical request missing tonelloEvent (or failed to parse) - skipping')
+        continue
+      }
+
+      const event = req.tonelloEvent
+      const key = this.buildChemicalRequestLookupKeyFromEvent(event)
+      this.pendingChemicalRequests.set(key, { id: req.id, event })
+    }
+  }
+
+  private buildChemicalRequestLookupKeyFromEvent(
+    event: TonelloChemicalRequestEvent,
+  ): string {
+    return [
+      event.priority,
+      this.machineId,
+      event.tankNr,
+      event.batchCode,
+      event.runningProgram,
+      event.requestOrder,
+      event.requestOrder,
+      event.batchTotRequestCount,
+      mapTonelloChemicalRequestType(event.requestType),
+      event.runningProgramIndex,
+    ].join(',')
+  }
+
+  private buildChemicalRequestLookupKeyFromResponse(
+    parsed: ChemicalRequestStringResponseParsed,
+  ): string {
+    return [
+      parsed.priority,
+      parsed.machineNo,
+      parsed.tankNo,
+      parsed.jobOrder,
+      parsed.programNo,
+      parsed.requestOrderInBatch,
+      parsed.requestOrderInProgram,
+      parsed.totalNumberOfRequest,
+      parsed.materialType,
+      parsed.programIndex,
+    ].join(',')
+  }
+
   /** Restores session state from the database. Must be called before `startPolling`. */
   async init(): Promise<void> {
     const status = await this.deps.machineStatusRepository.findByMachineId(this.machine.machineId)
@@ -155,6 +206,8 @@ export class MachineSession {
       if (!this.activeBatch) {
         this.logger.warn('runningBatchKey set in status but BatchData not found, clearing')
         this.status.runningBatchKey = null
+      } else {
+        await this.restorePendingChemicalRequests(this.activeBatch.batchKey)
       }
     }
 
@@ -445,6 +498,7 @@ export class MachineSession {
       )
       this.activeBatch = null
       this.activeProgramIndex = null
+      this.pendingChemicalRequests.clear()
     }
 
     // 1. Look up planned batch
@@ -668,6 +722,8 @@ export class MachineSession {
     this.status.requestProgramNo = null
     this.status.requestCommandNo = null
     this.status.requestStatus = null
+
+    this.pendingChemicalRequests.clear()
   }
 
   // ── CommandStart ────────────────────────────────────────────────────────────
@@ -816,7 +872,7 @@ export class MachineSession {
     this.status.requestCommandNo = event.runningCommand
     this.status.requestStatus = RequestStatus.New
 
-    await this.deps.chemicalRequestRepository.insert(
+    const id = await this.deps.chemicalRequestRepository.insert(
       {
         batchKey,
         requestTime: event.datetime,
@@ -831,6 +887,7 @@ export class MachineSession {
         programNo: event.runningProgram,
         commandNo: event.runningCommand,
         status: RequestStatus.New,
+        tonelloEvent: event,
       },
       trx,
     )
@@ -855,8 +912,8 @@ export class MachineSession {
       trx,
     )
 
-    const requestKey = `${batchKey}:${event.requestOrder}`
-    this.pendingChemicalRequests.set(requestKey, event)
+    const requestKey = this.buildChemicalRequestLookupKeyFromEvent(event)
+    this.pendingChemicalRequests.set(requestKey, { id, event })
   }
 
   // ── IO Value Changed ────────────────────────────────────────────────────────
@@ -925,11 +982,11 @@ export class MachineSession {
     responses: Array<{ id: number, batchKey: number, parsed: ChemicalRequestStringResponseParsed }>,
   ): Promise<void> {
     for (const response of responses) {
-      const { batchKey, parsed } = response
-      const requestKey = `${batchKey}:${parsed.requestOrderInBatch}`
-      const originalEvent = this.pendingChemicalRequests.get(requestKey)
+      const { parsed } = response
+      const requestKey = this.buildChemicalRequestLookupKeyFromResponse(parsed)
+      const pending = this.pendingChemicalRequests.get(requestKey)
 
-      if (!originalEvent) {
+      if (!pending) {
         this.logger.warn(
           { requestKey, responseId: response.id },
           'No pending chemical request found for response - skipping',
@@ -937,18 +994,24 @@ export class MachineSession {
         continue
       }
 
-      const status = mapRequestStatusToTonello(parsed.status)
-      const message
-        = status === TonelloChemicalRequestStatus.Error ? `Request status: ${parsed.status}` : ''
+      const tonelloStatus = mapRequestStatusToTonello(parsed.status)
+      const message = tonelloStatus === TonelloChemicalRequestStatus.Error ? `Request status: ${parsed.status}` : ''
+
+      this.status.requestStatus = parsed.status
+
+      await this.deps.chemicalRequestRepository.updateStatus(pending.id, parsed.status)
+        .catch((err) => {
+          this.logger.error({ err, requestId: pending.id }, 'Failed to update chemical request status')
+        })
 
       try {
         await this.api.submitChemicalRequestStatus({
-          ...originalEvent,
-          state: status,
+          ...pending.event,
+          state: tonelloStatus,
           message,
         })
         this.logger.debug(
-          { requestKey, status },
+          { requestKey, status: parsed.status },
           'Chemical request response sent to machine',
         )
       } catch (err) {
@@ -956,6 +1019,10 @@ export class MachineSession {
           { err, requestKey },
           'Failed to send chemical request response to machine',
         )
+      }
+
+      if (parsed.status === RequestStatus.Completed || parsed.status === RequestStatus.Cancelled) {
+        this.pendingChemicalRequests.delete(requestKey)
       }
     }
   }
@@ -997,6 +1064,7 @@ export class MachineSession {
       this.status.runningBatchKey = null
       this.status.runningJobOrder = null
       this.status.runningBatchStatus = BatchStatus.Idle
+      this.pendingChemicalRequests.clear()
     }
   }
 

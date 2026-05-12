@@ -7,6 +7,7 @@
  *  - Insert / update data types
  */
 
+import { TonelloChemicalRequestEvent } from '@teleskop/core'
 import type {
   AutoManualStatus,
   BatchStartEndState,
@@ -1080,7 +1081,7 @@ export type ChemicalRequestStringInsert = Omit<ChemicalRequestString, 'id' | 're
 export const CHEMICAL_REQUEST_TABLE = 'BACHEMICALREQUEST' as const
 
 export const CHEMICAL_REQUEST_COLUMNS = {
-  autoId: 'AUTOID',
+  id: 'AUTOID',
   batchKey: 'BATCHKEY',
   requestTime: 'REQUESTTIME',
   jobOrder: 'JobOrder',
@@ -1094,10 +1095,11 @@ export const CHEMICAL_REQUEST_COLUMNS = {
   programNo: 'ProgramNo',
   commandNo: 'COMMANDNO',
   status: 'STATUS',
+  tonelloEvent: 'TonelloEvent',
 } as const satisfies Record<string, string>
 
 export interface ChemicalRequest {
-  autoId: number
+  id: number
   batchKey: number
   requestTime: Date
   jobOrder: string
@@ -1110,7 +1112,8 @@ export interface ChemicalRequest {
   totalNumberOfRequest: number
   programNo: number
   commandNo: number
-  status: number | null
+  status: RequestStatus | null
+  tonelloEvent: TonelloChemicalRequestEvent | null
 }
 
 export interface ChemicalRequestInsert {
@@ -1126,7 +1129,8 @@ export interface ChemicalRequestInsert {
   totalNumberOfRequest: number
   programNo: number
   commandNo: number
-  status?: number
+  status?: RequestStatus
+  tonelloEvent?: TonelloChemicalRequestEvent | null
 }
 
 // ── BFMASTERCOMMANDS ──────────────────────────────────────────────────────────
@@ -1176,7 +1180,7 @@ export interface Command {
 export const BATCH_START_END_TABLE = 'BASTARTEND' as const
 
 export const BATCH_START_END_COLUMNS = {
-  autoId: 'AUTOID',
+  id: 'AUTOID',
   jobOrder: 'JOBORDER',
   machineId: 'MACHINEID',
   state: 'STATE',
@@ -1186,7 +1190,7 @@ export const BATCH_START_END_COLUMNS = {
 } as const satisfies Record<string, string>
 
 export interface BatchStartEnd {
-  autoId: number
+  id: number
   jobOrder: string
   machineId: number
   /** `0` = Start · `1` = End */

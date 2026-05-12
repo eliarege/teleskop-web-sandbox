@@ -26,7 +26,7 @@ import {
   makeMachine,
   resetIds,
 } from './mocks/fixtures'
-import { makeAnalogIoValueRepository, makeBatchDataRepository, makeDigitalIoValueRepository, makeMachineStatusRepository } from './mocks/repositories'
+import { makeAnalogIoValueRepository, makeBatchDataRepository, makeChemicalRequestRepository, makeDigitalIoValueRepository, makeMachineStatusRepository } from './mocks/repositories'
 
 beforeEach(() => {
   resetIds()
@@ -119,6 +119,79 @@ describe('batchStartEvent', () => {
     expect(ctx.cradle.batchDataRepository.insertAndReturn).toHaveBeenCalledOnce()
   })
 
+  it('clears pending chemical requests when force-cancelling a previous batch', async () => {
+    const prevBatch: BatchData = {
+      batchKey: 900,
+      jobOrder: 'OLD',
+      machineId,
+      machineCode: 'TEST-01',
+      startTime: new Date('2026-04-04T07:00:00Z'),
+      endTime: null,
+      cancelTime: null,
+    } as unknown as BatchData
+
+    const ctx = await makeSession({
+      status: { runningBatchKey: 900 },
+      events: events(batchStartEvent('NEW')),
+      deps: {
+        batchDataRepository: makeBatchDataRepository({
+          findByKey: vi.fn().mockResolvedValue(prevBatch),
+        }),
+        chemicalRequestRepository: makeChemicalRequestRepository({
+          findByBatchKey: vi.fn().mockResolvedValue([
+            {
+              id: 42,
+              batchKey: 900,
+              requestTime: new Date(),
+              jobOrder: 'OLD',
+              recipeIndex: 0,
+              requestOrderIndex: 1,
+              operationCode: 42,
+              targetRecipe: 0,
+              tankNo: 7,
+              priority: 50,
+              totalNumberOfRequest: 1,
+              programNo: 100,
+              commandNo: 1,
+              status: RequestStatus.New,
+              tonelloEvent: JSON.stringify({
+                ...chemicalRequestEvent(1, 'OLD', 0),
+                datetime: new Date().toISOString(),
+              }),
+            },
+          ]),
+        }),
+      },
+    })
+
+    await runPoll(ctx)
+
+    // After force-cancel, a response for the old request should be skipped
+    await expect(
+      ctx.session.handleChemicalRequestResponses([
+        {
+          id: 50,
+          batchKey: 900,
+          parsed: {
+            status: RequestStatus.Completed,
+            priority: 50,
+            machineNo: machineId,
+            tankNo: 7,
+            jobOrder: 'OLD',
+            programNo: 100,
+            requestOrderInBatch: 1,
+            requestOrderInProgram: 1,
+            totalNumberOfRequest: 1,
+            materialType: 0,
+            programIndex: 0,
+          },
+        },
+      ]),
+    ).resolves.not.toThrow()
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).not.toHaveBeenCalled()
+  })
+
   it('ignores a duplicate BatchStartEvent for the same job order', async () => {
     // First poll: start batch
     const ctx = await makeSession({ events: events(batchStartEvent('ALPHA')) })
@@ -158,6 +231,43 @@ describe('batchEndEvent', () => {
     expect(ctx.cradle.batchStopRepository.insert).toHaveBeenCalledOnce()
     expect(ctx.cradle.batchStartEndRepository.insert).toHaveBeenCalledTimes(2) // start + end
     expect(ctx.session.runningBatchKey).toBeNull()
+  })
+
+  it('clears pending chemical requests on batch end', async () => {
+    const ctx = await makeSession({
+      events: events(
+        batchStartEvent('ALPHA', 0),
+        chemicalRequestEvent(1, 'ALPHA', 15),
+        batchEndEvent('ALPHA', 100),
+      ),
+    })
+
+    await runPoll(ctx)
+
+    // After batch end, a response for the old request should be skipped
+    await expect(
+      ctx.session.handleChemicalRequestResponses([
+        {
+          id: 50,
+          batchKey: 1001,
+          parsed: {
+            status: RequestStatus.Completed,
+            priority: 50,
+            machineNo: machineId,
+            tankNo: 7,
+            jobOrder: 'ALPHA',
+            programNo: 100,
+            requestOrderInBatch: 1,
+            requestOrderInProgram: 1,
+            totalNumberOfRequest: 3,
+            materialType: 0,
+            programIndex: 0,
+          },
+        },
+      ]),
+    ).resolves.not.toThrow()
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).not.toHaveBeenCalled()
   })
 
   it('is ignored when no active batch is running', async () => {
@@ -627,6 +737,8 @@ describe('chemical request response routing', () => {
     const callArg = vi.mocked(ctx.tonelloApi.submitChemicalRequestStatus).mock.calls[0][0]
     expect(callArg.state).toBe(TonelloChemicalRequestStatus.Done)
     expect(callArg.message).toBe('')
+
+    expect(ctx.cradle.chemicalRequestRepository.updateStatus).toHaveBeenCalledWith(1, RequestStatus.Completed)
   })
 
   it('sets message and Error state for a Cancelled request', async () => {
@@ -661,6 +773,8 @@ describe('chemical request response routing', () => {
     const callArg = vi.mocked(ctx.tonelloApi.submitChemicalRequestStatus).mock.calls[0][0]
     expect(callArg.state).toBe(TonelloChemicalRequestStatus.Error)
     expect(callArg.message).not.toBe('')
+
+    expect(ctx.cradle.chemicalRequestRepository.updateStatus).toHaveBeenCalledWith(1, RequestStatus.Cancelled)
   })
 
   it('skips responses for unknown request keys and does not crash', async () => {
@@ -690,6 +804,116 @@ describe('chemical request response routing', () => {
     ).resolves.not.toThrow()
 
     expect(ctx.tonelloApi.submitChemicalRequestStatus).not.toHaveBeenCalled()
+  })
+
+  it('removes the request from the pending map after a terminal response', async () => {
+    const ctx = await makeSession({
+      events: events(batchStartEvent('ALPHA', 0), chemicalRequestEvent(1, 'ALPHA', 15)),
+    })
+    await runPoll(ctx)
+
+    const batchKey = ctx.session.runningBatchKey!
+
+    await ctx.session.handleChemicalRequestResponses([
+      {
+        id: 99,
+        batchKey,
+        parsed: {
+          status: RequestStatus.Completed,
+          priority: 50,
+          machineNo: machineId,
+          tankNo: 7,
+          jobOrder: 'ALPHA',
+          programNo: 100,
+          requestOrderInBatch: 1,
+          requestOrderInProgram: 1,
+          totalNumberOfRequest: 3,
+          materialType: 0,
+          programIndex: 0,
+        },
+      },
+    ])
+
+    // Second response for the same request should be skipped
+    vi.mocked(ctx.tonelloApi.submitChemicalRequestStatus).mockClear()
+    await ctx.session.handleChemicalRequestResponses([
+      {
+        id: 100,
+        batchKey,
+        parsed: {
+          status: RequestStatus.Completed,
+          priority: 50,
+          machineNo: machineId,
+          tankNo: 7,
+          jobOrder: 'ALPHA',
+          programNo: 100,
+          requestOrderInBatch: 1,
+          requestOrderInProgram: 1,
+          totalNumberOfRequest: 3,
+          materialType: 0,
+          programIndex: 0,
+        },
+      },
+    ])
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).not.toHaveBeenCalled()
+  })
+
+  it('keeps the request in the pending map after a non-terminal response', async () => {
+    const ctx = await makeSession({
+      events: events(batchStartEvent('ALPHA', 0), chemicalRequestEvent(1, 'ALPHA', 15)),
+    })
+    await runPoll(ctx)
+
+    const batchKey = ctx.session.runningBatchKey!
+
+    await ctx.session.handleChemicalRequestResponses([
+      {
+        id: 99,
+        batchKey,
+        parsed: {
+          status: RequestStatus.Started,
+          priority: 50,
+          machineNo: machineId,
+          tankNo: 7,
+          jobOrder: 'ALPHA',
+          programNo: 100,
+          requestOrderInBatch: 1,
+          requestOrderInProgram: 1,
+          totalNumberOfRequest: 3,
+          materialType: 0,
+          programIndex: 0,
+        },
+      },
+    ])
+
+    expect(ctx.cradle.chemicalRequestRepository.updateStatus).toHaveBeenCalledWith(1, RequestStatus.Started)
+
+    // Second response for the same request should still be processed
+    vi.mocked(ctx.tonelloApi.submitChemicalRequestStatus).mockClear()
+    vi.mocked(ctx.cradle.chemicalRequestRepository.updateStatus).mockClear()
+    await ctx.session.handleChemicalRequestResponses([
+      {
+        id: 100,
+        batchKey,
+        parsed: {
+          status: RequestStatus.Completed,
+          priority: 50,
+          machineNo: machineId,
+          tankNo: 7,
+          jobOrder: 'ALPHA',
+          programNo: 100,
+          requestOrderInBatch: 1,
+          requestOrderInProgram: 1,
+          totalNumberOfRequest: 3,
+          materialType: 0,
+          programIndex: 0,
+        },
+      },
+    ])
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).toHaveBeenCalledOnce()
+    expect(ctx.cradle.chemicalRequestRepository.updateStatus).toHaveBeenCalledWith(1, RequestStatus.Completed)
   })
 })
 
@@ -765,6 +989,221 @@ describe('machineSession initialization', () => {
       expect.objectContaining({ endTime: expect.any(Date) }),
       expect.anything(),
     )
+  })
+
+  it('restores pending chemical requests from DB when resuming an active batch', async () => {
+    const existingBatch: BatchData = {
+      batchKey: 777,
+      jobOrder: 'RESUMED',
+      machineId,
+      machineCode: 'TEST-01',
+      startTime: new Date('2026-04-04T07:00:00Z'),
+      endTime: null,
+      cancelTime: null,
+    } as unknown as BatchData
+
+    const requestEvent = chemicalRequestEvent(1, 'RESUMED', 15)
+    const ctx = await makeSession({
+      status: { runningBatchKey: 777 },
+      deps: {
+        batchDataRepository: makeBatchDataRepository({
+          findByKey: vi.fn().mockResolvedValue(existingBatch),
+        }),
+        chemicalRequestRepository: makeChemicalRequestRepository({
+          findByBatchKey: vi.fn().mockResolvedValue([
+            {
+              id: 55,
+              batchKey: 777,
+              requestTime: new Date(),
+              jobOrder: 'RESUMED',
+              recipeIndex: 0,
+              requestOrderIndex: 1,
+              operationCode: 42,
+              targetRecipe: 0,
+              tankNo: 7,
+              priority: 50,
+              totalNumberOfRequest: 3,
+              programNo: 100,
+              commandNo: 1,
+              status: RequestStatus.New,
+              tonelloEvent: requestEvent
+            },
+          ]),
+        }),
+      },
+    })
+
+    // Should be able to route a response for the restored request
+    await ctx.session.handleChemicalRequestResponses([
+      {
+        id: 50,
+        batchKey: 777,
+        parsed: {
+          status: RequestStatus.Completed,
+          priority: 50,
+          machineNo: machineId,
+          tankNo: 7,
+          jobOrder: 'RESUMED',
+          programNo: 100,
+          requestOrderInBatch: 1,
+          requestOrderInProgram: 1,
+          totalNumberOfRequest: 3,
+          materialType: 0,
+          programIndex: 0,
+        },
+      },
+    ])
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).toHaveBeenCalledOnce()
+    expect(ctx.cradle.chemicalRequestRepository.updateStatus).toHaveBeenCalledWith(55, RequestStatus.Completed)
+  })
+
+  it('skips completed and cancelled chemical requests when restoring from DB', async () => {
+    const existingBatch: BatchData = {
+      batchKey: 777,
+      jobOrder: 'RESUMED',
+      machineId,
+      machineCode: 'TEST-01',
+      startTime: new Date('2026-04-04T07:00:00Z'),
+      endTime: null,
+      cancelTime: null,
+    } as unknown as BatchData
+
+    const requestEvent = chemicalRequestEvent(1, 'RESUMED', 15)
+    const ctx = await makeSession({
+      status: { runningBatchKey: 777 },
+      deps: {
+        batchDataRepository: makeBatchDataRepository({
+          findByKey: vi.fn().mockResolvedValue(existingBatch),
+        }),
+        chemicalRequestRepository: makeChemicalRequestRepository({
+          findByBatchKey: vi.fn().mockResolvedValue([
+            {
+              id: 1,
+              batchKey: 777,
+              requestTime: new Date(),
+              jobOrder: 'RESUMED',
+              recipeIndex: 0,
+              requestOrderIndex: 1,
+              operationCode: 42,
+              targetRecipe: 0,
+              tankNo: 7,
+              priority: 50,
+              totalNumberOfRequest: 1,
+              programNo: 100,
+              commandNo: 1,
+              status: RequestStatus.Completed,
+              tonelloEvent: requestEvent,
+            },
+            {
+              id: 2,
+              batchKey: 777,
+              requestTime: new Date(),
+              jobOrder: 'RESUMED',
+              recipeIndex: 0,
+              requestOrderIndex: 2,
+              operationCode: 42,
+              targetRecipe: 0,
+              tankNo: 7,
+              priority: 50,
+              totalNumberOfRequest: 1,
+              programNo: 100,
+              commandNo: 1,
+              status: RequestStatus.Cancelled,
+              tonelloEvent: requestEvent,
+            },
+          ]),
+        }),
+      },
+    })
+
+    // Responses for skipped requests should not be routed
+    await ctx.session.handleChemicalRequestResponses([
+      {
+        id: 50,
+        batchKey: 777,
+        parsed: {
+          status: RequestStatus.Completed,
+          priority: 50,
+          machineNo: machineId,
+          tankNo: 7,
+          jobOrder: 'RESUMED',
+          programNo: 100,
+          requestOrderInBatch: 1,
+          requestOrderInProgram: 1,
+          totalNumberOfRequest: 1,
+          materialType: 0,
+          programIndex: 0,
+        },
+      },
+    ])
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).not.toHaveBeenCalled()
+  })
+
+  it('handles missing tonelloEvent gracefully when restoring pending requests', async () => {
+    const existingBatch: BatchData = {
+      batchKey: 777,
+      jobOrder: 'RESUMED',
+      machineId,
+      machineCode: 'TEST-01',
+      startTime: new Date('2026-04-04T07:00:00Z'),
+      endTime: null,
+      cancelTime: null,
+    } as unknown as BatchData
+
+    const ctx = await makeSession({
+      status: { runningBatchKey: 777 },
+      deps: {
+        batchDataRepository: makeBatchDataRepository({
+          findByKey: vi.fn().mockResolvedValue(existingBatch),
+        }),
+        chemicalRequestRepository: makeChemicalRequestRepository({
+          findByBatchKey: vi.fn().mockResolvedValue([
+            {
+              id: 1,
+              batchKey: 777,
+              requestTime: new Date(),
+              jobOrder: 'RESUMED',
+              recipeIndex: 0,
+              requestOrderIndex: 1,
+              operationCode: 42,
+              targetRecipe: 0,
+              tankNo: 7,
+              priority: 50,
+              totalNumberOfRequest: 1,
+              programNo: 100,
+              commandNo: 1,
+              status: RequestStatus.New,
+              tonelloEvent: null,
+            },
+          ]),
+        }),
+      },
+    })
+
+    // Should not throw and should not route responses
+    await ctx.session.handleChemicalRequestResponses([
+      {
+        id: 50,
+        batchKey: 777,
+        parsed: {
+          status: RequestStatus.Completed,
+          priority: 50,
+          machineNo: machineId,
+          tankNo: 7,
+          jobOrder: 'RESUMED',
+          programNo: 100,
+          requestOrderInBatch: 1,
+          requestOrderInProgram: 1,
+          totalNumberOfRequest: 1,
+          materialType: 0,
+          programIndex: 0,
+        },
+      },
+    ])
+
+    expect(ctx.tonelloApi.submitChemicalRequestStatus).not.toHaveBeenCalled()
   })
 })
 

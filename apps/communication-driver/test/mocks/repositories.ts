@@ -138,7 +138,8 @@ export function makeChemicalRequestRepository(
 ): ChemicalRequestRepository {
   return {
     findByBatchKey: vi.fn().mockResolvedValue([]),
-    insert: vi.fn().mockResolvedValue(undefined),
+    insert: vi.fn().mockResolvedValue(1),
+    updateStatus: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   }
 }

@@ -100,3 +100,14 @@ export function adjustToDbDate(date: Date | null | undefined, tzOffset: number):
 export function adjustToDbDate(date: Date | null | undefined, tzOffset: number): Date | null {
   return date != null ? subMinutes(date, tzOffset) : null
 }
+
+export function tryJsonParse<T>(str: string): T | null {
+  if (!str) {
+    return null
+  }
+  try {
+    return JSON.parse(str)
+  } catch {
+    return null
+  }
+}
