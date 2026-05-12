@@ -152,6 +152,7 @@ export function batchStartEvent(batchCode = 'ALPHA', offsetSeconds = 0): Tonello
     weight: 200,
     program: 0,
     programList: [],
+    rawDatetime: '',
   }
 }
 
@@ -161,6 +162,7 @@ export function batchEndEvent(batchCode = 'ALPHA', offsetSeconds = 100): Tonello
     eventValue: TonelloEventCode.BatchEndEvent,
     datetime: makeDate(offsetSeconds),
     batchCode,
+    rawDatetime: '',
   }
 }
 
@@ -173,6 +175,7 @@ export function batchCancelledEvent(
     eventValue: TonelloEventCode.BatchCancelledEvent,
     datetime: makeDate(offsetSeconds),
     batchCode,
+    rawDatetime: '',
   }
 }
 
@@ -192,6 +195,7 @@ export function commandStartEvent(
     stepNumAct,
     programNum,
     programIndex,
+    rawDatetime: '',
   }
 }
 
@@ -211,6 +215,7 @@ export function commandFinishEvent(
     stepNumAct,
     programNum,
     programIndex,
+    rawDatetime: '',
   }
 }
 
@@ -235,6 +240,7 @@ export function chemicalRequestEvent(
     priority: 50,
     runningProgramIndex: 0,
     runningCommandIndex: 0,
+    rawDatetime: '',
   }
 }
 
@@ -252,6 +258,7 @@ export function digitalIoChangedEvent(
     ioType: type,
     ioNum: String(ioNum),
     value,
+    rawDatetime: '',
   }
 }
 
@@ -268,6 +275,7 @@ export function analogIoChangedEvent(
     ioType: type,
     ioNum: String(ioNum),
     value,
+    rawDatetime: '',
   }
 }
 
