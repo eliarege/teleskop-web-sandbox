@@ -57,6 +57,7 @@ const fetchMachineStatus = pMemoize(async (teleskop: Kysely<TeleskopDatabase>): 
       'm.MACHINECAPACITY as machineCapacity',
       'm.IP as machineIpAddress',
       'g.GROUPNAME as groupName',
+      'm.TBBMODEL as tbbModel',
       sql<boolean>`
         CAST(
           CASE
