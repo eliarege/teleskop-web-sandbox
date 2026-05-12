@@ -57,7 +57,7 @@ export async function fetchTeleskopMachine(id: number): Promise<Machine | null> 
         host: 'IP',
         port: knex.raw(`
             CASE
-              WHEN HardwareModel = 'Atom' OR HardwareModel = 'Giada'
+              WHEN TBBMODEL != 'Tonello' AND (HardwareModel = 'Atom' OR HardwareModel = 'Giada')
                 THEN 5901
                 ELSE 5900
             END`,
