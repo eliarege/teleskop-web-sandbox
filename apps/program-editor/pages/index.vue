@@ -308,25 +308,22 @@ const goRoot = computed(() => {
             :label="toValue(item.label)"
             :disable="toValue(item.disabled)"
           >
-            <TopbarMenu
-              v-if="item.subMenu"
-              v-bind="item.subMenu"
-            />
+            <TopbarMenu v-if="item.subMenu" v-bind="item.subMenu" />
           </TopbarButton>
         </template>
-        <TopbarButton
-          v-else
-          icon="menu"
-        >
+        <TopbarButton v-else icon="menu">
           <TopbarMenu :items="itemsMobile" />
         </TopbarButton>
-        <div
-          class="flex-grow-2 text-center text-bold"
-        >
+
+        <QSpace />
+
+        <div class="text-bold text-nowrap">
           <ProgramTitle />
         </div>
+
         <QSpace />
-        <div class="space-x-1">
+
+        <div class="space-x-1 flex items-center">
           <TopbarNotificationButton />
           <TopbarFullscreenButton />
           <TopbarAppGrid />
