@@ -388,7 +388,7 @@ export const useEditorStore = defineStore('editor', () => {
           return false
         } else {
           if (await insertProgram(newProgram)) {
-            originalProgram.value = newProgram
+            originalProgram.value = klona(program.value)
             notifySuccess(t('saveProgram.success'))
           } else {
             notifyError(t('saveProgram.fail'))
@@ -769,8 +769,10 @@ export const useEditorStore = defineStore('editor', () => {
         },
       })
 
-      if (redirect)
-        navigateTo(`/machine/${newProgram.machineId}/program/${newProgram.programNo}`)
+      if (redirect) {
+        const targetUrl = `/machine/${newProgram.machineId}/program/${newProgram.programNo}`
+        navigateTo(targetUrl)
+      }
 
       return true
     } catch (error: any) {
