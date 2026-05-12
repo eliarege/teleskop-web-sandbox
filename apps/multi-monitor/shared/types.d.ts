@@ -2,6 +2,7 @@ export interface MachineDataRaw {
   id: number
   name: string
   groupName: string
+  tbbModel: string
   elapsedTime: number | null
   theoreticalDuration: number | null
   autoManualStatus: number

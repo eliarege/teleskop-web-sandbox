@@ -26,6 +26,7 @@ useHead({
       :machine-id="currentMachine.id"
       :machine-name="currentMachine.name"
       :websockify-url="config.public.websockifyUrl"
+      :tbb-model="currentMachine.tbbModel"
     />
   </div>
 </template>

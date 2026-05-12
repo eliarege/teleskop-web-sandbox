@@ -104,7 +104,7 @@ export default defineNuxtConfig({
           image: ['xlink:href', 'href'],
           use: ['xlink:href', 'href'],
           // Custom components
-          MachineVncButton: ['img'],
+          MachinePanelButton: ['img'],
           LoadingScreen: ['image'],
         },
       },
