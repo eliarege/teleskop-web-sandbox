@@ -321,17 +321,25 @@ export interface TonelloEventListResponse {
   result: TonelloResponseResult
   eventsList: {
     from: number
-    events: TonelloEvent[]
+    events: TonelloEventDTO[]
   }
 }
 
 // #endregion
 // #region Events
 
+export interface TonelloEventDTO {
+  id: number
+  eventValue: TonelloEventCode
+  datetime: string
+  [key: string]: unknown
+}
+
 export interface TonelloBaseEvent {
   id: number
   eventValue: TonelloEventCode
   datetime: Date
+  rawDatetime: string
 }
 
 export interface TonelloBatchEndEvent extends TonelloBaseEvent {

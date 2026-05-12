@@ -57,10 +57,19 @@ export class TonelloApi {
     const response = await this.fetch<TonelloEventListResponse>(
       `/api/v1/getEvents?date=${date}&from=${from}`,
     )
-    for (const event of response.eventsList.events) {
-      event.datetime = new Date(event.datetime)
+    const eventsDTO = response.eventsList.events
+    const events = eventsDTO.map((eventDTO) => {
+      const { datetime, ...rest } = eventDTO
+      return {
+        ...rest,
+        datetime: new Date(datetime),
+        rawDatetime: datetime,
+      } as TonelloEvent
+    })
+    return {
+      from: response.eventsList.from,
+      events,
     }
-    return response.eventsList
   }
 
   async fetchLastEvent(): Promise<TonelloEvent> {
@@ -122,7 +131,11 @@ export class TonelloApi {
     await this.fetch('/api/v1/putChemicalRequestStatus', {
       method: 'POST',
       body: {
-        requestStatus: response,
+        requestStatus: {
+          ...response,
+          datetime: response.rawDatetime,
+          rawDatetime: undefined,
+        },
       },
     })
   }
