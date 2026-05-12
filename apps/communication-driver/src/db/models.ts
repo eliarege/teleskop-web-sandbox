@@ -1049,7 +1049,7 @@ export interface ChemicalRequestStringParsed {
   programNo: number
   requestOrderInBatch: number
   requestOrderInProgram: number
-  totalNumberOfRequest: number
+  totalRequestsInProgram: number
   materialType: MaterialType
   programIndex: number
 }
@@ -1068,7 +1068,7 @@ export interface ChemicalRequestStringResponseParsed {
   programNo: number
   requestOrderInBatch: number
   requestOrderInProgram: number
-  totalNumberOfRequest: number
+  totalRequestsInProgram: number
   materialType: MaterialType
   programIndex: number
 }
@@ -1091,7 +1091,7 @@ export const CHEMICAL_REQUEST_COLUMNS = {
   targetRecipe: 'TargetRECIPE',
   tankNo: 'TankNo',
   priority: 'PRIORITY',
-  totalNumberOfRequest: 'TotalNumberOfRequest',
+  totalRequestsInProgram: 'TotalNumberOfRequest',
   programNo: 'ProgramNo',
   commandNo: 'COMMANDNO',
   status: 'STATUS',
@@ -1109,7 +1109,7 @@ export interface ChemicalRequest {
   targetRecipe: number
   tankNo: number
   priority: number
-  totalNumberOfRequest: number
+  totalRequestsInProgram: number
   programNo: number
   commandNo: number
   status: RequestStatus | null
@@ -1126,7 +1126,7 @@ export interface ChemicalRequestInsert {
   targetRecipe: number
   tankNo: number
   priority: number
-  totalNumberOfRequest: number
+  totalRequestsInProgram: number
   programNo: number
   commandNo: number
   status?: RequestStatus

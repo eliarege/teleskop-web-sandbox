@@ -263,7 +263,7 @@ const chemicalRequest: ChemicalRequestInsert = {
   targetRecipe: mapTonelloChemicalRequestType(event.requestType),
   tankNo: event.tankNr,
   priority: event.priority,
-  totalNumberOfRequest: event.batchTotRequestCount,
+  totalRequestsInProgram: event.programTotRequestCount,
   programNo: event.runningProgram,
   commandNo: event.runningCommand,
   status: RequestStatus.New
@@ -283,7 +283,7 @@ const chemicalRequestString: ChemicalRequestStringInsert = {
   programNo: event.runningProgram,
   requestOrderInBatch: event.requestOrder,
   requestOrderInProgram: event.requestOrder,
-  totalNumberOfRequest: event.batchTotRequestCount,
+  totalRequestsInProgram: event.programTotRequestCount,
   materialType: mapTonelloChemicalRequestType(event.requestType),
   programIndex: event.runningProgramIndex
 }
