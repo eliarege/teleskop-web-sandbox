@@ -84,6 +84,7 @@ export class DmResponsePoller {
 
       // Send responses in ID order, delete each after sending
       for (const row of group) {
+        this.logger.debug({ response: row.request }, `Received chemical request response for batch ${batchKey}`)
         await session.handleChemicalRequestResponses([
           { id: row.id, batchKey: row.batchKey!, parsed: row.parsed },
         ])

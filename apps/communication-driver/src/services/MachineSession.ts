@@ -922,6 +922,7 @@ export class MachineSession {
         programIndex: event.runningProgramIndex,
       },
       trx,
+      this.logger
     )
 
     const requestKey = this.buildChemicalRequestLookupKeyFromEvent(extendedEvent)

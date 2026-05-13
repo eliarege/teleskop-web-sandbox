@@ -9,6 +9,7 @@ import {
   type ChemicalRequestStringParsed,
   type ChemicalRequestStringResponseParsed,
 } from '../models'
+import { Logger } from 'pino'
 
 function buildRequestString(data: ChemicalRequestStringParsed): string {
   return [
@@ -48,7 +49,7 @@ function parseResponseString(raw: string): ChemicalRequestStringResponseParsed {
 }
 
 export interface ChemicalRequestStringRepository {
-  insert(data: ChemicalRequestStringInsert, trx?: Knex.Transaction): Promise<void>
+  insert(data: ChemicalRequestStringInsert, trx?: Knex.Transaction, logger?: Logger): Promise<void>
   findByBatchKey(batchKey: number, trx?: Knex.Transaction): Promise<ChemicalRequestString[]>
   findRequests(batchKey: number, trx?: Knex.Transaction): Promise<ChemicalRequestString[]>
   findResponses(batchKey: number, trx?: Knex.Transaction): Promise<ChemicalRequestString[]>
@@ -87,9 +88,11 @@ export class KnexChemicalRequestStringRepository implements ChemicalRequestStrin
     return { ...row, requestTime: adjustFromDbDate(row.requestTime, this.tzOffset) }
   }
 
-  async insert(data: ChemicalRequestStringInsert, trx?: Knex.Transaction): Promise<void> {
+  async insert(data: ChemicalRequestStringInsert, trx?: Knex.Transaction, logger?: Logger): Promise<void> {
+    const request = buildRequestString(data)
+    logger?.debug({ request }, 'Inserting chemical request string')
     await this.qb(trx).insert({
-      REQUEST: buildRequestString(data),
+      REQUEST: request,
       BATCHKEY: data.batchKey,
       REQUESTTIME: adjustToDbDate(data.requestTime, this.tzOffset),
       ISREQUEST: data.isRequest ? 1 : 0,
