@@ -59,6 +59,7 @@ import {
   mapTonelloAutoModeToAutoManualStatus,
   mapTonelloChemicalRequestType,
   mapTonelloIoType,
+  subMilliseconds,
 } from '../utils'
 import type { PlanningBoardService } from './PlanningBoardService'
 
@@ -777,11 +778,12 @@ export class MachineSession {
           parallelStepNo: this.activeStep.parallelStepNo,
           commandNo: this.activeStep.commandNo,
         },
-        event.datetime,
+        subMilliseconds(event.datetime, 1),
         trx,
       )
       this.activeStep = null
     }
+
 
     const step: BatchStepInsert = {
       batchKey: this.activeBatch.batchKey,
@@ -835,7 +837,6 @@ export class MachineSession {
       )
     }
 
-    const endTime = event.datetime
     await this.deps.batchStepRepository.setEndTime(
       {
         batchKey: this.activeStep.batchKey,
@@ -844,7 +845,7 @@ export class MachineSession {
         parallelStepNo: this.activeStep.parallelStepNo,
         commandNo: this.activeStep.commandNo,
       },
-      endTime,
+      event.datetime,
       trx,
     )
     this.activeStep = null

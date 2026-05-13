@@ -87,6 +87,10 @@ export function subMinutes(date: Date, minutes: number): Date {
   return new Date(date.getTime() - minutes * 60_000)
 }
 
+export function subMilliseconds(date: Date, milliseconds: number): Date {
+  return new Date(date.getTime() - milliseconds)
+}
+
 /** Adjusts a Date **from** the database by the given timezone offset. Returns `null` for null/undefined values. */
 export function adjustFromDbDate(date: Date, tzOffset: number): Date
 export function adjustFromDbDate(date: Date | null | undefined, tzOffset: number): Date | null
