@@ -24,7 +24,7 @@ function buildRequestString(data: ChemicalRequestStringParsed): string {
     data.totalRequests,
     data.materialType,
     data.programIndex,
-  ].join(',')
+  ].join(',') + ',' // trailing comma to mirror DM's format (legacy reasons)
 }
 
 /**
