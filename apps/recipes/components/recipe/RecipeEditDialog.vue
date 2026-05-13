@@ -664,7 +664,7 @@ async function onDelete() {
                     >
                       <div class="flex flex-col gap-2">
                         <!-- Manual step row -->
-                        <div class="flex items-start">
+                        <div v-show="false" class="flex items-start">
                           <span class="manual-label">{{ t('Man') }}</span>
                           <div class="flex gap-4 flex-nowrap">
                             <div class="table-content">
@@ -966,6 +966,7 @@ async function onDelete() {
                     <!-- End Manual Step for CHEM -->
                     <div
                       v-if="program.chemSteps?.length > 0"
+                      v-show="false"
                       class="table-wrapper"
                       my-2
                     >
@@ -1125,7 +1126,7 @@ async function onDelete() {
                       >
                         <div class="flex flex-col gap-2">
                           <!-- Manual step row -->
-                          <div class="flex items-start">
+                          <div v-show="false" class="flex items-start">
                             <span class="manual-label">{{ t('Man') }}</span>
                             <div class="flex gap-4 flex-nowrap">
                               <div class="table-content">
@@ -1435,6 +1436,7 @@ async function onDelete() {
                     <!-- End Manual Step for DYE -->
                     <div
                       v-if="program.dyeRequests > 0"
+                      v-show="false"
                       class="table-wrapper"
                       my-2
                     >
@@ -1594,7 +1596,7 @@ async function onDelete() {
                       >
                         <div class="flex flex-col gap-2">
                           <!-- Manual step row -->
-                          <div class="flex items-start">
+                          <div v-show="false" class="flex items-start">
                             <span class="manual-label">{{ t('Man') }}</span>
                             <div class="flex gap-4 flex-nowrap">
                               <div class="table-content">
@@ -1904,6 +1906,7 @@ async function onDelete() {
                     <!-- End Manual Step for SALT -->
                     <div
                       v-if="program.saltRequests > 0"
+                      v-show="false"
                       class="table-wrapper"
                       my-2
                     >

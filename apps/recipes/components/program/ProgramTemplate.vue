@@ -590,7 +590,7 @@ function onMaterialAdded(material: any) {
                     >
                       <div class="flex flex-col gap-2">
                         <!-- Manual step row -->
-                        <div class="flex items-start">
+                        <div v-show="false" class="flex items-start">
                           <span class="manual-label">{{ t('Man') }}</span>
                           <div class="flex gap-4 flex-nowrap">
                             <div class="table-content">
@@ -872,6 +872,7 @@ function onMaterialAdded(material: any) {
                     <!-- End Manual Step for CHEM -->
                     <div
                       v-if="editedProgram.chemSteps?.length > 0"
+                      v-show="false"
                       class="table-wrapper"
                       my-2
                     >
@@ -1042,7 +1043,7 @@ function onMaterialAdded(material: any) {
                     >
                       <div class="flex flex-col gap-2">
                         <!-- Manual step row -->
-                        <div class="flex items-start">
+                        <div v-show="false" class="flex items-start">
                           <span class="manual-label">{{ t('Man') }}</span>
                           <div class="flex gap-4 flex-nowrap">
                             <div class="table-content">
@@ -1318,7 +1319,7 @@ function onMaterialAdded(material: any) {
                     </div>
 
                     <!-- End Manual Step for DYE -->
-                    <div class="table-wrapper" my-2>
+                    <div v-show="false" class="table-wrapper" my-2>
                       <div class="flex flex-col gap-2">
                         <div class="flex items-start">
                           <span class="manual-label">{{ t('Man') }}</span>
@@ -1486,7 +1487,7 @@ function onMaterialAdded(material: any) {
                     >
                       <div class="flex flex-col gap-2">
                         <!-- Manual step row -->
-                        <div class="flex items-start">
+                        <div v-show="false" class="flex items-start">
                           <span class="manual-label">{{ t('Man') }}</span>
                           <div class="flex gap-4 flex-nowrap">
                             <div class="table-content">
@@ -1762,7 +1763,7 @@ function onMaterialAdded(material: any) {
                     </div>
 
                     <!-- End Manual Step for SALT -->
-                    <div class="table-wrapper" my-2>
+                    <div v-show="false" class="table-wrapper" my-2>
                       <div class="flex flex-col gap-2">
                         <div class="flex items-start">
                           <span class="manual-label">{{ t('Man') }}</span>
