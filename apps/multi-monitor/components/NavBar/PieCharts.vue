@@ -17,8 +17,11 @@ const pieOptions = {
   height: 50,
 }
 
-const passiveMachines = computed(
-  () => props.machineData.filter(item => item.runningBatchStatus === BatchStatus.IDLE).length,
+const passiveMachines = computed(() =>
+  props.machineData.filter(item =>
+    item.runningBatchStatus === BatchStatus.IDLE
+    || item.runningBatchStatus === null
+  ).length,
 )
 
 const activeMachines = computed(
