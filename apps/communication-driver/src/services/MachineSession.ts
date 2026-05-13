@@ -787,7 +787,8 @@ export class MachineSession {
       batchKey: this.activeBatch.batchKey,
       programNo: event.programNum,
       programIndex: event.programIndex,
-      stepNo: event.stepNumAct,
+      // Tonello steps are 1-based, we want 0-based
+      stepNo: event.stepNumAct - 1,
       parallelStepNo: 0,
       commandNo: event.commandNum,
       startTime: event.datetime,
