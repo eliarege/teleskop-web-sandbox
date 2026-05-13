@@ -25,7 +25,6 @@ import {
   addMinutes,
   differenceInMilliseconds,
   differenceInMinutes,
-  format,
 } from 'date-fns'
 import { throttle } from 'quasar'
 import type { QBtnProps } from 'quasar'
@@ -391,14 +390,14 @@ function updateXAxis() {
   xAxis?.call(
     axisBottom(xScale.value)
       .tickFormat(value =>
-        format(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
+        formatDuration(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
       )
       .ticks(xAxisTickCount.value),
   )
   xAxisReels?.call(
     axisBottom(xScale.value)
       .tickFormat(value =>
-        format(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
+        formatDuration(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
       )
       .ticks(xAxisTickCount.value),
   )
@@ -1219,7 +1218,7 @@ async function handleMenuAction(action: 'stepDetails') {
               x="8"
               y="20"
             >
-              {{ format(tooltipContent.time, "HH:mm:ss dd/MM/yyyy") }}
+              {{ formatDuration(tooltipContent.time, "HH:mm:ss dd/MM/yyyy") }}
             </text>
             <text
               v-if="settingsStore.tooltipSettings.includes(5)"

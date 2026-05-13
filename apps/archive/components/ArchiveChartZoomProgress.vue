@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type D3BrushEvent, type ScaleLinear, type ScaleTime, type Selection, axisBottom, axisLeft, line as d3Line, max as d3Max, select as d3Select, zoom as d3Zoom, interpolateRgb, scaleLinear, scaleTime,
 } from 'd3'
-import { addMinutes, differenceInMinutes, format } from 'date-fns'
+import { addMinutes, differenceInMinutes } from 'date-fns'
 import type { Batch } from '~/types/archive'
 
 const props = defineProps<{
@@ -74,7 +74,7 @@ function updateXAxis() {
   xAxis?.call(
     axisBottom(xScale.value)
       .tickFormat(value =>
-        format(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
+        formatDuration(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
       )
       .ticks(xAxisTickCount.value),
   )

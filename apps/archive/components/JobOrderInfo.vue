@@ -46,14 +46,14 @@ const infoRows = computed(() => {
     { label: t('jobOrderTable.model'), value: job?.machineModel },
     { label: t('jobOrderTable.operator'), value: job?.operatorName },
     { label: t('jobOrderTable.jobOrder'), value: job?.jobOrder },
-    { label: t('jobOrderTable.startTime'), value: formatDuration(job?.startTime) },
+    { label: t('jobOrderTable.startTime'), value: formatDuration(job?.startTime, 'HH:mm:ss dd/MM/yyyy') },
     {
       label: job?.isCancelled ? t('jobOrderTable.cancelTime') : t('jobOrderTable.endTime'),
-      value: formatDuration(job?.endTime),
+      value: formatDuration(job?.endTime, 'HH:mm:ss dd/MM/yyyy'),
     },
     {
       label: t('jobOrderTable.theoreticalEndTime'),
-      value: formatDuration(theoreticalEndTime.value),
+      value: formatDuration(theoreticalEndTime.value, 'HH:mm:ss dd/MM/yyyy'),
       badge: timeStatus.value?.deviation !== null && timeStatus.value?.deviation !== undefined
         ? { color: timeStatus.value.color, label: formatDuration(timeStatus.value.deviation) }
         : null,

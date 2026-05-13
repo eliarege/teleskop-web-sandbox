@@ -4,24 +4,30 @@ import { format } from 'date-fns'
 import type { AnalogInputOutputType, CalculatedValue, Counter, DigitalInputOutputType, Program } from '~/types/archive'
 import type { DuoRaw } from '~/types/utils'
 
-export function formatDuration(sec: string | number | Date | null | undefined): string {
+export function formatDuration(sec: string | number | Date | null | undefined, dateFormat: string = 'HH:mm:ss'): string {
   if (sec === null || sec === undefined || sec === '')
     return '-'
 
   if (sec instanceof Date || (typeof sec === 'string' && Number.isNaN(Number(sec)))) {
-    return formatDatetime(sec, 'HH:mm:ss')
+    return formatDatetime(sec, dateFormat)
   }
 
   const numSec = Number(sec)
   const totalSeconds = Math.abs(Math.floor(numSec))
 
-  const hours = Math.floor(totalSeconds / 3600)
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600) // Kalan saati bul
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
 
   const sign = numSec < 0 ? '-' : ''
+  const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 
-  return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  if (days > 0) {
+    return `${sign}${days}g ${timeString}`
+  }
+
+  return `${sign}${timeString}`
 }
 
 export function getApproxIoValueAtTime(

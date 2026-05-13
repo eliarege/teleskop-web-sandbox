@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { format } from 'date-fns'
 import type { BasicProgram, BatchInfo } from '~/types/archive'
 
 defineProps<{
@@ -25,8 +24,8 @@ const { t } = useI18n()
         {{ program.programName }}
       </div>
       <div>
-        {{ `${t('startTime')}: ${format(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
-        {{ `${t('endTime')}: ${format(jobOrderInfo.endTime!, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
+        {{ `${t('startTime')}: ${formatDuration(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
+        {{ `${t('endTime')}: ${formatDuration(jobOrderInfo.endTime!, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
       </div>
     </div>
     <hr>

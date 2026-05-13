@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { format } from 'date-fns'
 import type { QTableColumn } from 'quasar'
 import StepDetailsDialog from './StepDetailsDialog.vue'
 import type { BatchCommand, MachineCommand, Program } from '~/types/archive'
@@ -50,8 +49,8 @@ const cols = computed(() => [
   { name: 'commandName', label: t('command'), field: 'commandName', align: 'left', format(val, row) {
     return `(${row.commandNo}) ${val}`
   } },
-  { name: 'startTime', label: t('startT'), field: 'startTime', align: 'left', format: v => v ? format(v, 'HH:mm:ss') : '' },
-  { name: 'endTime', label: t('endT'), field: 'endTime', align: 'left', format: v => v ? format(v, 'HH:mm:ss') : '' },
+  { name: 'startTime', label: t('startT'), field: 'startTime', align: 'left', format: v => v ? formatDuration(v) : '' },
+  { name: 'endTime', label: t('endT'), field: 'endTime', align: 'left', format: v => v ? formatDuration(v) : '' },
 ] as QTableColumn[])
 function handleRowClick(row: any) {
   emit('updateSelectedTime', row.startTime)
