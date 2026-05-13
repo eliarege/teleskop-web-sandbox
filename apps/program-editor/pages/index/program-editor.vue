@@ -591,7 +591,7 @@ onBeforeMount(async () => {
     <div v-if="editor.isLoading" class="loading-container bg-gray-3 bg-opacity-10 dark:bg-dark-2 dark:bg-opacity-10">
       <LoadingSpinner />
     </div>
-    <QForm ref="form">
+    <QForm v-if="!editor.isLoading" ref="form">
       <ProgramEditor />
     </QForm>
 
