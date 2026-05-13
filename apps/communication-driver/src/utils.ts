@@ -63,18 +63,18 @@ export function mapRequestStatusToTonello(status: RequestStatus): TonelloChemica
   }
 }
 
-/** Serialises a number array to a comma-separated string for DB storage. Returns `null` for null/empty lists. */
-export function joinNumberList(list: number[] | null | undefined): string | null {
+/** Serialises a number array to a string for DB storage using the given separator. Returns `null` for null/empty lists. */
+export function joinNumberList(list: number[] | null | undefined, separator = ','): string | null {
   if (!list || list.length === 0)
     return null
-  return list.join(',')
+  return list.join(separator)
 }
 
-/** Parses a comma-separated DB string to a number array. Returns an empty array for null/empty values. */
-export function splitNumberList(value: unknown): number[] {
+/** Parses a DB string to a number array using the given separator. Returns an empty array for null/empty values. */
+export function splitNumberList(value: unknown, separator = ','): number[] {
   if (typeof value !== 'string' || !value)
     return []
-  return value.split(',').filter(Boolean).map(Number)
+  return value.split(separator).filter(Boolean).map(Number)
 }
 
 /** Returns a new Date shifted forward by the given number of minutes. */

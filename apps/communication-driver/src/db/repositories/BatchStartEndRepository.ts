@@ -38,7 +38,7 @@ export class KnexBatchStartEndRepository implements BatchStartEndRepository {
       MACHINEID: data.machineId,
       STATE: data.state,
       DATE: adjustToDbDate(data.date, this.tzOffset),
-      PROGRAMNOLIST: data.programNoList.join(','),
+      PROGRAMNOLIST: data.programNoList.join('-'),
       TOTALREQUESTCOUNT: data.totalRequestCount,
     } satisfies TableRecord<typeof BATCH_START_END_COLUMNS>)
   }
@@ -50,7 +50,7 @@ export class KnexBatchStartEndRepository implements BatchStartEndRepository {
       .orderBy('AUTOID', 'asc')
     return rows.map(row => ({
       ...row,
-      programNoList: splitNumberList(row.programNoList),
+      programNoList: splitNumberList(row.programNoList, '-'),
       date: adjustFromDbDate(row.date, this.tzOffset),
     }))
   }
