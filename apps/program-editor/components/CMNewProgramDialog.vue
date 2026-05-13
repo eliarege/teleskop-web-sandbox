@@ -88,7 +88,6 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
             />
 
             <QSelect
-              v-if="!isTonello"
               v-model="processType"
               :options="allProcessTypes"
               :label="t('program.processType')"

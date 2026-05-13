@@ -363,7 +363,6 @@ const columns = computed<ProgramTableColumn[]>(() =>
       field: (row: ProgramTableRow) => getProcessTypeName(row.typeId),
       sortable: true,
       align: 'left',
-      hidden: machine.isTonello,
     },
     {
       name: 'additionalType',
@@ -574,7 +573,6 @@ const contextMenuOptions = computed(() => [
         (row: ProgramTableRow) =>
           row.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER,
       ),
-      hidden: machine.isTonello,
       onClick: () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(

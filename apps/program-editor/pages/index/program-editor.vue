@@ -408,6 +408,7 @@ const contextMenuOptions = computed(() => [
       shortcut: 'Insert',
       icon: 'vertical_align_center',
       disabled: !editor.selectedSteps.length,
+      hidden: machine.isTonello,
       onClick: () => {
         editor.newParallelStep()
       },
@@ -437,6 +438,7 @@ const contextMenuOptions = computed(() => [
       label: t('contextMenu.makeMainStep'),
       // icon: 'subdirectory_arrow_right',
       disabled: !editor.selectedParallelStep,
+      hidden: machine.isTonello,
       subMenu: {
         items: [
           [
@@ -506,6 +508,7 @@ const contextMenuOptions = computed(() => [
       shortcut: '',
       icon: 'open_with',
       disabled: !selectedCommandNo.value,
+      hidden: machine.isTonello,
       onClick: () => {
         if (selectedCommandNo.value)
           $commandManager.executeCommand('applyParallelCommand', { $q }, 'add', selectedCommandNo.value, editor.program.steps.indexOf(editor.selectedSteps[0]))
@@ -516,6 +519,7 @@ const contextMenuOptions = computed(() => [
       shortcut: '',
       icon: 'delete',
       disabled: !selectedCommandNo.value,
+      hidden: machine.isTonello,
       onClick: () => {
         if (selectedCommandNo.value)
           $commandManager.executeCommand('applyParallelCommand', { $q }, 'remove', selectedCommandNo.value, editor.program.steps.indexOf(editor.selectedSteps[0]))
