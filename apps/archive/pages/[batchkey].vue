@@ -438,11 +438,13 @@ const components: Record<string, () => any> = {
     h(ActualPrograms, {
       programs: actualPrograms.value as BasicProgram[],
       selectedTime: selectedDate.value,
+      onProgramClicked: (time: string) => updateSelectedTime(time),
     }),
   TheoreticalPrograms: () =>
     h(TheoreticalPrograms, {
       programs: theoreticalPrograms.value,
       selectedTime: selectedDate.value,
+      onProgramClicked: (time: string) => updateSelectedTime(time),
     }),
   TheoreticalSteps: () =>
     h(TheoreticalSteps, {

@@ -6,8 +6,12 @@ const props = defineProps<{
   selectedTime: Date
 }>()
 
+const emit = defineEmits<{
+  programClicked: [time: string]
+}>()
+
 function isSelectedTimeInProgram(prg: TheoreticalProgram): boolean {
-  return props.selectedTime > prg.startTime
+  return props.selectedTime >= prg.startTime
     && props.selectedTime < prg.endTime
 }
 </script>
@@ -21,9 +25,11 @@ function isSelectedTimeInProgram(prg: TheoreticalProgram): boolean {
     <q-item
       v-for="prg in props.programs"
       :key="prg.programNo"
+      clickable
       :class="isSelectedTimeInProgram(prg)
         ? 'bg-blue-2'
         : ''"
+      @click="emit('programClicked', prg.startTime.toISOString())"
     >
       <q-item-section>
         <span class="text-sm">
