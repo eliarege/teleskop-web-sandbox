@@ -21,7 +21,7 @@ export class PlanningBoardService {
       await $fetch('/planning_board/unplan', {
         baseURL: this.baseUrl,
         method: 'PUT',
-        body: { planKey },
+        query: { planKey },
       })
     } catch (err) {
       this.logger.warn({ err, planKey }, 'Failed to unplan batch from planning board')
