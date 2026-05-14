@@ -112,6 +112,8 @@ export class KnexBatchStepRepository implements BatchStepRepository {
         PARALLELSTEPNO: key.parallelStepNo,
         COMMANDNO: key.commandNo,
       })
+      // There maybe multiple rows matching the key
+      .whereNull('ENDTIME')
       .update({
         ENDTIME: adjustToDbDate(endTime, this.tzOffset),
       } satisfies TableRecord<typeof BATCH_STEP_COLUMNS>)
