@@ -33,6 +33,8 @@ async function main() {
 
   const logger = pino({
     level: config.logLevel,
+    // Don't include PID and hostname in logs, as they are not relevant in a containerized environment and just add noise
+    base: null,
   })
 
   const teleskop = createTeleskopDatabase(config)
