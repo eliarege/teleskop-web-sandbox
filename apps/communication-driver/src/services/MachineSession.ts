@@ -186,7 +186,7 @@ export class MachineSession {
   ): string {
     return [
       parsed.priority,
-      parsed.machineNo,
+      parsed.machineId,
       parsed.tankNo,
       parsed.jobOrder,
       parsed.programNo,
@@ -747,8 +747,11 @@ export class MachineSession {
       return
     }
 
+    // Tonello steps are 1-based, we want 0-based
+    const stepNo = event.stepNumAct - 1
+
     if (this.activeStep !== null) {
-      if (this.activeStep.stepNo === event.stepNumAct) {
+      if (this.activeStep.stepNo === stepNo) {
         this.logger.warn(
           {
             runningCommandNo: this.activeStep.commandNo,
@@ -764,7 +767,7 @@ export class MachineSession {
         {
           prevStepNo: this.activeStep.stepNo,
           prevCommandNo: this.activeStep.commandNo,
-          newStepNo: event.stepNumAct,
+          newStepNo: stepNo,
           newCommandNo: event.commandNum,
         },
         'CommandStartEvent received without prior CommandFinish - auto-closing previous step',
@@ -788,8 +791,7 @@ export class MachineSession {
       batchKey: this.activeBatch.batchKey,
       programNo: event.programNum,
       programIndex: event.programIndex,
-      // Tonello steps are 1-based, we want 0-based
-      stepNo: event.stepNumAct - 1,
+      stepNo,
       parallelStepNo: 0,
       commandNo: event.commandNum,
       startTime: event.datetime,
@@ -803,7 +805,7 @@ export class MachineSession {
     const command = await this.deps.commandRepository.findByMachineAndCommandNo(this.machineId, event.commandNum)
     this.status.runningCommandNo = event.commandNum
     this.status.runningCommandName = command?.name ?? ''
-    this.status.runningStepNo = event.stepNumAct
+    this.status.runningStepNo = stepNo
 
     if (isProgramChanged) {
       const program = await this.deps.programHeaderRepository.findByMachineAndProgramNo(this.machineId, event.programNum)
@@ -911,7 +913,7 @@ export class MachineSession {
         isRequest: true,
         requestType: RequestType.RequestWithRecipeStep,
         priority: event.priority,
-        machineNo: this.machineId,
+        machineId: this.machineId,
         tankNo: event.tankNr,
         jobOrder: event.batchCode,
         programNo: event.runningProgram,

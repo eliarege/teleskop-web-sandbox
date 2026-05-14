@@ -333,7 +333,7 @@ export function makeChemicalResponse(opts: {
   return {
     status: opts.status ?? RequestStatus.Completed,
     priority: opts.priority ?? 50,
-    machineNo: machineId,
+    machineId: machineId,
     tankNo: 7,
     jobOrder: opts.jobOrder ?? 'ALPHA',
     programNo: 100,

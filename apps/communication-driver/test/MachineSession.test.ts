@@ -326,7 +326,7 @@ describe('commandStartEvent / CommandFinishEvent', () => {
     expect(stepArg.commandNo).toBe(3)
     expect(stepArg.programNo).toBe(101)
     expect(stepArg.programIndex).toBe(2)
-    expect(stepArg.stepNo).toBe(10)
+    expect(stepArg.stepNo).toBe(9)
     expect(stepArg.parallelStepNo).toBe(0)
   })
 
@@ -347,7 +347,7 @@ describe('commandStartEvent / CommandFinishEvent', () => {
     ).mock.calls[0][0]
     expect(batchKey).toBe(1001)
     expect(programNo).toBe(101)
-    expect(stepNo).toBe(10)
+    expect(stepNo).toBe(9)
     expect(parallelStepNo).toBe(0)
     expect(commandNo).toBe(3)
   })

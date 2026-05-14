@@ -1042,7 +1042,7 @@ export interface ChemicalRequestString {
 
 export interface ChemicalRequestStringParsedBase {
   priority: number
-  machineNo: number
+  machineId: number
   tankNo: number
   jobOrder: string
   programNo: number

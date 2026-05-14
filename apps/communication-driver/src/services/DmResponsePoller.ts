@@ -11,7 +11,7 @@ export class DmResponsePoller {
   private readonly machineManager: MachineManager
 
   constructor({ logger, chemicalRequestStringRepository, machineManager }: AppCradle) {
-    this.logger = logger
+    this.logger = logger.child({ service: 'DmResponsePoller' })
     this.chemicalRequestStringRepository = chemicalRequestStringRepository
     this.machineManager = machineManager
   }
@@ -43,57 +43,38 @@ export class DmResponsePoller {
     try {
       pendingResponses = await this.chemicalRequestStringRepository.findAllPendingResponses()
     } catch (err) {
-      this.logger.error({ err }, 'DmResponsePoller: failed to fetch pending responses')
+      this.logger.error({ err }, 'Failed to fetch pending responses')
       return
     }
 
     if (pendingResponses.length === 0)
       return
 
-    // Group by batchKey (responses are already ordered by ID ascending)
-    const byBatchKey = new Map<number, typeof pendingResponses>()
-    for (const row of pendingResponses) {
-      if (row.batchKey === null)
-        continue
-      const group = byBatchKey.get(row.batchKey) ?? []
-      group.push(row)
-      byBatchKey.set(row.batchKey, group)
-    }
-
     const sessions = this.machineManager.getSessions()
 
-    for (const [batchKey, group] of byBatchKey) {
-      // Find the session responsible for this batchKey
-      const session = [...sessions.values()].find(s => s.runningBatchKey === batchKey)
-
+    for (const res of pendingResponses) {
+      const session = sessions.get(res.parsed.machineId)
       if (!session) {
         this.logger.warn(
-          { batchKey },
-          'DmResponsePoller: no session found for batchKey - skipping group',
+          { machineId: res.parsed.machineId },
+          'No active session found for machineId in response - skipping',
         )
-        // Still delete so we don't get stuck
-        for (const row of group) {
-          await this.chemicalRequestStringRepository
-            .deleteById(row.id)
-            .catch(err =>
-              this.logger.error({ err, id: row.id }, 'Failed to delete orphaned response row'),
-            )
-        }
+        await this.chemicalRequestStringRepository
+          .deleteById(res.id)
+          .catch(err =>
+            this.logger.error({ err, id: res.id }, 'Failed to delete orphaned response row with missing session'),
+          )
         continue
       }
-
-      // Send responses in ID order, delete each after sending
-      for (const row of group) {
-        this.logger.debug({ response: row.request }, `Received chemical request response for batch ${batchKey}`)
-        await session.handleChemicalRequestResponses([
-          { id: row.id, batchKey: row.batchKey!, parsed: row.parsed },
-        ])
-        await this.chemicalRequestStringRepository
-          .deleteById(row.id)
-          .catch(err =>
-            this.logger.error({ err, id: row.id }, 'Failed to delete response row after sending'),
-          )
-      }
+      this.logger.debug({ response: res.request }, `Received chemical request response for machine ${res.parsed.machineId}`)
+      await session.handleChemicalRequestResponses([
+        { id: res.id, batchKey: res.batchKey!, parsed: res.parsed },
+      ])
+      await this.chemicalRequestStringRepository
+        .deleteById(res.id)
+        .catch(err =>
+          this.logger.error({ err, id: res.id }, 'Failed to delete response row after sending'),
+        )
     }
   }
 }

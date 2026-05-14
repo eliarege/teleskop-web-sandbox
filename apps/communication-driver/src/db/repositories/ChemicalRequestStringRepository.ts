@@ -15,7 +15,7 @@ function buildRequestString(data: ChemicalRequestStringParsed): string {
   return [
     data.requestType,
     data.priority,
-    data.machineNo,
+    data.machineId,
     data.tankNo,
     data.jobOrder,
     data.programNo,
@@ -37,7 +37,7 @@ function parseResponseString(raw: string): ChemicalRequestStringResponseParsed {
   return {
     status: Number(parts[0]) as ChemicalRequestStringResponseParsed['status'],
     priority: Number(parts[1]),
-    machineNo: Number(parts[2]),
+    machineId: Number(parts[2]),
     tankNo: Number(parts[3]),
     jobOrder: parts[4],
     programNo: Number(parts[5]),
