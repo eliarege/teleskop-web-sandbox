@@ -25,7 +25,6 @@ import {
   addMinutes,
   differenceInMilliseconds,
   differenceInMinutes,
-  format,
 } from 'date-fns'
 import { throttle } from 'quasar'
 import type { QBtnProps } from 'quasar'
@@ -39,6 +38,7 @@ import type { Batch, DigitalInputOutputType, LineType, TheoreticalProgram } from
 import UpdateAxisDialog from '~/components/UpdateAxisDialog.vue'
 import { alarmTypes } from '~/shared/constants'
 import { printChartSVG } from '~/utils/pdf'
+import { formatTime } from '~/utils/functions'
 
 const props = defineProps<{
   batch: Batch
@@ -46,7 +46,7 @@ const props = defineProps<{
 }>()
 
 const $q = useQuasar()
-const { t } = useI18n()
+const { t, d } = useI18n()
 
 const selectedTime = defineModel<Date>({ required: true })
 defineExpose({ resetZoom })
@@ -391,14 +391,14 @@ function updateXAxis() {
   xAxis?.call(
     axisBottom(xScale.value)
       .tickFormat(value =>
-        format(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
+        formatTime(value.valueOf(), showSeconds),
       )
       .ticks(xAxisTickCount.value),
   )
   xAxisReels?.call(
     axisBottom(xScale.value)
       .tickFormat(value =>
-        format(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
+        formatTime(value.valueOf(), showSeconds),
       )
       .ticks(xAxisTickCount.value),
   )
@@ -824,7 +824,7 @@ onKeyStroke('ArrowLeft', throttle((event: KeyboardEvent) => {
   }
 }, throttleDelay))
 
-function formatDurationHHMMSS(startDate, endDate) {
+function formatDurationHHMMSS(startDate: Date, endDate: Date) {
   // Calculate the difference in milliseconds
   const ms = differenceInMilliseconds(endDate, startDate)
 
@@ -1219,7 +1219,7 @@ async function handleMenuAction(action: 'stepDetails') {
               x="8"
               y="20"
             >
-              {{ format(tooltipContent.time, "HH:mm:ss dd/MM/yyyy") }}
+              {{ d(tooltipContent.time, "datetime") }}
             </text>
             <text
               v-if="settingsStore.tooltipSettings.includes(5)"

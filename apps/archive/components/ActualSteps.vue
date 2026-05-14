@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { format } from 'date-fns'
 import type { QTableColumn } from 'quasar'
 import StepDetailsDialog from './StepDetailsDialog.vue'
 import type { BatchCommand, MachineCommand, Program } from '~/types/archive'
@@ -18,7 +17,7 @@ const emit = defineEmits<{
 }>()
 
 const $q = useQuasar()
-const { t } = useI18n()
+const { t, d } = useI18n()
 
 const filteredCommands = computed(() => {
   if (!Array.isArray(props.commands))
@@ -26,7 +25,7 @@ const filteredCommands = computed(() => {
 
   return props.commands.filter((program) => {
     const startTimeValue = new Date(program.startTime).getTime()
-    const endTimeValue = new Date(program.endTime).getTime()
+    const endTimeValue = program.endTime ? new Date(program.endTime).getTime() : Date.now()
     const selectedTimeValue = props.selectedTime.getTime()
 
     return selectedTimeValue >= startTimeValue && selectedTimeValue <= endTimeValue
@@ -46,12 +45,36 @@ const commandsWithNames = computed(() => {
 })
 
 const cols = computed(() => [
-  { name: 'stepNo', label: t('stepNoShort'), field: 'stepNo', align: 'left', format: val => val + 1 },
-  { name: 'commandName', label: t('command'), field: 'commandName', align: 'left', format(val, row) {
-    return `(${row.commandNo}) ${val}`
-  } },
-  { name: 'startTime', label: t('startT'), field: 'startTime', align: 'left', format: v => v ? format(v, 'HH:mm:ss') : '' },
-  { name: 'endTime', label: t('endT'), field: 'endTime', align: 'left', format: v => v ? format(v, 'HH:mm:ss') : '' },
+  {
+    name: 'stepNo',
+    label: t('stepNoShort'),
+    field: 'stepNo',
+    align: 'left',
+    format: val => val + 1
+  },
+  {
+    name: 'commandName',
+    label: t('command'),
+    field: 'commandName',
+    align: 'left',
+    format(val, row) {
+      return `(${row.commandNo}) ${val}`
+    }
+  },
+  {
+    name: 'startTime',
+    label: t('startT'),
+    field: 'startTime',
+    align: 'left',
+    format: v => v ? d(new Date(v), 'datetime') : ''
+  },
+  {
+    name: 'endTime',
+    label: t('endT'),
+    field: 'endTime',
+    align: 'left',
+    format: v => v ? d(new Date(v), 'datetime') : ''
+  },
 ] as QTableColumn[])
 function handleRowClick(row: any) {
   emit('updateSelectedTime', row.startTime)

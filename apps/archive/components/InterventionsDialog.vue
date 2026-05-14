@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { format } from 'date-fns'
 import { type QTableColumn, useDialogPluginComponent } from 'quasar'
 import type { BatchIntervention } from '~/types/archive'
 import { printJobOrderInterventionReport } from '~/utils/pdf'
@@ -16,7 +15,7 @@ defineEmits([
   ...useDialogPluginComponent.emits,
 ])
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const filter = ref('')
@@ -30,7 +29,7 @@ const columns: QTableColumn[] = [
     label: t('date'),
     field: 'time',
     sortable: true,
-    format: (val: Date) => format(val, 'dd/MM/yyyy HH:mm:ss'),
+    format: (val: Date) => d(val, 'datetime'),
   },
   {
     name: 'operator',

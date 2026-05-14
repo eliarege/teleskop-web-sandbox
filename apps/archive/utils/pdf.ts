@@ -1,10 +1,10 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { format } from 'date-fns'
 import RobotoBold from '@teleskop/nuxt-base/assets/fonts/Roboto-Bold.ttf?base64'
 import RobotoRegular from '@teleskop/nuxt-base/assets/fonts/Roboto-Regular.ttf?base64'
 import type { BasicProgram, BatchInfo, BatchIntervention, BatchParameters, ConsumptionKey, ConsumptionUnits, Consumptions, ERPParameter, Machine, RecipeStep } from '~/types/archive'
-import { formatDatetime, formatDuration } from '~/utils/functions'
+import { formatTime, formatDuration } from '~/utils/functions'
+import { addSeconds } from 'date-fns'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -230,11 +230,11 @@ export async function printChartSVG(options: {
   startTime: string
   endTime: string | null
 }) {
-  const { t } = useNuxtApp().$i18n
+  const { t, d } = useNuxtApp().$i18n
   const doc = createPdf('landscape')
 
-  const formattedStartTime = format(new Date(options.startTime), 'dd/MM/yyyy HH:mm:ss')
-  const formattedEndTime = options.endTime ? format(new Date(options.endTime), 'dd/MM/yyyy HH:mm:ss') : '-'
+  const formattedStartTime = d(new Date(options.startTime), 'datetime')
+  const formattedEndTime = options.endTime ? d(new Date(options.endTime), 'datetime') : '-'
   const programNosStr = options.programNos.join(', ')
 
   // Header info – three side-by-side tables
@@ -290,7 +290,7 @@ export async function printJoborderRecipe(
   jobOrderInfo: BatchInfo,
   programs: BasicProgram[],
 ) {
-  const { t } = useNuxtApp().$i18n
+  const { t, d } = useNuxtApp().$i18n
   const recipe = await $fetch<RecipeStep[]>(`/api/batch/${batchKey}/recipe`)
 
   const doc = createPdf('portrait')
@@ -332,8 +332,8 @@ export async function printJoborderRecipe(
     head: [[{ content: t('jobOrder'), colSpan: 2 }]],
     body: [
       [t('jobOrderNo'), jobOrderInfo.jobOrder],
-      [t('startTime'), format(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')],
-      [t('endTime'), jobOrderInfo.endTime ? format(jobOrderInfo.endTime, 'HH:mm:ss dd/MM/yyyy') : '-'],
+      [t('startTime'), d(jobOrderInfo.startTime, 'datetime')],
+      [t('endTime'), jobOrderInfo.endTime ? d(jobOrderInfo.endTime, 'datetime') : '-'],
     ],
   })
   const afterJobOrderRecipe = (doc as any).lastAutoTable.finalY
@@ -403,7 +403,7 @@ export async function printJobOrderSummary(
   jobOrderInfo: BatchInfo,
   programs: BasicProgram[],
 ) {
-  const { t } = useNuxtApp().$i18n
+  const { t, d } = useNuxtApp().$i18n
 
   const consumptions = await $fetch<Consumptions>(`/api/batch/${batchKey}/consumptions`)
   const consumptionUnits = await $fetch<ConsumptionUnits>(`/api/batch/${batchKey}/consumption-units`)
@@ -451,11 +451,11 @@ export async function printJobOrderSummary(
       [t('partyNumber'), jobOrderInfo.partyNumber ?? '-'],
       [t('jobOrderNo'), jobOrderInfo.jobOrder],
       [t('processGroup'), 'DYEING'],
-      [t('startTime'), format(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')],
-      [t('endTime'), jobOrderInfo.endTime ? format(jobOrderInfo.endTime, 'HH:mm:ss dd/MM/yyyy') : '-'],
+      [t('startTime'), d(jobOrderInfo.startTime, 'datetime')],
+      [t('endTime'), jobOrderInfo.endTime ? d(jobOrderInfo.endTime, 'datetime') : '-'],
       [t('theoreticalDuration'), formatDuration(jobOrderInfo.theoreticalDuration)],
-      [t('actualDuration'), formatDuration(jobOrderInfo.actualDuration!)],
-      [t('deviation'), formatDuration(jobOrderInfo.deviation!)],
+      [t('actualDuration'), formatDuration(jobOrderInfo.actualDuration)],
+      [t('deviation'), formatDuration(jobOrderInfo.deviation)],
     ],
   })
   const afterJobOrder = (doc as any).lastAutoTable.finalY
@@ -530,15 +530,16 @@ export async function printBatchSummary(
     [t('batchSummary.operator'), jobOrderInfo.operatorName],
   ]
 
+  const theoreticalEndTime = jobOrderInfo.startTime && jobOrderInfo.theoreticalDuration
+    ? addSeconds(new Date(jobOrderInfo.startTime), jobOrderInfo.theoreticalDuration)
+    : null
+
   const jobOrderData: Record<string, string> = {
     jobOrder: jobOrderInfo.jobOrder,
-    startTime: format(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy'),
-    endTime: jobOrderInfo.isCancelled ? '-' : jobOrderInfo.endTime ? format(jobOrderInfo.endTime, 'HH:mm:ss dd/MM/yyyy') : '-',
-    cancelTime: jobOrderInfo.isCancelled && jobOrderInfo.endTime ? format(jobOrderInfo.endTime, 'HH:mm:ss dd/MM/yyyy') : '-',
-    theoreticalEndTime: format(
-      new Date(new Date(jobOrderInfo.startTime).getTime() + jobOrderInfo.theoreticalDuration * 1000),
-      'HH:mm:ss dd/MM/yyyy',
-    ),
+    startTime: d(jobOrderInfo.startTime, 'datetime'),
+    endTime: jobOrderInfo.isCancelled ? '-' : jobOrderInfo.endTime ? d(jobOrderInfo.endTime, 'datetime') : '-',
+    cancelTime: jobOrderInfo.isCancelled && jobOrderInfo.endTime ? d(jobOrderInfo.endTime, 'datetime') : '-',
+    theoreticalEndTime: theoreticalEndTime ? d(theoreticalEndTime, 'datetime') : '-',
     actualDuration: jobOrderInfo.actualDuration ? formatDuration(jobOrderInfo.actualDuration) : '-',
     actualTheoreticalDuration: jobOrderInfo.actualTheoreticalDuration ? formatDuration(jobOrderInfo.actualTheoreticalDuration) : '-',
     theoreticalDuration: jobOrderInfo.theoreticalDuration ? formatDuration(jobOrderInfo.theoreticalDuration) : '-',
@@ -767,15 +768,15 @@ export function printJobOrderInterventionReport(options: {
   cancelTime: Date | null
   interventions: BatchIntervention[]
 }) {
-  const { t } = useNuxtApp().$i18n
+  const { t, d } = useNuxtApp().$i18n
   const doc = createPdf('portrait')
 
   const pageWidth = doc.internal.pageSize.getWidth()
 
   const jobOrderNo = options.jobOrderNo ?? '-'
-  const startTime = options.startTime ? format(options.startTime, 'dd/MM/yyyy HH:mm:ss') : '-'
-  const endTime = options.endTime ? format(options.endTime, 'dd/MM/yyyy HH:mm:ss') : '-'
-  const cancelTime = options.cancelTime ? format(options.cancelTime, 'dd/MM/yyyy HH:mm:ss') : '-'
+  const startTime = options.startTime ? d(options.startTime, 'datetime') : '-'
+  const endTime = options.endTime ? d(options.endTime, 'datetime') : '-'
+  const cancelTime = options.cancelTime ? d(options.cancelTime, 'datetime') : '-'
 
   // Header
   doc.setFontSize(14)
@@ -804,7 +805,7 @@ export function printJobOrderInterventionReport(options: {
 
   // Main Table
   const tableRows = (options.interventions ?? []).map((int) => {
-    const timeFormatted = format(new Date(int.time), 'dd/MM/yyyy HH:mm:ss')
+    const timeFormatted = d(new Date(int.time), 'datetime')
     const explanation = Array.isArray(int.explanation)
       ? int.explanation.join(' | ')
       : int.explanation ?? '-'
@@ -831,10 +832,10 @@ export function printJobOrderInterventionReport(options: {
 }
 
 function addFooter(doc: jsPDF) {
-  const { t } = useNuxtApp().$i18n
+  const { t, d } = useNuxtApp().$i18n
 
   const pageCount = doc.getNumberOfPages()
-  const printDate = formatDatetime()
+  const printDate = d(new Date(), 'datetime')
 
   doc.setFontSize(9)
 

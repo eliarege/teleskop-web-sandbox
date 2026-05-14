@@ -47,6 +47,7 @@
   "stepNoShort": "S",
   "amount": "Amount",
   "sec": "sec",
+  "dayAbbreviation": "d",
   "unit": "Unit",
   "selectAll": "Select All",
   "dropAll": "Drop All",
