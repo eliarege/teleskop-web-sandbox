@@ -4,27 +4,57 @@ import { format } from 'date-fns'
 import type { AnalogInputOutputType, CalculatedValue, Counter, DigitalInputOutputType, Program } from '~/types/archive'
 import type { DuoRaw } from '~/types/utils'
 
-export function formatDuration(sec: string | number | Date | null | undefined, dateFormat: string = 'HH:mm:ss'): string {
-  if (sec === null || sec === undefined || sec === '')
-    return '-'
+interface FormatDurationOptions {
+  /**
+   * Whether to include seconds in the formatted string
+   * @default true
+   */
+  withSeconds?: boolean
 
-  if (sec instanceof Date || (typeof sec === 'string' && Number.isNaN(Number(sec)))) {
-    return formatDatetime(sec, dateFormat)
-  }
+  /**
+   * The default value to return for null/undefined/invalid inputs
+   * @default '-'
+   */
+  defaultValue?: string
+}
+
+/**
+ * Formats a duration given in seconds to a string in the format "HH:mm:ss" or "DDd HH:mm:ss" if the duration includes days.
+ * Returns the `defaultValue` for null/undefined/invalid inputs.
+ *
+ * @param sec Duration in seconds
+ * @param options Formatting options
+ * @returns Formatted duration string
+ */
+export function formatDuration(sec: string | number | null | undefined, options: FormatDurationOptions = {}): string {
+  const { withSeconds = true, defaultValue = '-' } = options
+  if (typeof sec !== 'number' && !sec)
+    return defaultValue
 
   const numSec = Number(sec)
+  if (Number.isNaN(numSec))
+    return defaultValue
+
   const totalSeconds = Math.abs(Math.floor(numSec))
 
   const days = Math.floor(totalSeconds / 86400)
-  const hours = Math.floor((totalSeconds % 86400) / 3600) // Kalan saati bul
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
 
+  const hh = String(hours).padStart(2, '0')
+  const mm = String(minutes).padStart(2, '0')
+  const ss = String(seconds).padStart(2, '0')
+
   const sign = numSec < 0 ? '-' : ''
-  const timeString = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  const timeString = withSeconds
+    ? `${hh}:${mm}:${ss}`
+    : `${hh}:${mm}`
 
   if (days > 0) {
-    return `${sign}${days}g ${timeString}`
+    const { t } = useNuxtApp().$i18n
+    const daySuffix = t('dayAbbreviation')
+    return `${sign}${days}${daySuffix} ${timeString}`
   }
 
   return `${sign}${timeString}`
@@ -222,7 +252,7 @@ export function orderArray(array: Array<any>, predefinedOrder: Array<number | st
   return orderedData
 }
 
-export function formatDatetime(date: Date | string | number = new Date(), formatStr: string = 'dd/MM/yyyy HH:mm:ss'): string {
+export function formatTime(date: Date | string | number = new Date(), withSeconds: boolean): string {
   const d = new Date(date)
-  return Number.isNaN(d.getTime()) ? '-' : format(d, formatStr)
+  return Number.isNaN(d.getTime()) ? '-' : format(d, withSeconds ? 'HH:mm:ss' : 'HH:mm')
 }

@@ -15,7 +15,7 @@ defineEmits([
   ...useDialogPluginComponent.emits,
 ])
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 const { dialogRef, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
 const filter = ref('')
@@ -29,7 +29,7 @@ const columns: QTableColumn[] = [
     label: t('date'),
     field: 'time',
     sortable: true,
-    format: (val: Date) => formatDuration(val, 'dd/MM/yyyy HH:mm:ss'),
+    format: (val: Date) => d(val, 'datetime'),
   },
   {
     name: 'operator',

@@ -7,7 +7,7 @@ defineProps<{
   programs: BasicProgram[]
 }>()
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 </script>
 
 <template>
@@ -24,8 +24,8 @@ const { t } = useI18n()
         {{ program.programName }}
       </div>
       <div>
-        {{ `${t('startTime')}: ${formatDuration(jobOrderInfo.startTime, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
-        {{ `${t('endTime')}: ${formatDuration(jobOrderInfo.endTime!, 'HH:mm:ss dd/MM/yyyy')}` }} <br>
+        {{ `${t('startTime')}: ${d(jobOrderInfo.startTime, 'datetime')}` }} <br>
+        {{ `${t('endTime')}: ${jobOrderInfo.endTime ? d(jobOrderInfo.endTime, 'datetime') : ''}` }} <br>
       </div>
     </div>
     <hr>

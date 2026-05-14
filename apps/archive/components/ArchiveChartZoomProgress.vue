@@ -3,6 +3,7 @@ import { type D3BrushEvent, type ScaleLinear, type ScaleTime, type Selection, ax
 } from 'd3'
 import { addMinutes, differenceInMinutes } from 'date-fns'
 import type { Batch } from '~/types/archive'
+import { formatDatetime } from '~/utils/functions'
 
 const props = defineProps<{
   batch: Batch
@@ -74,7 +75,7 @@ function updateXAxis() {
   xAxis?.call(
     axisBottom(xScale.value)
       .tickFormat(value =>
-        formatDuration(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
+        formatDatetime(value.valueOf(), showSeconds ? 'HH:mm:ss' : 'HH:mm'),
       )
       .ticks(xAxisTickCount.value),
   )

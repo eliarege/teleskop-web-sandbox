@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { BatchInfo } from '~/types/archive'
+import { formatDuration } from '~/utils/functions'
 
 const props = defineProps<{
   jobOrderInfo?: BatchInfo
 }>()
 
-const { t } = useI18n()
+const { t, d } = useI18n()
 
 const theoreticalEndTime = computed(() => {
   const job = props.jobOrderInfo
@@ -46,14 +47,17 @@ const infoRows = computed(() => {
     { label: t('jobOrderTable.model'), value: job?.machineModel },
     { label: t('jobOrderTable.operator'), value: job?.operatorName },
     { label: t('jobOrderTable.jobOrder'), value: job?.jobOrder },
-    { label: t('jobOrderTable.startTime'), value: formatDuration(job?.startTime, 'HH:mm:ss dd/MM/yyyy') },
+    {
+      label: t('jobOrderTable.startTime'),
+      value: job?.startTime ? d(job?.startTime, 'datetime'): ''
+    },
     {
       label: job?.isCancelled ? t('jobOrderTable.cancelTime') : t('jobOrderTable.endTime'),
-      value: formatDuration(job?.endTime, 'HH:mm:ss dd/MM/yyyy'),
+      value: job?.endTime ? d(job?.endTime, 'datetime') : '',
     },
     {
       label: t('jobOrderTable.theoreticalEndTime'),
-      value: formatDuration(theoreticalEndTime.value, 'HH:mm:ss dd/MM/yyyy'),
+      value: theoreticalEndTime.value ? d(theoreticalEndTime.value, 'datetime') : '',
       badge: timeStatus.value?.deviation !== null && timeStatus.value?.deviation !== undefined
         ? { color: timeStatus.value.color, label: formatDuration(timeStatus.value.deviation) }
         : null,
