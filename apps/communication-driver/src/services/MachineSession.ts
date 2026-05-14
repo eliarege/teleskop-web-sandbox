@@ -754,6 +754,7 @@ export class MachineSession {
       if (this.activeStep.stepNo === stepNo) {
         this.logger.warn(
           {
+            eventId: event.id,
             runningCommandNo: this.activeStep.commandNo,
             newCommandNo: event.commandNum,
           },
@@ -765,6 +766,7 @@ export class MachineSession {
       // Tonello bug: CommandFinish was not sent for the previous step - close it now
       this.logger.warn(
         {
+          eventId: event.id,
           prevStepNo: this.activeStep.stepNo,
           prevCommandNo: this.activeStep.commandNo,
           newStepNo: stepNo,
