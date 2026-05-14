@@ -59,7 +59,6 @@ import {
   mapTonelloAutoModeToAutoManualStatus,
   mapTonelloChemicalRequestType,
   mapTonelloIoType,
-  subMilliseconds,
 } from '../utils'
 import type { PlanningBoardService } from './PlanningBoardService'
 
@@ -778,7 +777,7 @@ export class MachineSession {
           parallelStepNo: this.activeStep.parallelStepNo,
           commandNo: this.activeStep.commandNo,
         },
-        subMilliseconds(event.datetime, 1),
+        event.datetime,
         trx,
       )
       this.activeStep = null
