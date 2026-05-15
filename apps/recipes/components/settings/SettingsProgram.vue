@@ -9,7 +9,16 @@ const { t } = useI18n()
 const stateStore = useStateStore()
 const { notifySuccess, notifyFail } = useNotify()
 const filters = ref([])
-const options = [{ programType: 0, name: t('programTypes.0') }, { programType: 1, name: t('programTypes.1') }, { programType: 2, name: t('programTypes.2') }, { programType: 3, name: t('programTypes.3') }, { programType: 4, name: t('programTypes.4') }, { programType: 5, name: t('programTypes.5') }, { programType: 6, name: t('programTypes.6') }, { programType: 7, name: t('programTypes.7') }]
+const options = [
+  { programType: 0, name: t('programTypes.0') },
+  { programType: 1, name: t('programTypes.1') },
+  { programType: 2, name: t('programTypes.2') },
+  { programType: 3, name: t('programTypes.3') },
+  { programType: 4, name: t('programTypes.4') },
+  { programType: 5, name: t('programTypes.5') },
+  { programType: 6, name: t('programTypes.6') },
+  { programType: 7, name: t('programTypes.7') }
+]
 const programs = ref<ProgramHeader[]>([])
 const { data: machines } = await useFetch<Machine[]>('/api/machines')
 
@@ -90,9 +99,6 @@ function addNewProgram() {
   )
 }
 
-function toggleMachineSelection() {
-  showMachineSelection.value = !showMachineSelection.value
-}
 function hideMachineSelection() {
   showMachineSelection.value = false
 }
@@ -113,106 +119,102 @@ const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
 </script>
 
 <template>
-  <div class="flex flex-col items-center mt-5">
-    <div class="text-xl">
-      {{ t('Programs') }}
-    </div>
-  </div>
-  <QSeparator
-    class="w-full mt-5 mb-5"
-  />
-
-  <div class="flex items-center mb-4" :class="showMachineSelection ? 'justify-start' : 'justify-center'">
+  <div class="flex flex-wrap items-center justify-center gap-2 py-4">
     <div class="flex items-center gap-2">
       <QBtn
         :label="t('AddNewProgram')"
         no-caps
         icon="note_add"
         color="primary"
-        class="h-12"
+        class="h-8"
         style="white-space: nowrap; text-overflow: ellipsis;"
         clickable
         @click="addNewProgram"
       />
       <TeleskopSyncBtn
         type="Programs"
+        class="h-8"
         :min-size="800"
         @click="refreshPrograms"
       />
     </div>
 
-    <div v-if="!showMachineSelection" class="flex items-center">
+    <div class="flex items-center">
       <QBtn
         :label="defaultMachineName"
         no-caps
         icon="computer"
         color="primary"
-        class="h-12 ml-2"
+        class="h-8"
         style="white-space: nowrap; text-overflow: ellipsis;"
         clickable
-        @click="toggleMachineSelection"
-      />
-    </div>
-
-    <div v-else class="flex-1 ml-4">
-      <div class="bg-primary rounded-md p-2">
-        <div class="flex justify-between items-center mb-1">
-          <h4 class="text-white m-0">
-            {{ t('DefaultMachine') }}
-          </h4>
-          <QBtn
-            icon="close"
-            flat
-            round
-            dense
-            color="white"
-            @click="hideMachineSelection"
-          />
-        </div>
-        <QSelect
-          v-model="stateStore.defaultMachine"
-          borderless
-          dense
-          filled
-          map-options
-          emit-value
-          options-dense
-          option-label="machineName"
-          option-value="machineId"
-          :options="machines"
-          @update:model-value="onMachineSelected"
-        />
-      </div>
+      >
+        <QMenu
+          v-model="showMachineSelection"
+          anchor="bottom middle"
+          self="top middle"
+          :transition-duration="0"
+        >
+          <div class="w-80 max-w-[calc(100vw-2rem)] p-3 bg-white !dark:bg-true-gray-800 rounded">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="m-0 text-base">
+                {{ t('DefaultMachine') }}
+              </h4>
+              <QBtn
+                icon="close"
+                flat
+                round
+                dense
+                color="grey-7"
+                @click="showMachineSelection = false"
+              />
+            </div>
+            <QSelect
+              v-model="stateStore.defaultMachine"
+              outlined
+              dense
+              map-options
+              emit-value
+              options-dense
+              option-label="machineName"
+              option-value="machineId"
+              :options="machines || []"
+              @update:model-value="onMachineSelected"
+            />
+          </div>
+        </QMenu>
+      </QBtn>
     </div>
   </div>
-
-  <FilterableTable
-    :pagination
-    :rows="programs"
-    :columns
-    class="h-160 custom-filterable-table"
-    :is-virtual-scroll="false"
-    @update-filter-slots="handleFilterSlotsUpdate"
-  >
-    <template #custombody="props">
-      <QTr
-        :props="props"
-        style="cursor: pointer;"
-        @click="onRowClick(props.row)"
-      >
-        <QTd
-          v-for="col in props.cols"
-          :key="col.name"
+  <div class="px-2">
+    <FilterableTable
+      :pagination
+      :rows="programs"
+      :columns
+      class="page-table custom-filterable-table"
+      :is-virtual-scroll="false"
+      @update-filter-slots="handleFilterSlotsUpdate"
+    >
+      <template #custombody="props">
+        <QTr
           :props="props"
+          style="cursor: pointer;"
+          @click="onRowClick(props.row)"
         >
-          <span v-if="col.field === 'programType'">
-            {{ options.find((option) => option.programType === props.row[col.field])?.name }}
-          </span>
-          <span v-else>
-            {{ props.row[col.field] }}
-          </span>
-        </QTd>
-      </QTr>
-    </template>
-  </FilterableTable>
+          <QTd
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+          >
+            <span v-if="col.field === 'programType'">
+              {{ options.find((option) => option.programType === props.row[col.field])?.name }}
+            </span>
+            <span v-else>
+              {{ props.row[col.field] }}
+            </span>
+          </QTd>
+        </QTr>
+      </template>
+    </FilterableTable>
+  </div>
 </template>

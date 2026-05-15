@@ -3,8 +3,9 @@ import { useQuasar } from 'quasar'
 import { useStateStore } from '~/store/State'
 import type { Machine } from '~/shared/types'
 
-const $q = useQuasar()
+const q = useQuasar()
 const { t } = useI18n()
+const { notifySuccess, notifyFail } = useNotify()
 const stateStore = useStateStore()
 
 const companyData = ref({
@@ -32,7 +33,8 @@ async function fetchCompanyData() {
       selectedMachine.value = stateStore.defaultMachine
       originalMachine.value = stateStore.defaultMachine
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error fetching company data:', error)
   }
 }
@@ -62,11 +64,12 @@ async function onSave() {
       stateStore.jobOrderPrefs = { ...jobOrderPrefs.value }
       originalJobOrderPrefs.value = { ...jobOrderPrefs.value }
 
-      $q.notify({ type: 'positive', message: t('Success') })
+      notifySuccess(t('Success'))
       fetchCompanyData()
     }
-  } catch (error) {
-    $q.notify({ type: 'negative', message: t('Failed') })
+  }
+  catch (error) {
+    notifyFail(t('Failed'))
   }
 }
 
@@ -79,106 +82,122 @@ function onReset() {
 </script>
 
 <template>
-  <QCard class="q-pa-md">
-    <QCardSection flex-center>
-      <strong>{{ t('companyFields.Info') }}</strong>
-    </QCardSection>
-    <QSeparator />
+  <div class="flex flex-col items-center">
+    <div class="text-xl">
+      {{ t('settings.General') }}
+    </div>
+  </div>
+  <QSeparator class="w-full mt-5 mb-5" />
 
-    <QCardSection>
-      <QInput
-        v-model="companyData.name"
-        :label="t('companyFields.Name')"
-        outlined
-      />
-    </QCardSection>
-
-    <QCardSection>
-      <h6>{{ t('companyFields.Logo') }}</h6>
-    </QCardSection>
-
-    <QCardSection class="text-center">
-      <img
-        v-if="companyData.logoPath"
-        :src="companyData.logoPath"
-        alt="Company Logo"
-        class="company-logo"
-      >
-      <p v-else>
-        No logo uploaded
-      </p>
-    </QCardSection>
-
-    <QCardSection>
-      <QUploader
-        :label="t('companyFields.UploadLogo')"
-        accept=".jpg, .png, .jpeg"
-        @added="handleFileUpload"
-      />
-    </QCardSection>
-    <QCardSection>
-      <h6>{{ t('DefaultMachine') }}</h6>
-      <QSelect
-        v-model="selectedMachine"
-        :label="t('DefaultMachine')"
-        outlined
-        dense
-        map-options
-        emit-value
-        options-dense
-        option-label="machineName"
-        option-value="machineId"
-        :options="machines"
-      />
-    </QCardSection>
-
-    <QCardSection>
-      <h6 class="text-capitalize">
-        {{ t('JobOrderPreferences') }}
-      </h6>
-      <QCheckbox
-        v-model="jobOrderPrefs.allowOverrideStartedJobOrders"
-        :label="t('AllowOverrideStartedJobOrders')"
-      />
-
-      <div class="q-mt-md q-pa-sm bordered-section">
-        <div class="text-subtitle2 q-mb-sm">
-          {{ t('OptionalFields') }}
-        </div>
-        <div class="q-gutter-sm">
-          <QCheckbox
-            v-model="jobOrderPrefs.show.ASNo"
-            :label="t('jobOrderParams.ASNo')"
-            dense
+  <div class="w-full pb-4">
+    <div class=" space-y-4">
+      <QCard class="w-full" flat bordered>
+        <QCardSection>
+          <strong>{{ t('companyFields.Info') }}</strong>
+        </QCardSection>
+        <QSeparator />
+        <QCardSection>
+          <QInput
+            v-model="companyData.name"
+            :label="t('companyFields.Name')"
+            filled
           />
-          <QCheckbox
-            v-model="jobOrderPrefs.show.yarn"
-            :label="t('jobOrderParams.Yarn')"
-            dense
+        </QCardSection>
+        <QCardSection>
+          <h6>{{ t('companyFields.Logo') }}</h6>
+        </QCardSection>
+        <QCardSection class="text-center">
+          <img
+            v-if="companyData.logoPath"
+            :src="companyData.logoPath"
+            alt="Company Logo"
+            class="company-logo"
+          >
+          <p v-else>
+            No logo uploaded
+          </p>
+        </QCardSection>
+        <QCardSection>
+          <QUploader
+            :label="t('companyFields.UploadLogo')"
+            accept=".jpg, .png, .jpeg"
+            @added="handleFileUpload"
           />
-          <QCheckbox
-            v-model="jobOrderPrefs.show.orderNo"
-            :label="t('jobOrderParams.OrderNo')"
+        </QCardSection>
+      </QCard>
+
+      <QCard class="w-full" flat bordered>
+        <QCardSection>
+          <h6>{{ t('DefaultMachine') }}</h6>
+        </QCardSection>
+        <QSeparator />
+        <QCardSection>
+          <QSelect
+            v-model="selectedMachine"
+            :label="t('DefaultMachine')"
+            filled
             dense
+            map-options
+            emit-value
+            options-dense
+            option-label="machineName"
+            option-value="machineId"
+            :options="machines"
           />
-        </div>
+        </QCardSection>
+      </QCard>
+
+      <QCard class="w-full" flat bordered>
+        <QCardSection>
+          <h6 class="text-capitalize">
+            {{ t('JobOrderPreferences') }}
+          </h6>
+        </QCardSection>
+        <QSeparator />
+        <QCardSection>
+          <QCheckbox
+            v-model="jobOrderPrefs.allowOverrideStartedJobOrders"
+            :label="t('AllowOverrideStartedJobOrders')"
+          />
+        </QCardSection>
+        <QCardSection>
+          <div class="text-subtitle2 q-mb-sm">
+            {{ t('OptionalFields') }}
+          </div>
+          <div class="q-gutter-sm">
+            <QCheckbox
+              v-model="jobOrderPrefs.show.ASNo"
+              :label="t('jobOrderParams.ASNo')"
+              dense
+            />
+            <QCheckbox
+              v-model="jobOrderPrefs.show.yarn"
+              :label="t('jobOrderParams.Yarn')"
+              dense
+            />
+            <QCheckbox
+              v-model="jobOrderPrefs.show.orderNo"
+              :label="t('jobOrderParams.OrderNo')"
+              dense
+            />
+          </div>
+        </QCardSection>
+      </QCard>
+      <div class="q-gutter-sm row justify-start">
+        <QBtn
+          :label="t('Reset')"
+          icon="refresh"
+          @click="onReset"
+        />
+        <QBtn
+          :label="t('Save')"
+          color="primary"
+          icon="save"
+          @click="onSave"
+        />
       </div>
-    </QCardSection>
-
-    <QCardSection class="q-gutter-sm row flex-center">
-      <QBtn
-        :label="t('Reset')"
-        icon="refresh"
-        @click="onReset"
-      />
-      <QBtn
-        :label="t('Save')"
-        color="primary"
-        icon="save"
-        @click="onSave"
-      />
-    </QCardSection>
-  </QCard>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -190,12 +209,7 @@ function onReset() {
   padding: 5px;
 }
 
-.bordered-section {
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-}
-
-.body--dark .bordered-section {
+.body--dark .company-logo {
   border-color: rgba(255, 255, 255, 0.28);
 }
 </style>

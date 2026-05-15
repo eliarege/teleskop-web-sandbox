@@ -38,7 +38,7 @@ export default defineEventHandler(async () => {
       .select(machineParams)
 
     machines.forEach((machine) => {
-      machine.controllerType = 1
+      machine.controller_type = 1
     })
 
     const parameterGroups = await teleskopDB('dbo.BFTREATMENTPARAMETERGROUPS')

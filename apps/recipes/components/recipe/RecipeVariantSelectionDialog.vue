@@ -8,6 +8,7 @@ const props = defineProps({
   },
 })
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const { t } = useI18n()
 const recipe = ref<RecipeMasterStep[]>([])
 const columns = [

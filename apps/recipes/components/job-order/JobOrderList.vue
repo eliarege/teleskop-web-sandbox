@@ -202,6 +202,8 @@ const filteredColumns = computed(() => {
   })
 })
 
+const jobOrderPrintPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
+
 const buttonProps = ref([
   { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description', batch: true, continue: true },
   { name: 'parameters', label: t('batchPlanParameterFields.Title'), link: 'parameters', icon: 'format_list_numbered', batch: true, continue: false },
@@ -248,14 +250,9 @@ async function showJobOrderOverview() {
   if (!selectedRow.value)
     return
 
-  const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
   await navigateTo({
-    path: correctPath,
+    path: '/jobOrders/print',
     query: { batchNo: String(selectedRow.value.batchNo) },
-  }, {
-    open: {
-      target: '_blank',
-    },
   })
 }
 async function openBatchCreateFromSelected() {
@@ -276,9 +273,8 @@ async function openBatchCreateFromSelected() {
       },
     }).onOk(async (payload: any) => {
       if (payload.print && payload.batchNo) {
-        const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
         await navigateTo({
-          path: correctPath,
+          path: jobOrderPrintPath,
           query: { batchNo: String(payload.batchNo) },
         }, {
           open: {
@@ -326,9 +322,8 @@ function newBatchJobOrder() {
     component: JobOrderBatchCreateDialog,
   }).onOk(async (payload: any) => {
     if (payload.print && payload.batchNo) {
-      const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
       await navigateTo({
-        path: correctPath,
+        path: jobOrderPrintPath,
         query: { batchNo: String(payload.batchNo) },
       }, {
         open: {
@@ -386,8 +381,8 @@ async function setStatus(status: string, order: JobOrder) {
 </script>
 
 <template>
-  <div class="q-pa-md">
-    <div class="row q-gutter-md items-center justify-center m-5">
+  <div>
+    <div class="row q-gutter-md items-center justify-center py-4">
       <div>
         <QSelect
           v-if="false"
@@ -426,7 +421,7 @@ async function setStatus(status: string, order: JobOrder) {
       v-model:pagination="pagination"
       :rows="jobOrders"
       :columns="filteredColumns"
-      class="h-160 custom-filterable-table"
+      class="page-table mx-2"
       :is-virtual-scroll="false"
       @update-filter-slots="handleFilterSlotsUpdate"
     >
@@ -442,7 +437,6 @@ async function setStatus(status: string, order: JobOrder) {
             v-for="col in props.cols"
             :key="col.name"
             :props="props"
-            :style="cellStyle(col, props.row, props.pageIndex, (selectedRow === props.row), q.dark.isActive, colorStore.colors)"
           >
             <span v-if="col.field === 'status'">
               {{ t(`statusCodes.${props.row.status}`) }}
@@ -526,22 +520,16 @@ async function setStatus(status: string, order: JobOrder) {
         v-for="button of filteredButtonProps"
         :key="button.name"
         class="footer-button"
+        :icon="button.icon"
+        :label="button.label"
         outline
         @click="onButtonClicked(button.link)"
-      >
-        <QIcon
-          class="button-icon"
-          :name="button.icon"
-        />
-        <span class="button-text">
-          {{ button.label }}
-        </span>
-      </QBtn>
+      />
     </div>
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="postcss">
 .footer-buttons-joborder {
   background-color: white;
   z-index: 1;
@@ -561,10 +549,7 @@ async function setStatus(status: string, order: JobOrder) {
   overflow: hidden;
 }
 .selected-row {
-  position: sticky;
-  top: 45px;
-  bottom: 0px;
-  z-index: 1;
+  @apply bg-blue-900 text-blue-100;
 }
 .custom-filterable-table {
   background-color: #f0f0f0;

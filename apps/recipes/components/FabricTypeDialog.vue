@@ -17,6 +17,7 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const formRef = ref()
 const fabric = toRef(props, 'fabric')
 const isNew = toRef(props, 'isNew')
@@ -135,7 +136,7 @@ async function onDelete() {
           <div class="flex flex-row flex-wrap justify-center">
             <div class="row-item">
               <span class="item-label">
-                {{ t('ID') }}
+                ID
               </span>
               <QInput
                 v-model="editedFabric.fabricTypeId"

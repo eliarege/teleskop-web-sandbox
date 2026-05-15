@@ -102,14 +102,14 @@ async function onConnectionCheck() {
     >
       <QTab
         name="teleskop"
-        :label="t('Teleskop')"
+        label="Teleskop"
         no-caps
         :class="tab === 'teleskop' ? 'tabs-active' : 'tabs'"
       />
       <QSeparator vertical />
       <QTab
         name="dmexchange"
-        :label="t('DmExchange')"
+        label="DmExchange"
         no-caps
         :class="tab === 'dmexchange' ? 'tabs-active' : 'tabs'"
       />
@@ -221,7 +221,7 @@ async function onConnectionCheck() {
       </div>
     </QForm>
     <div class="buttons-section">
-      <div class="flex justify-center items-center justify-evenly">
+      <div class="flex justify-center items-center justify-evenly space-x-2">
         <QBtn
           :label="t('Save')"
           color="primary"

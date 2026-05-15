@@ -23,5 +23,8 @@ if (!dataStore.selectedDispenser && id) {
 </script>
 
 <template>
-  <JobOrderList v-if="load" />
+  <div>
+    <JobOrderList v-if="load" />
+    <NuxtPage />
+  </div>
 </template>

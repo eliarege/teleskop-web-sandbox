@@ -133,6 +133,15 @@ async function processProgramSteps(
     TreatmentNo: program.programNo,
   })
 
+  await dmsDB('BATCH_PROGRAM').insert({
+    plan_key: planKey,
+    program_index: index + 1,
+    program_no: program.programNo,
+    flotte: program.flotte,
+    flotte_ratio: program.flotteRatio,
+    weight: program.totalWeight,
+  })
+
   const chemRequests = program.steps.filter(p => p.type === 0)
   const dyeRequests = program.steps.filter(p => p.type === 1)
 
@@ -250,10 +259,12 @@ export default defineEventHandler(async (event) => {
           callOff: 0,
           callOffManual: 0,
         }
+
         const correctionNoQuery = await dmsDB('BATCH_PLAN')
           .where('batch', batchNo)
           .max('batch_correction_no as maxCorrectionNo')
           .first()
+
         const correctionNo = correctionNoQuery?.maxCorrectionNo ? correctionNoQuery.maxCorrectionNo + 1 : 1
 
         const planKeyQuery = await dmsDB('BATCH_PLAN')
@@ -280,7 +291,13 @@ export default defineEventHandler(async (event) => {
           yarn: params.yarn,
         })
 
-        const dyelotParamRows: Array<{ Dyelot: string, TreatmentCnt: number, TreatmentParaCnt: number, TreatmentParaNo: number, TreatmentParaValue: number }> = []
+        const dyelotParamRows: Array<{
+          Dyelot: string,
+          TreatmentCnt: number,
+          TreatmentParaCnt: number,
+          TreatmentParaNo: number,
+          TreatmentParaValue: number
+        }> = []
 
         for (let index = 0; index < recipe.length; index++) {
           const program = recipe[index]
@@ -329,7 +346,8 @@ export default defineEventHandler(async (event) => {
           State: 1,
         })
       })
-    } catch (error: any) {
+    }
+    catch (error: any) {
       setResponseStatus(event, 400, error.message)
       return event.node.res.end()
     }

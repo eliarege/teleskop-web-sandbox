@@ -18,6 +18,7 @@ const props = defineProps({
 })
 
 const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const q = useQuasar()
 const { t } = useI18n()
 

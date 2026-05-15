@@ -11,6 +11,7 @@ const props = defineProps({
 })
 const { t } = useI18n()
 const { dialogRef, onDialogHide } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 
 const columnsAuto: (QTableColumn<BatchPlanParameter>)[] = [
   { name: 'planKey', label: t('batchPlanParameterFields.PlanKey'), field: 'planKey' },

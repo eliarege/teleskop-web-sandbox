@@ -16,6 +16,11 @@ export default defineEventHandler(async (event) => {
           .andOn('j.machine_id', 'p.machine_id')
       },
     )
+    .leftJoin('BATCH_PLAN as b', (builder) => {
+      builder
+        .on('b.batch', '=', 'j.batch_no')
+        .andOn('b.batch_correction_no', '=', 'j.batch_correction_no')
+    })
     .select({
       jobId: 'j.job_id',
       batchNo: 'j.batch_no',
@@ -32,15 +37,15 @@ export default defineEventHandler(async (event) => {
       requestTime: 'j.request_time',
       tankNo: 'j.tank_no',
       programNos: dmsDB.raw(`(
-        SELECT array_agg(DISTINCT j2.program_no)
-        FROM JOB_ORDER j2
-        WHERE j2.batch_no = j.batch_no
+        SELECT array_agg(bprog.program_no ORDER BY bprog.program_index)
+        FROM "BATCH_PROGRAM" bprog
+        WHERE bprog.plan_key = b.plan_key
       )`),
       programNames: dmsDB.raw(`(
-        SELECT array_agg(DISTINCT ph.program_name)
-        FROM "JOB_ORDER" j2
-        JOIN "PROGRAM_HEADER" ph ON ph.program_no = j2.program_no AND ph.machine_id = j2.machine_id
-        WHERE j2.batch_no = j.batch_no
+        SELECT array_agg(ph.program_name ORDER BY bprog.program_index)
+        FROM "BATCH_PROGRAM" bprog
+        LEFT JOIN "PROGRAM_HEADER" ph ON ph.program_no = bprog.program_no AND ph.machine_id = b.planned_machine
+        WHERE bprog.plan_key = b.plan_key
       )`),
       type: 'j.type',
       recipeType: 'j.recipe_type',

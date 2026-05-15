@@ -1,74 +1,78 @@
 <script lang="ts" setup>
+import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import { useDataStore } from '~/store/DataStore'
+import { breakpointsTailwind } from '@vueuse/core'
 
 const { t } = useI18n()
-const { dark } = useQuasar()
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const sm = breakpoints.greaterOrEqual('sm')
+
 const dataStore = useDataStore()
-const cookie = useCookie<'auto' | boolean>('dark')
-dark.set(cookie.value ?? 'auto')
-watch(
-  () => dark.mode,
-  mode => cookie.value = mode,
-)
 function goToHomepage() {
   dataStore.selectedDispenser = undefined
   navigateTo({
     path: `/`,
   })
 }
-function goToSettings() {
-  navigateTo({
-    path: `/settings`,
-  })
-}
+
+const extraItems: TopbarMenuItem[] = [
+  {
+    label: () => t('Settings'),
+    icon: 'settings',
+    to: '/settings',
+  },
+]
+
+const items = [] as TopbarMenuItem[]
+
+const itemsMobile = [
+  [
+    {
+      label: () => t('base.home'),
+      icon: 'home',
+      onClick: goToHomepage,
+    },
+  ],
+  items,
+] as TopbarMenuItem[][]
+
 </script>
 
 <template>
-  <QHeader class="text-white" bordered>
-    <div>
-      <QBtn
-        flat
-        style="display: flex; left: 1rem; position: absolute; height: 3rem; width: 3rem; z-index: 1;"
-        @click="goToHomepage"
+  <QHeader
+    bordered
+    class="bg-primary !dark:bg-truegray-900 text-white select-none"
+  >
+    <QToolbar class="min-h-unset">
+      <template v-if="sm">
+        <QToolbarTitle shrink>
+          <TopbarHomeButton />
+        </QToolbarTitle>
+        <NuxtLink
+          v-for="(item, index) in items"
+          :key="index"
+          class="topbar-link"
+          :href="toValue(item.to)"
+        >
+          <TopbarButton
+            :label="toValue(item.label)"
+            :disable="toValue(item.disabled)"
+          />
+        </NuxtLink>
+      </template>
+      <TopbarButton
+        v-else
+        icon="menu"
       >
-        <QTooltip :offset="[10, 10]">
-          {{ t('Homepage') }}
-        </QTooltip>
-        <QAvatar size="42px">
-          <img src="/eliar_logo.png">
-        </QAvatar>
-      </QBtn>
-    </div>
-    <div>
-      <QToolbar :class="dark.isActive ? 'bg-black' : 'bg-primary'">
-        <QSpace />
-        <h3 v-if="dataStore">
-          {{ dataStore.title }}
-        </h3>
-        <QSpace />
-        <QBtn
-          flat
-          class="h-6 w-6"
-          icon="settings"
-          @click="goToSettings"
-        >
-          <QTooltip :offset="[10, 10]">
-            {{ t('Settings') }}
-          </QTooltip>
-        </QBtn>
-        <QToggle
-          flat
-          color="dark"
-          :model-value="dark.isActive"
-          checked-icon="dark_mode"
-          unchecked-icon="light_mode"
-          @update:model-value="dark.set($event)"
-        >
-          <QTooltip :offset="[10, 10]">
-            {{ t('Theme') }}
-          </QTooltip>
-        </QToggle>
-      </QToolbar>
-    </div>
+        <TopbarMenu :items="itemsMobile" />
+      </TopbarButton>
+      <QSpace />
+      <div class="space-x-1">
+        <TopbarFullscreenButton />
+        <TopbarAppGrid />
+        <TopbarUser disable-theme :extra-items />
+        <TopbarLoginButton />
+      </div>
+    </QToolbar>
   </QHeader>
 </template>

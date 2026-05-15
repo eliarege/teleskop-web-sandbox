@@ -21,6 +21,7 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const formRef = ref()
 const material = toRef(props, 'material')
 const dispensers = toRef(props, 'dispensers')

@@ -222,7 +222,7 @@ function addMaterialToStep(material: Material) {
             ghost-class="material-ghost"
           >
             <template #item="{ element }">
-              <QTr>
+              <QTr @dblclick="addMaterialToStep(element)">
                 <QTd>
                   <div class="flex items-center gap-2">
                     <QBtn

@@ -43,7 +43,6 @@ export default defineEventHandler(async (event) => {
     .where('s.recipe_id', id)
     .andWhere('s.machine_id', machineId)
     .andWhere('s.variant_name', decodedName)
-    .whereNotNull('m.material_code')
     .orderBy('s.step_no')
 
   const recipeSteps: RecipeMasterStep[] = []
@@ -65,23 +64,25 @@ export default defineEventHandler(async (event) => {
       recipeSteps.push(program)
     }
 
-    let programSteps = program.steps.find(s => s.stepNo === row.programIndex && s.stepNo === row.programOrder && s.type === row.type)
-    if (!programSteps) {
-      programSteps = { type: row.type, stepNo: row.programIndex, materials: [] }
-      program.steps.push(programSteps)
+    if (row.materialCode != null) {
+      let programSteps = program.steps.find(s => s.stepNo === row.programIndex && s.stepNo === row.programOrder && s.type === row.type)
+      if (!programSteps) {
+        programSteps = { type: row.type, stepNo: row.programIndex, materials: [] }
+        program.steps.push(programSteps)
+      }
+      programSteps.materials.push({
+        materialCode: row.materialCode,
+        materialName: row.materialName,
+        type: row.type,
+        unit: row.unit,
+        isManual: row.isManual,
+        amount: Number(row.amount),
+        orderNo: row.stepNo,
+        programIndex: row.programIndex,
+        variantName: decodedName,
+        machineId,
+      })
     }
-    programSteps.materials.push({
-      materialCode: row.materialCode,
-      materialName: row.materialName,
-      type: row.type,
-      unit: row.unit,
-      isManual: row.isManual,
-      amount: Number(row.amount),
-      orderNo: row.stepNo,
-      programIndex: row.programIndex,
-      variantName: decodedName,
-      machineId
-    })
   })
   return recipeSteps
 })

@@ -21,6 +21,7 @@ const props = defineProps({
 })
 
 const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const q = useQuasar()
 const { notifyFail } = useNotify()
 const recipe = ref<RecipeProgramMaster>()
@@ -52,7 +53,12 @@ const units: OptionMap[] = [
   { id: 5, name: t('units.5') },
   { id: 6, name: t('units.6') },
 ]
-const types: OptionMap[] = [{ id: 0, name: t('recipeGroups.0') }, { id: 1, name: t('recipeGroups.1') }, { id: 2, name: t('recipeGroups.2') }, { id: 3, name: t('recipeGroups.3') }]
+const types: OptionMap[] = [
+  { id: 0, name: t('recipeGroups.0') },
+  { id: 1, name: t('recipeGroups.1') },
+  { id: 2, name: t('recipeGroups.2') },
+  { id: 3, name: t('recipeGroups.3') }
+]
 const programs = ref<RecipeMasterStep[]>([])
 const editedPrograms = ref<RecipeMasterStep[]>()
 const table = ref()
@@ -81,6 +87,7 @@ async function getRecipe() {
     recipe.value = await $fetch(`/api/recipes/master/${props.recipeId}`, { query: { machineId: props.machineId } })
     editedRecipe.value = klona(recipe.value)
   } else {
+    recipe.value = klona(defaultRecipe)
     editedRecipe.value = klona(defaultRecipe)
   }
   colorString.value = colorCodeToRGB(editedRecipe.value!.colorCode)
@@ -463,8 +470,13 @@ async function onDelete() {
     :persistent="hasChanges"
     @hide="onDialogHide"
   >
-    <QCard>
-      <QCardSection>
+    <QCard class="recipe-edit-card">
+      <QCardSection class="flex recipe-edit-header border-b-(1 solid white/20) p-4">
+        <div class="text-2xl">{{ isNew ? t('CreateRecipe') : t('EditRecipe') }}</div>
+        <QSpace />
+        <QBtn dense flat round icon="close" @click="onCancel" />
+      </QCardSection>
+      <QCardSection class="recipe-edit-content">
         <div v-if="editedRecipe" class="flex flex-row flex-wrap justify-center">
           <div class="row-item">
             <span class="item-label">
@@ -517,27 +529,23 @@ async function onDelete() {
               filled
               dense
               readonly
-              class="item-input"
+              class="item-input input-with-pointer"
               hide-bottom-space
             >
               <template #append>
                 <QIcon
                   name="colorize"
-                  class="cursor-pointer"
                   :style="`color: ${colorString}`"
-                >
-                  <QPopupProxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <QColor
-                      v-model="colorString"
-                      format-model="rgb"
-                      @update:model-value="(val) => editedRecipe!.colorCode = rgbStringToColorCode(val)"
-                    />
-                  </QPopupProxy>
-                </QIcon>
+                />
+              </template>
+              <template #default>
+                <QPopupProxy>
+                  <QColor
+                    v-model="colorString"
+                    format-model="rgb"
+                    @update:model-value="(val) => editedRecipe!.colorCode = rgbStringToColorCode(val)"
+                  />
+                </QPopupProxy>
               </template>
             </QInput>
           </div>
@@ -579,7 +587,7 @@ async function onDelete() {
               options-dense
               option-value="id"
               option-label="name"
-              :options="groups"
+              :options="[]"
             />
           </div>
           <div v-show="false" class="row-item">
@@ -2090,38 +2098,59 @@ async function onDelete() {
           </div>
         </div>
       </QCardSection>
-      <div class="dialog-button-section z-20">
-        <QBtn
-          :label="t('Save')"
-          type="submit"
-          color="primary"
-          icon="save"
-          @click="onSave"
-        />
-        <QBtn
-          :label="t('Cancel')"
-          color="warning"
-          icon="cancel"
-          @click="onCancel"
-        />
-        <QBtn
-          :label="t('Reset')"
-          type="reset"
-          icon="refresh"
-          @click="onReset"
-        />
-        <QBtn
-          :label="t('Delete')"
-          color="negative"
-          icon="delete"
-          @click="onDelete"
-        />
-      </div>
+      <QCardSection class="recipe-edit-footer border-t-(1 solid white/20)">
+        <div class="flex justify-evenly">
+          <QBtn
+            :label="t('Save')"
+            type="submit"
+            color="primary"
+            icon="save"
+            @click="onSave"
+          />
+          <QBtn
+            :label="t('Cancel')"
+            color="warning"
+            icon="cancel"
+            @click="onCancel"
+          />
+          <QBtn
+            :label="t('Reset')"
+            type="reset"
+            icon="refresh"
+            @click="onReset"
+          />
+          <QBtn
+            :label="t('Delete')"
+            color="negative"
+            icon="delete"
+            @click="onDelete"
+          />
+        </div>
+      </QCardSection>
     </QCard>
   </QDialog>
 </template>
 
 <style scoped>
+.recipe-edit-card {
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.recipe-edit-header,
+.recipe-edit-footer {
+  flex-shrink: 0;
+}
+
+.recipe-edit-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .program-card {
   width: 350px;
   flex-grow: 1;
@@ -2147,6 +2176,7 @@ async function onDelete() {
 .program-card-wrapper {
   display: flex;
   align-items: stretch;
+  width: 100%;
 }
 
 .recipe-materials {
@@ -2337,5 +2367,9 @@ async function onDelete() {
 :deep(.manual-table .q-markup-table__overflow table th:nth-child(5)),
 :deep(.manual-table .q-markup-table__overflow table td:nth-child(5)) {
   width: 60px !important;
+}
+
+.input-with-pointer, .input-with-pointer :deep(input) {
+  cursor: pointer !important;
 }
 </style>

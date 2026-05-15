@@ -7,6 +7,8 @@ import RecipeVariantDialog from './RecipeVariantDialog.vue'
 import RecipeVariantSelectionDialog from './RecipeVariantSelectionDialog.vue'
 import type { Machine, RecipeProgramMaster, RecipeVariant } from '~/shared/types'
 import { useStateStore } from '~/store/State'
+import type { FilterableTableColumn } from '@teleskop/nuxt-base/types'
+import type { QTableProps } from 'quasar'
 
 const props = defineProps({
   isBatch: {
@@ -26,8 +28,10 @@ const recipeVariants = ref<RecipeVariant[]>([])
 const recipeFilters = ref([])
 const variantFilters = ref([])
 
-const recipes = ref<RecipeProgramMaster>()
-const { data: machines } = await useFetch<Machine[]>('/api/machines')
+const recipes = ref<RecipeProgramMaster[]>()
+const { data: machines } = await useFetch<Machine[]>('/api/machines', {
+  default: () => [],
+})
 
 handleRecipeFilters(recipeFilters.value)
 
@@ -38,7 +42,7 @@ async function fetchRecipeVariants(recipeId: number, machineId: number) {
     notifyFail(t('Failed'))
   }
 }
-const recipeColumns = [
+const recipeColumns: FilterableTableColumn[] = [
   {
     name: 'recipeId',
     label: t('recipeFields.ID'),
@@ -90,7 +94,7 @@ const recipeColumns = [
   },
 ]
 
-const variantColumns = [
+const variantColumns: FilterableTableColumn[] = [
   {
     name: 'variantName',
     label: t('RecipeVariant'),
@@ -118,9 +122,10 @@ const variantColumns = [
 ]
 async function handleRecipeFilters(updatedFilters: any) {
   recipeFilters.value = updatedFilters
-  recipes.value = await $fetch<RecipeProgramMaster[]>(props.isBatch
-    ? '/api/recipes/master/filtered'
-    : '/api/recipes/master/continue/filtered', { method: 'POST', body: { filters: recipeFilters.value } })
+  recipes.value =
+    await $fetch<RecipeProgramMaster[]>(props.isBatch
+      ? '/api/recipes/master/filtered'
+      : '/api/recipes/master/continue/filtered', { method: 'POST', body: { filters: recipeFilters.value } })
 }
 async function handleVariantFilters(updatedFilters: any) {
   if (selectedRecipe.value) {
@@ -133,7 +138,7 @@ function addNewRecipe() {
   q.dialog({
     component: dialogComponent,
     componentProps: {
-      recipeId: recipes.value && recipes.value.length > 0 ? Math.max(...recipes.value.map(obj => obj.recipeId)) + 1 : 1,
+      recipeId: findNextRecipeId(),
       machineId: stateStore.defaultMachine,
       recipeName: t('recipeFields.Placeholder'),
       isNew: true,
@@ -149,6 +154,25 @@ function addNewRecipe() {
 }
 
 function onRowClick(row: RecipeProgramMaster) {
+  selectedRecipe.value = row
+  fetchRecipeVariants(row.recipeId, row.machineId)
+  variantFilters.value = []
+}
+
+function findNextRecipeId(): number {
+  if (!recipes.value || recipes.value.length === 0) {
+    return 1
+  }
+  const sorted = recipes.value.toSorted((a, b) => a.recipeId - b.recipeId)
+  for (let i = 0; i < sorted.length; i++) {
+    if (sorted[i].recipeId !== i + 1) {
+      return i + 1
+    }
+  }
+  return sorted.length + 1
+}
+
+function showRecipeEditDialog(row: RecipeProgramMaster) {
   const dialogComponent = props.isBatch ? RecipeEditDialog : RecipeContinueDialog
   q.dialog({
     component: dialogComponent,
@@ -174,9 +198,9 @@ function onCreateJobOrder(recipeId: number, machineId?: number, variant?: Recipe
     componentProps: { recipeId, machineId, variant },
   }).onOk(async (payload: any) => {
     if (payload.print && payload.batchNo) {
-      const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
+      const jobOrderPrintPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
       await navigateTo({
-        path: correctPath,
+        path: jobOrderPrintPath,
         query: { batchNo: String(payload.batchNo) },
       }, {
         open: {
@@ -206,130 +230,127 @@ function onSelectVariant(recipeMaster: RecipeProgramMaster) {
   })
 }
 
-const pagination = ref({ rowsPerPage: 20 })
+const pagination = ref<QTableProps['pagination']>({ rowsPerPage: 0 })
 </script>
 
 <template>
   <div class="flex flex-col">
-    <div class="flex justify-center my-4">
+    <div class="flex justify-center mt-4 mb-2">
       <QBtn
         :label="t('AddNewRecipe')"
         no-caps
         icon="note_add"
         color="primary"
-        class="h-12"
+        class="h-8"
         style="white-space: nowrap; text-overflow: ellipsis;"
         clickable
         @click="addNewRecipe"
       />
     </div>
-    <div class="flex">
-      <div
-        :class="{
-          'w-full': !selectedRecipe,
-          'w-1/2 pr-2': selectedRecipe,
-        }"
+    <div class="p-2 space-y-2">
+      <FilterableTable
+        flat
+        bordered
+        virtual-scroll
+        :columns="recipeColumns"
+        :rows="recipes"
+        row-key="recipeId"
+        class="!min-h-50vh !max-h-30vh"
+        table-header-class="table-header"
+        :pagination
+        :rows-per-page-options="[0]"
+        @update-filter-slots="handleRecipeFilters"
       >
-        <FilterableTable
-          flat
-          bordered
-          :pagination
-          :columns="recipeColumns"
-          :rows="recipes"
-          table-header-class="table-header"
-          @update-filter-slots="handleRecipeFilters"
-        >
-          <template #custombody="props">
-            <QTr
+        <template #custombody="props">
+          <QTr
+            :props="props"
+            class="cursor-pointer"
+            :class="{
+              'bg-blue-100 text-blue-900': selectedRecipe?.recipeId === props.row.recipeId && selectedRecipe?.machineId === props.row.machineId && !$q.dark.isActive,
+              'bg-blue-900 text-blue-100': selectedRecipe?.recipeId === props.row.recipeId && selectedRecipe?.machineId === props.row.machineId && $q.dark.isActive,
+            }"
+            @click="onRowClick(props.row)"
+            @dblclick="showRecipeEditDialog(props.row)"
+          >
+            <QTd
+              v-for="col in props.cols"
+              :key="col.name"
               :props="props"
-              class="cursor-pointer"
-              :class="{
-                'bg-blue-100 text-blue-900': selectedRecipe?.recipeId === props.row.recipeId && selectedRecipe?.machineId === props.row.machineId && !$q.dark.isActive,
-                'bg-blue-900 text-blue-100': selectedRecipe?.recipeId === props.row.recipeId && selectedRecipe?.machineId === props.row.machineId && $q.dark.isActive,
-              }"
-              @click="selectedRecipe === props.row ? (selectedRecipe = null) : (selectedRecipe = props.row) && fetchRecipeVariants(props.row.recipeId, props.row.machineId); variantFilters = []"
             >
-              <QTd
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-              >
-                <template v-if="col.name === 'actions'">
-                  <QBtn
-                    icon="edit"
-                    flat
-                    dense
-                    @click.stop="onRowClick(props.row)"
-                  />
-                </template>
-                <template v-else-if="col.name === 'machineId'">
-                  {{ machines?.find(m => Number(m.machineId) === Number(col.value))?.machineName }}
-                </template>
-                <template v-else>
-                  {{ col.value }}
-                </template>
-                <QMenu
-                  touch-position
-                  context-menu
-                >
-                  <QList>
-                    <QItem
-                      v-close-popup
-                      clickable
-                      @click="onCreateJobOrder(props.row.recipeId, props.row.machineId)"
-                    >
-                      <QItemSection>{{ t('NewBatchJobOrder') }}</QItemSection>
-                    </QItem>
-                    <QItem
-                      v-close-popup
-                      clickable
-                      @click="onCreateVariant(props.row)"
-                    >
-                      <QItemSection>{{ t('CreateVariant') }}</QItemSection>
-                    </QItem>
-                    <QItem
-                      v-close-popup
-                      clickable
-                      @click="onSelectVariant(props.row)"
-                    >
-                      <QItemSection>{{ t('SelectVariant') }}</QItemSection>
-                    </QItem>
-                  </QList>
-                </QMenu>
-              </QTd>
-            </QTr>
-          </template>
-        </FilterableTable>
-      </div>
-
-      <div v-if="selectedRecipe" class="w-1/2 pl-2">
-        <FilterableTable
-          flat
-          bordered
-          :pagination="pagination"
-          :columns="variantColumns"
-          :rows="recipeVariants"
-          row-key="variantName"
-          table-header-class="table-header"
-          @update-filter-slots="handleVariantFilters"
-        >
-          <template #custombody="props">
-            <QTr
-              :props="props"
-              class="cursor-pointer"
-              @click="onCreateJobOrder(selectedRecipe.recipeId, selectedRecipe.machineId, props.row)"
-            >
-              <QTd
-                v-for="col in props.cols"
-                :key="col.name"
-                :props="props"
-              >
+              <template v-if="col.name === 'actions'">
+                <QBtn
+                  icon="edit"
+                  flat
+                  dense
+                  @click.stop="showRecipeEditDialog(props.row)"
+                />
+              </template>
+              <template v-else-if="col.name === 'machineId'">
+                {{ machines?.find(m => Number(m.machineId) === Number(col.value))?.machineName }}
+              </template>
+              <template v-else>
                 {{ col.value }}
-              </QTd>
-            </QTr>
-          </template>
-        </FilterableTable>
-      </div>
+              </template>
+              <QMenu
+                touch-position
+                context-menu
+              >
+                <QList>
+                  <QItem
+                    v-close-popup
+                    clickable
+                    @click="onCreateJobOrder(props.row.recipeId, props.row.machineId)"
+                  >
+                    <QItemSection>{{ t('NewBatchJobOrder') }}</QItemSection>
+                  </QItem>
+                  <QItem
+                    v-close-popup
+                    clickable
+                    @click="onCreateVariant(props.row)"
+                  >
+                    <QItemSection>{{ t('CreateVariant') }}</QItemSection>
+                  </QItem>
+                  <QItem
+                    v-close-popup
+                    clickable
+                    @click="onSelectVariant(props.row)"
+                  >
+                    <QItemSection>{{ t('SelectVariant') }}</QItemSection>
+                  </QItem>
+                </QList>
+              </QMenu>
+            </QTd>
+          </QTr>
+        </template>
+      </FilterableTable>
+      <FilterableTable
+        v-if="selectedRecipe"
+        flat
+        bordered
+        class="!min-h-35vh !max-h-35vh"
+        :pagination="pagination"
+        :columns="variantColumns"
+        :rows="recipeVariants"
+        row-key="variantName"
+        table-header-class="table-header"
+        @update-filter-slots="handleVariantFilters"
+      >
+        <template #custombody="props">
+          <QTr
+            :props="props"
+            class="cursor-pointer"
+            @click="onCreateJobOrder(selectedRecipe.recipeId, selectedRecipe.machineId, props.row)"
+          >
+            <QTd
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+            >
+              {{ col.value }}
+            </QTd>
+          </QTr>
+        </template>
+      </FilterableTable>
     </div>
   </div>
 </template>

@@ -1,28 +1,55 @@
-import { mkdir, writeFile } from 'node:fs/promises'
-import path from 'node:path'
+import { fileTypeFromBuffer } from 'file-type'
+import { createFileUploadService } from '~/server/services/fileUpload'
 import { dmsDB } from '~/server/connectionPool'
+
+const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif']
 
 export default defineEventHandler(async (event) => {
   try {
     const formData = await readMultipartFormData(event)
+    if (!formData || formData.length < 2) {
+      throw new Error('Invalid form data')
+    }
     const name = formData[0]
     const file = formData[1]
 
-    if (file) {
-      const uploadDir = path.resolve('./public/uploads')
-      await mkdir(uploadDir, { recursive: true })
+    const runtimeConfig = useRuntimeConfig()
+    const fileUploadService = createFileUploadService(runtimeConfig.uploadDir)
 
-      const filePath = path.join(uploadDir, file.filename)
-      await writeFile(filePath, file.data)
+    let savedPath: string | undefined
+    let logoType: string | undefined
+
+
+    if (file) {
+      const fileName = file.filename || `logo_${Date.now()}`
+      const fileType = await fileTypeFromBuffer(file.data)
+      if (fileType && allowedMimeTypes.includes(fileType.mime)) {
+        logoType = fileType.mime
+      } else {
+        throw new Error('Invalid file type')
+      }
+
+      // If there's an existing logo, delete it before saving the new one
+      const prevCompanyInfo = await dmsDB('COMPANY_INFO').first('logo_path')
+      if (prevCompanyInfo?.logo_path) {
+        await fileUploadService.deleteFile(prevCompanyInfo.logo_path)
+      }
+      savedPath = await fileUploadService.saveFile(fileName, file.data)
     }
-    const savedPath = file? `/uploads/${file.filename}` : undefined
+
     const res = await dmsDB('COMPANY_INFO')
       .first()
-      .update({ company_name: name.data, ...(savedPath && { logo_path: savedPath }) })
+      .update({
+        company_name: name.data,
+        ...(savedPath && { logo_path: savedPath }),
+        ...(logoType && { logo_mime_type: logoType }),
+      })
 
     return res
-  } catch (error) {
-    console.error(error.message)
-    return { error: error.message }
+  }
+  catch (error) {
+    const errMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.error(errMsg)
+    return { error: errMsg }
   }
 })

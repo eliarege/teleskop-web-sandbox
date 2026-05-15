@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
     const batchPlans: any[] = []
     const batchRecipeSteps: any[] = []
     const batchHeaders: any[] = []
+    const batchPrograms: any[] = []
     const batchPlanParameters: any[] = []
     const programHeaders: any[] = []
     const dispenserMachineConnections: any[] = []
@@ -147,6 +148,19 @@ export default defineEventHandler(async (event) => {
       })
       batchHeaders.push(batchHeader)
     })
+    // Deduplicate by plan_key + recipe_index to build BATCH_PROGRAM rows
+    const seenPrograms = new Map<string, any>()
+    batchHeaders.forEach((h) => {
+      const key = `${h.plan_key}-${h.recipe_index}`
+      if (!seenPrograms.has(key)) {
+        seenPrograms.set(key, {
+          plan_key: h.plan_key,
+          program_index: h.recipe_index,
+          program_no: h.program_no,
+        })
+      }
+    })
+    batchPrograms.push(...seenPrograms.values())
     teleskopData.batchRecipeSteps?.forEach((data: any) => {
       const batchRecipeStep = ({
         plan_key: data.planKey,
@@ -198,6 +212,7 @@ export default defineEventHandler(async (event) => {
     await dmsDB('MATERIAL').del()
     await dmsDB('BATCH_PLAN').del()
     await dmsDB('BATCH_HEADER').del()
+    await dmsDB('BATCH_PROGRAM').del()
     await dmsDB('PROGRAM_HEADER').del()
     await dmsDB('DISPENSER_MACHINE_CONNECTION').del()
     await dmsDB('DISPENSER_MATERIAL_CONNECTION').del()
@@ -212,6 +227,7 @@ export default defineEventHandler(async (event) => {
     await batchInsert(dustMaterialReqs, batchSize, 'DUST_MATERIAL_REQUEST')
     await batchInsert(batchPlans, batchSize, 'BATCH_PLAN')
     await batchInsert(batchHeaders, batchSize, 'BATCH_HEADER')
+    await batchInsert(batchPrograms, batchSize, 'BATCH_PROGRAM')
     await batchInsert(batchPlanParameters, batchSize, 'BATCH_PLAN_PARAMETER')
     await batchInsert(programHeaders, batchSize, 'PROGRAM_HEADER')
     batchInsert(dispenserMachineConnections, batchSize, 'DISPENSER_MACHINE_CONNECTION')

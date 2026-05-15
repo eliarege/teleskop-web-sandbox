@@ -24,13 +24,13 @@ async function fetchData() {
 }
 
 const customerColumns: QTableColumn[] = [
-  { name: 'id', label: t('Id'), field: 'customerId', align: 'left', sortable: true },
+  { name: 'id', label: 'Id', field: 'customerId', align: 'left', sortable: true },
   { name: 'customerNo', label: t('customerFields.No'), field: 'customerNo', align: 'left', sortable: true },
   { name: 'name', label: t('customerFields.Name'), field: 'customerName', align: 'left', sortable: true },
 ]
 
 const fabricColumns: QTableColumn[] = [
-  { name: 'id', label: t('Id'), field: 'fabricTypeId', align: 'left', sortable: true },
+  { name: 'id', label: 'Id', field: 'fabricTypeId', align: 'left', sortable: true },
   { name: 'name', label: t('fabricTypeFields.Name'), field: 'fabricTypeName', align: 'left', sortable: true },
   { name: 'notes', label: t('fabricTypeFields.Notes'), field: 'fabricTypeNotes', align: 'left' },
 ]

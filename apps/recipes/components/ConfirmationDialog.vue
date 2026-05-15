@@ -19,6 +19,7 @@ const props = defineProps({
   },
 })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const { t } = useI18n()
 </script>
 
@@ -30,21 +31,21 @@ const { t } = useI18n()
   >
     <QCard>
       <QCardSection class="row items-center">
-        <span class="q-ml-sm"> {{ t(`${props.bodyText}`) }}</span>
+        <span class="q-ml-sm"> {{ props.bodyText }}</span>
       </QCardSection>
 
       <QCardActions align="right">
         <QBtn
           v-close-popup
           outline
-          :label="t(`${props.confirmBtn.label}`)"
+          :label="props.confirmBtn.label"
           :color="props.confirmBtn.color"
           :icon="props.confirmBtn.icon"
           @click="onDialogOK"
         />
         <QBtn
           v-close-popup
-          :label="t(`${props.cancelBtn.label}`)"
+          :label="props.cancelBtn.label"
           outline
           :color="props.cancelBtn.color"
           :icon="props.cancelBtn.icon"

@@ -5,6 +5,7 @@ import { useDataStore } from '~/store/DataStore'
 
 const q = useQuasar()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const { t } = useI18n()
 
 const selectedRecipeSteps = ref<RecipeProgramMasterStep[]>([])

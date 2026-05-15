@@ -21,6 +21,7 @@ const variant = ref({
 const colorString = ref('rgb(0,0,0)')
 const formRef = ref()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const { t } = useI18n()
 const units: OptionMap[] = [
   { id: 0, name: t('units.0') },

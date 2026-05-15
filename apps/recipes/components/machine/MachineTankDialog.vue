@@ -29,6 +29,7 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const formRef = ref()
 const defaultTank = ref<Tank>({
   machineId: props.machineId,

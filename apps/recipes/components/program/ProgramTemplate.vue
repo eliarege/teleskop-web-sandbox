@@ -574,7 +574,7 @@ function onMaterialAdded(material: any) {
           <QList bordered class="q-pa-md">
             <div v-if="editedProgram">
               <div class="program-card-wrapper">
-                <div class="recipe-materials">
+                <div class="recipe-materials p-2">
                   <!-- CHEM REQUESTS -->
                   <div v-if="programHeader.chemRequests > 0">
                     <h4 class="flex justify-center text-xl my-2">
@@ -1955,6 +1955,7 @@ function onMaterialAdded(material: any) {
 .program-card-wrapper {
   display: flex;
   align-items: stretch;
+  width: 100%;
 }
 .recipe-materials {
   flex-grow: 1;
@@ -1967,11 +1968,9 @@ function onMaterialAdded(material: any) {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  padding: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-}
-.table-wrapper:hover {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 .table-content {
   width: 700px;
@@ -2035,8 +2034,7 @@ function onMaterialAdded(material: any) {
 
 .selected-step {
   background-color: rgba(25, 118, 210, 0.1);
-  border: 2px solid #1976d2;
-  border-radius: 4px;
+  outline: 2px solid rgba(25, 118, 210, 0.5);
   cursor: pointer;
 }
 

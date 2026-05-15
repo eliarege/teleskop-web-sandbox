@@ -26,6 +26,7 @@ const props = defineProps({
 })
 const q = useQuasar()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const { t } = useI18n()
 
 const selectedRecipe = ref<RecipeMasterStep[]>([])
@@ -652,444 +653,449 @@ async function onCancel() {
     full-height
     @hide="onDialogHide"
   >
-    <QCard>
-      <div class="text-center pt-5 text-xl">
-        <h2>{{ t('NewBatchJobOrder') }}</h2>
-      </div>
-      <div class="flex flex-row flex-wrap justify-center">
-        <div
-          v-if="!variant"
-          class="row-item"
-          style="position: relative;"
-        >
-          <span class="item-label">{{ t('Recipe') }}</span>
-          <QInput
-            v-model="recipeFilter"
-            borderless
-            dense
-            filled
-            :placeholder="t('Recipe')"
-            @update:model-value="onRecipeInputChange"
-            @focus="onRecipeFocus"
+    <QCard class="job-order-create-card">
+      <QCardSection class="job-order-create-header flex p-4 border-b-(1 solid white/20)">
+        <h2 class="text-2xl">{{ t('NewBatchJobOrder') }}</h2>
+        <QSpace />
+        <QBtn flat dense round icon="close" @click="onCancel" />
+      </QCardSection>
+      <QCardSection class="job-order-create-content">
+        <div class="flex flex-row flex-wrap justify-center">
+          <div
+            v-if="!variant"
+            class="row-item"
+            style="position: relative;"
           >
-            <template #append>
-              <QIcon name="search" />
-            </template>
-          </QInput>
-          <QMenu
-            v-model="showRecipeOptions"
-            no-parent-event
-            no-focus
-            max-height="300px"
-            fit
-          >
-            <QList dense>
-              <QItem
-                v-for="recipe in filteredRecipes"
-                :key="`${recipe.recipeId}-${recipe.machineId}`"
-                clickable
-                @click="selectRecipe(recipe)"
-              >
-                <QItemSection>
-                  <QItemLabel>{{ getRecipeLabel(recipe) }}</QItemLabel>
-                </QItemSection>
-              </QItem>
-              <QItem v-if="filteredRecipes.length === 0">
-                <QItemSection>
-                  <QItemLabel class="text-grey">
-                    {{ t('NoResults') }}
-                  </QItemLabel>
-                </QItemSection>
-              </QItem>
-            </QList>
-          </QMenu>
-        </div>
-        <div class="row-item">
-          <span class="item-label">{{ t('Customer') }}</span>
-          <div class="flex-row" style="display: flex;">
-            <QSelect
-              v-model="jobOrderParams.customerName"
-              borderless
-              dense
-              filled
-              emit-value
-              map-options
-              option-label="customerName"
-              option-value="customerName"
-              :options="customers"
-              class="flex-grow-1"
-            />
-            <QBtn
-              dense
-              flat
-              icon="add"
-              color="primary"
-              size="sm"
-              @click="showAddCustomerDialog = true"
-            />
-          </div>
-        </div>
-        <div class="row-item">
-          <span class="item-label">{{ t('FabricType') }}</span>
-          <div class="flex-row" style="display: flex;">
-            <QSelect
-              v-model="jobOrderParams.fabricType"
-              borderless
-              dense
-              filled
-              emit-value
-              map-options
-              option-label="fabricTypeName"
-              option-value="fabricTypeName"
-              :options="fabricTypes"
-              class="flex-grow-1"
-            />
-            <QBtn
-              dense
-              flat
-              icon="add"
-              color="primary"
-              size="sm"
-              @click="showAddFabricDialog = true"
-            />
-          </div>
-        </div>
-        <div class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.ID') }}</span>
-          <div class="flex-row" style="display: flex; align-items: flex-start;">
+            <span class="item-label">{{ t('Recipe') }}</span>
             <QInput
-              v-model="jobOrderParams.jobNo"
+              v-model="recipeFilter"
               borderless
+              dense
+              filled
+              clearable
+              :placeholder="t('Recipe')"
+              @update:model-value="onRecipeInputChange"
+              @focus="onRecipeFocus"
+            >
+              <template #append>
+                <QIcon name="search" />
+              </template>
+            </QInput>
+            <QMenu
+              v-model="showRecipeOptions"
+              no-parent-event
+              no-focus
+              max-height="300px"
+              fit
+            >
+              <QList dense>
+                <QItem
+                  v-for="recipe in filteredRecipes"
+                  :key="`${recipe.recipeId}-${recipe.machineId}`"
+                  clickable
+                  @click="selectRecipe(recipe)"
+                >
+                  <QItemSection>
+                    <QItemLabel>{{ getRecipeLabel(recipe) }}</QItemLabel>
+                  </QItemSection>
+                </QItem>
+                <QItem v-if="filteredRecipes.length === 0">
+                  <QItemSection>
+                    <QItemLabel class="text-grey">
+                      {{ t('NoResults') }}
+                    </QItemLabel>
+                  </QItemSection>
+                </QItem>
+              </QList>
+            </QMenu>
+          </div>
+          <div class="row-item">
+            <span class="item-label">{{ t('Customer') }}</span>
+            <div class="flex-row" style="display: flex;">
+              <QSelect
+                v-model="jobOrderParams.customerName"
+                borderless
+                dense
+                filled
+                emit-value
+                map-options
+                option-label="customerName"
+                option-value="customerName"
+                :options="customers"
+                class="flex-grow-1"
+              />
+              <QBtn
+                dense
+                flat
+                icon="add"
+                color="primary"
+                size="sm"
+                @click="showAddCustomerDialog = true"
+              />
+            </div>
+          </div>
+          <div class="row-item">
+            <span class="item-label">{{ t('FabricType') }}</span>
+            <div class="flex-row" style="display: flex;">
+              <QSelect
+                v-model="jobOrderParams.fabricType"
+                borderless
+                dense
+                filled
+                emit-value
+                map-options
+                option-label="fabricTypeName"
+                option-value="fabricTypeName"
+                :options="fabricTypes"
+                class="flex-grow-1"
+              />
+              <QBtn
+                dense
+                flat
+                icon="add"
+                color="primary"
+                size="sm"
+                @click="showAddFabricDialog = true"
+              />
+            </div>
+          </div>
+          <div class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.ID') }}</span>
+            <div class="flex-row" style="display: flex; align-items: flex-start;">
+              <QInput
+                v-model="jobOrderParams.jobNo"
+                borderless
+                dense
+                type="text"
+                filled
+                :rules="[val => /^[a-zA-Z0-9_]+$/.test(val) || t('jobOrderParams.BatchNoValidation')]"
+                class="flex-grow-1"
+              />
+              <QBtn
+                dense
+                flat
+                icon="autorenew"
+                color="primary"
+                size="sm"
+                style="height: 40px;"
+                @click="getDefaultBatchNo"
+              />
+            </div>
+          </div>
+          <div class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.TotalWeight') }}</span>
+            <QInput
+              v-model.number="jobOrderParams.totalWeight"
+              class="item-input"
+              dense
+              type="number"
+              min="0"
+              filled
+              :disable="programWeightsEnabled"
+              @update:model-value="(value) => onParameterChange('weight', value)"
+            />
+          </div>
+          <div class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.FlotteRatio') }}</span>
+            <QInput
+              v-model.number="jobOrderParams.flotteRatio"
+              class="item-input"
+              dense
+              type="number"
+              min="0"
+              filled
+              :disable="programWeightsEnabled"
+              @update:model-value="(value) => onParameterChange('flotteRatio', value)"
+            />
+          </div>
+          <div class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.Flotte') }}</span>
+            <QInput
+              v-model="flotte"
+              class="item-input"
+              dense
+              type="number"
+              min="0"
+              filled
+              disable
+            />
+          </div>
+          <div class="row-item flex-center">
+            <QCheckbox
+              v-model="createMultiple"
+              dense
+              filled
+              disable
+              :label="t('jobOrderParams.IsMultiple')"
+              mb-2
+            />
+            <QInput
+              v-model.number="jobOrderParams.numberOfJobs"
+              class="item-input"
+              dense
+              type="number"
+              min="1"
+              max="20"
+              :label="t('jobOrderParams.NoOfJobs')"
+              :disable="!createMultiple"
+              :rules="[(val: number) => val >= 1 && val <= 20]"
+              filled
+            />
+          </div>
+          <div class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.PartyNo') }}</span>
+            <QInput
+              v-model="jobOrderParams.partyNo"
+              class="item-input"
+              dense
+              type="number"
+              min="0"
+              filled
+            />
+          </div>
+          <div v-if="stateStore.jobOrderPrefs.show?.yarn" class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.Yarn') }}</span>
+            <QInput
+              v-model="jobOrderParams.yarn"
+              class="item-input"
               dense
               type="text"
               filled
-              :rules="[val => /^[a-zA-Z0-9_]+$/.test(val) || t('jobOrderParams.BatchNoValidation')]"
-              class="flex-grow-1"
-            />
-            <QBtn
-              dense
-              flat
-              icon="autorenew"
-              color="primary"
-              size="sm"
-              style="height: 40px;"
-              @click="getDefaultBatchNo"
             />
           </div>
-        </div>
-        <div class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.TotalWeight') }}</span>
-          <QInput
-            v-model.number="jobOrderParams.totalWeight"
-            class="item-input"
-            dense
-            type="number"
-            min="0"
-            filled
-            :disable="programWeightsEnabled"
-            @update:model-value="(value) => onParameterChange('weight', value)"
-          />
-        </div>
-        <div class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.FlotteRatio') }}</span>
-          <QInput
-            v-model.number="jobOrderParams.flotteRatio"
-            class="item-input"
-            dense
-            type="number"
-            min="0"
-            filled
-            :disable="programWeightsEnabled"
-            @update:model-value="(value) => onParameterChange('flotteRatio', value)"
-          />
-        </div>
-        <div class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.Flotte') }}</span>
-          <QInput
-            v-model="flotte"
-            class="item-input"
-            dense
-            type="number"
-            min="0"
-            filled
-            disable
-          />
-        </div>
-        <div class="row-item flex-center">
-          <QCheckbox
-            v-model="createMultiple"
-            dense
-            filled
-            disable
-            :label="t('jobOrderParams.IsMultiple')"
-            mb-2
-          />
-          <QInput
-            v-model.number="jobOrderParams.numberOfJobs"
-            class="item-input"
-            dense
-            type="number"
-            min="1"
-            max="20"
-            :label="t('jobOrderParams.NoOfJobs')"
-            :disable="!createMultiple"
-            :rules="[(val: number) => val >= 1 && val <= 20]"
-            filled
-          />
-        </div>
-        <div class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.PartyNo') }}</span>
-          <QInput
-            v-model="jobOrderParams.partyNo"
-            class="item-input"
-            dense
-            type="number"
-            min="0"
-            filled
-          />
-        </div>
-        <div v-if="stateStore.jobOrderPrefs.show?.yarn" class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.Yarn') }}</span>
-          <QInput
-            v-model="jobOrderParams.yarn"
-            class="item-input"
-            dense
-            type="text"
-            filled
-          />
-        </div>
-        <div v-if="stateStore.jobOrderPrefs.show?.ASNo" class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.ASNo') }}</span>
-          <QInput
-            v-model="jobOrderParams.ASNo"
-            class="item-input"
-            dense
-            type="text"
-            filled
-          />
-        </div>
-        <div v-if="stateStore.jobOrderPrefs.show?.orderNo" class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.OrderNo') }}</span>
-          <QInput
-            v-model="jobOrderParams.orderNo"
-            class="item-input"
-            dense
-            type="number"
-            min="0"
-            filled
-          />
-        </div>
-        <div class="row-item">
-          <span class="item-label">{{ t('jobOrderParams.Notes') }}</span>
-          <QInput
-            v-model="jobOrderParams.notes"
-            class="item-input"
-            dense
-            type="textarea"
-            filled
-          />
-        </div>
-        <div class="row-item flex-center">
-          <QCheckbox
-            v-model="programWeightsEnabled"
-            dense
-            :label="t('jobOrderParams.ProgramFlotteEnabled')"
-          />
-          <QCheckbox
-            v-model="printWhenDone"
-            dense
-            :label="t('jobOrderParams.PrintWhenDone')"
-          />
-        </div>
-      </div>
-      <div flex-basis-full>
-        <h4 flex-center>
-          {{ `${t('Machine')} / ${t('Machines')}` }}
-        </h4>
-        <div class="machine-selection-container">
-          <div
-            v-for="i in Math.min(20, createMultiple ? jobOrderParams.numberOfJobs : 1)"
-            :key="i"
-            class="machine-item"
-          >
-            <span font-900>{{ i }}.</span>
-            <QSelect
-              v-model="selectedMachines[i - 1]"
-              borderless
+          <div v-if="stateStore.jobOrderPrefs.show?.ASNo" class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.ASNo') }}</span>
+            <QInput
+              v-model="jobOrderParams.ASNo"
+              class="item-input"
               dense
+              type="text"
               filled
-              options-dense
-              option-label="machineName"
-              :options="machines"
-              class="machine-select"
+            />
+          </div>
+          <div v-if="stateStore.jobOrderPrefs.show?.orderNo" class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.OrderNo') }}</span>
+            <QInput
+              v-model="jobOrderParams.orderNo"
+              class="item-input"
+              dense
+              type="number"
+              min="0"
+              filled
+            />
+          </div>
+          <div class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.Notes') }}</span>
+            <QInput
+              v-model="jobOrderParams.notes"
+              class="item-input"
+              dense
+              type="textarea"
+              filled
+            />
+          </div>
+          <div class="row-item flex-center">
+            <QCheckbox
+              v-model="programWeightsEnabled"
+              dense
+              :label="t('jobOrderParams.ProgramFlotteEnabled')"
+            />
+            <QCheckbox
+              v-model="printWhenDone"
+              dense
+              :label="t('jobOrderParams.PrintWhenDone')"
             />
           </div>
         </div>
-      </div>
-      <div class="row items-start q-gutter-md m-10">
-        <div class="col-12">
-          <div
-            v-for="(program, programIndex) in selectedRecipe"
-            :key="program.programNo"
-            class="row mb-2"
-          >
-            <div class="col">
-              <h3 class="q-mb-sm flex-center">
-                {{ program.programName }}
-              </h3>
+        <div flex-basis-full>
+          <h4 flex-center>
+            {{ `${t('Machine')} / ${t('Machines')}` }}
+          </h4>
+          <div class="machine-selection-container">
+            <div
+              v-for="i in Math.min(20, createMultiple ? jobOrderParams.numberOfJobs : 1)"
+              :key="i"
+              class="machine-item"
+            >
+              <span font-900>{{ i }}.</span>
+              <QSelect
+                v-model="selectedMachines[i - 1]"
+                borderless
+                dense
+                filled
+                options-dense
+                option-label="machineName"
+                :options="machines"
+                class="machine-select"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="row items-start q-gutter-md m-10">
+          <div class="col-12">
+            <div
+              v-for="(program, programIndex) in selectedRecipe"
+              :key="program.programNo"
+              class="row mb-2"
+            >
+              <div class="col">
+                <h3 class="q-mb-sm flex-center">
+                  {{ program.programName }}
+                </h3>
 
-              <div class="q-mb-md flex-center items-center">
-                <QBtnToggle
-                  v-model="activeTabs[program.programNo]"
-                  class="toggle-border"
-                  :options="[
-                    { label: t('Materials'), value: 'materials' },
-                    { label: t('Commands'), value: 'commands' },
-                  ]"
-                  rounded
-                  no-caps
-                  unelevated
-                  size="md"
-                />
-              </div>
+                <div class="q-mb-md flex-center items-center">
+                  <QBtnToggle
+                    v-model="activeTabs[program.programNo]"
+                    class="toggle-border"
+                    :options="[
+                      { label: t('Materials'), value: 'materials' },
+                      { label: t('Commands'), value: 'commands' },
+                    ]"
+                    rounded
+                    no-caps
+                    unelevated
+                    size="md"
+                  />
+                </div>
 
-              <div v-show="activeTabs[program.programNo] === 'materials'">
-                <div v-show="programWeightsEnabled" class="row flex-center justify-evenly mb-2">
+                <div v-show="activeTabs[program.programNo] === 'materials'">
+                  <div v-show="programWeightsEnabled" class="row flex-center justify-evenly mb-2">
+                    <div class="row">
+                      <div class="mr-2">
+                        <span class="item-label">{{ t('jobOrderParams.TotalWeight') }}</span>
+                        <QInput
+                          v-model="program.totalWeight"
+                          class="item-input"
+                          dense
+                          type="number"
+                          min="0"
+                          filled
+                        />
+                      </div>
+                      <div class="mr-2">
+                        <span class="item-label">{{ t('jobOrderParams.FlotteRatio') }}</span>
+                        <QInput
+                          v-model="program.flotteRatio"
+                          class="item-input"
+                          dense
+                          type="number"
+                          min="0"
+                          filled
+                        />
+                      </div>
+                      <div>
+                        <span class="item-label">{{ t('jobOrderParams.Flotte') }}</span>
+                        <QInput
+                          v-model="program.flotte"
+                          class="item-input"
+                          dense
+                          type="number"
+                          min="0"
+                          filled
+                          disable
+                        />
+                      </div>
+                    </div>
+                  </div>
                   <div class="row">
-                    <div class="mr-2">
-                      <span class="item-label">{{ t('jobOrderParams.TotalWeight') }}</span>
-                      <QInput
-                        v-model="program.totalWeight"
-                        class="item-input"
-                        dense
-                        type="number"
-                        min="0"
-                        filled
-                      />
-                    </div>
-                    <div class="mr-2">
-                      <span class="item-label">{{ t('jobOrderParams.FlotteRatio') }}</span>
-                      <QInput
-                        v-model="program.flotteRatio"
-                        class="item-input"
-                        dense
-                        type="number"
-                        min="0"
-                        filled
-                      />
-                    </div>
-                    <div>
-                      <span class="item-label">{{ t('jobOrderParams.Flotte') }}</span>
-                      <QInput
-                        v-model="program.flotte"
-                        class="item-input"
-                        dense
-                        type="number"
-                        min="0"
-                        filled
-                        disable
-                      />
+                    <div class="col-12">
+                      <QTable
+                        :rows="getAllMaterialsFromSteps(program)"
+                        :rows-per-page-options="[0]"
+                        hide-bottom
+                        :columns
+                      >
+                        <template #body="props">
+                          <QTr :class="{ 'intermediate-step-row': props.row.isIntermediateStep }">
+                            <QTd
+                              v-for="col in props.cols"
+                              :key="col.name"
+                              :props="props"
+                              :style="props.row.isIntermediateStep ? getIntermediateStepStyle(q.dark.isActive) : cellStyle(col, props.row, props.row.orderNo, false, q.dark.isActive, colorStore.colors)"
+                            >
+                              <span v-if="col.field === 'unit'">{{ t(`units.${props.row.unit}`) }}</span>
+                              <span v-else-if="col.field === 'type'">{{ t(`materialTypes.${props.row.type + 1}`) }}</span>
+                              <span v-else-if="col.field === 'isManual'">{{ props.row.isIntermediateStep ? t('Man') : (props.row.isManual ? t('Man') : t('Auto')) }}</span>
+                              <span v-else-if="col.field === 'orderNo'">{{ props.row.isIntermediateStep ? t('Man') : props.row.orderNo }}</span>
+                              <span v-else-if="col.field === 'amount'">
+                                <QInput
+                                  v-model.number="props.row.amount"
+                                  type="number"
+                                  min="0"
+                                  dense
+                                  borderless
+                                  input-style="color: black;"
+                                  @update:model-value="updateAmount(programIndex, props.row)"
+                                />
+                              </span>
+                              <span v-else>{{ props.row[col.field] }}</span>
+                            </QTd>
+                          </QTr>
+                        </template>
+                      </QTable>
                     </div>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-12">
-                    <QTable
-                      :rows="getAllMaterialsFromSteps(program)"
-                      :rows-per-page-options="[0]"
-                      hide-bottom
-                      :columns
-                    >
-                      <template #body="props">
-                        <QTr :class="{ 'intermediate-step-row': props.row.isIntermediateStep }">
-                          <QTd
-                            v-for="col in props.cols"
-                            :key="col.name"
-                            :props="props"
-                            :style="props.row.isIntermediateStep ? getIntermediateStepStyle(q.dark.isActive) : cellStyle(col, props.row, props.row.orderNo, false, q.dark.isActive, colorStore.colors)"
+                <div v-show="activeTabs[program.programNo] === 'commands'">
+                  <div class="row">
+                    <div class="col-12">
+                      <table class="parameter-table">
+                        <thead>
+                          <tr>
+                            <th>{{ t('StepNo') }}</th>
+                            <th>{{ t('batchPlanParameterFields.CommandName') }}</th>
+                            <th>{{ t('batchPlanParameterFields.ParamName') }}</th>
+                            <th>{{ t('batchPlanParameterFields.Value') }}</th>
+                            <th />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr
+                            v-for="row in getParameterTable(program.programNo)"
+                            :key="row.paramId"
                           >
-                            <span v-if="col.field === 'unit'">{{ t(`units.${props.row.unit}`) }}</span>
-                            <span v-else-if="col.field === 'type'">{{ t(`materialTypes.${props.row.type + 1}`) }}</span>
-                            <span v-else-if="col.field === 'isManual'">{{ props.row.isIntermediateStep ? t('Man') : (props.row.isManual ? t('Man') : t('Auto')) }}</span>
-                            <span v-else-if="col.field === 'orderNo'">{{ props.row.isIntermediateStep ? t('Man') : props.row.orderNo }}</span>
-                            <span v-else-if="col.field === 'amount'">
+                            <td v-if="row.showStep" :rowspan="row.stepRowspan">
+                              {{ row.mainStep }}
+                            </td>
+                            <td v-if="row.showCommand" :rowspan="row.commandRowspan">
+                              {{ row.commandName }}
+                            </td>
+                            <td>{{ row.paramName }}</td>
+                            <td>
                               <QInput
-                                v-model.number="props.row.amount"
+                                v-model="row.selectedValue"
                                 type="number"
-                                min="0"
+                                :placeholder="`${row.minValue} - ${row.maxValue}`"
+                                :rules="[
+                                  (val: number) =>
+                                    (val >= row.minValue && val <= row.maxValue)
+                                    || `${t('warnings.MustBeBetween')} ${row.minValue} - ${row.maxValue}`,
+                                ]"
                                 dense
-                                borderless
-                                input-style="color: black;"
-                                @update:model-value="updateAmount(programIndex, props.row)"
+                                filled
+                                @update:model-value="val => updateParameterValue(program.programNo, row.paramId, Number(val))"
                               />
-                            </span>
-                            <span v-else>{{ props.row[col.field] }}</span>
-                          </QTd>
-                        </QTr>
-                      </template>
-                    </QTable>
-                  </div>
-                </div>
-              </div>
-              <div v-show="activeTabs[program.programNo] === 'commands'">
-                <div class="row">
-                  <div class="col-12">
-                    <table class="parameter-table">
-                      <thead>
-                        <tr>
-                          <th>{{ t('StepNo') }}</th>
-                          <th>{{ t('batchPlanParameterFields.CommandName') }}</th>
-                          <th>{{ t('batchPlanParameterFields.ParamName') }}</th>
-                          <th>{{ t('batchPlanParameterFields.Value') }}</th>
-                          <th />
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="row in getParameterTable(program.programNo)"
-                          :key="row.paramId"
-                        >
-                          <td v-if="row.showStep" :rowspan="row.stepRowspan">
-                            {{ row.mainStep }}
-                          </td>
-                          <td v-if="row.showCommand" :rowspan="row.commandRowspan">
-                            {{ row.commandName }}
-                          </td>
-                          <td>{{ row.paramName }}</td>
-                          <td>
-                            <QInput
-                              v-model="row.selectedValue"
-                              type="number"
-                              :placeholder="`${row.minValue} - ${row.maxValue}`"
-                              :rules="[
-                                (val: number) =>
-                                  (val >= row.minValue && val <= row.maxValue)
-                                  || `${t('warnings.MustBeBetween')} ${row.minValue} - ${row.maxValue}`,
-                              ]"
-                              dense
-                              filled
-                              @update:model-value="val => updateParameterValue(program.programNo, row.paramId, Number(val))"
-                            />
-                          </td>
-                          <td>
-                            <QBtn
-                              dense
-                              flat
-                              icon="restore"
-                              @click="resetParameter(program.programNo, row.paramId)"
-                            />
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                            </td>
+                            <td>
+                              <QBtn
+                                dense
+                                flat
+                                icon="restore"
+                                @click="resetParameter(program.programNo, row.paramId)"
+                              />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div v-if="recipeHeader" class="dialog-button-section">
+      </QCardSection>
+      <QCardSection class="dialog-button-section border-t-(1 solid white/20)">
         <QBtn
           :label="t('Save')"
           type="submit"
@@ -1103,7 +1109,7 @@ async function onCancel() {
           icon="cancel"
           @click="onCancel"
         />
-      </div>
+      </QCardSection>
     </QCard>
     <QDialog v-model="showAddCustomerDialog" position="top">
       <QCard class="q-pa-md" style="min-width: 350px">
@@ -1173,6 +1179,25 @@ async function onCancel() {
 </template>
 
 <style scoped>
+.job-order-create-card {
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.job-order-create-header,
+.dialog-button-section {
+  flex-shrink: 0;
+}
+
+.job-order-create-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .machine-selection-container {
   display: flex;
   justify-content: center;

@@ -26,14 +26,14 @@ export default defineEventHandler(async (event) => {
 
     const planKey = batchPlan.plan_key
 
-    const batchHeaders = await dmsDB('BATCH_HEADER as h')
+    const batchHeaders = await dmsDB('BATCH_PROGRAM as h')
       .leftJoin('PROGRAM_HEADER as ph', (join) => {
         join
           .on('h.program_no', 'ph.program_no')
           .andOn('ph.machine_id', '=', batchPlan.planned_machine)
       })
       .where('h.plan_key', planKey)
-      .orderBy('h.recipe_index')
+      .orderBy('h.program_index')
       .select('h.*', 'ph.program_name as program_name')
 
     const recipeSteps = await dmsDB('BATCH_RECIPE_STEP')
@@ -58,14 +58,14 @@ export default defineEventHandler(async (event) => {
 
     for (const header of batchHeaders) {
       const programNo = header.program_no
-      const recipeIndex = header.recipe_index
+      const programIndex = header.program_index
 
-      if (!programsMap.has(recipeIndex)) {
-        programsMap.set(recipeIndex, {
+      if (!programsMap.has(programIndex)) {
+        programsMap.set(programIndex, {
           recipeId: 0,
           programNo,
           programName: header.program_name || '',
-          stepNo: recipeIndex,
+          stepNo: programIndex,
           machineId: batchPlan.planned_machine,
           flotteRatio: header.flotte_ratio,
           totalWeight: header.weight,
@@ -84,7 +84,25 @@ export default defineEventHandler(async (event) => {
     // Group recipe steps by program and step
     const stepsMap = new Map<string, any>()
 
-    // Create a lookup map for recipe steps by material_code and main_step
+    // Compute per-program request order rank for prog_proc_no.
+    // prog_proc_no (callOff) is a global counter across the whole batch; we need the
+    // 1-based rank within each (process_order, recipe_type) group to recover the
+    // original CHEM/DYE/SALT request number as it was defined in the recipe.
+    const progProcRankMap = new Map<string, number>()
+    {
+      const groupValues = new Map<string, Set<number>>()
+      for (const step of recipeSteps) {
+        const key = `${step.process_order}-${step.recipe_type}`
+        if (!groupValues.has(key))
+          groupValues.set(key, new Set())
+        groupValues.get(key)!.add(step.prog_proc_no)
+      }
+      for (const [key, vals] of groupValues) {
+        const sorted = Array.from(vals).sort((a, b) => a - b)
+        sorted.forEach((val, idx) => progProcRankMap.set(`${key}-${val}`, idx + 1))
+      }
+    }
+
     for (const step of recipeSteps) {
       // Find the corresponding job order for this recipe step
       // Match by recipe_type, main_step, and material through material_request
@@ -118,11 +136,15 @@ export default defineEventHandler(async (event) => {
       if (!materialRequest)
         continue
 
-      const stepKey = `${step.process_order}-${step.main_step}-${step.recipe_type}`
+      // Rank of prog_proc_no within the program = the original request order number
+      const orderNo = progProcRankMap.get(`${step.process_order}-${step.recipe_type}-${step.prog_proc_no}`) ?? 1
+
+      // Key by prog_proc_no so each request slot is its own step group
+      const stepKey = `${step.process_order}-${step.prog_proc_no}-${step.recipe_type}`
 
       if (!stepsMap.has(stepKey)) {
         stepsMap.set(stepKey, {
-          stepNo: step.main_step,
+          stepNo: orderNo,
           type: step.recipe_type,
           materials: [],
         })
@@ -134,10 +156,10 @@ export default defineEventHandler(async (event) => {
         materialName: materialNameMap.get(step.material_code) || '',
         amount: materialRequest.real_amount,
         unit: materialRequest.unit,
-        orderNo: step.main_step,
-        programIndex: step.main_step,
+        orderNo,
+        programIndex: step.process_order,
         type: step.recipe_type,
-        isManual: step.main_step === -1,
+        isManual: false,
         calculated: materialRequest.recipe_amount,
       })
     }

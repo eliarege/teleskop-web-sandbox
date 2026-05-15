@@ -12,6 +12,7 @@ const props = defineProps({
   },
 })
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const { t } = useI18n()
 const dataStore = useDataStore()
 const dispensers = dataStore.dispensers

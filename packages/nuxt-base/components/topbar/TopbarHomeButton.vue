@@ -16,7 +16,7 @@ const homeUrl = computed(() => {
 </script>
 
 <template>
-  <NuxtLink :to="homeUrl.to" :external="homeUrl.external">
+  <NuxtLink :to="homeUrl.to" :external="homeUrl.external" class="focus:outline-none">
     <TwIcon
       name="i-tw:eliar"
       size="2.5rem"

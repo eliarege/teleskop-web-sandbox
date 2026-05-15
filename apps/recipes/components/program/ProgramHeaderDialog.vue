@@ -19,6 +19,7 @@ const props = defineProps({
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 const stateStore = useStateStore()
 const formRef = ref()
 const program = toRef(props, 'program')
@@ -145,12 +146,15 @@ async function onDelete() {
     :persistent="hasChanges"
     @hide="onDialogHide"
   >
-    <QCard class="scroll border-b-solid border-10px border-grey">
-      <QForm ref="formRef" @submit.prevent>
-        <div class="flex flex-col pb-10">
-          <div class="text-center pt-5 text-xl">
-            <h2>{{ t('recipeFields.Program') }}</h2>
-          </div>
+    <QCard class="program-header-card">
+      <QForm ref="formRef" class="program-header-form" @submit.prevent>
+        <QCardSection class="program-header-section flex border-b-(1 solid white/20) p-4">
+          <h2 class="text-2xl">{{ t('recipeFields.Program') }}</h2>
+          <QSpace />
+          <QBtn dense flat round icon="close" @click="onCancel" />
+        </QCardSection>
+
+        <QCardSection class="program-header-content">
           <div class="flex flex-row flex-wrap justify-center">
             <div class="row-item">
               <span class="item-label">
@@ -263,8 +267,9 @@ async function onDelete() {
             :is-new="false"
             :program-header="editedProgram"
           />
-        </div>
-        <div class="dialog-button-section z-333">
+        </QCardSection>
+
+        <QCardSection class="dialog-button-section border-t-(1 solid white/20)">
           <QBtn
             :label="t('Save')"
             color="primary"
@@ -290,8 +295,36 @@ async function onDelete() {
             icon="delete"
             @click="onDelete"
           />
-        </div>
+        </QCardSection>
       </QForm>
     </QCard>
   </QDialog>
 </template>
+
+<style scoped>
+.program-header-card {
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.program-header-form {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.program-header-section,
+.dialog-button-section {
+  flex-shrink: 0;
+}
+
+.program-header-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+</style>

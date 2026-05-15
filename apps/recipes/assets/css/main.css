@@ -25,17 +25,17 @@
 .body--light .tabs {
   background-color: white;
   white-space: normal;
-  color: black
+  color: #000;
 }
 
 .body--light .tabs-active {
-  background-color: black;
+  @apply bg-primary;
   white-space: normal;
   color: white
 }
 /* Dark Theme */
 .body--dark .tabs {
-  background-color: black;
+  @apply bg-truegray-900;
   white-space: normal;
   color: white
 }
@@ -110,4 +110,13 @@
 
 .item-input {
   width: 27.5 rem;
+}
+
+.page-table {
+  /* topbar + button + button padding + table bottom  */
+  max-height: calc(90vh - 51px - 32px - 1rem - 2rem);
+}
+
+.q-dialog__inner--minimized {
+  padding: 48px;
 }

@@ -152,7 +152,7 @@ const pagination = ref({ rowsPerPage: 50 } as QTableProps['pagination'])
     v-model:pagination="pagination"
     :rows="materials"
     :columns
-    class="h-160 custom-filterable-table"
+    class="page-table custom-filterable-table"
     :is-virtual-scroll="false"
     @update-filter-slots="handleFilterSlotsUpdate"
   >

@@ -33,6 +33,7 @@ ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale
 
 const { t } = useI18n()
 const { dialogRef, onDialogHide } = useDialogPluginComponent()
+defineEmits([...useDialogPluginComponent.emits])
 
 const programs = ref<RecipeMasterStep[]>([])
 

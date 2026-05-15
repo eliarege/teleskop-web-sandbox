@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { jsPDF } from 'jspdf'
+import jsbarcode from 'jsbarcode'
 import autoTable from 'jspdf-autotable'
 import { RecipeType } from '~/shared/constants'
 import { useStateStore } from '~/store/State'
@@ -47,11 +48,22 @@ const pdfTheme = {
 type PdfTheme = typeof pdfTheme
 
 const { t, d } = useI18n()
+const { userProfile } = useKeycloak()
 const route = useRoute()
 const stateStore = useStateStore()
 const companyInfo = ref<Record<string, any> | null>(null)
-const currentUser = ref('Default User')
 const currentTime = ref(new Date().toLocaleString())
+const currentUser = computed(() => {
+  if (userProfile.value) {
+    if (userProfile.value.lastName) {
+      return `${userProfile.value.firstName} ${userProfile.value.lastName}`
+    } else {
+      return userProfile.value.firstName || t('DefaultUser')
+    }
+  } else {
+    return t('DefaultUser')
+  }
+})
 
 const fetchedSteps = ref<RecipeMasterStep[]>([])
 const fetchedRecipeParams = ref<RecipeProgramMaster | null>(null)
@@ -358,12 +370,12 @@ async function constructJobOrderPdf() {
   doc.setFont('Roboto', 'normal')
   doc.setFontSize(8.5)
   doc.setTextColor(...theme.muted)
-  doc.text(`${t('jobOrderParams.PreparedBy')}: ${currentUser.value}`, headerX, headerTop + 5, { baseline: 'top' })
-  doc.text(`${t('jobOrderParams.PreparationDate')}: ${currentTime.value}`, headerX, headerTop + 8, { baseline: 'top' })
+  doc.text(`${t('jobOrderParams.PreparedBy')}: ${currentUser.value}`, headerX, headerTop + 6, { baseline: 'top' })
+  doc.text(`${t('jobOrderParams.PreparationDate')}: ${currentTime.value}`, headerX, headerTop + 9, { baseline: 'top' })
   doc.setFont('Roboto', 'bold')
   doc.setFontSize(10)
   doc.setTextColor(...theme.text)
-  doc.text(`${t('jobOrderParams.IDs')}: ${jobNumbers.value || '-'}`, headerX, headerTop + 11.5, { baseline: 'top' })
+  doc.text(`${t('jobOrderParams.IDs')}: ${jobNumbers.value || '-'}`, headerX, headerTop + 13, { baseline: 'top' })
   headerBottom = Math.max(headerBottom, headerTop + 16)
   cursorY = headerBottom + 4
 
@@ -454,13 +466,8 @@ async function constructJobOrderPdf() {
         fillColor: [252, 252, 253],
       },
       columnStyles: {
-        0: { cellWidth: 16 },
-        1: { cellWidth: 16 },
-        2: { cellWidth: 28 },
-        3: { cellWidth: 56, halign: 'left' },
-        4: { cellWidth: 24 },
-        5: { cellWidth: 18 },
-        6: { cellWidth: calculationsColumnWidth, halign: 'left' },
+        3: { halign: 'left' },
+        6: { halign: 'left' },
       },
       tableLineColor: [...theme.divider],
       tableLineWidth: 0.1,
@@ -729,23 +736,17 @@ async function loadImageAsset(url: string | null | undefined): Promise<ImageAsse
   }
 }
 
-let barcodeRenderer: ((element: HTMLCanvasElement, payload: string, options: Record<string, any>) => void) | null = null
-
 async function generateBarcodeAsset(payload: string | null): Promise<ImageAsset | null> {
   if (!payload || !isClient)
     return null
 
   try {
     const canvas = document.createElement('canvas')
-    if (!barcodeRenderer) {
-      const module = await import('jsbarcode')
-      barcodeRenderer = (module as any).default || module
-    }
-    barcodeRenderer(canvas, payload, {
+    jsbarcode(canvas, payload, {
       format: 'CODE128',
       displayValue: false,
       margin: 0,
-      width: 0.85,
+      width: 24,
       height: 24,
     })
     return { dataUrl: canvas.toDataURL('image/png'), format: 'PNG' as const }

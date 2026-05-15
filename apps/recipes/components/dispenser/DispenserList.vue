@@ -92,7 +92,7 @@ async function selectItem(selection: Dispenser) {
 function onClickDetails(dispenser: Dispenser) {
   q.dialog({
     title: t('Details'),
-    message: `<ul> <li>${t('ID')}: ${dispenser.dispenserId}</li> <li>${t('Name')}: ${dispenser.dispenserName}</li> </ul>`,
+    message: `<ul> <li>ID: ${dispenser.dispenserId}</li> <li>${t('Name')}: ${dispenser.dispenserName}</li> </ul>`,
     html: true,
   })
 }
@@ -161,14 +161,6 @@ function onLogout() {
         </QItem>
       </template>
     </QTree>
-    <LoginInfo
-      absolute
-      bottom-0
-      left-0
-      right-0
-      mx-auto
-      @logout="onLogout"
-    />
   </div>
 </template>
 

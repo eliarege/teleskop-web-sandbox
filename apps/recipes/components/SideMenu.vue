@@ -14,7 +14,6 @@ const { notifySuccess } = useNotify()
 
 const treeNodes = ref<any[]>([])
 const expanded = ref<string[]>([])
-const expandedButtons = ref<boolean[]>([false, false, false])
 
 if (dataStore.selectedDispenser) {
   const selected = dataStore.selectedDispenser
@@ -35,7 +34,10 @@ function onExpand(nodes: any) {
   expanded.value = nodes
 }
 
-generateTreeNodes()
+// Unusued code, but keeping for now as it might be useful in the future
+// onMounted(() => {
+//   generateTreeNodes()
+// })
 
 async function generateTreeNodes() {
   const dispensers = await dataStore.getDispensers()
@@ -88,7 +90,7 @@ async function generateTreeNodes() {
 }
 
 async function selectItem(selection: Dispenser) {
-  dataStore.$patch({ selectedDispenser: selection })
+  dataStore.selectedDispenser = selection
   await navigateTo({
     path: `/dispenser/${selection.dispenserId}`,
   })
@@ -97,7 +99,7 @@ async function selectItem(selection: Dispenser) {
 function onClickDetails(dispenser: Dispenser) {
   q.dialog({
     title: t('Details'),
-    message: `<ul> <li>${t('ID')}: ${dispenser.dispenserId}</li> <li>${t('Name')}: ${dispenser.dispenserName}</li> </ul>`,
+    message: `<ul> <li>ID: ${dispenser.dispenserId}</li> <li>${t('Name')}: ${dispenser.dispenserName}</li> </ul>`,
     html: true,
   })
 }
@@ -107,17 +109,14 @@ async function onClickVnc(dispenser: Dispenser) {
     path: `/vnc/${dispenser.dispenserId}`,
   })
 }
-function onLogout() {
-  emit('logout')
-}
 function openNewBatchJobOrderDialog() {
   q.dialog({
     component: JobOrderBatchCreateDialog,
   }).onOk(async (payload: any) => {
     if (payload.print && payload.batchNo) {
-      const correctPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
+      const jobOrderPrintPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
       await navigateTo({
-        path: correctPath,
+        path: jobOrderPrintPath,
         query: { batchNo: String(payload.batchNo) },
       }, {
         open: {
@@ -139,212 +138,122 @@ function openNewContinueJobOrderDialog() {
 
 <template>
   <div>
-    <QBtn
-      v-show="false"
-      :label="t('Dispensers')"
-      size="20px"
-      w-full
-      flat
-      align="left"
-      no-caps
-      bold
-      @click="expandedButtons[0] = !expandedButtons[0]"
-    >
-      <template #default>
-        <QIcon
-          name="expand_more"
-          size="24px"
-          class="rotate-transition"
-          :class="{ rotated: expandedButtons[0] }"
-        />
-      </template>
-    </QBtn>
-    <QSlideTransition>
-      <div v-show="expandedButtons[0]">
-        <QTree
-          :nodes="treeNodes"
-          dense
-          label-key="label"
-          node-key="id"
-          no-connectors
-          no-nodes-label=" "
-          :expanded
-          style="font-size: 18px;"
-          @update:expanded="onExpand"
-        >
-          <template #default-header=" { node }">
-            <span v-if="node.children">
-              {{ node.label }}
-            </span>
-          </template>
-          <template #default-body="{ node }">
-            <QItem
-              v-if="!node.children"
-              class="item"
-              clickable
-              :active="dataStore.selectedDispenser?.dispenserId === node.dispenserId"
-              active-class="active-item"
-              @click="selectItem(node)"
+    <div v-show="false">
+      <div class="px-3 text-h6">
+        {{ t('Dispensers') }}
+      </div>
+      <QTree
+        :nodes="treeNodes"
+        dense
+        label-key="label"
+        node-key="id"
+        no-connectors
+        no-nodes-label=" "
+        :expanded
+        style="font-size: 18px;"
+        @update:expanded="onExpand"
+      >
+        <template #default-header=" { node }">
+          <span v-if="node.children">
+            {{ node.label }}
+          </span>
+        </template>
+        <template #default-body="{ node }">
+          <QItem
+            v-if="!node.children"
+            class="item"
+            clickable
+            :active="dataStore.selectedDispenser?.dispenserId === node.dispenserId"
+            active-class="active-item"
+            @click="selectItem(node)"
+          >
+            <QMenu
+              touch-position
+              context-menu
             >
-              <QMenu
-                touch-position
-                context-menu
-              >
-                <QList>
-                  <QItem
-                    v-close-popup
-                    clickable
-                    @click="onClickDetails(node)"
-                  >
-                    <QItemSection>{{ t('Details') }}</QItemSection>
-                  </QItem>
-                  <QItem
-                    v-close-popup
-                    clickable
-                    @click="onClickVnc(node)"
-                  >
-                    <QItemSection>{{ t('Screen') }}</QItemSection>
-                  </QItem>
-                </QList>
-              </QMenu>
-              <QItemSection>
-                <QItemLabel>{{ node.label }}</QItemLabel>
-              </QItemSection>
-            </QItem>
-          </template>
-        </QTree>
-        <QBtn
-          w-full
-          rounded
-          mt-2
-          icon="add"
-          @click="navigateTo(`/machines`)"
-        >
-          <QTooltip :offset="[0, 5]">
-            {{ t('AddNewDispenser') }}
-          </QTooltip>
-        </QBtn>
-      </div>
-    </QSlideTransition>
-    <QSeparator class="flex-grow my-2" />
-    <QBtn
-      :label="t('Programs')"
-      size="20px"
-      align="left"
-      w-full
-      flat
-      no-caps
-      @click="expandedButtons[1] = !expandedButtons[1]"
-    >
-      <template #default>
-        <QIcon
-          name="expand_more"
-          size="24px"
-          class="rotate-transition"
-          :class="{ rotated: expandedButtons[1] }"
-        />
-      </template>
-    </QBtn>
-    <QSlideTransition>
-      <div v-show="expandedButtons[1]">
-        <div>
-          <QBtn
-            key="programs"
-            :label="t('Programs')"
-            icon="list"
-            align="left"
-            no-caps
-            flat
-            w-full
-            mt-2
-            @click="navigateTo(`/programs`)"
-          />
-        </div>
-      </div>
-    </QSlideTransition>
-    <QSeparator class="flex-grow my-2" />
-    <QBtn
-      :label="t('Recipes')"
-      size="20px"
-      align="left"
-      w-full
-      flat
-      no-caps
-      @click="expandedButtons[2] = !expandedButtons[2]"
-    >
-      <template #default>
-        <QIcon
-          name="expand_more"
-          size="24px"
-          class="rotate-transition"
-          :class="{ rotated: expandedButtons[2] }"
-        />
-      </template>
-    </QBtn>
-    <QSlideTransition>
-      <div v-show="expandedButtons[2]">
-        <div>
-          <QBtn
-            key="show_recipes"
-            :label="t('BatchRecipes')"
-            icon="list"
-            align="left"
-            no-caps
-            flat
-            w-full
-            mt-2
-            @click="navigateTo(`/recipes/batch`)"
-          />
-          <QBtn
-            key="new_job_order"
-            :label="t('NewBatchJobOrder')"
-            icon="add"
-            align="left"
-            no-caps
-            flat
-            w-full
-            mt-2
-            @click="openNewBatchJobOrderDialog"
-          />
-        </div>
-        <div v-show="false">
-          <h3 class="text-center text-5">
-            {{ t('ContinueRecipes') }}
-          </h3>
-          <QBtn
-            key="show_recipes"
-            :label="t('ShowContinueRecipes')"
-            icon="arrow_right"
-            align="left"
-            no-caps
-            flat
-            w-full
-            mt-2
-            @click="navigateTo(`/recipes/continue`)"
-          />
-          <QBtn
-            key="new_job_order"
-            :label="t('NewContinueJobOrder')"
-            icon="add"
-            align="left"
-            no-caps
-            flat
-            w-full
-            mt-2
-            @click="openNewContinueJobOrderDialog"
-          />
-        </div>
-      </div>
-    </QSlideTransition>
-    <QSeparator class="flex-grow my-2" />
-    <LoginInfo
-      absolute
-      bottom-0
-      left-0
-      right-0
-      mx-auto
-      @logout="onLogout"
-    />
+              <QList>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="onClickDetails(node)"
+                >
+                  <QItemSection>{{ t('Details') }}</QItemSection>
+                </QItem>
+                <QItem
+                  v-close-popup
+                  clickable
+                  @click="onClickVnc(node)"
+                >
+                  <QItemSection>{{ t('Screen') }}</QItemSection>
+                </QItem>
+              </QList>
+            </QMenu>
+            <QItemSection>
+              <QItemLabel>{{ node.label }}</QItemLabel>
+            </QItemSection>
+          </QItem>
+        </template>
+      </QTree>
+      <QBtn
+        :label="t('AddNewDispenser')"
+        w-full
+        rounded
+        mt-2
+        icon="add"
+        no-caps
+        @click="navigateTo(`/machines`)"
+      />
+    </div>
+    <QList separator>
+      <QItem clickable to="/jobOrders">
+        <QItemSection avatar>
+          <QIcon name="assignment" />
+        </QItemSection>
+        <QItemSection>
+          <QItemLabel>{{ t('JobOrders') }}</QItemLabel>
+        </QItemSection>
+      </QItem>
+      <QItem clickable to="/recipes/batch">
+        <QItemSection avatar>
+          <QIcon name="science" />
+        </QItemSection>
+        <QItemSection>
+          <QItemLabel>{{ t('BatchRecipes') }}</QItemLabel>
+        </QItemSection>
+      </QItem>
+      <QItem clickable to="/programs">
+        <QItemSection avatar>
+          <QIcon name="settings_applications" />
+        </QItemSection>
+        <QItemSection>
+          <QItemLabel>{{ t('Programs') }}</QItemLabel>
+        </QItemSection>
+      </QItem>
+      <QItem clickable @click="openNewBatchJobOrderDialog">
+        <QItemSection avatar>
+          <QIcon name="add" />
+        </QItemSection>
+        <QItemSection>
+          <QItemLabel>{{ t('NewBatchJobOrder') }}</QItemLabel>
+        </QItemSection>
+      </QItem>
+      <QItem v-show="false" clickable @click="navigateTo(`/recipes/continue`)">
+        <QItemSection avatar>
+          <QIcon name="arrow_right" />
+        </QItemSection>
+        <QItemSection>
+          <QItemLabel>{{ t('ShowContinueRecipes') }}</QItemLabel>
+        </QItemSection>
+      </QItem>
+      <QItem v-show="false" clickable @click="openNewContinueJobOrderDialog">
+        <QItemSection avatar>
+          <QIcon name="add" />
+        </QItemSection>
+        <QItemSection>
+          <QItemLabel>{{ t('NewContinueJobOrder') }}</QItemLabel>
+        </QItemSection>
+      </QItem>
+    </QList>
   </div>
 </template>
 
@@ -367,13 +276,5 @@ function openNewContinueJobOrderDialog() {
 
 .body--dark .active-item {
   color: white;
-}
-
-.rotate-transition {
-  transition: transform 0.3s ease;
-}
-
-.rotated {
-  transform: rotate(180deg);
 }
 </style>

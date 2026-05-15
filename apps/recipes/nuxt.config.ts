@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     recipesDbPort: '5432',
     recipesDbPassword: '123456',
     recipesDbName: 'recipes',
+    uploadDir: './uploads',
     public: {
       kcUrl: 'http://localhost:8080',
       kcRealm: 'teleskop-web',
@@ -29,7 +30,7 @@ export default defineNuxtConfig({
     lazy: false,
     langDir: './locales',
     locales: [
-      { code: 'en', file: 'en.json' },
+      { code: 'en-GB', file: 'en.json' },
       { code: 'tr', file: 'tr.json' },
     ],
   },

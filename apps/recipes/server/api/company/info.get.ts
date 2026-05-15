@@ -9,10 +9,14 @@ export default defineEventHandler(async () => {
       })
       .first()
 
-    const publicUrl = `/uploads/${info.logoPath.split('/').pop()}`
-    return { name: info.name, logoPath: publicUrl }
+    const logoPath = info.logoPath
+      ? `/api/uploads/${info.logoPath}`
+      : null
+
+    return { name: info.name, logoPath }
   } catch (error) {
-    console.error(error.message)
-    return { error: error.message }
+    const errMsg = error instanceof Error ? error.message : 'Unknown error'
+    console.error(errMsg)
+    return { error: errMsg }
   }
 })

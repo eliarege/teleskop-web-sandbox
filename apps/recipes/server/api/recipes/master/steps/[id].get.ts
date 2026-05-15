@@ -45,8 +45,7 @@ export default defineEventHandler(async (event) => {
     .leftJoin('MATERIAL as mat', 'm.material_code', 'mat.material_code')
     .where('s.recipe_id', id)
     .andWhere('s.machine_id', machineId)
-    .whereNotNull('m.material_code')
-    .where('m.step_no', '!=', -1) // Exclude intermediate steps from regular query
+    .where(builder => builder.whereNull('m.step_no').orWhere('m.step_no', '!=', -1)) // Exclude intermediate steps, allow NULL (no materials)
     .orderBy('s.step_no')
 
   // Fetch intermediate materials (step_no = -1)
@@ -89,22 +88,25 @@ export default defineEventHandler(async (event) => {
       recipeSteps.push(program)
     }
 
-    let programSteps = program.steps.find(s => s.stepNo === row.programIndex && s.stepNo === row.programOrder && s.type === row.type)
-    if (!programSteps) {
-      programSteps = { type: row.type, stepNo: row.programIndex, materials: [] }
-      program.steps.push(programSteps)
+    if (row.materialCode != null) {
+      let programSteps = program.steps.find(s => s.stepNo === row.programIndex && s.stepNo === row.programOrder && s.type === row.type)
+      if (!programSteps) {
+        programSteps = { type: row.type, stepNo: row.programIndex, materials: [] }
+        program.steps.push(programSteps)
+      }
+      programSteps.materials.push({
+        materialCode: row.materialCode,
+        materialName: row.materialName,
+        type: row.type,
+        unit: row.unit,
+        isManual: row.isManual,
+        amount: Number(row.amount),
+        orderNo: row.stepNo,
+        programIndex: row.programIndex,
+        nextStep: row.nextStep,
+        calculated: 0,
+      })
     }
-    programSteps.materials.push({
-      materialCode: row.materialCode,
-      materialName: row.materialName,
-      type: row.type,
-      unit: row.unit,
-      isManual: row.isManual,
-      amount: Number(row.amount),
-      orderNo: row.stepNo,
-      programIndex: row.programIndex,
-      nextStep: row.nextStep,
-    })
   })
 
   // Add manual steps to programs
@@ -131,6 +133,7 @@ export default defineEventHandler(async (event) => {
         orderNo: -1,
         programIndex: row.programIndex,
         nextStep: row.nextStep,
+        calculated: 0,
       })
     }
   })

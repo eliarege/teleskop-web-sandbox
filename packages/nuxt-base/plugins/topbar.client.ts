@@ -14,12 +14,18 @@ export default defineNuxtPlugin({
     const { dark, dialog } = useQuasar()
     const appProps = useAppProps()
     const darkMode = useLocalStorage<'auto' | boolean>(`${appProps.name}.theme`, false, {
-      serializer: StorageSerializers.any,
+      serializer: {
+        read: (v: string) => {
+          if (v === 'auto') return 'auto'
+          return v === 'true'
+        },
+        write: (v) => `${v}`,
+      }
     })
 
     watch(darkMode, () => {
       dark.set(darkMode.value)
-    })
+    }, { immediate: true })
 
     type RegisteredItem = {
       getter: () => TopbarMenuItem

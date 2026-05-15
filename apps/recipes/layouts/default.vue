@@ -9,7 +9,7 @@ const { notifySuccess } = useNotify()
 const stateStore = useStateStore()
 const dataStore = useDataStore()
 const route = useRoute()
-const stickyUnavailablePaths = ['/settings', '/jobOrders/print']
+const stickyUnavailablePaths = ['/settings']
 const selectedDispenserUndefinedPaths = ['/', '/machines', '/settings']
 const showDrawer = ref(true)
 const showSticky = ref(!stickyUnavailablePaths.includes(route.path))
@@ -61,27 +61,22 @@ watch(() => route.params, () => {
 <template>
   <QLayout v-show="didInitialise" view="hHh LpR fFf">
     <LoadingSpinner v-if="stateStore.isLoading" />
-    <NavigationBar v-if="route.path !== '/jobOrders/print'"/>
+    <NavigationBar />
     <QDrawer
-      v-if="route.path !== '/settings' && route.path !== '/jobOrders/print'"
+      v-if="route.path !== '/settings'"
       v-model="showDrawer"
       show-if-above
       bordered
       persistent
       behavior="desktop"
     >
-      <QScrollArea
-        class="px-1"
-        style="height: calc(100vh - 51px);"
-      >
-        <SideMenu
-          :key="refreshKey"
-          class="my-1"
-          @logout="onLogout"
-        />
-      </QScrollArea>
+      <SideMenu
+        :key="refreshKey"
+        class="my-1"
+        @logout="onLogout"
+      />
     </QDrawer>
-    <QPageSticky
+    <!-- <QPageSticky
       v-if="showSticky"
       position="top-left"
       :offset="[5, height * (9 / 20)]"
@@ -102,16 +97,12 @@ watch(() => route.params, () => {
           {{ showDrawer ? t('HideMenu') : t('ShowMenu') }}
         </QTooltip>
       </QBtn>
-    </QPageSticky>
-    <QPageContainer>
-      <div class="row">
-        <div class="col-auto">
-          <NavigationButton class="mt-5 ml-5 z-1" />
-        </div>
-        <div class="col">
-          <slot />
-        </div>
-      </div>
+    </QPageSticky> -->
+    <QPageContainer class="relative">
+      <NavigationButton class="absolute z-1 mt-2 ml-2" />
+      <QPage>
+        <slot />
+      </QPage>
     </QPageContainer>
   </QLayout>
 </template>

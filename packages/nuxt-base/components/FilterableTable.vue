@@ -350,331 +350,329 @@ function onRequest(pagination: QTableProps['pagination']) {
 </script>
 
 <template>
-  <div tabindex="0">
-    <q-table
-      v-model:pagination="tablePagination"
-      :rows="rows"
-      :columns="columns"
-      row-key="id"
-      :sort-method="props?.customSortMethod"
-      :filter-method="customFilterMethod"
-      :filter="tableFilter"
-      flat
-      :dense
-      bordered
-      :virtual-scroll="isVirtualScroll"
-      :virtual-scroll-sticky-size-start="48"
-      class="text-override-left filterable-table virtual-scroll"
-      column-sort-order="da"
-      :visible-columns="visibleColumns"
-      :rows-per-page-options="rowsPerPageOptions"
-      @update:pagination="e => tablePagination = e"
-      @request="(reqProp) => onRequest(reqProp.pagination)"
-    >
-      <template #top>
-        <div class="flex w-full flex-nowrap">
+  <q-table
+    v-model:pagination="tablePagination"
+    :rows="rows"
+    :columns="columns"
+    row-key="id"
+    :sort-method="props?.customSortMethod"
+    :filter-method="customFilterMethod"
+    :filter="tableFilter"
+    flat
+    :dense
+    bordered
+    :virtual-scroll="isVirtualScroll"
+    :virtual-scroll-sticky-size-start="48"
+    class="text-override-left filterable-table virtual-scroll"
+    column-sort-order="da"
+    :visible-columns="visibleColumns"
+    :rows-per-page-options="rowsPerPageOptions"
+    @update:pagination="e => tablePagination = e"
+    @request="(reqProp) => onRequest(reqProp.pagination)"
+  >
+    <template #top>
+      <div class="flex w-full flex-nowrap">
+        <div
+          class="flex-center"
+          :class="dense ? 'filter-border-dense' : 'filter-border'"
+        >
           <div
-            class="flex-center"
-            :class="dense ? 'filter-border-dense' : 'filter-border'"
+            class="filter-icon"
+            @click="showVisibilityMenu = !showVisibilityMenu"
           >
-            <div
-              class="filter-icon"
-              @click="showVisibilityMenu = !showVisibilityMenu"
-            >
-              <q-icon
-                name="filter_alt"
-                :size="dense ? '1rem' : '1.5rem'"
-              />
-            </div>
-            <q-input
-              v-show="showVisibilityMenu"
-              v-if="!props.disableSearchFilter"
-              v-model="tableFilter"
-              borderless
-              dense
-              debounce="300"
-              :placeholder="t('search')"
-            />
-            <!-- TODO: If the section would be settings this displayment is much better -->
-            <q-select
-              v-show="showVisibilityMenu"
-              v-model="visibleColumns"
-              multiple
-              borderless
-              dense
-              options-dense
-              :display-value="$q.lang.table.columns"
-              emit-value
-              map-options
-              :options="columns"
-              option-value="name"
+            <q-icon
+              name="filter_alt"
+              :size="dense ? '1rem' : '1.5rem'"
             />
           </div>
-          <div class="flex gap-x-5 gap-y-1 px-5 w-full">
-            <div
-              v-for="(filter, index) in filterSlots"
-              :key="index"
-              :class="filter.isOrderFilter ? 'filter-slots-order' : 'filter-slots'"
-            >
-              {{ filter.label }} &nbsp;&nbsp;
-              <q-icon name="close" @click="removeFilter(index)" />
-            </div>
-          </div>
-          <div>
-            <slot name="top-right" />
+          <q-input
+            v-show="showVisibilityMenu"
+            v-if="!props.disableSearchFilter"
+            v-model="tableFilter"
+            borderless
+            dense
+            debounce="300"
+            :placeholder="t('search')"
+          />
+          <!-- TODO: If the section would be settings this displayment is much better -->
+          <q-select
+            v-show="showVisibilityMenu"
+            v-model="visibleColumns"
+            multiple
+            borderless
+            dense
+            options-dense
+            :display-value="$q.lang.table.columns"
+            emit-value
+            map-options
+            :options="columns"
+            option-value="name"
+          />
+        </div>
+        <div class="flex gap-x-5 gap-y-1 px-5 w-full">
+          <div
+            v-for="(filter, index) in filterSlots"
+            :key="index"
+            :class="filter.isOrderFilter ? 'filter-slots-order' : 'filter-slots'"
+          >
+            {{ filter.label }} &nbsp;&nbsp;
+            <q-icon name="close" @click="removeFilter(index)" />
           </div>
         </div>
-      </template>
-      <template #header="tableProps">
-        <q-tr :props="tableProps">
-          <q-th v-if="props.isExpandable" style="width: 5rem; max-width: 20%" />
-          <q-th
-            v-for="(col, index) in tableProps.cols"
-            :key="col.name"
-            :props="tableProps"
+        <div>
+          <slot name="top-right" />
+        </div>
+      </div>
+    </template>
+    <template #header="tableProps">
+      <q-tr :props="tableProps">
+        <q-th v-if="props.isExpandable" style="width: 5rem; max-width: 20%" />
+        <q-th
+          v-for="(col, index) in tableProps.cols"
+          :key="col.name"
+          :props="tableProps"
+        >
+          <div
+            class="column-group text-override-left-header"
+            :style="col.filterable ? 'cursor: pointer;' : ''"
+            @click="openMenu(col.name)"
           >
-            <div
-              class="column-group text-override-left-header"
-              :style="col.filterable ? 'cursor: pointer;' : ''"
-              @click="openMenu(col.name)"
-            >
-              {{ col.label }}
-              <q-icon v-if="col.filterable" name="expand_more" />
-            </div>
-            <q-menu
-              v-if="currentColumn === col.name && col.filterable "
-              style=""
-            >
-              <q-list class="mx-4 mb-3 mt-2">
-                <div class="flex items-center justify-center gap-5 h-12">
+            {{ col.label }}
+            <q-icon v-if="col.filterable" name="expand_more" />
+          </div>
+          <q-menu
+            v-if="currentColumn === col.name && col.filterable "
+            style=""
+          >
+            <q-list class="mx-4 mb-3 mt-2">
+              <div class="flex items-center justify-center gap-5 h-12">
+                <q-btn
+                  v-for="arrow in ['arrow_downward', 'arrow_upward']"
+                  :key="arrow"
+                  v-close-popup
+                  :icon="arrow"
+                  class="ordering-buttons"
+                  @click="updateSortOrder(col, index, arrow === 'arrow_downward')"
+                />
+              </div>
+              <q-separator />
+              <div v-if="col.filterType === 'multiselect' || col.filterType === 'select'">
+                <div v-if="checkForButtonsInsteadOfSelect(col)" class="flex flex-col gap-5 m-2">
                   <q-btn
-                    v-for="arrow in ['arrow_downward', 'arrow_upward']"
-                    :key="arrow"
-                    v-close-popup
-                    :icon="arrow"
-                    class="ordering-buttons"
-                    @click="updateSortOrder(col, index, arrow === 'arrow_downward')"
-                  />
-                </div>
-                <q-separator />
-                <div v-if="col.filterType === 'multiselect' || col.filterType === 'select'">
-                  <div v-if="checkForButtonsInsteadOfSelect(col)" class="flex flex-col gap-5 m-2">
-                    <q-btn
-                      v-for="opt in col.selectionOptions"
-                      :key="opt"
-                      :label="opt[col.optionLabel]"
-                      no-caps
-                      @click="selectedOptions[index] = opt, pushToFilters(col, index)"
-                    />
-                  </div>
-                  <q-select
-                    v-else
-                    v-model="selectedOptions[index]"
-                    :options="col.selectionOptions"
-                    :option-label="col?.optionLabel"
-                    :option-value="col?.optionvalue"
-                    clearable
-                    :multiple="col.filterType === 'multiselect'"
-                    :label="t('selectOption')"
-                    style="width: 150px;"
-                  />
-                </div>
-                <div v-if="col.filterType === 'comparison'" class="flex flex-row justify-center items-center gap-2 mt-5">
-                  {{ col.label }}
-                  {{ comparisonOptionInit(index) }}
-                  <q-select
-                    v-model="selectedOptions[index].operator"
-                    :options="comparisonOperations"
-                    option-label="symbol"
-                    overflow="hidden"
-                    style="width: 50px;"
-                    filled
-                    dense
-                    class="select-dropdown-removal"
-                  />
-                  <span class="flex items-center">
-                    <q-input
-                      v-if="selectedOptions[index]?.operator"
-                      v-model="selectedOptions[index].number1"
-                      filled
-                      clearable
-                      dense
-                      style="width: 100px;"
-                    />
-                    <span v-if="selectedOptions[index]?.operator?.text === 'between'" class="flex items-center">
-                      &nbsp; {{ t('and') }} &nbsp;
-                      <q-input
-                        v-model="selectedOptions[index].number2"
-                        filled
-                        clearable
-                        dense
-                        style="width: 100px;"
-                      />
-                    </span>
-                  </span>
-                </div>
-                <div v-if="col.filterType === 'equals' || col.filterType === 'includes'" class="flex flex-row justify-center items-center mt-5">
-                  {{ `${col.label}  ${t(`${col.filterType}`)} ` }} &nbsp;
-                  <span class="flex items-center">
-                    <q-input
-                      v-model="selectedOptions[index]"
-                      filled
-                      clearable
-                      dense
-                      style="width: 100px;"
-                    />
-                  </span>
-                </div>
-                <div v-if="col.filterType === 'date'">
-                  <q-tabs
-                    v-model="dateTabPanel"
-                    dense
-                    class="text-grey"
-                    active-color="black"
-                    indicator-color="black"
-                    align="justify"
-                    narrow-indicator
-                  >
-                    <q-tab name="intervals" :label="t('intervals')" />
-                    <q-tab name="custom" :label="t('custom')" />
-                  </q-tabs>
-
-                  <q-separator />
-                  <q-tab-panels v-model="dateTabPanel" animated>
-                    <q-tab-panel name="intervals">
-                      <span
-                        v-for="(date, indexInner) in dateOptions"
-                        :key="date.text"
-                      >
-                        <q-item
-                          v-if="date.text !== 'Custom'"
-                          v-close-popup
-                          clickable
-                          @click="pushToFilters(col, indexInner)"
-                        >
-                          <q-item-section>{{ date.text }}</q-item-section>
-                        </q-item>
-                        <q-separator v-if="indexInner === 3" />
-                      </span>
-                    </q-tab-panel>
-
-                    <q-tab-panel name="custom" class="m-0">
-                      <div v-if="showTimeSelect" class="flex">
-                        <q-input
-                          v-model="timeIntervalBoundary1"
-                          dense
-                          filled
-                          class="w-30"
-                          mask="time"
-                          :rules="['time']"
-                        >
-                          <template #append>
-                            <q-icon name="access_time" />
-                          </template>
-                        </q-input>
-                        <q-space />
-                        <q-input
-                          v-model="timeIntervalBoundary2"
-                          dense
-                          class="w-30"
-                          filled
-                          mask="time"
-                          :rules="['time']"
-                        >
-                          <template #append>
-                            <q-icon name="access_time" />
-                          </template>
-                        </q-input>
-                      </div>
-                      <q-date
-                        v-model="dateOptions[8]"
-                        range
-                        minimal
-                        square
-                        flat
-                        bordered
-                      >
-                        <template #default>
-                          <div class="q-pa-sm flex items-center gap-2">
-                            <q-btn dense @click="showTimeSelect = !showTimeSelect">
-                              {{ !showTimeSelect ? t('addTime') : t('removeTime') }}
-                            </q-btn>
-
-                            <q-space />
-
-                            <!-- FIXME: HARDOCDED: '8' is the index of custom object of dateOptions array if more spesific intervals added it should be changed -->
-                            <q-btn
-                              v-close-popup
-                              dense
-                              @click="pushToFilters(col, 8)"
-                            >
-                              {{ t('ok') }}
-                            </q-btn>
-                          </div>
-                        </template>
-                      </q-date>
-                    </q-tab-panel>
-                  </q-tab-panels>
-                </div>
-                <div v-if="col.filterType === 'boolean'">
-                  <q-radio
-                    v-model="selectedOptions[index]"
-                    :label="col.trueLabel ?? t('true')"
-                    :val="1"
-                  />
-                  <q-radio
-                    v-model="selectedOptions[index]"
-                    :label="col.falseLabel ?? t('false')"
-                    :val="0"
-                  />
-                </div>
-                <div class="flex justify-end">
-                  <q-btn
-                    v-if="col.filterType !== 'date' && col.filterType && !checkForButtonsInsteadOfSelect(col)"
-                    v-close-popup
-                    class="ok-btn"
+                    v-for="opt in col.selectionOptions"
+                    :key="opt"
+                    :label="opt[col.optionLabel]"
                     no-caps
-                    @click="pushToFilters(col, index)"
-                  >
-                    {{ t('ok') }}
-                  </q-btn>
+                    @click="selectedOptions[index] = opt, pushToFilters(col, index)"
+                  />
                 </div>
-              </q-list>
-            </q-menu>
-          </q-th>
-        </q-tr>
-      </template>
-      <template #body="bodyProps">
-        <slot name="custombody" v-bind="bodyProps">
-          <q-tr
+                <q-select
+                  v-else
+                  v-model="selectedOptions[index]"
+                  :options="col.selectionOptions"
+                  :option-label="col?.optionLabel"
+                  :option-value="col?.optionvalue"
+                  clearable
+                  :multiple="col.filterType === 'multiselect'"
+                  :label="t('selectOption')"
+                  style="width: 150px;"
+                />
+              </div>
+              <div v-if="col.filterType === 'comparison'" class="flex flex-row justify-center items-center gap-2 mt-5">
+                {{ col.label }}
+                {{ comparisonOptionInit(index) }}
+                <q-select
+                  v-model="selectedOptions[index].operator"
+                  :options="comparisonOperations"
+                  option-label="symbol"
+                  overflow="hidden"
+                  style="width: 50px;"
+                  filled
+                  dense
+                  class="select-dropdown-removal"
+                />
+                <span class="flex items-center">
+                  <q-input
+                    v-if="selectedOptions[index]?.operator"
+                    v-model="selectedOptions[index].number1"
+                    filled
+                    clearable
+                    dense
+                    style="width: 100px;"
+                  />
+                  <span v-if="selectedOptions[index]?.operator?.text === 'between'" class="flex items-center">
+                    &nbsp; {{ t('and') }} &nbsp;
+                    <q-input
+                      v-model="selectedOptions[index].number2"
+                      filled
+                      clearable
+                      dense
+                      style="width: 100px;"
+                    />
+                  </span>
+                </span>
+              </div>
+              <div v-if="col.filterType === 'equals' || col.filterType === 'includes'" class="flex flex-row justify-center items-center mt-5">
+                {{ `${col.label}  ${t(`${col.filterType}`)} ` }} &nbsp;
+                <span class="flex items-center">
+                  <q-input
+                    v-model="selectedOptions[index]"
+                    filled
+                    clearable
+                    dense
+                    style="width: 100px;"
+                  />
+                </span>
+              </div>
+              <div v-if="col.filterType === 'date'">
+                <q-tabs
+                  v-model="dateTabPanel"
+                  dense
+                  class="text-grey"
+                  active-color="black"
+                  indicator-color="black"
+                  align="justify"
+                  narrow-indicator
+                >
+                  <q-tab name="intervals" :label="t('intervals')" />
+                  <q-tab name="custom" :label="t('custom')" />
+                </q-tabs>
+
+                <q-separator />
+                <q-tab-panels v-model="dateTabPanel" animated>
+                  <q-tab-panel name="intervals">
+                    <span
+                      v-for="(date, indexInner) in dateOptions"
+                      :key="date.text"
+                    >
+                      <q-item
+                        v-if="date.text !== 'Custom'"
+                        v-close-popup
+                        clickable
+                        @click="pushToFilters(col, indexInner)"
+                      >
+                        <q-item-section>{{ date.text }}</q-item-section>
+                      </q-item>
+                      <q-separator v-if="indexInner === 3" />
+                    </span>
+                  </q-tab-panel>
+
+                  <q-tab-panel name="custom" class="m-0">
+                    <div v-if="showTimeSelect" class="flex">
+                      <q-input
+                        v-model="timeIntervalBoundary1"
+                        dense
+                        filled
+                        class="w-30"
+                        mask="time"
+                        :rules="['time']"
+                      >
+                        <template #append>
+                          <q-icon name="access_time" />
+                        </template>
+                      </q-input>
+                      <q-space />
+                      <q-input
+                        v-model="timeIntervalBoundary2"
+                        dense
+                        class="w-30"
+                        filled
+                        mask="time"
+                        :rules="['time']"
+                      >
+                        <template #append>
+                          <q-icon name="access_time" />
+                        </template>
+                      </q-input>
+                    </div>
+                    <q-date
+                      v-model="dateOptions[8]"
+                      range
+                      minimal
+                      square
+                      flat
+                      bordered
+                    >
+                      <template #default>
+                        <div class="q-pa-sm flex items-center gap-2">
+                          <q-btn dense @click="showTimeSelect = !showTimeSelect">
+                            {{ !showTimeSelect ? t('addTime') : t('removeTime') }}
+                          </q-btn>
+
+                          <q-space />
+
+                          <!-- FIXME: HARDOCDED: '8' is the index of custom object of dateOptions array if more spesific intervals added it should be changed -->
+                          <q-btn
+                            v-close-popup
+                            dense
+                            @click="pushToFilters(col, 8)"
+                          >
+                            {{ t('ok') }}
+                          </q-btn>
+                        </div>
+                      </template>
+                    </q-date>
+                  </q-tab-panel>
+                </q-tab-panels>
+              </div>
+              <div v-if="col.filterType === 'boolean'">
+                <q-radio
+                  v-model="selectedOptions[index]"
+                  :label="col.trueLabel ?? t('true')"
+                  :val="1"
+                />
+                <q-radio
+                  v-model="selectedOptions[index]"
+                  :label="col.falseLabel ?? t('false')"
+                  :val="0"
+                />
+              </div>
+              <div class="flex justify-end">
+                <q-btn
+                  v-if="col.filterType !== 'date' && col.filterType && !checkForButtonsInsteadOfSelect(col)"
+                  v-close-popup
+                  class="ok-btn"
+                  no-caps
+                  @click="pushToFilters(col, index)"
+                >
+                  {{ t('ok') }}
+                </q-btn>
+              </div>
+            </q-list>
+          </q-menu>
+        </q-th>
+      </q-tr>
+    </template>
+    <template #body="bodyProps">
+      <slot name="custombody" v-bind="bodyProps">
+        <q-tr
+          :props="bodyProps"
+          :class="{ 'selected-row': selected === bodyProps.row }"
+          style="cursor: pointer;"
+          :style="selected === bodyProps.row
+            ? 'background-color: #cce8ff;'
+            : bodyProps.rowIndex % 2
+              ? `background-color: rgb(0, 0, 0, 0.1)`
+              : '' "
+          @click="selectRow(bodyProps.row)"
+          @contextmenu="selectRow(bodyProps.row)"
+        >
+          <q-td
+            v-for="col in bodyProps.cols"
+            :key="col.name"
+            class="row-class"
             :props="bodyProps"
-            :class="{ 'selected-row': selected === bodyProps.row }"
-            style="cursor: pointer;"
-            :style="selected === bodyProps.row
-              ? 'background-color: #cce8ff;'
-              : bodyProps.rowIndex % 2
-                ? `background-color: rgb(0, 0, 0, 0.1)`
-                : '' "
-            @click="selectRow(bodyProps.row)"
-            @contextmenu="selectRow(bodyProps.row)"
+            @dblclick="handleDoubleClick(bodyProps.row)"
           >
-            <q-td
-              v-for="col in bodyProps.cols"
-              :key="col.name"
-              class="row-class"
-              :props="bodyProps"
-              @dblclick="handleDoubleClick(bodyProps.row)"
-            >
-              <slot :name="`body-cell-${col.name}`" v-bind="{ ...col, row: bodyProps.row }">
-                {{ col.value }}
-              </slot>
-            </q-td>
-          </q-tr>
-          <slot name="contextmenu" />
-        </slot>
-      </template>
-    </q-table>
-  </div>
+            <slot :name="`body-cell-${col.name}`" v-bind="{ ...col, row: bodyProps.row }">
+              {{ col.value }}
+            </slot>
+          </q-td>
+        </q-tr>
+        <slot name="contextmenu" />
+      </slot>
+    </template>
+  </q-table>
 </template>
 
 <style scoped>

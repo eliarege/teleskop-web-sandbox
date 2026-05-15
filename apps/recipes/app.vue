@@ -8,12 +8,12 @@ setLocale(state.locale)
 </script>
 
 <template>
-  <NuxtLayout>
+  <NuxtLayout class="recipes">
     <NuxtPage />
   </NuxtLayout>
 </template>
 
-<style>
+<style lang="postcss">
 ::-webkit-scrollbar-track {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: #f5f5f5;
@@ -29,5 +29,11 @@ setLocale(state.locale)
   border-radius: 10px;
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: #000000;
+}
+
+.body--dark .recipes .virtual-scroll .q-table__top,
+.body--dark .recipes .virtual-scroll .q-table__bottom,
+.body--dark .recipes .virtual-scroll thead tr:first-child th {
+  @apply !bg-truegray-900;
 }
 </style>
