@@ -1,8 +1,65 @@
 # Changelog
 
+## 0.79.0 - 2026-05-16
+
+[Compare Changes](77ad8edc3ac22cd9ecbd847b2bc4069695cf0e11...27e04f649fead421146db285505af4d28977386b)
+
+### 🚀 Features
+
+-  **CD**: Track machine temperature and manual datetime ([cef9d01](cef9d0199910f587cc4ab09dd8b62026df38b663))
+-  **CD**: Add handling for batch continue and stopped events in MachineSession ([0cc24a3](0cc24a38f1f4595ff0386f516fcda2a5f56f3431))
+- **machine-status**: Add TBB model to fetched machine status ([2cda9ee](2cda9ee05148dbec795db0d21711935c33385f4b))
+- **vnc**: Extract machine panels and add Tonello support ([739a053](739a053348a732fc59d8d45ff13d2b0b77695683))
+-  **CD**: Persist chemical requests in DB and restore on session init ([de37fc9](de37fc9d4d393c1945249c17407b90da66b8c3d9))
+-  **CD**: Add logging for chemical request insertion and response handling ([2d068c9](2d068c9972909fdd6300119265877a025ce9cd6d))
+-  **AR**: Gerçekleşen ve Teorik Programlara tıklayınca timeline'ın setlenmesi sağlandı. ([390691c](390691c679ac093e02db351e1d4fca2e4c27120c))
+- **migrations**: Add TonelloEvent column to BACHEMICALREQUEST table ([c0c6999](c0c6999ee5acd1323b65de6b06c61d75fef2a907))
+-  **RE**: Support material-less programs and improve job order UX ([27e04f6](27e04f649fead421146db285505af4d28977386b))
+
+### 🐛 Bug Fixes
+
+-  **CD**: Child logger with machineId embedded, better logging/handling of fetch errors ([5fa1f77](5fa1f77a386f8eb88d3e830480d34f6d626fbc6c))
+-  **PB**: Add error handling for unplanned event drop scheduling ([457bddf](457bddfe9e7899bafc29aa99c16cadbd12611e53))
+-  **MM**: Add null checks for stopReasonDateTime and manualReasonDateTime in machine data ([3149315](31493151d1c4b7e80bfb53b7dff3eea59a7c3b6a))
+-  **AR**: Update ArchivedDigitalValue interface to allow null for DI, DOF, and DOL ([68265f0](68265f0f7a09f18a616d56742532be0aa5304846))
+- **websockify**: Tonello machines should have port 5900 ([c64f795](c64f795bbcf7c357b0139469a083d6c6dcde6e93))
+-  **CD**: Separate DTO from domain types and preserve raw datetime ([c9c382a](c9c382a83b1a7ade655ad18093b341920e2a8026))
+-  **PB**: Query fetching for unplanned events should only fetch non started events ([600eea2](600eea265b9f8f993ebe79b378fd7578433f243f))
+-  **CD**: Use correct requestOrder and totalRequests when sending to dispensing-manager ([fba778c](fba778cadec790f73957e05e660438a76c86a943))
+-  **CD**: Adjust step number to be 0-based for Tonello steps ([febc25c](febc25c20b35f42082bfdc0a4edb215b020b4c7b))
+-  **CD**: Subtract 1 ms from command.endTime with no CommandEndEvent ([a60f721](a60f721cf44ae45de52cef3bd8dca82f797f4d5a))
+-  **PB**: Change body to query for unplanBatch request ([26b97fd](26b97fd923d730b94f67069a98d8923ff3694b43))
+-  **PE**: Program değişikliklerini kullanıcıya bildirmek amacı ile programda değişiklik var ise Topbar'daki program adının yanına (*) karakteri eklendi. ([e91a8bb](e91a8bb8d4158b055ee01507b00f9b68b6e2571b))
+-  **PE**: Kullanıcı programdan çıkmak istediği zaman çıkan 'Kaydedilmemiş Değişiklikler' dialogu kapatılmak istenirse programdaki mevcut değişiklikler kayboluyordu. Değişiklikleri kaybetmemek amacı ile route kontolü eklendi. ([3023c28](3023c28366af96fcea9720d11d557031dbc4842b))
+-  **PE**: Kullanıcı programda değişiklik yapıp farklı kaydet yaptığı zaman yeni açılan programda adımların sırası hatalı gösteriliyordu. Program klonlanarak hata giderildi. ([46756c7](46756c756e526e7add36fcf3993c6b1b6186302b))
+-  **CD**: Update programNoList separator from comma to hyphen for batchStartEndRepo ([87f7563](87f75633dcd6db2325157b502a96452c105c52ba))
+-  **CD**: Add trailing comma in buildRequestString to match legacy format ([7bf2327](7bf2327f6b2a9823712ce9b365b9e361862f7093))
+-  **MM**: Count null-status machines as passive ([8ddfdfa](8ddfdfa7a826e6750cc5d126987f060445bea7d9))
+-  **CD**: Allow processType selection for tonello programs, hide parallel step related items from program editor context menu ([4b126da](4b126da35988dd899b24ec0628dd0f7d2623db02))
+- **recipes**: Hide manual step rows in ProgramTemplate and RecipeEditDialog components ([d12cdef](d12cdef6fe169e6d937be9e16f3772f881b1428f))
+- **recipes**: Adjust text positioning for PreparedBy and PreparationDate in PDF ([c452f6f](c452f6fd90e03c7427b04f724bedbaa102cd9cf0))
+-  **CD**: Remove subMs logic from command endtimes ([b00beed](b00beeded692aad1bff22c0a709f78b523ce8657))
+-  **CD**: Align response handling with machineId and 0-based steps ([4f59963](4f59963d05e9460681302b7e11c60365a29ca348))
+-  **AR**: Localize archive timestamps and durations ([2aed236](2aed23682909740a4794ee8f25783fad518432fc))
+-  **AR**: Incorrect import at ArchiveChartZoomProgress ([27ebb78](27ebb78246ef6b4b3a1295ea5e98cc02ae28eaa1))
+-  **CD**: Add condition to update end time only for open steps ([bef0bcb](bef0bcb298b61ec7659efa9022c8c5d1b549a810))
+-  **CD**: Add eventId to logger warnings for better traceability ([c5f6052](c5f6052f05623ae5731b7bafe7baedb4a7316117))
+-  **CD**: Remove PID and hostname from logs to reduce noise in containerized environments ([467a4f8](467a4f87f083d57ad47ad658437ef6431e5ad83a))
+
+### ♻️ Refactor
+
+-  **CD**: Rename totalNumberOfRequest to totalRequestsInProgram for clarity ([82e2e67](82e2e67a2ba6aa4af42fdd59777303a12a1e3c7c))
+-  **AR**: Replace date-fns format with formatDuration ([5dff0da](5dff0da2301049e82b03178df5aed4a218542d6d))
+
+### ✅ Testing
+
+-  **CD**: Remove unused mockTonelloApi and update related tests ([6660eeb](6660eebc2b0cd062e8468f55ea28808f83010f06))
+-  **CD**: Add empty rawDatetime property to event fixtures ([2fc6a78](2fc6a78770a0d56ba619a2b8cabdb469c18cb594))
+-  **CD**: Refactor fixtures to object-based API and fix chemical request routing tests ([2bcac93](2bcac938a4863abbb063eb8b2ba6b34186f26c82))
+
 ## 0.78.0 - 2026-05-08
 
-[Compare Changes](6286b26f1ba07fd2ebc459577845acfcdc40384a...0f7942238f8d55c610cb18880a655757a76131a2)
+[Compare Changes](6286b26f1ba07fd2ebc459577845acfcdc40384a...77ad8edc3ac22cd9ecbd847b2bc4069695cf0e11)
 
 ### 🚀 Features
 
