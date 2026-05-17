@@ -40,20 +40,22 @@ watch(() => programHeader.value, (header) => {
   if (!editedProgram.value)
     return
 
-  editedProgram.value.chemSteps = adjustStepCount(
-    editedProgram.value.chemSteps,
-    header.chemRequests,
-  )
+  const allCurrentSteps = [
+    ...(editedProgram.value.chemSteps || []),
+    ...(editedProgram.value.dyeSteps || []),
+    ...(editedProgram.value.saltSteps || []),
+  ]
+  let maxOrderNo = allCurrentSteps.length > 0 ? Math.max(...allCurrentSteps.map(s => s.orderNo)) : 0
 
-  editedProgram.value.dyeSteps = adjustStepCount(
-    editedProgram.value.dyeSteps,
-    header.dyeRequests,
-  )
+  editedProgram.value.chemSteps = adjustStepCount(editedProgram.value.chemSteps, header.chemRequests, maxOrderNo + 1)
+  if (editedProgram.value.chemSteps.length > 0)
+    maxOrderNo = Math.max(maxOrderNo, Math.max(...editedProgram.value.chemSteps.map(s => s.orderNo)))
 
-  editedProgram.value.saltSteps = adjustStepCount(
-    editedProgram.value.saltSteps,
-    header.saltRequests,
-  )
+  editedProgram.value.dyeSteps = adjustStepCount(editedProgram.value.dyeSteps, header.dyeRequests, maxOrderNo + 1)
+  if (editedProgram.value.dyeSteps.length > 0)
+    maxOrderNo = Math.max(maxOrderNo, Math.max(...editedProgram.value.dyeSteps.map(s => s.orderNo)))
+
+  editedProgram.value.saltSteps = adjustStepCount(editedProgram.value.saltSteps, header.saltRequests, maxOrderNo + 1)
 
   recalculateAllOrderNumbers()
 
@@ -72,22 +74,26 @@ async function getProgram() {
 
     if (program.value) {
       const chemSteps = program.value.steps.filter(step => step.type === RecipeType.CHEM)
-      program.value.chemSteps = ensureStepCount(
-        groupMaterialsByOrderNo(getAllMaterialsFromSteps(chemSteps)),
-        programHeader.value.chemRequests,
-      )
+      const chemGrouped = groupMaterialsByOrderNo(getAllMaterialsFromSteps(chemSteps))
 
       const dyeSteps = program.value.steps.filter(step => step.type === RecipeType.DYE)
-      program.value.dyeSteps = ensureStepCount(
-        groupMaterialsByOrderNo(getAllMaterialsFromSteps(dyeSteps)),
-        programHeader.value.dyeRequests,
-      )
+      const dyeGrouped = groupMaterialsByOrderNo(getAllMaterialsFromSteps(dyeSteps))
 
       const saltSteps = program.value.steps.filter(step => step.type === RecipeType.SALT)
-      program.value.saltSteps = ensureStepCount(
-        groupMaterialsByOrderNo(getAllMaterialsFromSteps(saltSteps)),
-        programHeader.value.saltRequests,
-      )
+      const saltGrouped = groupMaterialsByOrderNo(getAllMaterialsFromSteps(saltSteps))
+
+      const allExisting = [...chemGrouped, ...dyeGrouped, ...saltGrouped]
+      let maxOrderNo = allExisting.length > 0 ? Math.max(...allExisting.map(s => s.orderNo)) : 0
+
+      program.value.chemSteps = ensureStepCount(chemGrouped, programHeader.value.chemRequests, maxOrderNo + 1)
+      if (program.value.chemSteps.length > 0)
+        maxOrderNo = Math.max(maxOrderNo, Math.max(...program.value.chemSteps.map(s => s.orderNo)))
+
+      program.value.dyeSteps = ensureStepCount(dyeGrouped, programHeader.value.dyeRequests, maxOrderNo + 1)
+      if (program.value.dyeSteps.length > 0)
+        maxOrderNo = Math.max(maxOrderNo, Math.max(...program.value.dyeSteps.map(s => s.orderNo)))
+
+      program.value.saltSteps = ensureStepCount(saltGrouped, programHeader.value.saltRequests, maxOrderNo + 1)
     }
   }
   editedProgram.value = klona(program.value)
@@ -107,11 +113,12 @@ function groupMaterialsByOrderNo(materials: RecipeMasterMaterial[]) {
   return Object.values(grouped)
 }
 
-function ensureStepCount(steps: { orderNo: number, materials: RecipeMasterMaterial[] }[], requiredCount: number) {
+function ensureStepCount(steps: { orderNo: number, materials: RecipeMasterMaterial[] }[], requiredCount: number, nextOrderNo?: number) {
   const filledSteps = [...steps]
+  let orderNo = nextOrderNo ?? (filledSteps.length > 0 ? Math.max(...filledSteps.map(s => s.orderNo)) + 1 : 1)
 
-  for (let i = filledSteps.length + 1; i <= requiredCount; i++) {
-    filledSteps.push({ orderNo: i, materials: [] })
+  while (filledSteps.length < requiredCount) {
+    filledSteps.push({ orderNo: orderNo++, materials: [] })
   }
   while (filledSteps.length > requiredCount) {
     filledSteps.pop()
@@ -119,12 +126,12 @@ function ensureStepCount(steps: { orderNo: number, materials: RecipeMasterMateri
   return filledSteps
 }
 
-function adjustStepCount(steps: { orderNo: number, materials: RecipeMasterMaterial[] }[], newCount: number) {
+function adjustStepCount(steps: { orderNo: number, materials: RecipeMasterMaterial[] }[], newCount: number, nextOrderNo?: number) {
   if (steps.length === newCount)
     return steps
 
   if (steps.length < newCount) {
-    return ensureStepCount(steps, newCount)
+    return ensureStepCount(steps, newCount, nextOrderNo)
   } else {
     const result = [...steps.slice(0, newCount)]
     return result
@@ -146,33 +153,28 @@ function recalculateAllOrderNumbers() {
   if (!editedProgram.value)
     return
 
-  let currentOrderNo = 1
+  // Sort all steps together by their current orderNo to preserve user-defined ordering
+  const allSteps = [
+    ...(editedProgram.value.chemSteps || []),
+    ...(editedProgram.value.dyeSteps || []),
+    ...(editedProgram.value.saltSteps || []),
+  ].sort((a, b) => a.orderNo - b.orderNo)
+
+  allSteps.forEach((step, idx) => {
+    step.orderNo = idx + 1
+    step.materials.forEach((material) => {
+      material.orderNo = step.orderNo
+    })
+  })
 
   if (editedProgram.value.chemSteps) {
-    editedProgram.value.chemSteps.forEach((step) => {
-      step.orderNo = currentOrderNo++
-      step.materials.forEach((material) => {
-        material.orderNo = step.orderNo
-      })
-    })
+    editedProgram.value.chemSteps.sort((a, b) => a.orderNo - b.orderNo)
   }
-
   if (editedProgram.value.dyeSteps) {
-    editedProgram.value.dyeSteps.forEach((step) => {
-      step.orderNo = currentOrderNo++
-      step.materials.forEach((material) => {
-        material.orderNo = step.orderNo
-      })
-    })
+    editedProgram.value.dyeSteps.sort((a, b) => a.orderNo - b.orderNo)
   }
-
   if (editedProgram.value.saltSteps) {
-    editedProgram.value.saltSteps.forEach((step) => {
-      step.orderNo = currentOrderNo++
-      step.materials.forEach((material) => {
-        material.orderNo = step.orderNo
-      })
-    })
+    editedProgram.value.saltSteps.sort((a, b) => a.orderNo - b.orderNo)
   }
 }
 
