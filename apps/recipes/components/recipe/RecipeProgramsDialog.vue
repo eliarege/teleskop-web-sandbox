@@ -3,7 +3,8 @@ import { useDialogPluginComponent, useQuasar } from 'quasar'
 import draggable from 'vuedraggable'
 import { klona } from 'klona'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import type { ProgramHeader, RecipeProgramMaster, RecipeProgramMasterStep } from '~/shared/types'
+import type { OptionMap, ProgramHeader, RecipeProgramMaster, RecipeProgramMasterStep } from '~/shared/types'
+import { getRecipeTypeOptions, getUnitOptions } from '~/shared/enums'
 
 const props = defineProps({
   recipeId: {
@@ -14,10 +15,6 @@ const props = defineProps({
     type: Boolean,
   },
 })
-interface OptionMap {
-  id: number
-  name: string
-}
 const { t } = useI18n()
 const q = useQuasar()
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent()
@@ -38,8 +35,8 @@ const defaultRecipe: RecipeProgramMaster = {
 }
 const defaultSteps = ref<RecipeProgramMasterStep[]>([])
 const recipeSteps = ref<RecipeProgramMasterStep[]>([])
-const units: OptionMap[] = [{ id: 0, name: t('units.0') }, { id: 1, name: t('units.1') }, { id: 2, name: t('units.2') }, { id: 3, name: t('units.3') }, { id: 4, name: t('units.4') }, { id: 5, name: t('units.5') }, { id: 6, name: t('units.6') }]
-const types: OptionMap[] = [{ id: 0, name: t('recipeTypes.0') }, { id: 1, name: t('recipeTypes.1') }, { id: 2, name: t('recipeTypes.2') }, { id: 3, name: t('recipeTypes.3') }]
+const units = getUnitOptions(t)
+const types = getRecipeTypeOptions(t)
 const groups: OptionMap[] = []
 const table = ref()
 const selectedProgram = ref<ProgramHeader>()

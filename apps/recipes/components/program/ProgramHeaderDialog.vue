@@ -2,7 +2,8 @@
 import { useDialogPluginComponent } from 'quasar'
 import { klona } from 'klona'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import type { Machine, OptionMap, ProgramHeader } from '~/shared/types'
+import type { Machine, ProgramHeader } from '~/shared/types'
+import { getProgramTypeOptions } from '~/shared/enums'
 import { RecipeType } from '~/shared/constants'
 import { useStateStore } from '~/store/State'
 
@@ -33,7 +34,7 @@ const defaultProgram: ProgramHeader = {
   dyeRequests: 0,
   saltRequests: 0,
 }
-const types: OptionMap[] = [{ id: 0, name: t('programTypes.0') }, { id: 1, name: t('programTypes.1') }, { id: 2, name: t('programTypes.2') }, { id: 3, name: t('programTypes.3') }, { id: 4, name: t('programTypes.4') }, { id: 5, name: t('programTypes.5') }, { id: 6, name: t('programTypes.6') }, { id: 7, name: t('programTypes.7') }]
+const types = getProgramTypeOptions(t)
 const template = ref()
 const editedProgram = ref(program.value ? klona(program.value) : klona(defaultProgram))
 function onChange(type: RecipeType) {

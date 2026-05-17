@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { klona } from 'klona'
 import draggable from 'vuedraggable'
-import type { ManualStep, Material, OptionMap, ProgramHeader, RecipeMasterMaterial, RecipeMasterStep } from '~/shared/types'
+import type { ManualStep, Material, ProgramHeader, RecipeMasterMaterial, RecipeMasterStep } from '~/shared/types'
+import { getUnitOptions } from '~/shared/enums'
 import { RecipeType } from '~/shared/constants'
 import { useStateStore } from '~/store/State'
 
@@ -62,15 +63,7 @@ watch(() => programHeader.value, (header) => {
 
 const { t } = useI18n()
 
-const units: OptionMap[] = [
-  { id: 0, name: t('units.0') },
-  { id: 1, name: t('units.1') },
-  { id: 2, name: t('units.2') },
-  { id: 3, name: t('units.3') },
-  { id: 4, name: t('units.4') },
-  { id: 5, name: t('units.5') },
-  { id: 6, name: t('units.6') },
-]
+const units = getUnitOptions(t)
 
 getProgram()
 async function getProgram() {

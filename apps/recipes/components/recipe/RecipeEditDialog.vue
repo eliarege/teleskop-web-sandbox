@@ -2,7 +2,8 @@
 import { klona } from 'klona'
 import draggable from 'vuedraggable'
 import ConfirmationDialog from '../ConfirmationDialog.vue'
-import type { ManualStep, Material, OptionMap, ProgramHeader, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
+import type { ManualStep, Material, ProgramHeader, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
+import { getRecipeGroupOptions, getUnitOptions } from '~/shared/enums'
 import { RecipeType } from '~/shared/constants'
 import { rgbStringToColorCode } from '~/utils/utils'
 
@@ -44,21 +45,8 @@ const defaultRecipe: RecipeProgramMaster = {
 const colorString = ref('rgb(0, 0, 0)')
 const { t } = useI18n()
 
-const units: OptionMap[] = [
-  { id: 0, name: t('units.0') },
-  { id: 1, name: t('units.1') },
-  { id: 2, name: t('units.2') },
-  { id: 3, name: t('units.3') },
-  { id: 4, name: t('units.4') },
-  { id: 5, name: t('units.5') },
-  { id: 6, name: t('units.6') },
-]
-const types: OptionMap[] = [
-  { id: 0, name: t('recipeGroups.0') },
-  { id: 1, name: t('recipeGroups.1') },
-  { id: 2, name: t('recipeGroups.2') },
-  { id: 3, name: t('recipeGroups.3') }
-]
+const units = getUnitOptions(t)
+const types = getRecipeGroupOptions(t)
 const programs = ref<RecipeMasterStep[]>([])
 const editedPrograms = ref<RecipeMasterStep[]>()
 const table = ref()
