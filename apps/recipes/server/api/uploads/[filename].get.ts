@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
     getContents: (id) => {
       const filename = basename(id.slice(BASE_PATH.length))
       return fileUploadService.readStream(filename)
+
     },
     getMeta: async (id) => {
       const filename = basename(id.slice(BASE_PATH.length))
@@ -28,10 +29,17 @@ export default defineEventHandler(async (event) => {
       if (!info) {
         return
       }
-      const meta = await fileUploadService.getFileMeta(filename)
-      return {
-        ...meta,
-        type: info.logo_mime_type || 'application/octet-stream',
+      try {
+        const meta = await fileUploadService.getFileMeta(filename)
+        return {
+          ...meta,
+          type: info.logo_mime_type || 'application/octet-stream',
+        }
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+          return
+        }
+        throw error
       }
     },
   })
