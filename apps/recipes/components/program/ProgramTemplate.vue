@@ -28,6 +28,7 @@ const hasChanges = computed(() => {
 })
 defineExpose({
   onReset,
+  onValidate,
   onSave,
   onChange,
   hasChanges,
@@ -343,6 +344,15 @@ function onReset() {
 async function onSave() {
   if (!hasChanges.value)
     return true
+  const isValid = onValidate()
+  if (!isValid)
+    return false
+
+  await $fetch(`/api/programs/templates/${programHeader.value.programNo}`, { method: 'POST', body: { template: editedProgram.value, machineId: stateStore.defaultMachine } })
+  return true
+}
+
+function onValidate() {
   validateMaterials()
 
   if (hasEmptyMaterials.value) {
@@ -357,7 +367,6 @@ async function onSave() {
     return false
   }
 
-  await $fetch(`/api/programs/templates/${programHeader.value.programNo}`, { method: 'POST', body: { template: editedProgram.value, machineId: stateStore.defaultMachine } })
   return true
 }
 

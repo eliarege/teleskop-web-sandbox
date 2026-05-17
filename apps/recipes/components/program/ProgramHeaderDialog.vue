@@ -57,11 +57,14 @@ async function onSave() {
   if (!isValid)
     return
   try {
-    const canSave = await template.value.onSave()
-    if (canSave) {
-      await $fetch(`/api/programs/headers`, { method: 'POST', body: { program: editedProgram.value } })
-      onDialogOK(true)
-    }
+    const isTemplateValid = template.value.onValidate()
+    if (!isTemplateValid)
+      return
+
+    await $fetch(`/api/programs/headers`, { method: 'POST', body: { program: editedProgram.value } })
+
+    const canSaveTemplate = await template.value.onSave()
+    onDialogOK(canSaveTemplate)
   } catch (e) {
     onDialogOK(false)
   }
