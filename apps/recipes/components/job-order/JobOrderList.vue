@@ -465,7 +465,7 @@ async function setStatus(status: string, order: JobOrder) {
                 <QItem
                   v-close-popup
                   clickable
-                  @click="showJobOrderOverview"
+                  @click="showJobOrderOverview()"
                 >
                   <QItemSection>{{ t('ViewJobOrder') }}</QItemSection>
                 </QItem>
