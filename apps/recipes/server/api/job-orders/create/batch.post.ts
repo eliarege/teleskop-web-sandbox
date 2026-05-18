@@ -18,6 +18,7 @@ async function insertRecipeMaterials(
     counter: number
     callOff: number
     callOffManual: number
+    requestOrder: number
     isIntermediateStep: boolean
     tankNo: number
     priority: number
@@ -36,6 +37,7 @@ async function insertRecipeMaterials(
     counter,
     callOff,
     callOffManual,
+    requestOrder,
     isIntermediateStep,
     tankNo,
     priority,
@@ -105,7 +107,7 @@ async function insertRecipeMaterials(
     KindOfStation: material.isManual ? 5 : 2,
     TreatmentNo: program.programNo,
     Program_order: programOrder + 1,
-    Preparation_counter: isIntermediateStep ? callOff : material.orderNo,
+    Preparation_counter: isIntermediateStep ? callOff : requestOrder,
     CallOff: callOff,
     Counter: counter,
     Unit: 'gr',
@@ -201,6 +203,7 @@ async function processProgramSteps(
     })
 
   counterState.callOffManual = 0
+  let requestOrder = 0
   const parallelCounters = new Map<string, number>()
 
   for (let i = 0; i < allMaterials.length; i++) {
@@ -208,14 +211,19 @@ async function processProgramSteps(
     counterState.counter++
 
     let currentCallOff: number
+    let currentRequestOrder: number
     if (material.isIntermediateStep) {
       currentCallOff = material.displayOrderNo
       counterState.callOffManual++
+      currentRequestOrder = currentCallOff
     } else {
-      if (i === 0 || allMaterials[i - 1].orderNo < material.orderNo || allMaterials[i - 1].isIntermediateStep) {
+      const prev = allMaterials[i - 1]
+      if (i === 0 || prev.isIntermediateStep || prev.step !== material.step || prev.orderNo < material.orderNo) {
         counterState.callOff++
+        requestOrder++
       }
       currentCallOff = counterState.callOff
+      currentRequestOrder = requestOrder
     }
 
     await insertRecipeMaterials(material, {
@@ -227,6 +235,7 @@ async function processProgramSteps(
       counter: counterState.counter,
       callOff: currentCallOff,
       callOffManual: counterState.callOffManual,
+      requestOrder: currentRequestOrder,
       isIntermediateStep: material.isIntermediateStep,
       parallelCounters,
     })
