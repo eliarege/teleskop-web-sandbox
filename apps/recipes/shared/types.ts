@@ -245,6 +245,7 @@ export interface JobOrderParams {
   flotteRatio: number | undefined
   yarn: string | undefined
   ASNo: string | undefined
+  partCount: number | undefined
 }
 export interface ContinueJobOrderParams {
   jobNo: string

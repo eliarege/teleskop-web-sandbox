@@ -5,6 +5,7 @@ import type { ManualStep, Material, ProgramHeader, RecipeMasterMaterial, RecipeM
 import { getUnitOptions } from '~/shared/enums'
 import { RecipeType } from '~/shared/constants'
 import { useStateStore } from '~/store/State'
+import { getDefaultUnitType } from '~/utils/unitDefaults'
 
 const props = defineProps({
   isNew: {
@@ -423,7 +424,7 @@ function onManualMaterialSelected(material: Material) {
     materialName: material.materialName,
     type: material.materialGroupNo - 1,
     amount: 1,
-    unit: type === RecipeType.DYE ? 0 : 1,
+    unit: getDefaultUnitType(stateStore, type),
     orderNo: -1, // -1 indicates manual step material
     programIndex: 0,
     isManual: material.isManual,
@@ -512,7 +513,7 @@ function onAddManualMaterial(event: any, type: RecipeType, stepNo: number) {
     materialName: item.materialName,
     type: item.type,
     amount: 0,
-    unit: type === RecipeType.DYE ? 0 : 1,
+    unit: getDefaultUnitType(stateStore, type),
     orderNo: -1,
     programIndex: 0,
     isManual: item.isManual,
@@ -548,7 +549,7 @@ function onMaterialAdded(material: any) {
     materialName: material.materialName,
     type: material.materialGroupNo - 1,
     amount: 0,
-    unit: material.materialGroupNo - 1 === RecipeType.DYE ? 0 : 1,
+    unit: getDefaultUnitType(stateStore, material.materialGroupNo - 1),
     orderNo: step.orderNo,
     mainStep: 1,
     parallelStep: 1,

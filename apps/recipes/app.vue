@@ -2,9 +2,26 @@
 import { useStateStore } from '~/store/State'
 
 const state = useStateStore()
-const { setLocale } = useI18n()
 
-setLocale(state.locale)
+try {
+  const info = await $fetch<{
+    name: string
+    logoPath: string | null
+    partCountActive: boolean
+    defaultUnitTypeDye: number
+    defaultUnitTypeChem: number
+    partCountColumn: string | null
+  }>('/api/company/info')
+  if (info) {
+    state.partCountActive = info.partCountActive ?? false
+    state.defaultUnitTypeDye = info.defaultUnitTypeDye
+    state.defaultUnitTypeChem = info.defaultUnitTypeChem
+    state.partCountColumn = info.partCountColumn ?? null
+  }
+}
+catch (error) {
+  console.warn('[recipe-config] Failed to load config from server, using cached value', error)
+}
 </script>
 
 <template>

@@ -93,6 +93,7 @@
   "Username": "Username",
   "Password": "Password",
   "Reset": "Reset",
+  "None": "None",
   "ForgotPassword": "Forgot My Password",
   "LoggedIn": "Logged In",
   "LoggedOut": "Logged Out",
@@ -144,6 +145,10 @@
   "JobOrderStarted": "Job Order Already Started!",
   "JobOrderPreferences": "Job Order Preferences",
   "AllowOverrideStartedJobOrders": "Allow overriding started or ongoing Job Orders",
+  "PartCountActive": "Enable Part Count",
+  "DefaultUnitTypeDye": "Default Unit Type (Dye)",
+  "DefaultUnitTypeChem": "Default Unit Type (Chemical)",
+  "PartCountColumn": "Part Count Integration Column",
   "OptionalFields": "Optional Fields",
   "jobOrderActions": {
     "Retry": "Repeat Selected Request",
@@ -188,6 +193,7 @@
     "ASNo": "A.S. No",
     "Yarn": "Yarn",
     "Of": "of",
+    "PartCount": "Part Count",
     "BatchNoValidation": "Batch number must contain only alphanumeric characters and underscores"
   },
   "settings": {
@@ -198,6 +204,7 @@
     "General": "General Settings",
     "Recipe": "Recipe Settings",
     "Tank": "Tank Settings",
+    "RecipeConfiguration": "Recipe Configuration",
     "Database": "Database Settings",
     "Other": "Other Settings"
   },

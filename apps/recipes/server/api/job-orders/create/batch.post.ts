@@ -2,6 +2,7 @@ import type { Knex } from 'knex'
 import { dmsDB, getDmExchangeDB } from '~/server/connectionPool'
 import { RecipeType } from '~/shared/constants'
 import type { CommandParameter, JobOrderParams, RecipeMasterMaterial, RecipeMasterStep, RecipeProgramMaster } from '~/shared/types'
+import { isValidPartCountColumn } from '~/server/utils/partCountColumn'
 
 async function insertRecipeMaterials(
   material: RecipeMasterMaterial,
@@ -243,6 +244,12 @@ export default defineEventHandler(async (event) => {
   const dmExchangeDB = await getDmExchangeDB()
   const tankNo = 0
   const priority = 50
+
+  const companyInfo = await dmsDB('COMPANY_INFO').select('part_count_column').first()
+  const rawPartCountColumn = companyInfo?.part_count_column as string | null
+  const partCountColumn = rawPartCountColumn && isValidPartCountColumn(rawPartCountColumn)
+    ? rawPartCountColumn
+    : null
   for (let i = 0; i < params.numberOfJobs; i++) {
     try {
       const machineId = machines[i]
@@ -289,6 +296,7 @@ export default defineEventHandler(async (event) => {
           fabric_type: params.fabricType,
           as_no: params.ASNo,
           yarn: params.yarn,
+          part_count: params.partCount,
         })
 
         const dyelotParamRows: Array<{
@@ -344,6 +352,7 @@ export default defineEventHandler(async (event) => {
           LiquorQuantity: params.flotte,
           ImportState: 1,
           State: 1,
+          ...(partCountColumn && params.partCount != null && { [partCountColumn]: params.partCount }),
         })
       })
     }

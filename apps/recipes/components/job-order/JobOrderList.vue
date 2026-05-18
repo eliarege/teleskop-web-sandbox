@@ -244,13 +244,13 @@ function onButtonClicked(link: string) {
     openBatchCreateFromSelected()
   }
 }
-async function showJobOrderOverview() {
-  if (!selectedRow.value)
+async function showJobOrderOverview(row = selectedRow.value) {
+  if (!row)
     return
 
   await navigateTo({
     path: '/jobOrders/print',
-    query: { batchNo: String(selectedRow.value.batchNo) },
+    query: { batchNo: String(row.batchNo) },
   })
 }
 async function openBatchCreateFromSelected() {
@@ -421,6 +421,7 @@ async function setStatus(status: string, order: JobOrder) {
           style="cursor: pointer;"
           :class="{ 'selected-row': selectedRow === props.row }"
           @click="onRowClick(props.row, false)"
+          @dblclick="showJobOrderOverview(props.row)"
           @contextmenu="onRowClick(props.row, true)"
         >
           <QTd

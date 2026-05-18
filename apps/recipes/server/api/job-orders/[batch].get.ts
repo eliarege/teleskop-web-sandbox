@@ -210,6 +210,7 @@ export default defineEventHandler(async (event) => {
       fabricType: batchPlan.fabric_type || '',
       yarn: batchPlan.yarn || '',
       ASNo: batchPlan.as_no || '',
+      partCount: batchPlan.part_count || undefined,
     }
 
     const machines: Machine[] = [{

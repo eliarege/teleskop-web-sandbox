@@ -507,6 +507,12 @@ function getJobInfoEntries() {
     label: t('jobOrderParams.TotalWeight'),
     value: actualParams.value.totalWeight != null ? `${actualParams.value.totalWeight} kg` : '-',
   })
+  if (stateStore.partCountActive && actualParams.value.partCount != null) {
+    entries.push({
+      label: t('jobOrderParams.PartCount'),
+      value: String(actualParams.value.partCount)
+    })
+  }
   entries.push({
     label: t('jobOrderParams.Flotte'),
     value: actualParams.value.flotte != null ? String(actualParams.value.flotte) : '-',

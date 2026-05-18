@@ -93,6 +93,7 @@
   "Username": "Kullanıcı Adı",
   "Password": "Şifre",
   "Reset": "Sıfırla",
+  "None": "Yok",
   "ForgotPassword": "Parolamı Unuttum",
   "LoggedIn": "Giriş Yapıldı",
   "LoggedOut": "Çıkış Yapıldı",
@@ -144,6 +145,10 @@
   "JobOrderStarted": "İş Emri Başlatılmış!",
   "JobOrderPreferences": "İş Emri Tercihleri",
   "AllowOverrideStartedJobOrders": "Başlatılmış veya devam eden İş Emirlerinin üzerine yazılmasına izin ver",
+  "PartCountActive": "Parça Sayısını Etkinleştir",
+  "DefaultUnitTypeDye": "Varsayılan Birim Türü (Boya)",
+  "DefaultUnitTypeChem": "Varsayılan Birim Türü (Kimyasal)",
+  "PartCountColumn": "Parça Sayısı Entegrasyon Sütunu",
   "OptionalFields": "Opsiyonel Alanlar",
   "jobOrderActions": {
     "Retry": "Seçili İsteği Tekrarla",
@@ -188,6 +193,7 @@
     "ASNo": "A.S. No",
     "Yarn": "İplik",
     "Of": "/",
+    "PartCount": "Parça Sayısı",
     "BatchNoValidation": "İş emri numarası sadece alfanumerik karakterler ve alt çizgi içerebilir"
   },
   "settings": {
@@ -198,6 +204,7 @@
     "General": "Genel Ayarlar",
     "Recipe": "Reçete Ayarları",
     "Tank": "Tank Ayarları",
+    "RecipeConfiguration": "Reçete Yapılandırması",
     "Database": "Veritabanı Ayarları",
     "Other": "Diğer Ayarlar"
   },

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import { useStateStore } from '~/store/State'
+import { Unit, getUnitOptions } from '~/shared/enums'
 import type { Machine } from '~/shared/types'
 
 const q = useQuasar()
@@ -18,20 +19,56 @@ const logoFile = ref<File | null>(null)
 
 const selectedMachine = ref(stateStore.defaultMachine)
 const originalMachine = ref(stateStore.defaultMachine)
+const partCountActive = ref(stateStore.partCountActive)
+const originalPartCountActive = ref(stateStore.partCountActive)
+const defaultUnitTypeDye = ref(stateStore.defaultUnitTypeDye)
+const originalDefaultUnitTypeDye = ref(stateStore.defaultUnitTypeDye)
+const defaultUnitTypeChem = ref(stateStore.defaultUnitTypeChem)
+const originalDefaultUnitTypeChem = ref(stateStore.defaultUnitTypeChem)
+const partCountColumn = ref<string | null>(stateStore.partCountColumn)
+const originalPartCountColumn = ref<string | null>(stateStore.partCountColumn)
 const jobOrderPrefs = ref({ ...stateStore.jobOrderPrefs })
 const originalJobOrderPrefs = ref({ ...stateStore.jobOrderPrefs })
 const { data: machines } = await useFetch<Machine[]>('/api/machines')
+
+const unitOptions = computed(() => getUnitOptions(t))
+const partCountColumnOptions = computed(() => [
+  { label: t('None'), value: null },
+  ...Array.from({ length: 50 }, (_, i) => ({
+    label: `Parameter${i + 1}`,
+    value: `Parameter${i + 1}`,
+  })),
+])
 
 fetchCompanyData()
 
 async function fetchCompanyData() {
   try {
-    const result = await $fetch('/api/company/info')
+    const result = await $fetch<{
+      name: string
+      logoPath: string | null
+      partCountActive: boolean
+      defaultUnitTypeDye: number
+      defaultUnitTypeChem: number
+      partCountColumn: string | null
+    }>('/api/company/info')
     if (result) {
-      companyData.value = { ...result }
-      originalData.value = { ...result }
+      companyData.value = { name: result.name, logoPath: result.logoPath }
+      originalData.value = { name: result.name, logoPath: result.logoPath }
       selectedMachine.value = stateStore.defaultMachine
       originalMachine.value = stateStore.defaultMachine
+      partCountActive.value = result.partCountActive ?? false
+      originalPartCountActive.value = result.partCountActive ?? false
+      defaultUnitTypeDye.value = result.defaultUnitTypeDye ?? Unit.Percent
+      originalDefaultUnitTypeDye.value = result.defaultUnitTypeDye ?? Unit.Percent
+      defaultUnitTypeChem.value = result.defaultUnitTypeChem ?? Unit.GramPerLiter
+      originalDefaultUnitTypeChem.value = result.defaultUnitTypeChem ?? Unit.GramPerLiter
+      partCountColumn.value = result.partCountColumn ?? null
+      originalPartCountColumn.value = result.partCountColumn ?? null
+      stateStore.partCountActive = result.partCountActive ?? false
+      stateStore.defaultUnitTypeDye = result.defaultUnitTypeDye ?? Unit.Percent
+      stateStore.defaultUnitTypeChem = result.defaultUnitTypeChem ?? Unit.GramPerLiter
+      stateStore.partCountColumn = result.partCountColumn ?? null
     }
   }
   catch (error) {
@@ -49,6 +86,10 @@ function handleFileUpload(files: File[]) {
 async function onSave() {
   const formData = new FormData()
   formData.append('name', companyData.value.name)
+  formData.append('partCountActive', String(partCountActive.value))
+  formData.append('defaultUnitTypeDye', String(defaultUnitTypeDye.value))
+  formData.append('defaultUnitTypeChem', String(defaultUnitTypeChem.value))
+  formData.append('partCountColumn', partCountColumn.value ?? '')
   if (logoFile.value) {
     formData.append('image', logoFile.value)
   }
@@ -61,6 +102,14 @@ async function onSave() {
     if (result) {
       stateStore.defaultMachine = selectedMachine.value
       originalMachine.value = selectedMachine.value
+      stateStore.partCountActive = partCountActive.value
+      originalPartCountActive.value = partCountActive.value
+      stateStore.defaultUnitTypeDye = defaultUnitTypeDye.value
+      originalDefaultUnitTypeDye.value = defaultUnitTypeDye.value
+      stateStore.defaultUnitTypeChem = defaultUnitTypeChem.value
+      originalDefaultUnitTypeChem.value = defaultUnitTypeChem.value
+      stateStore.partCountColumn = partCountColumn.value
+      originalPartCountColumn.value = partCountColumn.value
       stateStore.jobOrderPrefs = { ...jobOrderPrefs.value }
       originalJobOrderPrefs.value = { ...jobOrderPrefs.value }
 
@@ -77,6 +126,10 @@ function onReset() {
   companyData.value = { ...originalData.value }
   logoFile.value = null
   selectedMachine.value = originalMachine.value
+  partCountActive.value = originalPartCountActive.value
+  defaultUnitTypeDye.value = originalDefaultUnitTypeDye.value
+  defaultUnitTypeChem.value = originalDefaultUnitTypeChem.value
+  partCountColumn.value = originalPartCountColumn.value
   jobOrderPrefs.value = { ...originalJobOrderPrefs.value }
 }
 </script>
@@ -143,6 +196,63 @@ function onReset() {
             option-label="machineName"
             option-value="machineId"
             :options="machines"
+          />
+        </QCardSection>
+      </QCard>
+
+      <QCard class="w-full" flat bordered>
+        <QCardSection>
+          <strong>{{ t('settings.RecipeConfiguration') }}</strong>
+        </QCardSection>
+        <QSeparator />
+        <QCardSection>
+          <div class="row items-center q-gutter-md">
+            <QCheckbox
+              v-model="partCountActive"
+              :label="t('PartCountActive')"
+            />
+            <QSelect
+              v-model="partCountColumn"
+              :label="t('PartCountColumn')"
+              :disable="!partCountActive"
+              filled
+              dense
+              emit-value
+              map-options
+              options-dense
+              :options="partCountColumnOptions"
+              option-label="label"
+              option-value="value"
+              class="col"
+            />
+          </div>
+        </QCardSection>
+        <QCardSection>
+          <QSelect
+            v-model="defaultUnitTypeDye"
+            :label="t('DefaultUnitTypeDye')"
+            filled
+            dense
+            emit-value
+            map-options
+            options-dense
+            :options="unitOptions"
+            option-label="name"
+            option-value="id"
+          />
+        </QCardSection>
+        <QCardSection>
+          <QSelect
+            v-model="defaultUnitTypeChem"
+            :label="t('DefaultUnitTypeChem')"
+            filled
+            dense
+            emit-value
+            map-options
+            options-dense
+            :options="unitOptions"
+            option-label="name"
+            option-value="id"
           />
         </QCardSection>
       </QCard>

@@ -45,6 +45,7 @@ const jobOrderParams = ref<JobOrderParams>({
   fabricType: '',
   yarn: '',
   ASNo: '',
+  partCount: undefined,
 })
 const dataStore = useDataStore()
 const colorStore = useColorStore()
@@ -143,6 +144,7 @@ function applyInitialFromProps() {
   jobOrderParams.value.fabricType = p.fabricType ?? jobOrderParams.value.fabricType
   jobOrderParams.value.yarn = p.yarn ?? jobOrderParams.value.yarn
   jobOrderParams.value.ASNo = p.ASNo ?? jobOrderParams.value.ASNo
+  jobOrderParams.value.partCount = p.partCount ?? jobOrderParams.value.partCount
 }
 
 applyInitialFromProps()
@@ -793,6 +795,17 @@ async function onCancel() {
               filled
               :disable="programWeightsEnabled"
               @update:model-value="(value) => onParameterChange('weight', value)"
+            />
+          </div>
+          <div v-if="stateStore.partCountActive" class="row-item">
+            <span class="item-label">{{ t('jobOrderParams.PartCount') }}</span>
+            <QInput
+              v-model.number="jobOrderParams.partCount"
+              class="item-input"
+              dense
+              type="number"
+              min="1"
+              filled
             />
           </div>
           <div class="row-item">

@@ -3,6 +3,8 @@ import draggable from 'vuedraggable'
 import { useI18n } from 'vue-i18n'
 import type { Material } from '~/shared/types'
 import { RecipeIcons, RecipeType } from '~/shared/constants'
+import { useStateStore } from '~/store/State'
+import { getDefaultUnitType } from '~/utils/unitDefaults'
 
 const p = defineProps({
   isDraggable: {
@@ -16,6 +18,7 @@ const p = defineProps({
 })
 const emit = defineEmits(['materialSelected', 'close', 'toggleVisibility', 'materialAdded'])
 const { t } = useI18n()
+const stateStore = useStateStore()
 const materials = ref<Material[]>([])
 const selectedMaterial = ref<Material | null>(null)
 const materialSearchFilter = ref('')
@@ -57,7 +60,7 @@ function cloneMaterial(item: Material) {
     materialName: item.materialName,
     type: item.materialGroupNo - 1,
     amount: 0,
-    unit: item.materialGroupNo - 1 === RecipeType.DYE ? 0 : 1,
+    unit: getDefaultUnitType(stateStore, item.materialGroupNo - 1),
     orderNo: 1,
     mainStep: 1,
     parallelStep: 1,

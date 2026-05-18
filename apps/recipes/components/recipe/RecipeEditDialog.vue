@@ -6,6 +6,8 @@ import type { ManualStep, Material, ProgramHeader, RecipeMasterMaterial, RecipeM
 import { getRecipeGroupOptions, getUnitOptions } from '~/shared/enums'
 import { RecipeType } from '~/shared/constants'
 import { rgbStringToColorCode } from '~/utils/utils'
+import { useStateStore } from '~/store/State'
+import { getDefaultUnitType } from '~/utils/unitDefaults'
 
 const props = defineProps({
   recipeId: {
@@ -25,6 +27,7 @@ const { dialogRef, onDialogOK, onDialogHide, onDialogCancel } = useDialogPluginC
 defineEmits([...useDialogPluginComponent.emits])
 const q = useQuasar()
 const { notifyFail } = useNotify()
+const stateStore = useStateStore()
 const recipe = ref<RecipeProgramMaster>()
 const editedRecipe = ref<RecipeProgramMaster>()
 const defaultRecipe: RecipeProgramMaster = {
@@ -264,7 +267,7 @@ function onManualMaterialSelected(material: RecipeMasterMaterial) {
     materialName: material.materialName,
     type: material.type,
     amount: 1,
-    unit: type === RecipeType.DYE ? 0 : 1,
+    unit: getDefaultUnitType(stateStore, type),
     orderNo: -1, // -1 indicates manual step material
     programIndex: program.stepNo,
     isManual: material.isManual,
@@ -343,7 +346,7 @@ function onMaterialSelected(material: RecipeMasterMaterial) {
   }
   if (stepMaterials && !stepMaterials.some(m => m.materialCode === material.materialCode)) {
     material.amount = 1
-    material.unit = type === RecipeType.DYE ? 0 : 1
+    material.unit = getDefaultUnitType(stateStore, type)
     stepMaterials.push(material)
     materialSelection.value = null
     selectedMaterial.value = undefined
