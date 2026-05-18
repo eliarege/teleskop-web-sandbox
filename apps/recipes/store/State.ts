@@ -3,8 +3,7 @@ import { useStorage } from '@vueuse/core'
 
 export const useStateStore = defineStore('state', {
   state: () => {
-    const locale = useStorage('language', useI18n().locale)
-    const defaultMachine = useStorage('defaultMachine', 3)
+    const defaultMachine = useStorage('defaultMachine', 1)
     const jobOrderPrefs = useStorage('jobOrderPrefs', {
       allowOverrideStartedJobOrders: true,
       show: {
@@ -16,7 +15,6 @@ export const useStateStore = defineStore('state', {
     return {
       isLoading: false,
       jobOrderFilters: [],
-      locale,
       defaultMachine,
       jobOrderPrefs,
     }
