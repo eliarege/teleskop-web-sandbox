@@ -1157,7 +1157,7 @@ export class MachineSession {
       .slice(0, programIndex - 1)
       .reduce((a, p) => a + p.requestCount, 0)
 
-    const currentProgram = programs[programIndex]
+    const currentProgram = programs[programIndex - 1]
 
     if (!currentProgram) {
       this.logger.warn(
