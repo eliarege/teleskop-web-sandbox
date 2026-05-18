@@ -151,6 +151,9 @@ function removeProgram(index: number) {
       }
     }
   }
+  materialSelection.value = null
+  manualStepSelection.value = null
+  selectedMaterial.value = undefined
 }
 async function getProgramList() {
   programList.value = await $fetch(`/api/programs/templates`, { query: { machineId: props.machineId } })
