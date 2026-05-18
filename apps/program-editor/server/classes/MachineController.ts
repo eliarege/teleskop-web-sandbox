@@ -1,6 +1,6 @@
 import type { Knex } from 'knex'
 import { isDef } from '@teleskop/utils'
-import { fetchTeleskopSettings, getTeleskopSettings, logEditorOperation, upsertTreatments } from '../functions'
+import { fetchTeleskopSettings, logEditorOperation, upsertTreatments } from '../functions'
 import { db } from '../database'
 import { withDmTransaction, withProgramClient, withTransaction } from '../decorators'
 import { PError } from '../error'
@@ -1495,7 +1495,7 @@ export class MachineController {
       throw new PError('PROGRAM_EXISTS', { machineId: this.id, programNo: program.programNo })
     }
 
-    const { initialTemperature = 25 } = await getTeleskopSettings()
+    const { initialTemperature = 25 } = await fetchTeleskopSettings()
 
     const machine = await this.getMachineInfo()
     const commands = machine.commands

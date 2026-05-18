@@ -248,6 +248,12 @@ const items = [
             $commandManager.executeCommand('writeProgramSettings', { $q })
           },
         },
+        {
+          label: tt('menu.createProgramSettings'),
+          onClick() {
+            $commandManager.executeCommand('createProgramSettings', { $q })
+          },
+        },
       ],
       ],
     },

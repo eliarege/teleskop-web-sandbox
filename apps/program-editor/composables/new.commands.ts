@@ -30,6 +30,7 @@ import CopyAndSendResultsDialog from '~/components/CopyAndSendResultsDialog.vue'
 import DeleteResultsDialog from '~/components/DeleteResultsDialog.vue'
 import TBFindAndReplaceDialog from '~/components/TBFindAndReplaceDialog.vue'
 import type { CopyAndSendResult } from '~/server/utils/JobManager'
+import TBCreateProgramSettingsDialog from '~/components/TBCreateProgramSettingsDialog.vue'
 
 type CommandFunction = (ctx?: Function, ...args: any) => Promise<boolean | void> | boolean | void
 
@@ -88,6 +89,7 @@ export interface RegisteredCommands {
     | [ctx: any, type: 'changeParameter', commandNo: number, stepIndex: number, parameter: ParameterItem, oldValue: number | string]
   machineConstants: [ctx: any, machineId: number]
   writeProgramSettings: [ctx: any]
+  createProgramSettings: [ctx: any]
   checkErrors: [ctx: any, machineId: number, selectedRows: ProgramTableRow[]]
   getAllPrograms: [ctx: any, machine: { id: number, name: string }]
   sendAllPrograms: [ctx: any, machine: { id: number, name: string }]
@@ -900,6 +902,18 @@ registerCommand(() => {
     async execute(ctx: any) {
       ctx.$q.dialog({
         component: TBWriteProgramSettingsDialog,
+      })
+      return true
+    },
+  }
+})
+
+registerCommand(() => {
+  return {
+    name: 'createProgramSettings',
+    async execute(ctx: any) {
+      ctx.$q.dialog({
+        component: TBCreateProgramSettingsDialog,
       })
       return true
     },

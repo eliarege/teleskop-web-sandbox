@@ -30,6 +30,7 @@ const props = defineProps({
   maybeEmpty: Boolean,
   id: String,
   label: String,
+  autofocus: Boolean,
 })
 
 const emit = defineEmits(['inputBlur'])
@@ -215,6 +216,20 @@ function onInput(event: Event) {
     model.value = Number.parseFloat(value)
   }
 }
+
+defineExpose({
+  focus() {
+    numberInput.value?.focus()
+  },
+})
+
+onMounted(() => {
+  if (props.autofocus) {
+    nextTick(() => {
+      numberInput.value?.focus()
+    })
+  }
+})
 </script>
 
 <template>
@@ -244,6 +259,7 @@ function onInput(event: Event) {
         class="q-field__native q-placeholder"
         :class="format === 'DURATION' ? 'text-right' : ''"
         :disabled="disable"
+        :autofocus="autofocus"
         @keydown="onKeydownPreventNonNumerical"
         @paste="onPastePreventNonNumerical"
         @drop="onDrop"

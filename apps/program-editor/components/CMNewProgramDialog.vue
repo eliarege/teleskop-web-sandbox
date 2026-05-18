@@ -16,10 +16,29 @@ const props = defineProps<{
 const { t } = useI18n()
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent()
 
+const teleskopSettings = useTeleskopSettingsStore()
+
+function getFirstAvailableProgramNo(allProgramNos: number[]): number {
+  const usedProgramNos = new Set(allProgramNos)
+  for (let i = 1; i <= Number.MAX_SAFE_INTEGER; i++) {
+    if (!usedProgramNos.has(i)) {
+      return i
+    }
+  }
+  return 1
+}
+
 const isRename = props.type === 'rename'
 const isSaveAs = props.type === 'saveAs'
 
-const programNo = ref<number | undefined>(isRename ? props.program.programNo : undefined)
+const programNo = ref<number | undefined>(
+  isRename
+    ? props.program.programNo
+    : (teleskopSettings.programCreationSettings.autoSuggestProgramNo)
+        ? getFirstAvailableProgramNo(props.allProgramNos)
+        : undefined,
+)
+
 const programName = ref<string>(
   isRename
     ? props.program.name || ''
@@ -72,9 +91,10 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
               :maxlength="10"
               :rules="[
                 (val: string) => !!val || t('input.required', { field: t('program.programNo') }),
-                (val: number) => !allProgramNos.includes(val) || t('input.unique', { field: t('program.programNo') }),
+                (val: number) => val === props.program.programNo || !allProgramNos.includes(val) || t('input.unique', { field: t('program.programNo') }),
               ]"
               :disable="isRename"
+              :autofocus="!isRename && !teleskopSettings.programCreationSettings.autoSuggestProgramNo"
               class="mb-3"
               dense
             />
@@ -84,6 +104,7 @@ const newProgram = computed<Program | ProgramHeader>(() => ({
               :label="t('program.name')"
               :rules="[(val: string) => !!val || t('input.required', { field: t('program.name') })]"
               class="mb-3"
+              :autofocus="isRename || teleskopSettings.programCreationSettings.autoSuggestProgramNo"
               dense
             />
 
