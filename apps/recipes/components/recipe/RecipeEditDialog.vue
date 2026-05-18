@@ -837,7 +837,7 @@ async function onDelete() {
                                 <draggable
                                   v-model="step.materials"
                                   class="draggable-area"
-                                  item-key="materialCode"
+                                  :item-key="(item: RecipeMasterMaterial) => `${item.type}-${item.programIndex}-${item.orderNo}`"
                                   :group="{ name: 'materials', pull: false }"
                                   :sort="false"
                                   ghost-class="material-ghost"
@@ -1300,7 +1300,7 @@ async function onDelete() {
                                   </thead>
                                   <draggable
                                     v-model="step.materials"
-                                    item-key="materialCode"
+                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${item.programIndex}-${item.orderNo}`"
                                     class="draggable-area"
                                     :group="{ name: 'materials', pull: false }"
                                     :sort="false"
@@ -1770,7 +1770,7 @@ async function onDelete() {
                                   </thead>
                                   <draggable
                                     v-model="step.materials"
-                                    item-key="materialCode"
+                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${item.programIndex}-${item.orderNo}`"
                                     class="draggable-area"
                                     :group="{ name: 'materials', pull: false }"
                                     :sort="false"
