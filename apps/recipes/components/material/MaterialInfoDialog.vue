@@ -191,7 +191,7 @@ function onCheck(dispenserId: number, isChecked: boolean) {
                 filled
                 :rules="[
                   (val) => val && val.length > 0 || 'Field is required',
-                  (val) => /^[a-zA-Z0-9]+$/.test(val) || 'Only alphanumeric characters allowed',
+                  (val) => /^[a-zA-Z0-9._-]+$/.test(val) || 'Only letters, numbers, dots, underscores and hyphens are allowed',
                 ]"
                 :placeholder="editedMaterial.materialCode"
               />
