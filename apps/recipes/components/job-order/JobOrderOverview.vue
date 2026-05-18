@@ -640,7 +640,7 @@ function drawNotesPanel(doc: jsPDF, notes: string, startX: number, startY: numbe
   doc.setFont('Roboto', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(...theme.muted)
-  doc.text(t('Notes'), startX + 6, startY + 6, { baseline: 'top' })
+  doc.text(t('jobOrderParams.Notes'), startX + 6, startY + 6, { baseline: 'top' })
 
   doc.setFont('Roboto', 'bold')
   doc.setFontSize(10)
