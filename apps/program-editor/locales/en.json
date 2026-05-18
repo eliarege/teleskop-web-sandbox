@@ -117,6 +117,7 @@
     "collapseAll": "Collapse All",
     "machineConstants": "Machine Constants",
     "writeProgramSettings": "Program Write Settings",
+    "createProgramSettings": "Program Create Settings",
     "commandDetails": "Command Details",
     "checkErrors": "Check Errors",
     "isNewVersion": "Is New Version",
@@ -692,6 +693,10 @@
       "save": "Save",
       "cancel": "Cancel"
     }
+  },
+  "createProgramSettings": {
+    "title": "Program Create Settings",
+    "autoSuggestProgramNo": "Suggest the first available program number when creating a new program"
   },
   "programError": {
     "machineCommandNotFound": "Command with index {commandNo} was not found on the machine!",

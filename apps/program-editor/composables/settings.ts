@@ -12,6 +12,9 @@ export const useTeleskopSettingsStore = defineStore('teleskop-settings', () => {
     optimizedEnable: false,
     optimizedLimit: 10,
   })
+  const programCreationSettings = reactive({
+    autoSuggestProgramNo: false,
+  })
 
   /**
    * Teleskop ayarlarını alır ve teleskopSettings değişkenine atar.
@@ -29,6 +32,7 @@ export const useTeleskopSettingsStore = defineStore('teleskop-settings', () => {
     selectedIcons.value = result.selectedIcons
     treatmentSettings.optimizedEnable = result.treatmentSettings.optimizedEnable
     treatmentSettings.optimizedLimit = result.treatmentSettings.optimizedLimit
+    programCreationSettings.autoSuggestProgramNo = result.programCreationSettings.autoSuggestProgramNo
   }
 
   /**
@@ -42,9 +46,11 @@ export const useTeleskopSettingsStore = defineStore('teleskop-settings', () => {
    * @description Bu fonksiyon, verilen ayar kimliğine göre teleskop ayarlarını günceller ve yapılan değişikliği API'ye gönderir.
    */
   async function updateTeleskopSettings(id: TeleskopSettingsIds, value: string | number | boolean): Promise<void> {
+    const dbValue = typeof value === 'boolean' ? (value ? '1' : '0') : String(value)
+
     await kc.fetch<void>('/api/teleskop-settings', {
       method: 'PUT',
-      body: { id, value: String(value) },
+      body: { id, value: dbValue },
     })
 
     switch (id) {
@@ -60,6 +66,9 @@ export const useTeleskopSettingsStore = defineStore('teleskop-settings', () => {
       case TeleskopSettingsIds.INITIAL_TEMPERATURE:
         initialTemperature.value = Number(value)
         break
+      case TeleskopSettingsIds.AUTO_SUGGEST_PROGRAM_NO:
+        programCreationSettings.autoSuggestProgramNo = Boolean(value)
+        break
     }
   }
 
@@ -67,6 +76,7 @@ export const useTeleskopSettingsStore = defineStore('teleskop-settings', () => {
     initialTemperature: readonly(initialTemperature),
     selectedIcons: readonly(selectedIcons),
     treatmentSettings: readonly(treatmentSettings),
+    programCreationSettings: readonly(programCreationSettings),
     fetchTeleskopSettings,
     updateTeleskopSettings,
   }

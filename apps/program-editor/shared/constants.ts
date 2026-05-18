@@ -5,6 +5,7 @@ export enum TeleskopSettingsIds {
   OPTIMIZED_LIMIT = 11,
   SELECTED_ICONS = 12,
   INITIAL_TEMPERATURE = 13,
+  AUTO_SUGGEST_PROGRAM_NO = 19,
 }
 
 export enum ProgramStatus {

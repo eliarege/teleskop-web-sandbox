@@ -117,6 +117,7 @@
     "collapseAll": "Tümünü Daralt",
     "machineConstants": "Makine Sabitleri",
     "writeProgramSettings": "Program Yazma Ayarları",
+    "createProgramSettings": "Program Oluşturma Ayarları",
     "commandDetails": "Komut Detayları",
     "checkErrors": "Hata Kontrolü",
     "isNewVersion": "Yeni Versiyon mu?",
@@ -707,6 +708,10 @@
       "save": "Kaydet",
       "cancel": "İptal"
     }
+  },
+  "createProgramSettings": {
+    "title": "Program Oluşturma Ayarları",
+    "autoSuggestProgramNo": "Yeni program oluşturulurken boşta olan ilk program numarasını öner"
   },
   "programError": {
     "machineCommandNotFound": "{commandNo} numaralı komut makinede bulunamadı!",

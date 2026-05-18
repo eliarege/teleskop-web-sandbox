@@ -448,6 +448,9 @@ export interface TeleskopSettings {
   treatmentSettings: TreatmentSettings
   selectedIcons: number
   initialTemperature: number
+  programCreationSettings: {
+    autoSuggestProgramNo: boolean
+  }
 }
 
 // #region Program Comparison
