@@ -1011,7 +1011,9 @@ export class MachineSession {
       }
 
       const tonelloStatus = mapRequestStatusToTonello(parsed.status)
-      const message = tonelloStatus === TonelloChemicalRequestStatus.Error ? `Request status: ${parsed.status}` : ''
+      const message = tonelloStatus === TonelloChemicalRequestStatus.Error
+        ? `Chemical request failed`
+        : ''
 
       this.status.requestStatus = parsed.status
 
