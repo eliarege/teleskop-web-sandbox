@@ -151,6 +151,8 @@ function removeProgram(index: number) {
       }
     }
   }
+  programSelection.value = null
+  selectedProgram.value = undefined
   materialSelection.value = null
   manualStepSelection.value = null
   selectedMaterial.value = undefined
@@ -617,7 +619,7 @@ async function onDelete() {
                       round
                       dense
                       class="absolute top-0 right-0 q-mt-xs q-mr-xs"
-                      @click="removeProgram(programIndex)"
+                      @click.stop="removeProgram(programIndex)"
                     />
                     <QCardSection v-show="programSelection !== programIndex">
                       <div flex-center text-xl>
@@ -840,7 +842,7 @@ async function onDelete() {
                                 <draggable
                                   v-model="step.materials"
                                   class="draggable-area"
-                                  :item-key="(item: RecipeMasterMaterial) => `${item.type}-${item.programIndex}-${item.orderNo}`"
+                                  :item-key="(item: RecipeMasterMaterial) => `${item.type}-${idx}-${item.orderNo}`"
                                   :group="{ name: 'materials', pull: false }"
                                   :sort="false"
                                   ghost-class="material-ghost"
@@ -1303,7 +1305,7 @@ async function onDelete() {
                                   </thead>
                                   <draggable
                                     v-model="step.materials"
-                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${item.programIndex}-${item.orderNo}`"
+                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${idx}-${item.orderNo}`"
                                     class="draggable-area"
                                     :group="{ name: 'materials', pull: false }"
                                     :sort="false"
@@ -1773,7 +1775,7 @@ async function onDelete() {
                                   </thead>
                                   <draggable
                                     v-model="step.materials"
-                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${item.programIndex}-${item.orderNo}`"
+                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${idx}-${item.orderNo}`"
                                     class="draggable-area"
                                     :group="{ name: 'materials', pull: false }"
                                     :sort="false"
