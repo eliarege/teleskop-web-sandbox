@@ -198,14 +198,9 @@ function onCreateJobOrder(recipeId: number, machineId?: number, variant?: Recipe
     componentProps: { recipeId, machineId, variant },
   }).onOk(async (payload: any) => {
     if (payload.print && payload.batchNo) {
-      const jobOrderPrintPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
       await navigateTo({
-        path: jobOrderPrintPath,
+        path: '/jobOrders/print',
         query: { batchNo: String(payload.batchNo) },
-      }, {
-        open: {
-          target: '_blank',
-        },
       })
     }
     notifySuccess(t('Success'), { redirect: '/jobOrders' })

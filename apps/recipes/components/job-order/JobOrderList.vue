@@ -202,8 +202,6 @@ const filteredColumns = computed(() => {
   })
 })
 
-const jobOrderPrintPath = withBase('/jobOrders/print', useRuntimeConfig().app.baseURL)
-
 const buttonProps = ref([
   { name: 'recipeInfo', label: t('recipeFields.Info'), link: 'recipe', icon: 'description', batch: true, continue: true },
   { name: 'parameters', label: t('batchPlanParameterFields.Title'), link: 'parameters', icon: 'format_list_numbered', batch: true, continue: false },
@@ -274,12 +272,8 @@ async function openBatchCreateFromSelected() {
     }).onOk(async (payload: any) => {
       if (payload.print && payload.batchNo) {
         await navigateTo({
-          path: jobOrderPrintPath,
+          path: '/jobOrders/print',
           query: { batchNo: String(payload.batchNo) },
-        }, {
-          open: {
-            target: '_blank',
-          },
         })
       }
       notifySuccess(t('Success'))
@@ -323,12 +317,8 @@ function newBatchJobOrder() {
   }).onOk(async (payload: any) => {
     if (payload.print && payload.batchNo) {
       await navigateTo({
-        path: jobOrderPrintPath,
+        path: '/jobOrders/print',
         query: { batchNo: String(payload.batchNo) },
-      }, {
-        open: {
-          target: '_blank',
-        },
       })
     }
     notifySuccess(t('Success'))
