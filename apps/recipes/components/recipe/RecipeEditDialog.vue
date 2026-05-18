@@ -341,11 +341,14 @@ function onMaterialSelected(material: RecipeMasterMaterial) {
   } else if (type === RecipeType.SALT) {
     stepMaterials = editedPrograms.value!.at(program)?.saltSteps.find(order => order.orderNo === step)?.materials
   }
-  if (stepMaterials) {
+  if (stepMaterials && !stepMaterials.some(m => m.materialCode === material.materialCode)) {
     material.amount = 1
     material.unit = type === RecipeType.DYE ? 0 : 1
     stepMaterials.push(material)
     materialSelection.value = null
+    selectedMaterial.value = undefined
+  }
+  else {
     selectedMaterial.value = undefined
   }
 }
