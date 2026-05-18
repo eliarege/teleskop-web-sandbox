@@ -4,21 +4,6 @@ const editor = useEditorStore()
 const filter = useProgramFilterStore()
 const inputId = useId()
 
-async function applyFilter() {
-  editor.isLoading = true
-  await editor.refreshAllPrograms()
-  editor.isLoading = false
-  filter.showFilterPopup = false
-}
-
-async function deleteFilter() {
-  filter.clearFilter()
-  editor.isLoading = true
-  await editor.refreshAllPrograms()
-  editor.isLoading = false
-  filter.showFilterPopup = false
-}
-
 function focusNumberInput() {
   document.getElementById(inputId)?.focus()
 }
@@ -56,7 +41,7 @@ function focusNumberInput() {
               round
               dense
               flat
-              @click="deleteFilter"
+              @click="filter.clearFilter()"
             >
               <QTooltip>{{ t('filter.delete_all') }}</QTooltip>
             </QBtn>
@@ -72,46 +57,36 @@ function focusNumberInput() {
               <QTooltip>{{ t('filter.close') }}</QTooltip>
             </QBtn>
           </div>
-          <QSeparator />
 
-          <div class="q-pa-sm justify-center">
-            <QForm class="q-gutter-md" @submit.prevent="applyFilter">
-              <InputNumber
-                :id="inputId"
-                v-model="filter.existingFilter.programNo"
-                :label="t('filter.programNo')"
-                hide-bottom-space
-                maybe-empty
-                dense
-              />
-              <QInput
-                v-model="filter.existingFilter.programName"
-                :label="t('filter.programName')"
-                dense
-              />
-              <QSelect
-                v-model="filter.existingFilter.processType"
-                :options="editor.allProcessTypes"
-                :label="t('filter.processType')"
-                options-dense
-                dense
-              />
-              <QCheckbox
-                v-model="filter.existingFilter.clearOnChange"
-                :label="t('filter.clearFilterOnChange')"
-                dense
-              />
-              <div class="flex justify-end">
-                <QBtn
-                  class="bg-primary text-white"
-                  :label="t('filter.apply')"
-                  type="submit"
-                  icon="check"
-                  dense
-                  flat
-                />
-              </div>
-            </QForm>
+          <QSeparator class="q-my-sm" />
+
+          <div class="q-pa-sm column q-gutter-y-md">
+            <InputNumber
+              :id="inputId"
+              v-model="filter.existingFilter.programNo"
+              :label="t('filter.programNo')"
+              hide-bottom-space
+              maybe-empty
+              dense
+            />
+            <QInput
+              v-model="filter.existingFilter.programName"
+              :label="t('filter.programName')"
+              dense
+            />
+            <QSelect
+              v-model="filter.existingFilter.processType"
+              :options="editor.allProcessTypes"
+              :label="t('filter.processType')"
+              options-dense
+              dense
+              clearable
+            />
+            <QCheckbox
+              v-model="filter.existingFilter.clearOnChange"
+              :label="t('filter.clearFilterOnChange')"
+              dense
+            />
           </div>
         </div>
       </QMenu>

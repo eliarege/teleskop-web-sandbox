@@ -620,3 +620,22 @@ export function getCommandIcon(commands: Map<number, MachineCommand>, commandTyp
 
   return { name: commandType.icon, label: commandType.title, color: commandType.color }
 }
+
+/**
+ * Metni normalize eder, Türkçe karakterleri İngilizce karşılıklarına çevirir ve küçük harfe dönüştürür.
+ * @param text Normalleştirilecek metin
+ * @returns Normalleştirilmiş metin
+ */
+export function normalizeText(text?: string | null): string {
+  if (!text)
+    return ''
+
+  return text
+    .toLocaleLowerCase('tr-TR')
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+}

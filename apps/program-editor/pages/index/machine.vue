@@ -179,12 +179,16 @@ const hasOnlyOnController = computed(() => sortedSelectedPrograms.value.some(
 const searchFilter = ref('')
 const debouncedFilter = refDebounced(searchFilter, 250)
 
-// Process type filtresini uygula
 const processTypeFilteredPrograms = computed(() => {
-  if (!filter.existingFilter.processType) {
-    return editor.allPrograms
-  }
-  return editor.allPrograms.filter(p => p.typeId === filter.existingFilter.processType?.value)
+  const { processType, programNo, programName } = filter.existingFilter
+
+  const searchName = normalizeText(programName)
+
+  return editor.allPrograms.filter(p =>
+    (!processType || p.typeId === processType.value)
+    && (!programNo || p.programNo === Number(programNo))
+    && (!programName || normalizeText(p.name).includes(searchName)),
+  )
 })
 
 const { results: filterResults } = useFuse(debouncedFilter, processTypeFilteredPrograms, {
@@ -193,6 +197,7 @@ const { results: filterResults } = useFuse(debouncedFilter, processTypeFilteredP
     keys: ['programNo', 'name', 'type'],
   },
 })
+
 const filteredPrograms = computed<ProgramTableRow[]>(() => filterResults.value.map(res => res.item))
 
 const buttons = computed<ContextBarButtons[]>(() => [
