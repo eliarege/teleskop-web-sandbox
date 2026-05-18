@@ -1011,9 +1011,7 @@ export class MachineSession {
       }
 
       const tonelloStatus = mapRequestStatusToTonello(parsed.status)
-      const message = tonelloStatus === TonelloChemicalRequestStatus.Error
-        ? `Chemical request failed`
-        : ''
+      const message = this.getChemicalRequestStatusMessage(tonelloStatus)
 
       this.status.requestStatus = parsed.status
 
@@ -1184,6 +1182,21 @@ export class MachineSession {
    * - Chemical requests must be matched using the program-scoped request order and total.
    * - Dye requests already use the batch-scoped values.
    */
+  private getChemicalRequestStatusMessage(status: TonelloChemicalRequestStatus): string {
+    switch (status) {
+      case TonelloChemicalRequestStatus.Received:
+        return 'Chemical request received'
+      case TonelloChemicalRequestStatus.Working:
+        return 'Chemical request in progress'
+      case TonelloChemicalRequestStatus.Done:
+        return 'Chemical request completed'
+      case TonelloChemicalRequestStatus.Error:
+        return 'Chemical request failed'
+      default:
+        return ''
+    }
+  }
+
   private getDispensingRequestDetails(event: ExtendedTonelloChemicalRequestEvent): { requestOrder: number, totalRequests: number } {
     const materialType = mapTonelloChemicalRequestType(event.requestType)
     if (materialType === MaterialType.Chemical) {
