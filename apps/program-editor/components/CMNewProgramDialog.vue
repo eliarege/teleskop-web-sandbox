@@ -20,7 +20,7 @@ const teleskopSettings = useTeleskopSettingsStore()
 
 function getFirstAvailableProgramNo(allProgramNos: number[]): number {
   const usedProgramNos = new Set(allProgramNos)
-  for (let i = 1; i <= 9999999999; i++) {
+  for (let i = 1; i <= Number.MAX_SAFE_INTEGER; i++) {
     if (!usedProgramNos.has(i)) {
       return i
     }
