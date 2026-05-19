@@ -61,7 +61,8 @@ RUN \
     apk add --no-cache ${APP_DEPENDENCIES}; \
   fi
 
-RUN chown -R node:node /opt/app
+RUN mkdir -p /opt/app/data \
+  && chown -R node:node /opt/app
 
 COPY --from=build /opt/build/apps/${APP_NAME}/.output ./
 
@@ -120,7 +121,8 @@ RUN \
     apk add --no-cache ${APP_DEPENDENCIES}; \
   fi
 
-RUN chown -R node:node /opt/app
+RUN mkdir -p /opt/app/data \
+  && chown -R node:node /opt/app
 
 COPY --from=deploy-node /opt/deploy /opt/app
 
