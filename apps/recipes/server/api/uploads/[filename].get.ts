@@ -14,7 +14,6 @@ export default defineEventHandler(async (event) => {
     getContents: (id) => {
       const filename = basename(id.slice(BASE_PATH.length))
       return fileUploadService.readStream(filename)
-
     },
     getMeta: async (id) => {
       const filename = basename(id.slice(BASE_PATH.length))

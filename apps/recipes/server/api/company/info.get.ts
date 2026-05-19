@@ -1,7 +1,9 @@
 import { dmsDB } from '~/server/connectionPool'
+import { withBase } from 'ufo'
 
 export default defineEventHandler(async () => {
   try {
+    const config = useRuntimeConfig()
     const info = await dmsDB('COMPANY_INFO')
       .select({
         name: 'company_name',
@@ -14,7 +16,7 @@ export default defineEventHandler(async () => {
       .first()
 
     const logoPath = info.logoPath
-      ? `/api/uploads/${info.logoPath}`
+      ? withBase(`/api/uploads/${info.logoPath}`, config.app.baseURL)
       : null
 
     return {
