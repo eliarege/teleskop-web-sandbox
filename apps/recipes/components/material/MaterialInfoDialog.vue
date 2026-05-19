@@ -73,10 +73,13 @@ async function onSave() {
       await $fetch(`/api/materials/${encodeURIComponent(material.value.materialCode)}`, { method: 'PUT', body: editedMaterial.value })
     else
       await $fetch(`/api/materials`, { method: 'POST', body: editedMaterial.value })
-    await $fetch(`/api/connections/materials?materialCode=${encodeURIComponent(editedMaterial.value.materialCode)}`, { method: 'POST', body: {
-      added,
-      deleted,
-    } })
+    await $fetch(`/api/connections/materials?materialCode=${encodeURIComponent(editedMaterial.value.materialCode)}`, {
+      method: 'POST',
+      body: {
+        added,
+        deleted,
+      }
+    })
     onDialogOK(true)
   } catch (e) {
     onDialogOK(false)

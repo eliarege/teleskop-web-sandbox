@@ -345,9 +345,11 @@ function onMaterialSelected(material: RecipeMasterMaterial) {
     stepMaterials = editedPrograms.value!.at(program)?.saltSteps.find(order => order.orderNo === step)?.materials
   }
   if (stepMaterials && !stepMaterials.some(m => m.materialCode === material.materialCode)) {
-    material.amount = 1
-    material.unit = getDefaultUnitType(stateStore, type)
-    stepMaterials.push(material)
+    stepMaterials.push({
+      ...material,
+      amount: 1,
+      unit: getDefaultUnitType(stateStore, type)
+    })
     materialSelection.value = null
     selectedMaterial.value = undefined
   }
@@ -664,8 +666,8 @@ async function onDelete() {
                       {{ t('programFields.ChemRequests') }}
                     </h4>
                     <div
-                      v-for="(step, idx) in program.chemSteps"
-                      :key="idx"
+                      v-for="(step, stepIndex) in program.chemSteps"
+                      :key="stepIndex"
                       class="table-wrapper"
                       my-2
                     >
@@ -683,7 +685,7 @@ async function onDelete() {
                                 border-2
                               >
                                 <thead>
-                                  <tr :class="{ 'invisible-header': idx !== 0 }">
+                                  <tr :class="{ 'invisible-header': stepIndex !== 0 }">
                                     <th class="text-left" w-10 />
                                     <th class="text-left" w-10>
                                       {{ t('materialFields.Code') }}
@@ -826,7 +828,7 @@ async function onDelete() {
                                 border-2
                               >
                                 <thead>
-                                  <tr :class="{ 'invisible-header': idx !== 0 }">
+                                  <tr :class="{ 'invisible-header': stepIndex !== 0 }">
                                     <th class="text-left" w-10 />
                                     <th class="text-left" w-10>
                                       {{ t('materialFields.IsManual') }}
@@ -848,7 +850,7 @@ async function onDelete() {
                                 <draggable
                                   v-model="step.materials"
                                   class="draggable-area"
-                                  :item-key="(item: RecipeMasterMaterial) => `${item.type}-${idx}-${item.orderNo}`"
+                                  :item-key="(item: RecipeMasterMaterial) => `${item.type}-${stepIndex}-${item.orderNo}`"
                                   :group="{ name: 'materials', pull: false }"
                                   :sort="false"
                                   ghost-class="material-ghost"
@@ -1126,8 +1128,8 @@ async function onDelete() {
                         {{ t('programFields.DyeRequests') }}
                       </h4>
                       <div
-                        v-for="(step, idx) in program.dyeSteps"
-                        :key="idx"
+                        v-for="(step, stepIndex) in program.dyeSteps"
+                        :key="stepIndex"
                         class="table-wrapper"
                         my-2
                       >
@@ -1145,7 +1147,7 @@ async function onDelete() {
                                   border-2
                                 >
                                   <thead>
-                                    <tr :class="{ 'invisible-header': idx !== 0 }">
+                                    <tr :class="{ 'invisible-header': stepIndex !== 0 }">
                                       <th class="text-left" w-10 />
                                       <th class="text-left" w-10>
                                         {{ t('materialFields.Code') }}
@@ -1290,7 +1292,7 @@ async function onDelete() {
                                   border-2
                                 >
                                   <thead>
-                                    <tr :class="{ 'invisible-header': idx !== 0 }">
+                                    <tr :class="{ 'invisible-header': stepIndex !== 0 }">
                                       <th class="text-left" w-10 />
                                       <th class="text-left" w-10>
                                         {{ t('materialFields.IsManual') }}
@@ -1311,7 +1313,7 @@ async function onDelete() {
                                   </thead>
                                   <draggable
                                     v-model="step.materials"
-                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${idx}-${item.orderNo}`"
+                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${stepIndex}-${item.orderNo}`"
                                     class="draggable-area"
                                     :group="{ name: 'materials', pull: false }"
                                     :sort="false"
@@ -1596,8 +1598,8 @@ async function onDelete() {
                         {{ t('programFields.SaltRequests') }}
                       </h4>
                       <div
-                        v-for="(step, idx) in program.saltSteps"
-                        :key="idx"
+                        v-for="(step, stepIndex) in program.saltSteps"
+                        :key="stepIndex"
                         class="table-wrapper"
                         my-2
                       >
@@ -1615,7 +1617,7 @@ async function onDelete() {
                                   border-2
                                 >
                                   <thead>
-                                    <tr :class="{ 'invisible-header': idx !== 0 }">
+                                    <tr :class="{ 'invisible-header': stepIndex !== 0 }">
                                       <th class="text-left" w-10 />
                                       <th class="text-left" w-10>
                                         {{ t('materialFields.Code') }}
@@ -1760,7 +1762,7 @@ async function onDelete() {
                                   border-2
                                 >
                                   <thead>
-                                    <tr :class="{ 'invisible-header': idx !== 0 }">
+                                    <tr :class="{ 'invisible-header': stepIndex !== 0 }">
                                       <th class="text-left" w-10 />
                                       <th class="text-left" w-10>
                                         {{ t('materialFields.IsManual') }}
@@ -1781,7 +1783,7 @@ async function onDelete() {
                                   </thead>
                                   <draggable
                                     v-model="step.materials"
-                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${idx}-${item.orderNo}`"
+                                    :item-key="(item: RecipeMasterMaterial) => `${item.type}-${stepIndex}-${item.orderNo}`"
                                     class="draggable-area"
                                     :group="{ name: 'materials', pull: false }"
                                     :sort="false"
