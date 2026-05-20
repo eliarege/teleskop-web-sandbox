@@ -9,6 +9,8 @@ import type { JobOrderParams, Machine, RecipeMasterStep, RecipeProgramMaster } f
 type ImageAsset = {
   dataUrl: string
   format: 'PNG' | 'JPEG'
+  naturalWidth: number
+  naturalHeight: number
 }
 
 type JobInfoCell = { entry: { label: string, value: string }, valueLines: string[], height: number }
@@ -343,9 +345,16 @@ async function constructJobOrderPdf() {
 
   const headerTop = cursorY
   let headerBottom = headerTop
+  let headerLeftOffset = 0
 
-  if (logoAsset)
-    doc.addImage(logoAsset.dataUrl, logoAsset.format, marginLeft, headerTop - 3, 24, 24)
+  if (logoAsset) {
+    const logoMaxWidth = 24
+    const logoScale = logoAsset.naturalWidth > 0 ? Math.min(logoMaxWidth, logoAsset.naturalWidth) / logoAsset.naturalWidth : 1
+    const logoW = logoAsset.naturalWidth * logoScale
+    const logoH = logoAsset.naturalHeight * logoScale
+    headerLeftOffset = logoW + 4
+    doc.addImage(logoAsset.dataUrl, logoAsset.format, marginLeft, headerTop, logoW, logoH)
+  }
 
   if (barcodeAsset) {
     const barcodeWidth = 70
@@ -363,7 +372,7 @@ async function constructJobOrderPdf() {
     )
   }
 
-  const headerX = marginLeft + (logoAsset ? 28 : 0)
+  const headerX = marginLeft + headerLeftOffset
   doc.setFont('Roboto', 'bold')
   doc.setFontSize(15)
   doc.text(company?.name || t('BatchRecipeSystem'), headerX, headerTop, { baseline: 'top' })
@@ -735,7 +744,13 @@ async function loadImageAsset(url: string | null | undefined): Promise<ImageAsse
     })
     if (!dataUrl)
       return null
-    return { dataUrl, format: format as 'PNG' | 'JPEG' }
+    const { naturalWidth, naturalHeight } = await new Promise<{ naturalWidth: number, naturalHeight: number }>((resolve) => {
+      const img = new Image()
+      img.onload = () => resolve({ naturalWidth: img.naturalWidth, naturalHeight: img.naturalHeight })
+      img.onerror = () => resolve({ naturalWidth: 0, naturalHeight: 0 })
+      img.src = dataUrl
+    })
+    return { dataUrl, format: format as 'PNG' | 'JPEG', naturalWidth, naturalHeight }
   } catch (err) {
     console.warn('Failed to load image asset for PDF', err)
     return null
