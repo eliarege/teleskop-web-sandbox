@@ -3,7 +3,7 @@ import { createFileUploadService } from '~/server/services/fileUpload'
 import { dmsDB } from '~/server/connectionPool'
 import { isValidPartCountColumn } from '~/server/utils/partCountColumn'
 
-const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif']
+const allowedMimeTypes = ['image/jpeg', 'image/png']
 
 export default defineEventHandler(async (event) => {
   try {
