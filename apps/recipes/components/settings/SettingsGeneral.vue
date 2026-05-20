@@ -12,6 +12,8 @@ const stateStore = useStateStore()
 const companyData = ref({
   name: '',
   logoPath: null as string | null,
+  logoSize: 24 as number,
+  showCompanyName: true as boolean,
 })
 
 const originalData = ref({ ...companyData.value })
@@ -47,14 +49,16 @@ async function fetchCompanyData() {
     const result = await $fetch<{
       name: string
       logoPath: string | null
+      logoSize: number
+      showCompanyName: boolean
       partCountActive: boolean
       defaultUnitTypeDye: number
       defaultUnitTypeChem: number
       partCountColumn: string | null
     }>('/api/company/info')
     if (result) {
-      companyData.value = { name: result.name, logoPath: result.logoPath }
-      originalData.value = { name: result.name, logoPath: result.logoPath }
+      companyData.value = { name: result.name, logoPath: result.logoPath, logoSize: result.logoSize ?? 24, showCompanyName: result.showCompanyName ?? true }
+      originalData.value = { name: result.name, logoPath: result.logoPath, logoSize: result.logoSize ?? 24, showCompanyName: result.showCompanyName ?? true }
       selectedMachine.value = stateStore.defaultMachine
       originalMachine.value = stateStore.defaultMachine
       partCountActive.value = result.partCountActive ?? false
@@ -86,6 +90,8 @@ function handleFileUpload(files: File[]) {
 async function onSave() {
   const formData = new FormData()
   formData.append('name', companyData.value.name)
+  formData.append('logoSize', String(companyData.value.logoSize))
+  formData.append('showCompanyName', String(companyData.value.showCompanyName))
   formData.append('partCountActive', String(partCountActive.value))
   formData.append('defaultUnitTypeDye', String(defaultUnitTypeDye.value))
   formData.append('defaultUnitTypeChem', String(defaultUnitTypeChem.value))
@@ -175,6 +181,22 @@ function onReset() {
             :label="t('companyFields.UploadLogo')"
             accept=".jpg, .png, .jpeg"
             @added="handleFileUpload"
+          />
+        </QCardSection>
+        <QCardSection>
+          <QInput
+            v-model.number="companyData.logoSize"
+            :label="t('companyFields.LogoSize')"
+            type="number"
+            filled
+            :min="1"
+            :max="200"
+          />
+        </QCardSection>
+        <QCardSection>
+          <QCheckbox
+            v-model="companyData.showCompanyName"
+            :label="t('companyFields.ShowCompanyName')"
           />
         </QCardSection>
       </QCard>

@@ -19,6 +19,8 @@ export default defineEventHandler(async (event) => {
     const defaultUnitTypeDyeField = formData.find(f => f.name === 'defaultUnitTypeDye')
     const defaultUnitTypeChemField = formData.find(f => f.name === 'defaultUnitTypeChem')
     const partCountColumnField = formData.find(f => f.name === 'partCountColumn')
+    const logoSizeField = formData.find(f => f.name === 'logoSize')
+    const showCompanyNameField = formData.find(f => f.name === 'showCompanyName')
     const file = formData.find(f => f.name === 'image')
 
     const runtimeConfig = useRuntimeConfig()
@@ -48,6 +50,8 @@ export default defineEventHandler(async (event) => {
     const partCountActive = partCountActiveField?.data.toString() === 'true'
     const defaultUnitTypeDye = Number(defaultUnitTypeDyeField?.data.toString() ?? '0')
     const defaultUnitTypeChem = Number(defaultUnitTypeChemField?.data.toString() ?? '1')
+    const logoSize = Math.max(1, Math.min(200, Number(logoSizeField?.data.toString() ?? '24') || 24))
+    const showCompanyName = showCompanyNameField?.data.toString() === 'true'
     const rawPartCountColumn = partCountColumnField?.data.toString() ?? ''
     const partCountColumn = rawPartCountColumn && isValidPartCountColumn(rawPartCountColumn)
       ? rawPartCountColumn
@@ -65,6 +69,8 @@ export default defineEventHandler(async (event) => {
         default_unit_type_dye: defaultUnitTypeDye,
         default_unit_type_chem: defaultUnitTypeChem,
         part_count_column: partCountColumn,
+        logo_size: logoSize,
+        show_company_name: showCompanyName,
         ...(savedPath && { logo_path: savedPath }),
         ...(logoType && { logo_mime_type: logoType }),
       })

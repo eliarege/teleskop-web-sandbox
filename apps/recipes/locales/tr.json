@@ -331,7 +331,9 @@
     "Name": "Şirket Adı",
     "Logo": "Şirket Logosu",
     "Info": "Şirket Bilgileri",
-    "UploadLogo": "Logo Yükle"
+    "UploadLogo": "Logo Yükle",
+    "LogoSize": "PDF Logo Boyutu (mm)",
+    "ShowCompanyName": "PDF başlığında şirket adını göster"
   },
   "customerFields": {
     "No": "Müşteri Numarası",

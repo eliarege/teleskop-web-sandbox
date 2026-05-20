@@ -8,6 +8,8 @@ export default defineEventHandler(async () => {
       .select({
         name: 'company_name',
         logoPath: 'logo_path',
+        logoSize: 'logo_size',
+        showCompanyName: 'show_company_name',
         partCountActive: 'part_count_active',
         defaultUnitTypeDye: 'default_unit_type_dye',
         defaultUnitTypeChem: 'default_unit_type_chem',
@@ -26,6 +28,8 @@ export default defineEventHandler(async () => {
       defaultUnitTypeDye: info.defaultUnitTypeDye as number,
       defaultUnitTypeChem: info.defaultUnitTypeChem as number,
       partCountColumn: (info.partCountColumn as string | null) ?? null,
+      logoSize: (info.logoSize as number | null) ?? 24,
+      showCompanyName: info.showCompanyName == null ? true : !!info.showCompanyName,
     }
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : 'Unknown error'

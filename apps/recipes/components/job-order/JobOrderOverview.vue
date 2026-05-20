@@ -348,7 +348,7 @@ async function constructJobOrderPdf() {
   let headerLeftOffset = 0
 
   if (logoAsset) {
-    const logoMaxWidth = 24
+    const logoMaxWidth = company?.logoSize ?? 24
     const logoScale = logoAsset.naturalWidth > 0 ? Math.min(logoMaxWidth, logoAsset.naturalWidth) / logoAsset.naturalWidth : 1
     const logoW = logoAsset.naturalWidth * logoScale
     const logoH = logoAsset.naturalHeight * logoScale
@@ -373,19 +373,13 @@ async function constructJobOrderPdf() {
   }
 
   const headerX = marginLeft + headerLeftOffset
-  doc.setFont('Roboto', 'bold')
-  doc.setFontSize(15)
-  doc.text(company?.name || t('BatchRecipeSystem'), headerX, headerTop, { baseline: 'top' })
-  doc.setFont('Roboto', 'normal')
-  doc.setFontSize(8.5)
-  doc.setTextColor(...theme.muted)
-  doc.text(`${t('jobOrderParams.PreparedBy')}: ${currentUser.value}`, headerX, headerTop + 6, { baseline: 'top' })
-  doc.text(`${t('jobOrderParams.PreparationDate')}: ${currentTime.value}`, headerX, headerTop + 9, { baseline: 'top' })
-  doc.setFont('Roboto', 'bold')
-  doc.setFontSize(10)
-  doc.setTextColor(...theme.text)
-  doc.text(`${t('jobOrderParams.IDs')}: ${jobNumbers.value || '-'}`, headerX, headerTop + 13, { baseline: 'top' })
-  headerBottom = Math.max(headerBottom, headerTop + 16)
+  if (company?.showCompanyName !== false) {
+    doc.setFont('Roboto', 'bold')
+    doc.setFontSize(15)
+    doc.setTextColor(...theme.text)
+    doc.text(company?.name || t('BatchRecipeSystem'), headerX, headerTop, { baseline: 'top' })
+  }
+  headerBottom = Math.max(headerBottom, headerTop + 8)
   cursorY = headerBottom + 4
 
   cursorY = drawSectionDivider(doc, marginLeft, contentWidth, cursorY, theme)
@@ -773,8 +767,6 @@ async function generateBarcodeAsset(payload: string | null): Promise<ImageAsset 
     return { dataUrl: canvas.toDataURL('image/png'), format: 'PNG' as const }
   } catch (err) {
     console.warn('Failed to render barcode locally:', err)
-    if (barcodeUrl.value)
-      return await loadImageAsset(barcodeUrl.value)
     return null
   }
 }
@@ -791,11 +783,10 @@ async function downloadPdf() {
 async function printPdf() {
   if (!isClient)
     return
-  if (!pdfReady.value)
-    await generatePdfDocument()
-  if (currentPdfDoc) {
-    currentPdfDoc.autoPrint()
-    currentPdfDoc.output('dataurlnewwindow')
+  const doc = await constructJobOrderPdf()
+  if (doc) {
+    doc.autoPrint()
+    window.open(doc.output('bloburl'), '_blank')
   }
 }
 </script>

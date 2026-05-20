@@ -331,7 +331,9 @@
     "Name": "Company Name",
     "Logo": "Company Logo",
     "Info": "Company Information",
-    "UploadLogo": "Upload Logo"
+    "UploadLogo": "Upload Logo",
+    "LogoSize": "PDF Logo Size (mm)",
+    "ShowCompanyName": "Show company name in PDF header"
   },
   "customerFields": {
     "No": "Customer No",
