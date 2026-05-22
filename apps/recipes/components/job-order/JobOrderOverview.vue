@@ -533,8 +533,9 @@ function getJobInfoEntries() {
 
   if (jobOrderShowPrefs.value.orderNo)
     entries.push({ label: t('jobOrderParams.OrderNo'), value: actualParams.value.orderNo || '-' })
-  if (jobOrderShowPrefs.value.PartyNo === undefined || jobOrderShowPrefs.value.PartyNo)
-    entries.push({ label: t('jobOrderParams.PartyNo'), value: actualParams.value.partyNo || '-' })
+
+  entries.push({ label: t('jobOrderParams.PartyNo'), value: actualParams.value.partyNo || '-' })
+
   if (jobOrderShowPrefs.value.yarn)
     entries.push({ label: t('jobOrderParams.Yarn'), value: actualParams.value.yarn || '-' })
   if (jobOrderShowPrefs.value.ASNo)

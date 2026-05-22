@@ -305,6 +305,7 @@ export default defineEventHandler(async (event) => {
           fabric_type: params.fabricType,
           as_no: params.ASNo,
           yarn: params.yarn,
+          party_no: params.partyNo,
           part_count: params.partCount,
         })
 

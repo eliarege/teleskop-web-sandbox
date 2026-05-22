@@ -203,7 +203,7 @@ export default defineEventHandler(async (event) => {
       totalWeight: batchPlan.total_weight,
       flotteRatio: batchPlan.flotte / batchPlan.total_weight,
       flotte: batchPlan.flotte,
-      partyNo: 0,
+      partyNo: batchPlan.party_no || 0,
       orderNo: batchPlan.order_no || 0,
       notes: batchPlan.notes || '',
       customerName: batchPlan.customer_name || '',
