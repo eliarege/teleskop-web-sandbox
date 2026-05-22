@@ -419,6 +419,7 @@ export async function getMachines(idList?: number[]) {
       name: 'm.MACHINECODE',
       machineCapacity: 'm.MACHINECAPACITY',
       machineIpAddress: 'm.IP',
+      tbbModel: 'm.TBBMODEL',
       groupName: 'g.GROUPNAME',
       elapsedTime: knex.raw('DATEDIFF(SECOND, DATEADD(MINUTE, ?, b.STARTTIME), GETDATE())', [config.teleskopTimezoneOffset]),
       theoreticalDuration: 'b.THEORETICDURAT',

@@ -187,12 +187,14 @@ const vncModal = reactive({
   currentMachine: {
     id: 0,
     name: '',
+    tbbModel: '',
   },
 })
-function setVnc(id: number, name: string) {
+function setVnc(id: number, name: string, tbbModel: string) {
   vncModal.show = true
   vncModal.currentMachine.id = id
   vncModal.currentMachine.name = name
+  vncModal.currentMachine.tbbModel = tbbModel
 }
 const machineSortModal = ref(false)
 
@@ -735,7 +737,8 @@ onMounted(async () => {
             onItem: (arg: any) => {
               const id = arg.record.id
               const name = arg.record.name
-              setVnc(id, name)
+              const tbbModel = arg.record.tbbModel
+              setVnc(id, name, tbbModel)
             },
           },
           machineSort: {
@@ -1116,6 +1119,7 @@ LocaleManager.applyLocale(capitalizeFirstLetter(bryntumLocale))
         <MachineVnc
           :machine-name="vncModal.currentMachine.name"
           :machine-id="vncModal.currentMachine.id"
+          :tbb-model="vncModal.currentMachine.tbbModel"
           :websockify-url="config.public.websockifyUrl"
         />
       </template>
