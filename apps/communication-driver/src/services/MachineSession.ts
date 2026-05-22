@@ -467,6 +467,14 @@ export class MachineSession {
     postCommitActions: PostCommitAction[],
     trx: Knex.Transaction,
   ): Promise<void> {
+    if (event.batchCode === null) {
+      this.logger.warn(
+        { eventId: event.id },
+        'BatchStartEvent received with null batchCode - ignoring',
+      )
+      return
+    }
+
     // Duplicate detection: same batch already running and not in recovery mode
     if (
       !this.skipUntilNextBatchStart

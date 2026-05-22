@@ -354,7 +354,8 @@ export interface TonelloBatchCancelledEvent extends TonelloBaseEvent {
 
 export interface TonelloBatchStartEvent extends TonelloBaseEvent {
   eventValue: typeof TonelloEventCode.BatchStartEvent
-  batchCode: string
+  /** Tonello has a bug where batch code is sometimes sent as `null`, so we need to handle this case */
+  batchCode: string | null
   operator: number
   type: number
   weight: number
