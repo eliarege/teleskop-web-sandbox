@@ -65,8 +65,11 @@ export class KnexMachineStatusRepository implements MachineStatusRepository {
       consumptionReadDate: adjustFromDbDate(row.consumptionReadDate, this.tzOffset),
       steamReadDate: adjustFromDbDate(row.steamReadDate, this.tzOffset),
       manualReasonDateTime: adjustFromDbDate(row.manualReasonDateTime, this.tzOffset),
-      // Knex converts `date` columns to Date objects, but we want to keep it as a string in `yyyy-MM-dd` format
-      lastEventDate: row.lastEventDate != null ? extractDateString(row.lastEventDate) : null,
+      lastEventId: row.lastEventId ?? 0,
+      // Knex converts `date` columns to Date objects, but we want to keep it as a string in `yyyy-MM-dd` format.
+      // When null (never polled), fall back to today's date in the machine's local timezone so that
+      // the Tonello API receives the correct date boundary on the first poll.
+      lastEventDate: extractDateString(row.lastEventDate ?? new Date(), this.tzOffset),
     }
   }
 

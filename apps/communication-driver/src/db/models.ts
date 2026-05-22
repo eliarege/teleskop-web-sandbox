@@ -487,9 +487,9 @@ export interface MachineStatus {
   lastEventCode: number | null
   batchLoaded: boolean | null
   /** Last processed event ID from Tonello machine. Used to resume polling after restart. */
-  lastEventId: number | null
-  /** Last processed event date string (`'yyyy-MM-dd'`). Used as the `date` param of `fetchEvents`. */
-  lastEventDate: string | null
+  lastEventId: number
+  /** Last processed event date string (`'yyyy-MM-dd'`). Used as the `date` param of `fetchEvents`. Never null after deserialization; defaults to today in the machine's local timezone. */
+  lastEventDate: string
 }
 
 export type MachineStatusUpdate = Partial<Omit<MachineStatus, 'machineId' | 'updateTime'>>

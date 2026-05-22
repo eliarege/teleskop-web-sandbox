@@ -1,4 +1,4 @@
-import type { TonelloIoType } from '@teleskop/core'
+import type { TonelloEvent, TonelloIoType } from '@teleskop/core'
 import { TonelloAutoMode, TonelloChemicalRequestStatus, TonelloChemicalRequestType } from '@teleskop/core'
 import type { IoType } from './db/enums'
 import { AutoManualStatus, MaterialType, RequestStatus } from './db/enums'
@@ -6,12 +6,23 @@ import { AutoManualStatus, MaterialType, RequestStatus } from './db/enums'
 /**
  * Formats a Date to a `'yyyy-MM-dd'` string, used as the `date` param
  * for `TonelloApi.fetchEvents` and stored in `MachineStatus.lastEventDate`.
+ *
+ * If `offsetMinutes` is provided, it subtracts that many minutes from the date before formatting, to adjust the date for a different timezone.
+ * This is needed because Tonello machines use their local date boundary for event IDs, but the server may be in a different timezone.
  */
-export function extractDateString(d: Date): string {
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+export function extractDateString(date: Date, offsetMinutes?: number): string {
+  if (offsetMinutes) {
+    const dateWithOffset = subMinutes(date, offsetMinutes)
+    return dateWithOffset.toISOString().slice(0, 10)
+  }
+  return date.toISOString().slice(0, 10)
+}
+
+/**
+ * Extracts the date string (`'yyyy-MM-dd'`) from a TonelloEvent's `rawDatetime` property, which is in ISO format.
+ */
+export function extractEventDate(event: TonelloEvent): string {
+  return event.rawDatetime.slice(0, 10)
 }
 
 /** Returns elapsed time in whole seconds between two dates. */

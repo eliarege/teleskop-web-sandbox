@@ -117,7 +117,7 @@ export class MachineManager {
 
       const session = new MachineSession(
         machine,
-        this.logger.child({ machineId: machine.machineId }),
+        this.logger,
         this.sessionDeps,
       )
 

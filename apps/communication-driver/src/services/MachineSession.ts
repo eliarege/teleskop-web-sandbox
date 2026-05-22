@@ -54,7 +54,7 @@ import type { BatchDataFilesRepository } from '../db/repositories/BatchDataFiles
 import type { ProgramHeaderRepository } from '../db/repositories/ProgramHeaderRepository'
 import {
   diffInSeconds,
-  extractDateString,
+  extractEventDate,
   mapRequestStatusToTonello,
   mapTonelloAutoModeToAutoManualStatus,
   mapTonelloChemicalRequestType,
@@ -251,8 +251,8 @@ export class MachineSession {
   // ── Poll ────────────────────────────────────────────────────────────────────
 
   private async poll(): Promise<void> {
-    const lastDate = this.status.lastEventDate ?? extractDateString(new Date())
-    const lastId = this.status.lastEventId ?? 0
+    const lastDate = this.status.lastEventDate
+    const lastId = this.status.lastEventId
 
     let fetchResult: { from: number, events: TonelloEvent[] }
 
@@ -340,7 +340,9 @@ export class MachineSession {
 
       const lastEvent = events[events.length - 1]
       this.status.lastEventId = lastEvent.id
-      this.status.lastEventDate = extractDateString(lastEvent.datetime)
+      // Use the machine's own datetime string to preserve its local-timezone date boundary,
+      // since Tonello resets event IDs at local midnight, not UTC midnight.
+      this.status.lastEventDate = extractEventDate(lastEvent)
       this.status.connectionStatus = ConnectionStatus.Connected
 
       await this.deps.machineStatusRepository.update(this.machineId, this.status, trx)
@@ -571,7 +573,7 @@ export class MachineSession {
     this.status.manualReason = ''
     this.status.manualReasonDateTime = null
     this.status.lastEventId = event.id
-    this.status.lastEventDate = extractDateString(event.datetime)
+    this.status.lastEventDate = extractEventDate(event)
 
     // 5 & 6. Notify planning board
     if (plannedBatch) {
@@ -1221,6 +1223,6 @@ export class MachineSession {
   }
 
   private getEventId(event: TonelloEvent): string {
-    return `${extractDateString(event.datetime)}_${event.id}`
+    return `${extractEventDate(event)}_${event.id}`
   }
 }

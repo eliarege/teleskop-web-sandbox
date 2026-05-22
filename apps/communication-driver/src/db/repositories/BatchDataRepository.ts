@@ -228,7 +228,7 @@ export class KnexBatchDataRepository implements BatchDataRepository {
   }
 
   async getNextBatchReference(date: Date, machineId: number, trx?: Knex.Transaction): Promise<string> {
-    const datePart = extractDateString(date).split('-').join('.')
+    const datePart = extractDateString(date, this.tzOffset).split('-').join('.')
     const likePattern = `${datePart}.${machineId}.%`
     const row = await this.qb(trx)
       .from(BATCH_DATA_TABLE)
