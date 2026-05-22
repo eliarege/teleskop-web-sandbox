@@ -121,18 +121,11 @@ const barcodeValue = computed(() => {
   return `${identifiers[0]} - ${identifiers[identifiers.length - 1]}`
 })
 
-const barcodeUrl = computed(() => {
-  if (!barcodeValue.value)
-    return ''
-  return `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(barcodeValue.value)}&code=Code128&translate-esc=false`
-})
-
 const batchNoToUse = computed(() => props.batchNo || (route.query.batchNo as string | undefined))
 const jobOrderShowPrefs = computed(() => {
   const show = stateStore.jobOrderPrefs?.show || {}
   return {
     orderNo: show.orderNo,
-    PartyNo: show.PartyNo,
     yarn: show.yarn,
     ASNo: show.ASNo,
   }
