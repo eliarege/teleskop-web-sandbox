@@ -421,7 +421,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.skipUntilNextBatchStart && event.eventValue !== TonelloEventCode.BatchStartEvent) {
       this.logger.debug(
-        { eventId: event.id, eventValue: event.eventValue },
+        { eventId: this.getEventId(event), eventValue: event.eventValue },
         'Skipping event - waiting for BatchStartEvent',
       )
       return
@@ -469,7 +469,7 @@ export class MachineSession {
   ): Promise<void> {
     if (event.batchCode === null) {
       this.logger.warn(
-        { eventId: event.id },
+        { eventId: this.getEventId(event) },
         'BatchStartEvent received with null batchCode - ignoring',
       )
       return
@@ -482,7 +482,7 @@ export class MachineSession {
       && this.activeBatch.jobOrder === event.batchCode
     ) {
       this.logger.warn(
-        { batchCode: event.batchCode, eventId: event.id },
+        { batchCode: event.batchCode, eventId: this.getEventId(event) },
         'Duplicate BatchStartEvent received - ignoring',
       )
       return
@@ -616,7 +616,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null) {
       this.logger.warn(
-        { batchCode: event.batchCode, eventId: event.id },
+        { batchCode: event.batchCode, eventId: this.getEventId(event) },
         'BatchEndEvent received with no active batch - ignoring',
       )
       return
@@ -648,7 +648,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null) {
       this.logger.warn(
-        { batchCode: event.batchCode, eventId: event.id },
+        { batchCode: event.batchCode, eventId: this.getEventId(event) },
         'BatchCancelledEvent received with no active batch - ignoring',
       )
       return
@@ -749,7 +749,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null) {
       this.logger.debug(
-        { eventId: event.id },
+        { eventId: this.getEventId(event) },
         'CommandStartEvent ignored - no active batch',
       )
       return
@@ -762,7 +762,7 @@ export class MachineSession {
       if (this.activeStep.stepNo === stepNo) {
         this.logger.warn(
           {
-            eventId: event.id,
+            eventId: this.getEventId(event),
             runningCommandNo: this.activeStep.commandNo,
             newCommandNo: event.commandNum,
           },
@@ -774,7 +774,7 @@ export class MachineSession {
       // Tonello bug: CommandFinish was not sent for the previous step - close it now
       this.logger.warn(
         {
-          eventId: event.id,
+          eventId: this.getEventId(event),
           prevStepNo: this.activeStep.stepNo,
           prevCommandNo: this.activeStep.commandNo,
           newStepNo: stepNo,
@@ -832,7 +832,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null || this.activeStep === null) {
       this.logger.debug(
-        { eventId: event.id },
+        { eventId: this.getEventId(event) },
         'CommandFinishEvent ignored - no active batch or command',
       )
       return
@@ -870,7 +870,7 @@ export class MachineSession {
   ): Promise<void> {
     if (this.activeBatch === null) {
       this.logger.debug(
-        { eventId: event.id },
+        { eventId: this.getEventId(event) },
         'ChemicalRequestEvent ignored - no active batch',
       )
       return
@@ -1218,5 +1218,9 @@ export class MachineSession {
         totalRequests: event.batchTotRequestCount,
       }
     }
+  }
+
+  private getEventId(event: TonelloEvent): string {
+    return `${extractDateString(event.datetime)}_${event.id}`
   }
 }
