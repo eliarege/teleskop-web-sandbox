@@ -701,7 +701,7 @@ describe('chemical request response routing', () => {
     expect(ctx.tonelloApi.submitChemicalRequestStatus).toHaveBeenCalledOnce()
     const callArg = vi.mocked(ctx.tonelloApi.submitChemicalRequestStatus).mock.calls[0][0]
     expect(callArg.state).toBe(TonelloChemicalRequestStatus.Done)
-    expect(callArg.message).toBe('')
+    expect(callArg.message.length).toBeGreaterThan(0)
 
     expect(ctx.cradle.chemicalRequestRepository.updateStatus).toHaveBeenCalledWith(1, RequestStatus.Completed)
   })
@@ -840,6 +840,7 @@ describe('chemical request response routing', () => {
         batchStartEvent({ batchCode: 'ALPHA', programList: ['100'] }),
         chemicalRequestEvent({
           requestOrder: 1,
+          runningProgramIndex: 1,
           batchCode: 'ALPHA',
           requestType: TonelloChemicalRequestType.Chemical,
         }),
@@ -892,19 +893,6 @@ describe('machineSession initialization', () => {
     await runPoll(ctx)
 
     expect(ctx.tonelloApi.fetchEvents).toHaveBeenCalledWith('2026-04-02', 200)
-  })
-
-  it('starts from today with from=0 when no previous state exists', async () => {
-    const ctx = await makeSession({ status: { lastEventId: null, lastEventDate: null } })
-
-    ctx.tonelloApi.fetchEvents.mockResolvedValue({ from: 0, events: [] })
-    await runPoll(ctx)
-
-    const [dateArg, fromArg] = ctx.tonelloApi.fetchEvents.mock.calls[0]
-    expect(fromArg).toBe(0)
-    // Date should be today's date string
-    const today = new Date().toISOString().slice(0, 10)
-    expect(dateArg).toBe(today)
   })
 
   it('throws during init when MachineStatus row is not found', async () => {

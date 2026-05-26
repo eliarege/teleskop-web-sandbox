@@ -133,8 +133,8 @@ export function makeMachineStatus(overrides?: Partial<MachineStatus>): MachineSt
     runningBatchDelay: 0,
     lastEventCode: null,
     batchLoaded: null,
-    lastEventId: null,
-    lastEventDate: null,
+    lastEventId: 0,
+    lastEventDate: '1970-01-01',
     ...overrides,
   }
 }
@@ -238,6 +238,7 @@ export function chemicalRequestEvent(opts: {
   requestType?: TonelloChemicalRequestType
   tankNr?: number
   priority?: number
+  runningProgramIndex?: number
   batchTotRequestCount?: number
   /** Overrides the computed program-scoped request order stored in `custom`. Relevant for Chemical requests restored from DB. */
   customRequestOrderInProgram?: number
@@ -251,6 +252,7 @@ export function chemicalRequestEvent(opts: {
     requestType = TonelloChemicalRequestType.Dye,
     tankNr = 7,
     priority = 50,
+    runningProgramIndex = 1,
     batchTotRequestCount = 3,
     customRequestOrderInProgram = requestOrder,
     customTotalRequestsInProgram = 1,
@@ -269,7 +271,7 @@ export function chemicalRequestEvent(opts: {
     requestOrder,
     tankNr,
     priority,
-    runningProgramIndex: 0,
+    runningProgramIndex,
     runningCommandIndex: 0,
     rawDatetime: '',
     custom: {
@@ -340,7 +342,7 @@ export function makeChemicalResponse(opts: {
     requestOrder: opts.requestOrder ?? 1,
     totalRequests: opts.totalRequests ?? 3,
     materialType: opts.materialType ?? MaterialType.Dye,
-    programIndex: opts.programIndex ?? 0,
+    programIndex: opts.programIndex ?? 1,
   }
 }
 

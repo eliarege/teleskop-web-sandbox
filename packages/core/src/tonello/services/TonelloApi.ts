@@ -1,6 +1,6 @@
 import type { $Fetch } from 'ofetch'
 import { $fetch } from 'ofetch'
-import { format } from 'date-fns'
+import { subMinutes } from 'date-fns'
 import type {
   TonelloAlarmListResponse,
   TonelloBatch,
@@ -40,14 +40,15 @@ export class TonelloApi {
     return response.data
   }
 
-  async fetchDatetime(timeout = 5000): Promise<TonelloDatetimeResponse> {
+    async fetchDatetime(timeout = 5000): Promise<Date> {
     const { data } = await this.fetch<TonelloResponse<TonelloDatetimeResponse>>('/api/v1/getDateTime', { timeout })
-    return data
+    // Tonello API returns ISO string with local timezone, can be directly parsed by Date constructor
+    return new Date(data.dateTime)
   }
 
-  async updateDatetime(dateTime: Date): Promise<void> {
-    const date = format(dateTime, 'yyyy-MM-dd')
-    const time = format(dateTime, 'HH:mm:ss')
+  async updateDatetime(datetime: Date, tzOffset = 0): Promise<void> {
+    const adjusted = tzOffset ? subMinutes(datetime, tzOffset) : datetime
+    const [date, time] = adjusted.toISOString().slice(0, -5).split('T')
     await this.fetch('/api/v1/setDateTime', {
       body: { date, time },
     })

@@ -15,6 +15,7 @@ import type {
   TonelloCommandStartEvent,
   TonelloEvent,
   TonelloIoValueChangedEvent,
+  TonelloMachineStatus,
 } from '@teleskop/core'
 import type { Knex } from 'knex'
 import type { Logger } from 'pino'
@@ -80,6 +81,8 @@ type PostCommitAction =
 export interface MachineSessionDeps {
   teleskop: Knex
   digitalIoFlushInterval: number
+  teleskopTimezoneOffset: number
+  timeSyncMaxDriftMinutes: number
   machineStatusRepository: MachineStatusRepository
   batchDataRepository: BatchDataRepository
   batchStepRepository: BatchStepRepository
@@ -119,6 +122,9 @@ export class MachineSession {
 
   /** When true, all events are skipped until the next `BatchStartEvent` (missed-event recovery). */
   private skipUntilNextBatchStart = false
+
+  /** When true, a time-sync check will be performed after commit. */
+  private pendingTimeSync = false
 
   private logger: Logger
 
@@ -306,6 +312,9 @@ export class MachineSession {
       }).catch((err) => {
         this.logger.error({ err }, 'Failed to update machine connection status')
       })
+      if (machineStatus && this.isMachineIdle(machineStatus)) {
+        await this.syncMachineTime()
+      }
     }
 
     if (events.length === 0) {
@@ -357,9 +366,41 @@ export class MachineSession {
             break
         }
       }
+      if (this.pendingTimeSync) {
+        this.pendingTimeSync = false
+        const status = await this.api.fetchStatus().catch(() => null)
+        if (status && this.isMachineIdle(status)) {
+          await this.syncMachineTime()
+        }
+      }
     } catch (err) {
       await trx.rollback()
       this.logger.error({ err }, 'Error processing event batch - transaction rolled back')
+    }
+  }
+
+  /**
+   * Checks if the machine's clock is drifting significantly from the server time, and if so, updates the machine's datetime to match the server.
+   */
+  private async syncMachineTime(): Promise<void> {
+    try {
+      const machineTime = await this.api.fetchDatetime()
+      const now = new Date()
+      const driftMs = Math.abs(now.getTime() - machineTime.getTime())
+      const driftMinutes = driftMs / 60_000
+
+      if (driftMinutes < this.deps.timeSyncMaxDriftMinutes) {
+        return
+      }
+
+      this.logger.warn(
+        { driftMinutes: driftMinutes.toFixed(2) },
+        'Machine clock drift detected - syncing datetime',
+      )
+      await this.api.updateDatetime(new Date(), this.deps.teleskopTimezoneOffset)
+      this.logger.info('Machine datetime synced successfully')
+    } catch (err) {
+      this.logger.error({ err }, 'Failed to sync machine datetime')
     }
   }
 
@@ -641,6 +682,7 @@ export class MachineSession {
       batchCode: event.batchCode,
       message: 'Batch was completed',
     })
+    this.pendingTimeSync = true
   }
 
   private async handleBatchCancelled(
@@ -676,6 +718,7 @@ export class MachineSession {
       batchCode: event.batchCode,
       message: `Batch was cancelled by operator ${this.status.runningOperatorName}`,
     })
+    this.pendingTimeSync = true
   }
 
   private async finalizeBatch(
@@ -1205,6 +1248,15 @@ export class MachineSession {
       default:
         return ''
     }
+  }
+
+  /**
+   * Determines if the machine is currently idle based on its status.
+   * According to Andrea, `lot` will be empty when the machine is idle, and populated when a batch is running.
+   * This is a heuristic used to decide whether to attempt time synchronization on startup or after errors.
+   */
+  private isMachineIdle(status: TonelloMachineStatus): boolean {
+    return !status.lot?.length
   }
 
   private getDispensingRequestDetails(event: ExtendedTonelloChemicalRequestEvent): { requestOrder: number, totalRequests: number } {

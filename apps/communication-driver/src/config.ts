@@ -117,6 +117,12 @@ export function buildConfig() {
       type: 'integer',
       default: 200,
     },
+    /** Maximum allowed clock drift in minutes before the machine's datetime is corrected. Only checked when the machine is idle. */
+    timeSyncMaxDriftMinutes: {
+      env: ['TIME_SYNC_MAX_DRIFT_MINUTES', 'NUXT_TIME_SYNC_MAX_DRIFT_MINUTES'],
+      type: 'integer',
+      default: 2,
+    },
   }).parse()
 }
 
