@@ -71,7 +71,7 @@ prepare-apps:
         turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
       done
   artifacts:
-    expire_in: 1h
+    expire_in: 1 hour
     paths:
       - out-*/
 
@@ -85,7 +85,7 @@ prepare-hotfix:
     - export APP_NAME=$(echo $CI_COMMIT_TAG | sed -E 's/^([a-z._-]+)@.*/\1/')
     - turbo prune --scope=$APP_NAME --out-dir out --docker
   artifacts:
-    expire_in: 1h
+    expire_in: 1 hour
     paths:
       - out/
 
