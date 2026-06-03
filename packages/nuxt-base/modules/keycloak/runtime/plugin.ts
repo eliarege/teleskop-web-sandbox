@@ -233,6 +233,8 @@ export default defineNuxtPlugin({
       userInfo.value = keycloak.userInfo
     }
 
+    let isRedirectingToLogin = false
+
     const fetch = $fetch.create({
       async onRequest(context) {
         if (kcEnabled) {
@@ -241,8 +243,23 @@ export default defineNuxtPlugin({
           }
           if (token.value) {
             await keycloak.updateToken(kcConfig?.minimumTokenValidity)
-            setHeader(context.options, 'Authorization', `Bearer ${token.value}`)
+            setHeader(context.options, 'Authorization', `Bearer ${keycloak.token}`)
           }
+        }
+      },
+      async onResponseError(error) {
+        if (kcEnabled && error.response?.status === 401) {
+          try {
+            await keycloak.updateToken(-1)
+            return
+          }
+          catch {}
+          if (isRedirectingToLogin) return
+          isRedirectingToLogin = true
+          await navigateTo(keycloak.createLoginUrl({
+            locale: locale.value || 'en',
+            redirectUri: window.location.href,
+          }), { external: true })
         }
       },
     })
