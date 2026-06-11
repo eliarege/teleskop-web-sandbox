@@ -15,6 +15,7 @@ const { data: machines } = await useFetch('/api/machine')
 const pagination = ref({ rowsPerPage: 50, page: 1 } as QTableProps['pagination'])
 
 const jobOrders = ref([] as any[])
+
 async function fetchData() {
   loading.show()
   const response = await $fetch<{ rows: any[], count: number }>('/api/job-order', {
@@ -127,7 +128,7 @@ onUnmounted(() => {
 
 onKeyStroke('Enter', () => {
   if (selectedRow.value) {
-    navigateToJobOrder(selectedRow.value.batchKey)
+    navigateToBatch(selectedRow.value.batchKey)
   }
 })
 
@@ -136,13 +137,13 @@ async function handleFilterSlotsUpdate(updatedValue: any) {
   await fetchData()
 }
 
-function getJobOrderUrl(jobOrder: number) {
+function getBatchUrl(batchKey: number) {
   const baseURL = useRuntimeConfig().app.baseURL
-  return withBase(`/${jobOrder}?fromList=true`, baseURL)
+  return withBase(`/${batchKey}?fromList=true`, baseURL)
 }
 
-async function navigateToJobOrder(jobOrder: number) {
-  window.open(getJobOrderUrl(jobOrder), '_blank')
+async function navigateToBatch(batchKey: number) {
+  window.open(getBatchUrl(batchKey), '_blank')
 }
 </script>
 
@@ -160,16 +161,16 @@ async function navigateToJobOrder(jobOrder: number) {
         :rows="jobOrders"
         :columns="columns"
         :filter-slots="externalFilterSlots"
-        @row-dblclick="row => navigateToJobOrder(row.batchKey)"
+        @row-dblclick="row => navigateToBatch(row.batchKey)"
         @update-filter-slots="(evt) => handleFilterSlotsUpdate(evt)"
         @update-pagination="pgn => pagination = pgn"
       >
         <template #body-cell-jobOrder="props">
           <a
-            :href="getJobOrderUrl(props.value)"
+            :href="getBatchUrl(props.row.batchKey)"
             target="_blank"
             class="job-order-link"
-            @click.stop.prevent="navigateToJobOrder(props.value)"
+            @click.stop.prevent="navigateToBatch(props.row.batchKey)"
           >
             {{ props.value }}
           </a>
