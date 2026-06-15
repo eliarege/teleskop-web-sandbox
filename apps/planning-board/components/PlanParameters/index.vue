@@ -3,14 +3,11 @@ import type { PlanParameterProps } from '~/shared/types'
 
 const props = defineProps<PlanParameterProps>()
 const emit = defineEmits(['uploadMachine'])
-const { data: planParameters, refresh: planParameterRefresh } = useAuthFetch('/api/planParameters', {
+const { data: planParameters } = useAuthFetch('/api/planParameters', {
   default: () => [],
-  immediate: false,
+  immediate: true,
   query: { planKey: props.planKey, machineId: props.machineId },
 })
-if (!props.isSendMachine) {
-  planParameterRefresh()
-}
 const modifiedParameters = computed(() =>
   planParameters.value.toSorted((a, b) => a.paramStatus > b.paramStatus ? 1 : -1),
 )
