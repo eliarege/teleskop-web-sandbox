@@ -224,6 +224,8 @@ defineExpose({
 })
 
 onMounted(() => {
+  input.value?.validate()
+
   if (props.autofocus) {
     nextTick(() => {
       numberInput.value?.focus()

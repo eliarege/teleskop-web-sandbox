@@ -2,7 +2,7 @@
 /* eslint-disable eqeqeq */
 
 const props = defineProps({
-  modelValue: { type: Number, required: true },
+  modelValue: { type: Number, required: false },
   id: { required: true },
 })
 
