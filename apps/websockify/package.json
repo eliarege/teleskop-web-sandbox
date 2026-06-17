@@ -1,7 +1,7 @@
 {
   "name": "websockify",
   "type": "module",
-  "version": "0.79.0",
+  "version": "0.80.0",
   "private": true,
   "description": "NoVNC için WebSocket Proxy. Teleskopta tanımlanmış cihazlardaki VNC sunucularına WebSocket trafiğini yönlendirir.",
   "license": "UNLICENSED",

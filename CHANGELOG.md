@@ -1,8 +1,69 @@
 # Changelog
 
+## 0.80.0 - 2026-06-17
+
+[Compare Changes](23d534e410d5c544c2dc3c1486bd28b1a1b062a2...66051178446ce3a8d4085bb6c56f5f18c85bcb4b)
+
+### 🚀 Features
+
+-  **RE**: Add per-type default units, part count, and Dyelots column config ([e96d00a](e96d00a5797642fd71e83ca757e5193a7a377015))
+-  **PE**: Yeni program oluştururken program numarasının otomatik önerilmesi özelliği eklendi. ([af689a3](af689a3fdd37e2fbfaa92d415247137b9cea4046))
+-  **RE**: Add PDF header config options and fix print ([4272d3c](4272d3cd2ba6c6386017f385c8259c50892828cc))
+-  **RE**: Persist partyNo in BATCH_PLAN ([b5790c6](b5790c62976c7e99fe610a7c6d0954410eaee982))
+-  **CD**: Sync Tonello machine clock on idle/reconnect ([c660b93](c660b93b7e3e11c42faac3517e480f5ff5a27e0a))
+
+### 🐛 Bug Fixes
+
+-  **RE**: Validate template first, save header before template ([f39d19e](f39d19e4bfc35d45e1a2178933740d36204cd052))
+-  **RE**: Preserve user-defined step order and fix orderNo uniqueness across types ([00100a9](00100a9ddbc25436f850aec18dc0162473adef33))
+-  **RE**: Handle potential errors when retrieving file metadata ([8293783](8293783facd6170001133ccc35c1d69a66a9ac3f))
+-  **CD**: Update error message for failed chemical requests ([df47e4e](df47e4e80b04529aafe8ad7637f836d124e4afa5))
+-  **RE**: Remove unused locale storage from state management ([0617e55](0617e55055e197fe9d6af404be891bf1cd147c29))
+-  **RE**: Update validation regex to allow dots, underscores, and hyphens in material code ([e0c5d78](e0c5d786b287d1122f16cb39a87ab70713cbae7d))
+-  **RE**: Use composite item-key in draggable material lists ([d3faaca](d3faaca76a7c6f9aa2c6f8a798078dfe0e29acfa))
+-  **RE**: Clear material selection state when removing a program ([021fa60](021fa6004c82cefd0bbdd7dd0616e4e0b39d1e8e))
+-  **RE**: Stop click propagation on program remove button and reset program selection state when removing a program ([997d960](997d960bbd7ec48f507425e9ac10dc6d74baebf3))
+-  **RE**: Prevent adding duplicate material to the same request step ([3f4536e](3f4536e8c1023057e3603faff90d0688a0ef4e2b))
+-  **RE**: Update notes label translation key in PDF generation ([9da7b9d](9da7b9dfd64cf5622600615a5b901a60497347ea))
+-  **RE**: Open pdf preview of joborder in same page ([9ede51f](9ede51f7499bba466070c971e513e5ecafcad3e2))
+-  **CD**: Correct program index reference in current program retrieval ([e04910e](e04910ea5230b55b97f8a87af96f17ccff158c99))
+-  **CD**: Send status message for all chemical request response states ([96202bb](96202bb1c1daa7a8539d13d48af0042a736a68fd))
+-  **RE**: Fix CallOff and Preparation_counter sharing counter across request types ([59f3b21](59f3b21403ef666807127b636130a4ced74a3b52))
+-  **RE**: Ensure showJobOrderOverview is called correctly on click ([a567326](a567326b316f5f3961e828a7422c5b831c8ec5c6))
+-  **MA**: Program filtresi uygulama hataları giderildi ve program arama için metin normalleştirmesi eklendi. ([de6e22b](de6e22b8d6726e6ce7b7164e936cc2c0ac6756de))
+-  **PE**: Number.MAX_SAFE_INTEGER kullanıldı. ([1706516](1706516a7a165d1bf211cade0b20dd38a0506aef))
+-  **RE**: Ensure it's a number in program query ([77e7f83](77e7f8385a33f2a441a678f0896017963cd66150))
+-  **RE**: Clone material object when adding to step to prevent shared reference mutation ([ce96faa](ce96faa744d0f56ad894181f77dbc5b6fb25e9f2))
+-  **RE**: Return correct logo path according to app base url ([778b87c](778b87c9e4f376acf782626a8bf20f67c65aad19))
+-  **RE**: Respect logo aspect ratio in job order PDF ([6759aa2](6759aa2b255157fb5195803c85f436dad431538b))
+-  **RE**: Remove 'image/gif' from allowed MIME types for file uploads ([dd64132](dd6413222ddea2b0c6a275f7999fd0f334e09571))
+-  **CD**: Handle null batchCode in BatchStartEvent to prevent warnings ([f4ff78f](f4ff78fce34666ab87b7bb9eaf2a1fcc35ad7dd2))
+-  **CD**: Standardize eventId logging format in MachineSession ([e594b96](e594b96baf8581aad40da4e417d85bbc2a22fcf6))
+-  **CD**: Fix event re-processing loop and duplicate machineId in logs ([59744e2](59744e2f20483179ad7af6b3c14a61ebe6dc09a4))
+-  **PB**: Pass `tbbModel` to vnc for accurate rendering of vnc screen ([b3d0186](b3d01860f022eb3bca2242a4a6c87266c6878404))
+-  **PE**: Typo in payload of `onOk` callback param of change process type ([cf3b5a8](cf3b5a8e70e3298ff92e9ae09852e43bb3805a53))
+-  **PE**: Reset selectedPrograms when refreshing all programs ([3cfd859](3cfd859f7792f85d45198fbf87bcc2ee592cd6be))
+-  **RE**: Remove unused barcodeUrl computed property and PartyNo from jobOrderShowPrefs ([e9d3e4d](e9d3e4dad74570a16f18ee4b636da45042d0382c))
+-  **CI**: Update artifact expiration format from '1h' to '1 hour' ([b509a5c](b509a5c1af65efe6a15203787019e3b8cb31f659))
+- **nuxt-base**: Fix stale token and improve 401 handling in keycloak fetch ([995cfae](995cfaebfaf8142b5380c9f7bec1c57cc441fe50))
+-  **PB**: Enable immediate data fetching and remove unused refresh logic ([4cdd917](4cdd917caf4eab6c4840c63bfde54e12ccb3ae57))
+-  **AR**: Job order numarası yerine batch key ile yönlendirme sağlandı. ([d64d872](d64d872840c11298f449770b98586c00d4d7286f))
+-  **PE**: Editör sayfası açılınca parametre hatalarının gösterilmesi sağlandı. ([ea75795](ea75795d7cd8a87f8ef421d4a8ec1db25c5517b3))
+-  **PE**: Programın teorik süre hesaplama hatası giderildi. ([bfd3d55](bfd3d5559e60ceee43c6b4e2757b3db548df217e))
+
+### ♻️ Refactor
+
+-  **RE**: Extract repeated OptionMap arrays to shared/enums.ts ([acbcfd5](acbcfd571f9d2e9d30b6cc978c064caf4a4b07cc))
+-  **RE**: Add as const enums to shared/enums.ts and use in option functions ([1b1d390](1b1d39001d135a1145a80807dc6a0a39c71900ed))
+
+### 🔧 Miscellaneous Tasks
+
+- **Dockerfile**: Create data directory owned by node user under app dir ([57d024c](57d024ce5dc4127f80fe7430433b6d108204d46f))
+-  **AR**: Remove unused icon ([a0c53b5](a0c53b5bf885368a4b83f33b55bfbc4ed46e0b54))
+
 ## 0.79.0 - 2026-05-16
 
-[Compare Changes](77ad8edc3ac22cd9ecbd847b2bc4069695cf0e11...27e04f649fead421146db285505af4d28977386b)
+[Compare Changes](77ad8edc3ac22cd9ecbd847b2bc4069695cf0e11...23d534e410d5c544c2dc3c1486bd28b1a1b062a2)
 
 ### 🚀 Features
 
