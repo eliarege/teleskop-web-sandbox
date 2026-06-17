@@ -12,6 +12,7 @@ interface CalculationContext {
 interface StepResult {
   errors: string[][]
   duration: number
+  temperature: number
 }
 
 /**
@@ -32,11 +33,15 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
   let totalDuration = 0
 
   for (const step of program.steps) {
-    const result = _calculateProgramStepDuration(step, context)[0]
+    const phases = calculateStepPhases(step, context)
 
-    stepDuration.push(result)
-    errors.push(...result.errors)
-    totalDuration += result.duration
+    for (const phase of phases) {
+      stepDuration.push(phase)
+      if (phase.errors && phase.errors.length > 0) {
+        errors.push(...phase.errors)
+      }
+      totalDuration += phase.duration
+    }
   }
 
   return {
@@ -51,7 +56,6 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
  * @param machine - Makine
  * @param program - Program
  * @param initialTemperature - Baslangıc sicakligi
- * @returns { tempData: number[], timeData: number[], pointStyles: string[], pointBackgroundColors: string[], dataPoints: { x: number, y: number }[], stepInfo: { step: number, commandNo: number, commandName: string }[], gradientData: number[] } Hesaplanan veriler
  */
 export function calculateProgramDurationPoint(machine: Machine, program: Program, initialTemperature: number): {
   tempData: number[]
@@ -70,26 +74,39 @@ export function calculateProgramDurationPoint(machine: Machine, program: Program
   const dataPoints: { x: number, y: number }[] = [{ x: 0, y: initialTemperature }]
   const stepInfo: { step: number, commandNo: number, commandName: string }[] = []
 
+  const context: CalculationContext = {
+    temperature: initialTemperature,
+    machine,
+  }
+
   for (let i = 0; i < program.steps.length; i++) {
-    const points = calculateProgramStepDuration(
-      program,
-      machine,
-      initialTemperature,
-      i,
-    )
-    for (const point of points) {
+    const step = program.steps[i]
+    const phases = calculateStepPhases(step, context)
+
+    if (!phases || phases.length === 0)
+      continue
+
+    const commandNo = step.mainCommand.commandNo!
+    const machineCommand = machine.commands.get(commandNo)!
+
+    // Bir adımın içindeki fazları (Örn: Isınma fazı ve Bekleme Fazı) grafiğe ayrı ayrı işliyoruz.
+    for (const phase of phases) {
       const prevTime = timeData[timeData.length - 1]
-      const currentTime = prevTime + point.duration
+      const prevTemp = tempData[tempData.length - 1]
 
-      tempData.push(point.temperature)
+      const currentTime = prevTime + phase.duration
+      const currentTemp = phase.temperature
+
+      const gradient = phase.duration > 0
+        ? (currentTemp - prevTemp) / phase.duration
+        : 0
+
+      tempData.push(currentTemp)
       timeData.push(currentTime)
-      gradientData.push((point.temperature - tempData[tempData.length - 1]) / point.duration)
+      gradientData.push(gradient)
 
-      const commandNo = program.steps[i].mainCommand.commandNo!
-      const machineCommand = machine.commands.get(commandNo)!
       stepInfo.push({ step: i + 1, commandNo, commandName: machineCommand.name })
-
-      dataPoints.push({ x: currentTime, y: point.temperature })
+      dataPoints.push({ x: currentTime, y: currentTemp })
 
       if (machineCommand.isUnload) {
         pointStyles.push('rectRot')
@@ -100,106 +117,93 @@ export function calculateProgramDurationPoint(machine: Machine, program: Program
       }
     }
   }
+
   return { tempData, timeData, pointStyles, pointBackgroundColors, dataPoints, stepInfo, gradientData }
 }
 
 /**
- * Programın her bir adımın sonundaki teorik süresini ve sıcaklığını hesaplar.
- * @param program - Program
- * @param machine - Makine
- * @param initialTemperature - Baslangıc sicakligi
- * @param index - Programın kacinci adımı
- * @returns {number} Teorik sure
+ * Bir program adımının süre ve sıcaklık fazlarını hesaplar. (Eski _calculateProgramStepDuration)
  */
-export function calculateProgramStepDuration(program: Program, machine: Machine, initialTemperature: number, index: number): { errors: string[][], duration: number, temperature: number }[] {
-  const context: CalculationContext = {
-    temperature: initialTemperature,
-    machine,
-  }
-  for (let i = 0; i < index; i++) {
-    const step = program.steps[i]
-    const commandNo = step.mainCommand.commandNo
-    if (commandNo) {
-      const machineCommand = context.machine.commands.get(commandNo)
-      if (machineCommand?.isTemperature) {
-        const temperature = calculateFormula(step, commandNo, machineCommand.y, context.machine)
-        if (temperature)
-          context.temperature = temperature
-      }
-    }
-  }
-
-  return _calculateProgramStepDuration(program.steps[index], context)
-}
-
-function _calculateProgramStepDuration(step: ProgramStep, context: CalculationContext): { errors: string[][], duration: number, temperature: number }[] {
+function calculateStepPhases(step: ProgramStep, context: CalculationContext): StepResult[] {
   let duration = 0
-  const stepInfo = [{ errors: [] as string[][], duration: 0, temperature: context.temperature }]
+  const phases: StepResult[] = [{ errors: [], duration: 0, temperature: context.temperature }]
 
   const commandNo = step.mainCommand.commandNo
   if (!isDef(commandNo)) {
-    stepInfo[0].errors.push(['COMMAND_NOT_DEFINED', String(commandNo)])
-    return stepInfo
+    phases[0].errors.push(['COMMAND_NOT_DEFINED', String(commandNo)])
+    return phases
   }
 
   const machineCommand = context.machine.commands.get(commandNo)
   if (!machineCommand) {
-    stepInfo[0].errors.push(['MACHINE_COMMAND_NOT_FOUND', String(commandNo)])
-    return stepInfo
+    phases[0].errors.push(['MACHINE_COMMAND_NOT_FOUND', String(commandNo)])
+    return phases
   }
 
+  // x formülü hesaplama (Standart süre)
   const x = calculateFormula(step, commandNo, machineCommand.x, context.machine)
   if (!isDef(x))
-    stepInfo[0].errors.push(['FORMULA_X_FAILED', String(commandNo)])
+    phases[0].errors.push(['FORMULA_X_FAILED', String(commandNo)])
   duration += x || 0
 
+  // a ve maxA formülü hesaplama (Sıcaklık Gradient Oranı)
   const a = calculateFormula(step, commandNo, machineCommand.a, context.machine)
   if (!isDef(a))
-    stepInfo[0].errors.push(['FORMULA_A_FAILED', String(commandNo)])
+    phases[0].errors.push(['FORMULA_A_FAILED', String(commandNo)])
 
   const maxA = calculateFormula(step, commandNo, machineCommand.maxA, context.machine)
   if (!isDef(maxA))
-    stepInfo[0].errors.push(['FORMULA_MAXA_FAILED', String(commandNo)])
+    phases[0].errors.push(['FORMULA_MAXA_FAILED', String(commandNo)])
+
   let minA = Math.min(a, maxA) || 0
   if (minA === 0)
     minA = Math.max(a, maxA)
 
-  const b = calculateFormula(step, commandNo, machineCommand.b, context.machine)
-  if (!isDef(b))
-    stepInfo[0].errors.push(['FORMULA_B_FAILED', String(commandNo)])
-
+  // Sıcaklık İşlemi (Rampa Fazı)
   if (machineCommand.isTemperature) {
     const calculatedTemp = calculateFormula(step, commandNo, machineCommand.y, context.machine)
     if (!isDef(calculatedTemp))
-      stepInfo[0].errors.push(['FORMULA_Y_FAILED', String(commandNo)])
+      phases[0].errors.push(['FORMULA_Y_FAILED', String(commandNo)])
 
     const lastTemperature = context.temperature
     if (calculatedTemp)
       context.temperature = calculatedTemp
 
-    if (minA)
+    if (minA) {
       duration += ((Math.abs(calculatedTemp - lastTemperature) / minA) * 60)
+    }
   }
 
-  if (b)
-    stepInfo.push({ errors: [], duration: Math.round(b), temperature: context.temperature })
+  // İlk fazı (Isınma / Temel süre) güncelle
+  phases[0].duration = Math.round(duration)
+  phases[0].temperature = context.temperature
 
-  stepInfo[0].duration = Math.round(duration)
-  stepInfo[0].temperature = context.temperature
+  // b formülü hesaplama (Bekleme / İkinci Faz)
+  const b = calculateFormula(step, commandNo, machineCommand.b, context.machine)
+  if (!isDef(b))
+    phases[0].errors.push(['FORMULA_B_FAILED', String(commandNo)])
 
-  return stepInfo
+  // Eğer b değeri varsa, bunu yeni bir faz (bekleme noktası) olarak diziye ekle
+  if (b && b > 0) {
+    phases.push({
+      errors: [],
+      duration: Math.round(b),
+      temperature: context.temperature, // Beklemede sıcaklık değişmez
+    })
+  }
+
+  return phases
 }
+
+// ============================================================================
+// FORMULA PARSER BÖLÜMÜ
+// ============================================================================
 
 const { Grammar, Parser } = nearley
 const parseCache = new Map<string, any>()
 
 /**
  * Bir adımın formulu hesaplar.
- * @param step - Programdaki bir adım
- * @param commandNo - Komut numarası
- * @param formula - Adımın formulu
- * @param machine - Makine
- * @returns - Hesaplanan formulu
  */
 export function calculateFormula(step: ProgramStep, commandNo: number, formula: string, machine: Machine): number {
   if (!formula)
@@ -256,12 +260,6 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
     return machine.commandFormulas.find(f => f.formulaId === formulaId)
   }
 
-  /**
-   * Belirtilen komut numarasına sahip komutun parametre bilgisini getirir
-   * @param commandNo - Komut numarası
-   * @param paramName - Parametre adı
-   * @returns {CommandParameter | undefined} - Komut parametresi
-   */
   const getCommandParameter = (commandNo: number, paramName: string): CommandParameter | undefined => {
     return machine.commands.get(commandNo)?.parameters.find(p => p.name === paramName)
   }
@@ -276,22 +274,17 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
       return node.value
 
     case 'variable': {
-      // başlatma parametresi
       const batchParameter = getBatchParameter(node.value)
-      if (batchParameter) {
+      if (batchParameter)
         return batchParameter.defaultValue
-      }
-      // makine sabiti
-      const machineConst = getMachineConstant(node.value)
-      if (machineConst) {
-        return machineConst.currentValue
-      }
 
-      // komut parametresi mi?
+      const machineConst = getMachineConstant(node.value)
+      if (machineConst)
+        return machineConst.currentValue
+
       const commandParameter = getCommandParameter(commandNo, node.value)
 
       if (commandParameter) {
-        // Number
         if (commandParameter.type === ParameterType.NUMBER) {
           if (!commandParameter.containsVariable) {
             return commandParameter.useDefault
@@ -300,8 +293,6 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
           } else {
             return calculateFormula(step, commandNo, commandParameter.value, machine)
           }
-
-        // Selectable formula
         } else if (commandParameter.type === ParameterType.SELECTABLE_FORMULA) {
           const formula = step.mainCommand.parameters.find(p => p.index === commandParameter.index)
           if (!formula?.value) {
@@ -318,15 +309,12 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
             })
           }
 
-          // komut parametresi mi?
           const formulaValue = getCommandParameter(commandNo, commandFormula.formula)?.value
           if (formulaValue) {
             return calculateFormula(step, commandNo, formulaValue, machine)
           } else {
             return calculateFormula(step, commandNo, commandFormula.formula, machine)
           }
-
-        // Machine formula
         } else if (commandParameter.type === ParameterType.MACHINE_FORMULA) {
           return calculateFormula(step, commandNo, commandParameter.value, machine)
         } else if (commandParameter.type === ParameterType.CHECKBOX) {
@@ -346,16 +334,12 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
       }
 
       switch (node.operator) {
-        case '+':
-          return leftValue + rightValue
-        case '-':
-          return leftValue - rightValue
-        case '*':
-          return leftValue * rightValue
+        case '+': return leftValue + rightValue
+        case '-': return leftValue - rightValue
+        case '*': return leftValue * rightValue
         case '/':
-          if ((rightValue) === 0) {
+          if ((rightValue) === 0)
             throw new Error('Division by zero')
-          }
           return leftValue / rightValue
         default:
           throw new Error(`Unknown operator: ${node.operator}`)
