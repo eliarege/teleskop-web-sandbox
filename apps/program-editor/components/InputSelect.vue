@@ -33,6 +33,10 @@ onUnmounted(() => {
   editor.errorIds.delete(id)
 })
 
+onMounted(() => {
+  input.value?.validate()
+})
+
 function handleUpdate() {
   nextTick(() => input.value?.validate())
 }
