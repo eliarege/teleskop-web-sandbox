@@ -1180,13 +1180,13 @@ export class MachineSession {
     const unqProgramList = [...new Set(programList)]
 
     // Fetch amount of chemical/dye requests for each program in the batch
-    const headers = await Promise.all(
+    const unqHeaders = await Promise.all(
       unqProgramList.map((programNo) =>
         this.deps.programHeaderRepository.findByMachineAndProgramNo(this.machineId, programNo)
       )
     ) as ProgramHeader[]
 
-    if (headers.some((p) => !p)) {
+    if (unqHeaders.some((p) => !p)) {
       this.logger.warn(
         { programList },
         'Failed to fetch all programs for chemical request event - cannot extend with request index info',
@@ -1196,7 +1196,8 @@ export class MachineSession {
 
     const materialType = mapTonelloChemicalRequestType(event.requestType)
 
-    const programs = headers.map((header) => {
+    const programs = programList.map((programNo) => {
+      const header = unqHeaders.find((h) => h.programNo === programNo)!
       const requestCount = materialType === MaterialType.Chemical
         ? header.autoChemReq
         : header.autoDyeReq
