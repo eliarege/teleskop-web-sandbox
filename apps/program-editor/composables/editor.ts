@@ -639,7 +639,6 @@ export const useEditorStore = defineStore('editor', () => {
    */
   async function refreshAllPrograms(): Promise<void> {
     allPrograms.value = await fetchAllPrograms(machine.currentMachine.id)
-    selectedPrograms.value = []
   }
 
   /**
