@@ -138,7 +138,6 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
           //   return { code: 'DONE' as const }
           // }
           try {
-            console.log('SEND MACHINE')
             if (isTonello(machineInfo)) {
               const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)
               await uploadToTonelloMachine(machineInfo.machineId, tonelloApi, programNoList, jobOrder.code, planParameters)
