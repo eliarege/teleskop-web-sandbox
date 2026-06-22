@@ -17,7 +17,19 @@ variable "CI_COMMIT_TAG" {
     EOF
   }
 }
+variable "CI_COMMIT_BRANCH" {
+  default = ""
+}
 variable "CI_COMMIT_SHA" {
+  default = ""
+}
+variable "CI_DEFAULT_BRANCH_SLUG" {
+  default = "main"
+}
+variable "CACHE_COMPILE_FROM" {
+  default = ""
+}
+variable "CACHE_COMPILE_TO" {
   default = ""
 }
 variable "TURBO_CONFIG" {
@@ -26,6 +38,7 @@ variable "TURBO_CONFIG" {
 variable "TURBO_FORCE" {
   default = false
 }
+
 variable "APP_NAME" {
   validation {
     condition = APP_NAME != ""
@@ -62,10 +75,28 @@ target "_common" {
     APP_NAME = APP_NAME,
     APP_VERSION = CI_COMMIT_TAG,
     APP_COMMIT_HASH = CI_COMMIT_SHA,
-    APP_BUILD_DATE = BUILD_DATE
+    APP_BUILD_DATE = BUILD_DATE,
     APP_DEPENDENCIES = ""
   }
-  cache-from = ["${CI_REGISTRY_IMAGE}/${APP_NAME}:latest"]
+
+  cache-from = concat(
+    (CACHE_COMPILE_FROM != ""
+    ? [{ type = "registry", ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CACHE_COMPILE_FROM}" }]
+    : []),
+    # Fallback to default branch
+    [{ type = "registry", ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CI_DEFAULT_BRANCH_SLUG}" }]
+  )
+
+  cache-to = (CACHE_COMPILE_TO != ""
+    ? [{
+      type = "registry",
+      ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CACHE_COMPILE_TO}",
+      mode = "max",
+      "image-manifest" = true,
+      "oci-mediatypes" = true
+    }]
+    : [])
+
   labels = {
     "com.eliar.manifest.name"             = APP_NAME,
     "com.eliar.manifest.version"          = CI_COMMIT_TAG,
@@ -85,6 +116,7 @@ target "_common" {
         : ["${CI_REGISTRY_IMAGE}/${APP_NAME}:${CI_COMMIT_TAG}"]
       : [],
     CI_COMMIT_SHA != "" ? ["${CI_REGISTRY_IMAGE}/${APP_NAME}:${CI_COMMIT_SHA}"] : [],
+    CI_COMMIT_BRANCH != "" ? ["${CI_REGISTRY_IMAGE}/${APP_NAME}:${CI_COMMIT_BRANCH}"] : [],
     # Stable releases get latest tag
     length(regexall("^v[0-9]+\\.[0-9]+\\.[0-9]+$", CI_COMMIT_TAG)) > 0
       ? ["${CI_REGISTRY_IMAGE}/${APP_NAME}:latest"]

@@ -3,8 +3,10 @@ stages:
   - release
   - deploy
 
-.docker-login: &docker-login
+.docker-prepare: &docker-prepare
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker buildx create --name gitlab-builder --driver docker-container --use
+  - docker buildx inspect --bootstrap
 
 .prepare-ssh: &prepare-ssh
   # Install ssh-agent
@@ -24,8 +26,14 @@ stages:
 
 .app-rules:
   rules:
-    - if: $CI_COMMIT_TAG == "staging"
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+(-rc\.\d+)?$/
+      variables:
+        CACHE_COMPILE_FROM: ${CI_DEFAULT_BRANCH_SLUG}
+        CACHE_COMPILE_TO: ${CI_DEFAULT_BRANCH_SLUG}
+    - if: $CI_COMMIT_BRANCH == "dev"
+      variables:
+        CACHE_COMPILE_FROM: dev
+        CACHE_COMPILE_TO: dev
 
 .hotfix-rules:
   rules:
@@ -149,7 +157,7 @@ release-apps:
   # - TURBO_TOKEN: Auth token for turbo cache
   before_script:
     - apk add --no-cache jq ssmtp gomplate
-    - *docker-login
+    - *docker-prepare
   script:
     - mkdir release-logs
     - export ERRORS=""
@@ -219,7 +227,7 @@ release-hotfix:
     - .hotfix-rules
   before_script:
     - apk add --no-cache jq
-    - *docker-login
+    - *docker-prepare
   script:
     - mkdir release-logs
     - export ERRORS=""
