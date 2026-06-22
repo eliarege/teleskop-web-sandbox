@@ -134,9 +134,9 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
             return { code: 'MISSING_PARAMETERS' as const, parameters: planParameters.filter(p => p.paramStatus !== StartingParameters.Correct) }
           }
           await queueUnplannedEvent(newEvent)
-          if (config.nodeEnv === 'development') {
-            return { code: 'DONE' as const }
-          }
+          // if (config.nodeEnv === 'development') {
+          //   return { code: 'DONE' as const }
+          // }
           try {
             if (isTonello(machineInfo)) {
               const tonelloApi = TonelloApi.createFromHostname(machineInfo.host)

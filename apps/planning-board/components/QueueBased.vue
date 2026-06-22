@@ -1,12 +1,12 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, EventModel, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro'
-import { DomHelper, LocaleManager, Splitter, Store, Toast } from '@bryntum/schedulerpro'
+import { DomHelper, LocaleManager, Splitter, Store } from '@bryntum/schedulerpro'
 import { determineTextColor } from '@teleskop/utils'
 import { useDocumentVisibility } from '@vueuse/core'
 import { useFuse } from '@vueuse/integrations/useFuse'
 import { addDays, addHours, addSeconds, differenceInSeconds } from 'date-fns'
-import { eventTooltip } from '~/composables/helper'
+import { eventTooltip, showPlanningNotify } from '~/composables/helper'
 import { QueueDrag, QueueSchedule, QueueTask, QueueUnplannedGrid, TaskStore, getResourceRow, removeAttributes, sortEventsByDateDesc } from '~/lib/queueBased'
 import { Apps, UploadJoborder } from '~/shared/constants'
 import type { QueueBasedEvent, QueueBasedNonActualEvent } from '~/shared/queueBased'
@@ -109,9 +109,9 @@ async function uploadJobOrder(planKey: number) {
     clearTimeout(timeoutId)
 
     if (uploadResult === UploadJoborder.MissingParameter) {
-      Toast.show(t('upload-joborder.no-program'))
+      showPlanningNotify.info(t('upload-joborder.no-program'))
     } else if (uploadResult === UploadJoborder.OK) {
-      Toast.show(t('upload-joborder.upload-success'))
+      showPlanningNotify.success(t('upload-joborder.upload-success'))
     } else if (Array.isArray(uploadResult)) {
       const uploadData = {
         program,
@@ -129,14 +129,14 @@ async function uploadJobOrder(planKey: number) {
             query: { program, machineId, planKey, machineIp, jobOrder },
           })
           if (finalRes === UploadJoborder.MissingParameter) {
-            Toast.show(t('upload-joborder.no-program'))
+            showPlanningNotify.info(t('upload-joborder.no-program'))
           } else if (typeof finalRes !== 'string' && finalRes.some(f => f.value === null)) {
-            Toast.show(t('upload-joborder.missing-params'))
+            showPlanningNotify.info(t('upload-joborder.missing-params'))
           } else {
-            Toast.show(t('upload-joborder.upload-success'))
+            showPlanningNotify.success(t('upload-joborder.upload-success'))
           }
         } catch (err) {
-          Toast.show(t('upload-joborder.fail'))
+          showPlanningNotify.error(t('upload-joborder.fail'))
         } finally {
           jobOrderUploadLoading.value = false
         }
@@ -145,10 +145,10 @@ async function uploadJobOrder(planKey: number) {
     } else {
       // Diğer hata durumları
       console.error('Upload failed with unexpected response:', uploadResult)
-      Toast.show(t('upload-joborder.fail'))
+      showPlanningNotify.error(t('upload-joborder.fail'))
     }
   } catch (err) {
-    Toast.show(t('upload-joborder.fail'))
+    showPlanningNotify.error(t('upload-joborder.fail'))
   }
   jobOrderUploadLoading.value = false
 }
@@ -381,7 +381,7 @@ async function scheduleDataRefresh() {
   try {
     await refreshScheduler()
   } catch (err) {
-    Toast.show(t('toast.fail.refresh'))
+    showPlanningNotify.error(t('toast.fail.refresh'))
   }
 
   setTimeout(scheduleDataRefresh, refreshInterval)
@@ -467,10 +467,10 @@ async function unPlanEvent(planKey: number) {
     query: { planKey },
   }).then(() => refreshScheduler())
 }
-async function deleteEvent(planKey: number) {
+async function deleteEvent(planKey: number, isUnplanned?: boolean) {
   await kc.fetch('api/delete', {
     method: 'PUT',
-    query: { planKey },
+    query: { planKey, isUnplanned },
   }).then(() => refreshScheduler())
 }
 function dateRangeEnd() {
@@ -546,7 +546,7 @@ async function scrollToDate(ev: { jobOrder: string, startTime: string }) {
       }
     }
 
-    Toast.show(t('toast.fail.load'))
+    showPlanningNotify.error(t('toast.fail.load'))
   }
 }
 
@@ -829,9 +829,9 @@ onMounted(async () => {
                 .then(() => {
                   refreshScheduler()
                   schedule.refreshRows()
-                  Toast.show('Event successfully pinned!')
+                  showPlanningNotify.success(t('queue-based.pin-success'))
                 })
-                .catch(err => Toast.show(err))
+                .catch(err => showPlanningNotify.error(err))
             },
           },
           unpin: {
@@ -845,9 +845,9 @@ onMounted(async () => {
                 .then(() => {
                   refreshScheduler()
                   schedule.refreshRows()
-                  Toast.show('Event successfully pinned!')
+                  showPlanningNotify.success(t('queue-based.unpin-success'))
                 })
-                .catch(err => Toast.show(err))
+                .catch(err => showPlanningNotify.error(err))
             },
           },
           copyEvent: {
@@ -964,7 +964,13 @@ onMounted(async () => {
       cellMenu: {
         items: {
           removeRow: false,
-          delete: false,
+          delete: {
+            icon: 'b-fa-solid b-fa-trash',
+            text: t('queue-based.ctx-menu.task-delete'),
+            async onItem({ record }: any) {
+              await deleteEvent(record.originalData.planKey, true)
+            },
+          },
           copy: false,
           cut: false,
           search: false,

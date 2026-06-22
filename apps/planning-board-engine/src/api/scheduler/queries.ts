@@ -4,11 +4,11 @@ import type { PlanParameter, QueueBasedActualEvent, QueueBasedBaseEvent, QueueBa
 import { chunk } from 'lodash-es'
 import type { TonelloApi, TonelloBatch } from '@teleskop/core'
 import { insertBatch, isDef } from '@teleskop/utils'
+import { BatchParameterType } from '@teleskop/core'
 import { config } from '~/config'
 import { knex } from '~/knexConfig'
 import { logger } from '~/composables/logger'
 import { StartingParameters } from '~/composables/enums'
-import { BatchParameterType } from '@teleskop/core'
 import { getManyMachineProgram, parseProgramListString } from '~/lib/program'
 import { getMachineCommands } from '~/lib/command'
 import { createTonelloBatch } from '~/lib/batch'
@@ -668,13 +668,17 @@ export async function removeFromPlan(planKey: number) {
     .andWhere('QUEUENUMBER', '>', QUEUENUMBER)
     .decrement('QUEUENUMBER', 1)
 }
+export async function deleteUnplannedEvent(planKey: number) {
+  await knex('dbo.DYBFBATCHPLAN')
+    .update({ ISDELETED: 1 })
+    .where('PLANKEY', planKey)
+}
 
 export async function deleteEvent(planKey: number) {
   const deletedRow = await knex('dbo.PTBATCHPLANQUEUE')
     .select('MACHINEID', 'QUEUENUMBER')
     .where('PLANKEY', planKey)
     .first()
-
   if (!deletedRow)
     return
 
@@ -734,7 +738,7 @@ export async function addBatchNote(
   note: string,
   userId: number,
   userType: UserType,
-  showOnScreen: boolean
+  showOnScreen: boolean,
 ) {
   await knex('dbo.PTBATCHNOTES').insert({
     JOBORDER: jobOrder,

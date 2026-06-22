@@ -1,8 +1,8 @@
 <!-- eslint-disable no-new -->
 <script setup lang="ts">
 import type { DragHelperConfig, Grid, GridConfig, SchedulerPro, SchedulerProConfig } from '@bryntum/schedulerpro'
-import { DateHelper, Splitter, Toast } from '@bryntum/schedulerpro'
-import { decompressJson } from '~/composables/helper'
+import { DateHelper, Splitter } from '@bryntum/schedulerpro'
+import { decompressJson, showPlanningNotify } from '~/composables/helper'
 import { TimeDrag, TimeSchedule, TimeTask, TimeUnplannedGrid } from '~/lib/timeBased'
 import type { UnplannedEvents, UnplannedEventsRaw } from '~/shared/types'
 
@@ -350,9 +350,9 @@ onMounted(async () => {
                 .then(async () => {
                   await refreshSchedulerWithLoading()
                   schedule.renderRows()
-                  Toast.show('Event successfully pinned!')
+                  showPlanningNotify.success(t('queue-based.pin-success'))
                 })
-                .catch(err => Toast.show(err))
+                .catch(err => showPlanningNotify.error(err))
             },
           },
           unpin: {
@@ -366,9 +366,9 @@ onMounted(async () => {
                 .then(async () => {
                   await refreshSchedulerWithLoading()
                   schedule.renderRows()
-                  Toast.show('Event successfully unpinned!')
+                  showPlanningNotify.success(t('queue-based.unpin-success'))
                 })
-                .catch(err => Toast.show(err))
+                .catch(err => showPlanningNotify.error(err))
             },
           },
           copyEvent: {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Toast } from '@bryntum/schedulerpro'
 import type { FetchError } from 'ofetch'
+import { showPlanningNotify } from '~/composables/helper'
 
 const props = defineProps<{
   machineId: number
@@ -26,11 +26,11 @@ async function sendMessage() {
         message: message.value,
       },
     })
-    Toast.show(t('send-message.toast.succesful'))
+    showPlanningNotify.success(t('send-message.toast.succesful'))
     emit('close')
   } catch (err) {
     console.error(err)
-    Toast.show(t('send-message.toast.fail', { err: (err as FetchError).message }))
+    showPlanningNotify.error(t('send-message.toast.fail', { err: (err as FetchError).message }))
   } finally {
     loading.value = false
   }

@@ -28,9 +28,12 @@
     "_": "Makineye gönder",
     "upload-success": "İş emri yükleme başarıyla tamamlandı",
     "no-program": "Bu cihazda gerekli programlar yok",
+    "missing-params": "Eksik Parametreler",
     "fail": "Makineye erişim sağlanamadı!",
     "schedule-fail": "İş emri planlanamadı",
-    "machine-upload-fail": "İş emri planlandı ancak makineye gönderilemedi"
+    "scheduling-failed": "Planlama Başarısız: {err}",
+    "machine-upload-fail": "İş emri planlandı ancak makineye gönderilemedi",
+    "cannot-schedule-missing-params": "Eksik parametreler nedeniyle planlama yapılamıyor"
   },
   "app": {
     "name": "Planlama Tahtası"
@@ -51,6 +54,8 @@
   },
   "queue-based": {
     "alarm-count": "Toplam Alarm",
+    "pin-success": "İş emri başarıyla sabitlendi!",
+    "unpin-success": "İş emri sabitlemesi başarıyla kaldırıldı!",
     "ctx-menu": {
       "task-edit": "İş Emrini Güncelle",
       "task-delete": "İş Emrini Sil",

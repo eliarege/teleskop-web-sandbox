@@ -1,8 +1,32 @@
 import type { SchedulerPro, SchedulerResourceModel } from '@bryntum/schedulerpro'
-import { DateHelper, Toast } from '@bryntum/schedulerpro'
+import { DateHelper } from '@bryntum/schedulerpro'
+import { Notify } from 'quasar'
 import { addMinutes, addSeconds, differenceInMilliseconds, differenceInSeconds } from 'date-fns'
 import { getRecipeUnitById } from '~/shared/enums'
 import type { ScheduleUnplannedResult } from '~/shared/types'
+import { info } from 'node:console'
+
+type PlanningNotifyType = 'success' | 'error' | 'info'
+
+const notifyFn = (type: PlanningNotifyType, message: unknown) => {
+  const normalizedMessage = message instanceof Error ? message.message : String(message)
+  return  Notify.create({
+    message: normalizedMessage,
+    position: 'top',
+    color: {
+      success: 'positive',
+      error: 'negative',
+      info: 'primary',
+    }[type],
+    textColor: 'white',
+  })
+}
+
+export const showPlanningNotify = Object.freeze({
+  info: (message: unknown) => notifyFn('info', message),
+  error: (message: unknown) => notifyFn('error', message),
+  success: (message: unknown) => notifyFn('success', message),
+})
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
@@ -255,7 +279,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       resourceRecord: machine,
     })
   } catch (err) {
-    Toast.show(`Scheduling Failed: ${err}`)
+    showPlanningNotify.error($i18n.t('upload-joborder.scheduling-failed', { err }))
     throw err
   }
 
@@ -281,11 +305,11 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
         body: { newEvent },
       })
     } catch (err) {
-      Toast.show($i18n.t('upload-joborder.schedule-fail'))
+      showPlanningNotify.error($i18n.t('upload-joborder.schedule-fail'))
       await rollback()
       throw err
     }
-    Toast.show($i18n.t('upload-joborder.upload-success'))
+    showPlanningNotify.success($i18n.t('upload-joborder.upload-success'))
     refreshScheduler()
     schedule.renderRows()
   } else {
@@ -302,20 +326,20 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
         body: { newEvent },
       })
     } catch (err) {
-      Toast.show($i18n.t('upload-joborder.schedule-fail'))
+      showPlanningNotify.error($i18n.t('upload-joborder.schedule-fail'))
       await rollback()
       throw err
     }
 
     switch (res.code) {
       case 'DONE':
-        Toast.show($i18n.t('upload-joborder.upload-success'))
+        showPlanningNotify.success($i18n.t('upload-joborder.upload-success'))
         refreshScheduler()
         schedule.renderRows()
         break
 
       case 'UPLOAD_FAILED':
-        Toast.show($i18n.t('upload-joborder.machine-upload-fail'))
+        showPlanningNotify.error($i18n.t('upload-joborder.machine-upload-fail'))
         refreshScheduler()
         schedule.renderRows()
         break
@@ -334,20 +358,20 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
               body: { newEvent },
             })
           } catch {
-            Toast.show($i18n.t('upload-joborder.schedule-fail'))
+            showPlanningNotify.error($i18n.t('upload-joborder.schedule-fail'))
             refreshScheduler()
             schedule.renderRows()
             return
           }
           switch (finalRes.code) {
             case 'DONE':
-              Toast.show($i18n.t('upload-joborder.upload-success'))
+              showPlanningNotify.success($i18n.t('upload-joborder.upload-success'))
               break
             case 'UPLOAD_FAILED':
-              Toast.show($i18n.t('upload-joborder.machine-upload-fail'))
+              showPlanningNotify.error($i18n.t('upload-joborder.machine-upload-fail'))
               break
             case 'MISSING_PARAMETERS':
-              Toast.show('Cannot schedule due to missing parameters')
+              showPlanningNotify.info($i18n.t('upload-joborder.cannot-schedule-missing-params'))
               break
           }
           refreshScheduler()

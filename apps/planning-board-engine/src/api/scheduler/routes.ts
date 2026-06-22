@@ -2,6 +2,9 @@ import type { FastifyPluginCallback, FastifyRequest } from 'fastify'
 import { ofetch } from 'ofetch'
 import { TonelloApi } from '@teleskop/core'
 import type { PlanParameter, ValidatedPlanParameter } from 'types/planning-board'
+import type {
+  UserType,
+} from './queries'
 import {
   addBatchNote,
   addErpParameters,
@@ -11,6 +14,7 @@ import {
   dataCleanup,
   deleteEvent,
   deleteNote,
+  deleteUnplannedEvent,
   getAutoAdd,
   getBatchNotes,
   getBatchProperties,
@@ -45,7 +49,6 @@ import {
   updateUnplannedColumns,
   uploadToMachine,
   uploadToTonelloMachine,
-  UserType,
 } from './queries'
 import { remoteShowMessageBody } from '~/composables/soap'
 import { StartingParameters } from '~/composables/enums'
@@ -385,12 +388,16 @@ export const routes: FastifyPluginCallback<object> = (fastify, opt, done) => {
       }
     },
   )
-  fastify.put<{ Querystring: { planKey: number } }>(
+  fastify.put<{ Querystring: { planKey: number, isUnplanned?: boolean } }>(
     '/planning_board/delete',
     async (request, reply) => {
       try {
-        const { planKey } = request.query
-        await deleteEvent(planKey)
+        const { planKey, isUnplanned } = request.query
+        if (isUnplanned) {
+          await deleteUnplannedEvent(planKey)
+        } else {
+          await deleteEvent(planKey)
+        }
         return reply.code(200).send('Succesful!')
       } catch (err) {
         fastify.log.error(`An error occurred while deleting event: ${err}`)

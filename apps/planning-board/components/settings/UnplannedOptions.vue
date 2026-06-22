@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Toast } from '@bryntum/schedulerpro'
 import { matChevronLeft, matChevronRight } from '@quasar/extras/material-icons'
 
 const emit = defineEmits(['addColumn', 'removeColumn'])

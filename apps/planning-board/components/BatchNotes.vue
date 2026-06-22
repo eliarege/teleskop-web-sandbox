@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Toast } from '@bryntum/schedulerpro'
+import { showPlanningNotify } from '~/composables/helper'
 import { useSettingStore } from '~/store/settings'
 
 const props = defineProps<{ jobOrder: string }>()
@@ -48,10 +48,10 @@ function addNote() {
     body: newNote,
   }).then(() => {
     emit('updateScheduler')
-    Toast.show(t('batch-notes.toast.succesful'))
+    showPlanningNotify.success(t('batch-notes.toast.succesful'))
     refresh()
   }).catch((err) => {
-    Toast.show(t('batch-notes.toast.error', err))
+    showPlanningNotify.error(t('batch-notes.toast.error', err))
   })
 }
 function updateNote(id: number, showOnScreen: boolean) {
@@ -59,10 +59,10 @@ function updateNote(id: number, showOnScreen: boolean) {
     method: 'PUT',
     body: { noteKey: id, showOnScreen },
   }).then(() => {
-    Toast.show(t('batch-notes.toast.succesful'))
+    showPlanningNotify.success(t('batch-notes.toast.succesful'))
     emit('updateScheduler')
   }).catch((err) => {
-    Toast.show(t('batch-notes.toast.error', err))
+    showPlanningNotify.error(t('batch-notes.toast.error', err))
   })
 }
 const q = useQuasar()
@@ -86,10 +86,10 @@ function deleteNote(id: number) {
       query: { id },
     }).then(() => {
       emit('updateScheduler')
-      Toast.show(t('batch-notes.toast.succesful'))
+      showPlanningNotify.success(t('batch-notes.toast.succesful'))
       refresh()
     }).catch((err) => {
-      Toast.show(t('batch-notes.toast.error', err))
+      showPlanningNotify.error(t('batch-notes.toast.error', err))
     })
   })
 }
