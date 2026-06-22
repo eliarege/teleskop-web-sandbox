@@ -759,6 +759,7 @@ async function onRowDoubleClick(event: Event, row: ProgramTableRow) {
     return
 
   if (row.prgState !== ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+    editor.selectedPrograms = [row]
     await navigateTo(`/machine/${machineId}/program/${row.programNo}`)
   }
 }
@@ -778,6 +779,17 @@ function getRowStyle(row: ProgramTableRow) {
   }
 }
 
+function scrollToSelectedRow(): void {
+  const programNo = sortedSelectedPrograms.value[0]?.programNo
+  if (!programNo || !tableRef.value)
+    return
+
+  const rows = tableRef.value.filteredSortedRows as ProgramTableRow[]
+  const rowIndex = rows.findIndex(r => r.programNo === programNo)
+  const rowEl = tableRef.value.$el.querySelector('tbody')?.children[rowIndex] as HTMLElement | undefined
+  rowEl?.scrollIntoView({ block: 'center', behavior: 'instant' })
+}
+
 onBeforeMount(async () => {
   editor.isLoading = true
 
@@ -793,13 +805,10 @@ onBeforeMount(async () => {
 
   await editor.refreshAllPrograms().then(() => {
     editor.isLoading = false
+    scrollToSelectedRow()
   })
 
   machineStatusStore.checkMachineStatus(machineId, machineName, { notifyOnError: false })
-})
-
-onUnmounted(() => {
-  editor.selectedPrograms = []
 })
 </script>
 
