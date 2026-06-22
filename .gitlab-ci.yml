@@ -5,7 +5,8 @@ stages:
 
 .docker-prepare: &docker-prepare
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - docker buildx create --name gitlab-builder --driver docker-container --use
+  - docker context create gitlab-context
+  - docker buildx create --name gitlab-builder --driver docker-container --use gitlab-context
   - docker buildx inspect --bootstrap
 
 .prepare-ssh: &prepare-ssh
