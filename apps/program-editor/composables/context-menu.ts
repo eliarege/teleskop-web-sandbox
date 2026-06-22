@@ -6,6 +6,7 @@ import { useCopyAndSendStore } from './copyAndSend'
 import type { BulkDeletionResponse, CopyItem, Machine, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
 import { notification } from '~/shared/functions'
 import type { CopyAndSendResult } from '~/server/utils/JobManager'
+import { ProgramStatus } from '~/shared/constants'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -240,6 +241,10 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const isMultiplePrograms = programs.length > 3
 
     for (const program of programs) {
+      if (program.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+        continue
+      }
+
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
 
@@ -485,21 +490,23 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
   async function sendAllPrograms(machine: { id: number, name: string }): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-    const { notifySuccess, notifyError } = useNotify()
+    const { notifySuccess, notifyError, notifyWarning } = useNotify()
     editor.isLoading = true
 
     try {
-      const response = await fetch<{ success: boolean, count: number, message: string }>(`/api/machine/${machine.id}/upload-all-programs`, {
+      const response = await fetch<{ success: boolean, count: number, total: number, skipped: number, message: string }>(`/api/machine/${machine.id}/upload-all-programs`, {
         method: 'POST',
       })
 
       if (response.success) {
         notifySuccess(t('contextMenu.sendAllProgramsSuccess', { machineName: machine.name }))
+      } else if (response.count > 0) {
+        notifyWarning(t('contextMenu.sendAllProgramsPartialSuccess', { count: response.count, total: response.total, skipped: response.skipped, machineName: machine.name }))
       } else {
-        notifyError(t('contextMenu.sendAllProgramsFailed', { message: response.message }))
+        notifyError(t('contextMenu.sendAllProgramsFailed', { machineName: machine.name }))
       }
     } catch (error: any) {
-      notifyError(t('contextMenu.sendAllProgramsFailed', { message: error.message }))
+      notifyError(t('contextMenu.sendAllProgramsFailed', { machineName: machine.name }))
       console.error('Send All Programs error:', error)
     } finally {
       editor.isLoading = false

@@ -1911,23 +1911,31 @@ export class MachineController {
    */
   @withProgramClient
   @withTransaction
-  async uploadAllPrograms(): Promise<{ success: boolean, count: number, message: string }> {
+  async uploadAllPrograms(): Promise<{ success: boolean, count: number, total: number, skipped: number, message: string }> {
     try {
       // Yerel veritabanından tüm program header'larını al
       const programHeaders = await this.fetchAllProgramHeaders()
 
       if (programHeaders.length === 0) {
-        return { success: true, count: 0, message: 'No programs found in database' }
+        return { success: true, count: 0, total: 0, skipped: 0, message: 'No programs found in database' }
       }
 
       // Machine commands listesini al
       const commands = await this.fetchCommands()
       let successCount = 0
       let errorCount = 0
+      let skippedCount = 0 // Atlanan programları takip etmek için eklendi
       const errors: string[] = []
 
       // Her program için upload işlemi yap
       for (const programHeader of programHeaders) {
+        // 1. KONTROL: Program sadece makinedeyse bu adımı atla
+        if (programHeader.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+          skippedCount++
+          logger.info(`Program ${programHeader.programNo} skipped (EXISTS_ONLY_ON_CONTROLLER)`)
+          continue
+        }
+
         try {
           // Programın tam detaylarını al
           const { program } = await this.fetchProgram(programHeader.programNo)
@@ -1953,9 +1961,11 @@ export class MachineController {
       }
 
       // Başarılı yüklemeler için log
-      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `${successCount} programs uploaded`)
+      if (successCount > 0) {
+        await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `${successCount} programs uploaded`)
+      }
 
-      const message = `Uploaded ${successCount}/${programHeaders.length} programs successfully`
+      const message = `Uploaded ${successCount} programs successfully. Skipped ${skippedCount} programs.`
       if (errors.length > 0) {
         logger.warn({ errors }, 'Some programs failed to upload')
       }
@@ -1963,13 +1973,17 @@ export class MachineController {
       return {
         success: errorCount === 0,
         count: successCount,
-        message: errors.length > 0 ? `${message}. Errors: ${errors.join(', ')}` : message,
+        total: programHeaders.length,
+        skipped: skippedCount,
+        message: errors.length > 0 ? `${message} Errors: ${errors.join(', ')}` : message,
       }
     } catch (error) {
       logger.error({ error }, 'Failed to upload all programs to machine')
       return {
         success: false,
         count: 0,
+        total: 0,
+        skipped: 0,
         message: `Failed to upload programs: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }
     }

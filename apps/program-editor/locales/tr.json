@@ -356,7 +356,6 @@
     "addToComparison": "Karşılaştırma Listesine Ekle",
     "compareWith": "Bununla Karşılaştır",
     "clearComparisonBasket": "Karşılaştırma Listesini Temizle",
-
     "addMainStep": "Ana Adım Ekle",
     "addParallelStep": "Paralel Adım Ekle",
     "newStepBetween": "Araya Yeni Adım Ekle",
@@ -440,6 +439,7 @@
     "copyAndSendStartFailed": "Kopyala ve gönder işlemi başlatılamadı.",
     "sendAllProgramsSuccess": "Tüm programlar {machineName} makinesine başarıyla gönderildi.",
     "sendAllProgramsFailed": "Tüm programlar {machineName} makinesine gönderilirken hata oluştu.",
+    "sendAllProgramsPartialSuccess": "{count}/{total} program {machineName} makinesine gönderildi, {skipped} program sadece makinede olduğu için atlandı.",
     "getAllProgramsSuccess": "Tüm programlar {machineName} makinesinden başarıyla alındı.",
     "getAllProgramsPartialSuccess": "{count}/{total} program {machineName} makinesinden alındı.",
     "getAllProgramsFailed": "Tüm programlar {machineName} makinesinden alınırken hata oluştu.",
@@ -514,6 +514,20 @@
     "updateHeaderNotification": {
       "success": "{programNo} numaralı programın başlığı başarıyla değiştirildi.",
       "fail": "{programNo} numaralı programın başlığı değiştirme işlemi başarısız."
+    },
+    "sendAllPrograms": {
+      "dialog": {
+        "title": "Program Gönderme Sonuçları",
+        "programNo": "Program No",
+        "programName": "Program Adı",
+        "status": "Durum",
+        "success": "Başarılı",
+        "skipped": "Atlandı",
+        "failed": "Başarısız",
+        "onlyOnController": "Sadece makinede mevcut",
+        "errorTitle": "Program Gönderme Hatası",
+        "errorMessage": "Tüm programlar {machineName} makinesine gönderilirken hata oluştu."
+      }
     }
   },
   "exportExcelDialog": {
