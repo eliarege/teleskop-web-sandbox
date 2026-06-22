@@ -350,9 +350,9 @@ onMounted(async () => {
                 .then(async () => {
                   await refreshSchedulerWithLoading()
                   schedule.renderRows()
-                  showPlanningNotify('Event successfully pinned!', 'success')
+                  showPlanningNotify.success('Event successfully pinned!')
                 })
-                .catch(err => showPlanningNotify(err, 'error'))
+                .catch(err => showPlanningNotify.error(err))
             },
           },
           unpin: {
@@ -366,9 +366,9 @@ onMounted(async () => {
                 .then(async () => {
                   await refreshSchedulerWithLoading()
                   schedule.renderRows()
-                  showPlanningNotify('Event successfully unpinned!', 'success')
+                  showPlanningNotify.success('Event successfully unpinned!')
                 })
-                .catch(err => showPlanningNotify(err, 'error'))
+                .catch(err => showPlanningNotify.error(err))
             },
           },
           copyEvent: {

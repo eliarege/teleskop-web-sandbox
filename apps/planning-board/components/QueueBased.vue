@@ -109,9 +109,9 @@ async function uploadJobOrder(planKey: number) {
     clearTimeout(timeoutId)
 
     if (uploadResult === UploadJoborder.MissingParameter) {
-      showPlanningNotify(t('upload-joborder.no-program'), 'info')
+      showPlanningNotify.info(t('upload-joborder.no-program'))
     } else if (uploadResult === UploadJoborder.OK) {
-      showPlanningNotify(t('upload-joborder.upload-success'), 'success')
+      showPlanningNotify.success(t('upload-joborder.upload-success'))
     } else if (Array.isArray(uploadResult)) {
       const uploadData = {
         program,
@@ -129,14 +129,14 @@ async function uploadJobOrder(planKey: number) {
             query: { program, machineId, planKey, machineIp, jobOrder },
           })
           if (finalRes === UploadJoborder.MissingParameter) {
-            showPlanningNotify(t('upload-joborder.no-program'), 'info')
+            showPlanningNotify.info(t('upload-joborder.no-program'))
           } else if (typeof finalRes !== 'string' && finalRes.some(f => f.value === null)) {
-            showPlanningNotify(t('upload-joborder.missing-params'), 'info')
+            showPlanningNotify.info(t('upload-joborder.missing-params'))
           } else {
-            showPlanningNotify(t('upload-joborder.upload-success'), 'success')
+            showPlanningNotify.success(t('upload-joborder.upload-success'))
           }
         } catch (err) {
-          showPlanningNotify(t('upload-joborder.fail'), 'error')
+          showPlanningNotify.error(t('upload-joborder.fail'))
         } finally {
           jobOrderUploadLoading.value = false
         }
@@ -145,10 +145,10 @@ async function uploadJobOrder(planKey: number) {
     } else {
       // Diğer hata durumları
       console.error('Upload failed with unexpected response:', uploadResult)
-      showPlanningNotify(t('upload-joborder.fail'), 'error')
+      showPlanningNotify.error(t('upload-joborder.fail'))
     }
   } catch (err) {
-    showPlanningNotify(t('upload-joborder.fail'), 'error')
+    showPlanningNotify.error(t('upload-joborder.fail'))
   }
   jobOrderUploadLoading.value = false
 }
@@ -381,7 +381,7 @@ async function scheduleDataRefresh() {
   try {
     await refreshScheduler()
   } catch (err) {
-    showPlanningNotify(t('toast.fail.refresh'), 'error')
+    showPlanningNotify.error(t('toast.fail.refresh'))
   }
 
   setTimeout(scheduleDataRefresh, refreshInterval)
@@ -546,7 +546,7 @@ async function scrollToDate(ev: { jobOrder: string, startTime: string }) {
       }
     }
 
-    showPlanningNotify(t('toast.fail.load'), 'error')
+    showPlanningNotify.error(t('toast.fail.load'))
   }
 }
 
@@ -829,9 +829,9 @@ onMounted(async () => {
                 .then(() => {
                   refreshScheduler()
                   schedule.refreshRows()
-                  showPlanningNotify('Event successfully pinned!', 'success')
+                  showPlanningNotify.success('Event successfully pinned!')
                 })
-                .catch(err => showPlanningNotify(err, 'error'))
+                .catch(err => showPlanningNotify.error(err))
             },
           },
           unpin: {
@@ -845,9 +845,9 @@ onMounted(async () => {
                 .then(() => {
                   refreshScheduler()
                   schedule.refreshRows()
-                  showPlanningNotify('Event successfully unpinned!', 'success')
+                  showPlanningNotify.success('Event successfully unpinned!')
                 })
-                .catch(err => showPlanningNotify(err, 'error'))
+                .catch(err => showPlanningNotify.error(err))
             },
           },
           copyEvent: {

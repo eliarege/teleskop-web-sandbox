@@ -107,7 +107,7 @@ async function saveParameters() {
     method: 'PUT',
   }).finally(() => {
     paramatereSaveLoading.value = false
-    showPlanningNotify(t('toast.succesful'), 'success')
+    showPlanningNotify.success(t('toast.succesful'))
   })
 }
 </script>

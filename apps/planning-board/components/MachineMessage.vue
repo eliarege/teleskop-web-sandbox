@@ -26,11 +26,11 @@ async function sendMessage() {
         message: message.value,
       },
     })
-    showPlanningNotify(t('send-message.toast.succesful'), 'success')
+    showPlanningNotify.success(t('send-message.toast.succesful'))
     emit('close')
   } catch (err) {
     console.error(err)
-    showPlanningNotify(t('send-message.toast.fail', { err: (err as FetchError).message }), 'error')
+    showPlanningNotify.error(t('send-message.toast.fail', { err: (err as FetchError).message }))
   } finally {
     loading.value = false
   }

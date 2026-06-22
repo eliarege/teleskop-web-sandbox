@@ -48,10 +48,10 @@ function addNote() {
     body: newNote,
   }).then(() => {
     emit('updateScheduler')
-    showPlanningNotify(t('batch-notes.toast.succesful'), 'success')
+    showPlanningNotify.success(t('batch-notes.toast.succesful'))
     refresh()
   }).catch((err) => {
-    showPlanningNotify(t('batch-notes.toast.error', err), 'error')
+    showPlanningNotify.error(t('batch-notes.toast.error', err))
   })
 }
 function updateNote(id: number, showOnScreen: boolean) {
@@ -59,10 +59,10 @@ function updateNote(id: number, showOnScreen: boolean) {
     method: 'PUT',
     body: { noteKey: id, showOnScreen },
   }).then(() => {
-    showPlanningNotify(t('batch-notes.toast.succesful'), 'success')
+    showPlanningNotify.success(t('batch-notes.toast.succesful'))
     emit('updateScheduler')
   }).catch((err) => {
-    showPlanningNotify(t('batch-notes.toast.error', err), 'error')
+    showPlanningNotify.error(t('batch-notes.toast.error', err))
   })
 }
 const q = useQuasar()
@@ -86,10 +86,10 @@ function deleteNote(id: number) {
       query: { id },
     }).then(() => {
       emit('updateScheduler')
-      showPlanningNotify(t('batch-notes.toast.succesful'), 'success')
+      showPlanningNotify.success(t('batch-notes.toast.succesful'))
       refresh()
     }).catch((err) => {
-      showPlanningNotify(t('batch-notes.toast.error', err), 'error')
+      showPlanningNotify.error(t('batch-notes.toast.error', err))
     })
   })
 }

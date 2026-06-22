@@ -4,13 +4,13 @@ import { Notify } from 'quasar'
 import { addMinutes, addSeconds, differenceInMilliseconds, differenceInSeconds } from 'date-fns'
 import { getRecipeUnitById } from '~/shared/enums'
 import type { ScheduleUnplannedResult } from '~/shared/types'
+import { info } from 'node:console'
 
 type PlanningNotifyType = 'success' | 'error' | 'info'
 
-export function showPlanningNotify(message: unknown, type: PlanningNotifyType = 'info') {
+const notifyFn = (type: PlanningNotifyType, message: unknown) => {
   const normalizedMessage = message instanceof Error ? message.message : String(message)
-
-  Notify.create({
+  return  Notify.create({
     message: normalizedMessage,
     position: 'top',
     color: {
@@ -21,6 +21,12 @@ export function showPlanningNotify(message: unknown, type: PlanningNotifyType = 
     textColor: 'white',
   })
 }
+
+export const showPlanningNotify = Object.freeze({
+  info: (message: unknown) => notifyFn('info', message),
+  error: (message: unknown) => notifyFn('error', message),
+  success: (message: unknown) => notifyFn('success', message),
+})
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
@@ -273,7 +279,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       resourceRecord: machine,
     })
   } catch (err) {
-    showPlanningNotify(`Scheduling Failed: ${err}`, 'error')
+    showPlanningNotify.error(`Scheduling Failed: ${err}`)
     throw err
   }
 
@@ -299,11 +305,11 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
         body: { newEvent },
       })
     } catch (err) {
-      showPlanningNotify($i18n.t('upload-joborder.schedule-fail'), 'error')
+      showPlanningNotify.error($i18n.t('upload-joborder.schedule-fail'))
       await rollback()
       throw err
     }
-    showPlanningNotify($i18n.t('upload-joborder.upload-success'), 'success')
+    showPlanningNotify.success($i18n.t('upload-joborder.upload-success'))
     refreshScheduler()
     schedule.renderRows()
   } else {
@@ -320,20 +326,20 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
         body: { newEvent },
       })
     } catch (err) {
-      showPlanningNotify($i18n.t('upload-joborder.schedule-fail'), 'error')
+      showPlanningNotify.error($i18n.t('upload-joborder.schedule-fail'))
       await rollback()
       throw err
     }
 
     switch (res.code) {
       case 'DONE':
-        showPlanningNotify($i18n.t('upload-joborder.upload-success'), 'success')
+        showPlanningNotify.success($i18n.t('upload-joborder.upload-success'))
         refreshScheduler()
         schedule.renderRows()
         break
 
       case 'UPLOAD_FAILED':
-        showPlanningNotify($i18n.t('upload-joborder.machine-upload-fail'), 'error')
+        showPlanningNotify.error($i18n.t('upload-joborder.machine-upload-fail'))
         refreshScheduler()
         schedule.renderRows()
         break
@@ -352,20 +358,20 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
               body: { newEvent },
             })
           } catch {
-            showPlanningNotify($i18n.t('upload-joborder.schedule-fail'), 'error')
+            showPlanningNotify.error($i18n.t('upload-joborder.schedule-fail'))
             refreshScheduler()
             schedule.renderRows()
             return
           }
           switch (finalRes.code) {
             case 'DONE':
-              showPlanningNotify($i18n.t('upload-joborder.upload-success'), 'success')
+              showPlanningNotify.success($i18n.t('upload-joborder.upload-success'))
               break
             case 'UPLOAD_FAILED':
-              showPlanningNotify($i18n.t('upload-joborder.machine-upload-fail'), 'error')
+              showPlanningNotify.error($i18n.t('upload-joborder.machine-upload-fail'))
               break
             case 'MISSING_PARAMETERS':
-              showPlanningNotify('Cannot schedule due to missing parameters', 'info')
+              showPlanningNotify.info('Cannot schedule due to missing parameters')
               break
           }
           refreshScheduler()

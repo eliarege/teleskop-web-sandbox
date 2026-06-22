@@ -29,7 +29,7 @@ function dataCleanup() {
     await kc.fetch('/api/settings/dataCleanup').finally(async () => {
       dataCleanupLoading.value = false
       emit('updateScheduler')
-      showPlanningNotify(t('toast.data-cleanup'), 'success')
+      showPlanningNotify.success(t('toast.data-cleanup'))
     })
   })
 }
@@ -52,7 +52,7 @@ function refreshData() {
     await new Promise(resolve => setTimeout(resolve, 300))
     await kc.fetch('/api/refreshCustomTables').finally(async () => {
       refresDataLoading.value = false
-      showPlanningNotify(t('toast.succesful'), 'success')
+      showPlanningNotify.success(t('toast.succesful'))
     })
   })
 }
