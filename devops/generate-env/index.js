@@ -1,9 +1,9 @@
-#!/usr/bin/env node
-
 // Generates .env files for all apps based on the selected config (default: dev)
 import { readdir, readFile, writeFile } from 'fs/promises'
+import { existsSync } from 'fs'
 import { join, resolve } from 'path'
 import { encode } from 'querystring'
+import dotenv from 'dotenv'
 
 const configName = process.argv[2]
 if (!configName) {
@@ -11,7 +11,7 @@ if (!configName) {
   process.exit(1)
 }
 
-const workspaceDir = resolve(import.meta.dirname, '..')
+const workspaceDir = resolve(import.meta.dirname, '../..')
 const configDir = resolve(workspaceDir, 'config')
 const appsDir = resolve(workspaceDir, 'apps')
 const configPath = resolve(configDir, `${configName}.json`)
@@ -36,31 +36,61 @@ const dmexchangeInstanceName = config.dmexchange?.instanceName || teleskopInstan
 const dmexchangeConnectionOptions = encode(config.dmexchange?.connectionOptions || {})
 
 const keycloakEnabled = config.keycloak?.enabled || false
+const envCategories = [
+  {
+    label: 'Teleskop database connection',
+    env: {
+      NUXT_TELESKOP_HOST: teleskopHost,
+      NUXT_TELESKOP_PORT: teleskopPort,
+      NUXT_TELESKOP_USER: teleskopUser,
+      NUXT_TELESKOP_PASSWORD: teleskopPassword,
+      NUXT_TELESKOP_DATABASE: teleskopDatabase,
+      ...(teleskopInstanceName ? { NUXT_TELESKOP_INSTANCE_NAME: teleskopInstanceName } : {}),
+      NUXT_TELESKOP_TIMEZONE_OFFSET: teleskopTimezoneOffset,
+      NUXT_TELESKOP_CONNECTION_OPTIONS: teleskopConnectionOptions
+    }
+  },
+  {
+    label: 'DmExchange database connection',
+    env: {
+      NUXT_DMEXCHANGE_ENABLED: dmexchangeEnabled,
+      NUXT_DMEXCHANGE_HOST: dmexchangeHost,
+      NUXT_DMEXCHANGE_PORT: dmexchangePort,
+      NUXT_DMEXCHANGE_USER: dmexchangeUser,
+      NUXT_DMEXCHANGE_PASSWORD: dmexchangePassword,
+      NUXT_DMEXCHANGE_DATABASE: dmexchangeDatabase,
+      ...(dmexchangeInstanceName ? { NUXT_DMEXCHANGE_INSTANCE_NAME: dmexchangeInstanceName } : {}),
+      NUXT_DMEXCHANGE_CONNECTION_OPTIONS: dmexchangeConnectionOptions
+    }
+  },
+  {
+    label: 'Keycloak configuration',
+    env: {
+      NUXT_PUBLIC_KC_ENABLED: keycloakEnabled
+    }
+  },
+]
 
-const envFile = [
-  '# Teleskop database connection',
-  `NUXT_TELESKOP_HOST=${teleskopHost}`,
-  `NUXT_TELESKOP_PORT=${teleskopPort}`,
-  `NUXT_TELESKOP_USER=${teleskopUser}`,
-  `NUXT_TELESKOP_PASSWORD=${teleskopPassword}`,
-  `NUXT_TELESKOP_DATABASE=${teleskopDatabase}`,
-  teleskopInstanceName ? `NUXT_TELESKOP_INSTANCE_NAME=${teleskopInstanceName}` : null,
-  `NUXT_TELESKOP_TIMEZONE_OFFSET=${teleskopTimezoneOffset}`,
-  `NUXT_TELESKOP_CONNECTION_OPTIONS=${teleskopConnectionOptions}`,
-  '',
-  '# DmExchange database connection',
-  `NUXT_DMEXCHANGE_ENABLED=${dmexchangeEnabled}`,
-  `NUXT_DMEXCHANGE_HOST=${dmexchangeHost}`,
-  `NUXT_DMEXCHANGE_PORT=${dmexchangePort}`,
-  `NUXT_DMEXCHANGE_USER=${dmexchangeUser}`,
-  `NUXT_DMEXCHANGE_PASSWORD=${dmexchangePassword}`,
-  `NUXT_DMEXCHANGE_DATABASE=${dmexchangeDatabase}`,
-  dmexchangeInstanceName ? `NUXT_DMEXCHANGE_INSTANCE_NAME=${dmexchangeInstanceName}` : null,
-  `NUXT_DMEXCHANGE_CONNECTION_OPTIONS=${dmexchangeConnectionOptions}`,
-  '',
-  '# Keycloak configuration',
-  `NUXT_PUBLIC_KC_ENABLED=${keycloakEnabled}`
-].filter((v) => v != null).join('\n') + '\n'
+function stringifyCategories(categories) {
+  const lines = []
+  for (const category of categories) {
+    lines.push(`# ${category.label}`)
+    for (const [key, value] of Object.entries(category.env)) {
+      lines.push(`${key}=${value}`)
+    }
+    lines.push('')
+  }
+  return lines.join('\n')
+}
+
+function isManagedEnvVar(key) {
+  for (const category of envCategories) {
+    if (key in category.env) {
+      return true
+    }
+  }
+  return false
+}
 
 const appDirs = await readdir(appsDir, { withFileTypes: true })
   .then(files => files.filter(f => f.isDirectory())
@@ -68,7 +98,22 @@ const appDirs = await readdir(appsDir, { withFileTypes: true })
 
 for (const appDir of appDirs) {
   const appEnvPath = resolve(appsDir, appDir, '.env')
-  await writeFile(appEnvPath, envFile)
+  const exists = existsSync(appEnvPath)
+  if (exists) {
+    const existingEnv = dotenv.parse(await readFile(appEnvPath, 'utf-8'))
+    const otherEnv = Object.fromEntries(Object.entries(existingEnv).filter(([key]) => !isManagedEnvVar(key)))
+    if (Object.keys(otherEnv).length > 0) {
+      await writeFile(appEnvPath, stringifyCategories([
+        ...envCategories,
+        {
+          label: 'Other environment variables',
+          env: otherEnv
+        }
+      ]))
+      continue
+    }
+  }
+  await writeFile(appEnvPath, stringifyCategories(envCategories))
 }
 
 const readJSONC = async (path) => {

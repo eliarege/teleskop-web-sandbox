@@ -12,8 +12,7 @@
     "typecheck": "turbo typecheck",
     "keycloak": "./keycloak/keycloak.sh",
     "cleanup": "find ./ \\( -type f -name \"pnpm-lock.*.yaml\" -o -type d -name \"node_modules\" -o -type d -name \".nuxt\" \\) -prune -exec rm -rf '{}' +",
-    "bump": "./scripts/bump-version",
-    "generate-env": "./scripts/generate-env"
+    "bump": "./scripts/bump-version"
   },
   "devDependencies": {
     "@teleskop/eslint-config": "workspace:*",
