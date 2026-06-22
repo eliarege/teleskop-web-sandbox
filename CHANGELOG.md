@@ -1,8 +1,34 @@
 # Changelog
 
+## 0.81.0 - 2026-06-22
+
+[Compare Changes](a3cff774aa8dc62872027743d46205741c10a917...69d267e555bc46be5a5ff7c0f8573535df8a9881)
+
+### 🚀 Features
+
+-  **PE**: Makine sayfasından editor sayfasına geçince program seçili olarak gösterildi ve tabloda scroll yaparak ekranda gösterilmesi sağlandı. ([b6524d8](b6524d8f77a31d3ac1a37ad1f4a1cbb73920f0bb))
+- **generate-env**: Extract into standalone package with smart env merging ([5415b0a](5415b0acda4ac6d7a1da37e94d3bbf58af43c15b))
+-  **PB**: Implement deleteUnplannedEvent functionality and refactor notification handling ([d87f6f0](d87f6f083aa6c665d7631b2dfd11279df4e656d7))
+-  **PB**: Localize remaining hardcoded notification messages ([2ccdf81](2ccdf818d6f085a242d6b17a807d17454aee70d0))
+
+### 🐛 Bug Fixes
+
+-  **CD**: Resolve program-header mismatch when deduplicating program list ([e281aa5](e281aa54fd71a51a27ee8fccd4d13b42e0bc08eb))
+-  **PE**: Editor sayfasında  programı kaydedince loading varken beyaz ekran gösterilme hatası giderildi. ([33e14e9](33e14e9b11977bed0640eb79ea90f329bee6c595))
+- **TonelloApi**: Change updateDatetime method to use GET with query parameters ([fa07f61](fa07f61fe66087f18ca6882e386bb62af80570dd))
+
+### ♻️ Refactor
+
+-  **PB**: Change showPlanningNotify to method-based object ([37d9f1c](37d9f1c68cdf426f7d74f5f75575822abef238a5))
+
+### 🔧 Miscellaneous Tasks
+
+- Add docker-container builder, cache parameters, and dev pipeline ([3d4b165](3d4b16568f559218aecc2febdc0bcff6765e1cc3))
+-  **PB**: Remove unnecessary console log for machine send operation ([59d75ae](59d75aec21b3c3757a5c014b43dff613e949dccf))
+
 ## 0.80.0 - 2026-06-17
 
-[Compare Changes](23d534e410d5c544c2dc3c1486bd28b1a1b062a2...66051178446ce3a8d4085bb6c56f5f18c85bcb4b)
+[Compare Changes](23d534e410d5c544c2dc3c1486bd28b1a1b062a2...a3cff774aa8dc62872027743d46205741c10a917)
 
 ### 🚀 Features
 
