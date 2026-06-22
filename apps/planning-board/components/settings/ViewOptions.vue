@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Toast } from '@bryntum/schedulerpro'
+import { showPlanningNotify } from '~/composables/helper'
 import type { MachineStatus } from '~/shared/types'
 
 const kc = useKeycloak()
@@ -107,7 +107,7 @@ async function saveParameters() {
     method: 'PUT',
   }).finally(() => {
     paramatereSaveLoading.value = false
-    Toast.show(t('toast.succesful'))
+    showPlanningNotify(t('toast.succesful'), 'success')
   })
 }
 </script>

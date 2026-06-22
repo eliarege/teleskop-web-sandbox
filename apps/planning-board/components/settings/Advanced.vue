@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { matStorage } from '@quasar/extras/material-icons'
-import { Toast } from '@bryntum/schedulerpro'
+import { showPlanningNotify } from '~/composables/helper'
 
 const emit = defineEmits(['updateScheduler'])
 const { data } = await useFetch('/api/autoAdd')
@@ -29,7 +29,7 @@ function dataCleanup() {
     await kc.fetch('/api/settings/dataCleanup').finally(async () => {
       dataCleanupLoading.value = false
       emit('updateScheduler')
-      Toast.show(t('toast.data-cleanup'))
+      showPlanningNotify(t('toast.data-cleanup'), 'success')
     })
   })
 }
@@ -52,7 +52,7 @@ function refreshData() {
     await new Promise(resolve => setTimeout(resolve, 300))
     await kc.fetch('/api/refreshCustomTables').finally(async () => {
       refresDataLoading.value = false
-      Toast.show(t('toast.succesful'))
+      showPlanningNotify(t('toast.succesful'), 'success')
     })
   })
 }

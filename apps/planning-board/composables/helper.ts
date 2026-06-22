@@ -1,8 +1,26 @@
 import type { SchedulerPro, SchedulerResourceModel } from '@bryntum/schedulerpro'
-import { DateHelper, Toast } from '@bryntum/schedulerpro'
+import { DateHelper } from '@bryntum/schedulerpro'
+import { Notify } from 'quasar'
 import { addMinutes, addSeconds, differenceInMilliseconds, differenceInSeconds } from 'date-fns'
 import { getRecipeUnitById } from '~/shared/enums'
 import type { ScheduleUnplannedResult } from '~/shared/types'
+
+type PlanningNotifyType = 'success' | 'error' | 'info'
+
+export function showPlanningNotify(message: unknown, type: PlanningNotifyType = 'info') {
+  const normalizedMessage = message instanceof Error ? message.message : String(message)
+
+  Notify.create({
+    message: normalizedMessage,
+    position: 'top',
+    color: {
+      success: 'positive',
+      error: 'negative',
+      info: 'primary',
+    }[type],
+    textColor: 'white',
+  })
+}
 
 export function decompressJson(data: { columns: string[], values: any[][] }) {
   const { columns, values } = data
@@ -255,7 +273,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       resourceRecord: machine,
     })
   } catch (err) {
-    Toast.show(`Scheduling Failed: ${err}`)
+    showPlanningNotify(`Scheduling Failed: ${err}`, 'error')
     throw err
   }
 
@@ -281,11 +299,11 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
         body: { newEvent },
       })
     } catch (err) {
-      Toast.show($i18n.t('upload-joborder.schedule-fail'))
+      showPlanningNotify($i18n.t('upload-joborder.schedule-fail'), 'error')
       await rollback()
       throw err
     }
-    Toast.show($i18n.t('upload-joborder.upload-success'))
+    showPlanningNotify($i18n.t('upload-joborder.upload-success'), 'success')
     refreshScheduler()
     schedule.renderRows()
   } else {
@@ -302,20 +320,20 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
         body: { newEvent },
       })
     } catch (err) {
-      Toast.show($i18n.t('upload-joborder.schedule-fail'))
+      showPlanningNotify($i18n.t('upload-joborder.schedule-fail'), 'error')
       await rollback()
       throw err
     }
 
     switch (res.code) {
       case 'DONE':
-        Toast.show($i18n.t('upload-joborder.upload-success'))
+        showPlanningNotify($i18n.t('upload-joborder.upload-success'), 'success')
         refreshScheduler()
         schedule.renderRows()
         break
 
       case 'UPLOAD_FAILED':
-        Toast.show($i18n.t('upload-joborder.machine-upload-fail'))
+        showPlanningNotify($i18n.t('upload-joborder.machine-upload-fail'), 'error')
         refreshScheduler()
         schedule.renderRows()
         break
@@ -334,20 +352,20 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
               body: { newEvent },
             })
           } catch {
-            Toast.show($i18n.t('upload-joborder.schedule-fail'))
+            showPlanningNotify($i18n.t('upload-joborder.schedule-fail'), 'error')
             refreshScheduler()
             schedule.renderRows()
             return
           }
           switch (finalRes.code) {
             case 'DONE':
-              Toast.show($i18n.t('upload-joborder.upload-success'))
+              showPlanningNotify($i18n.t('upload-joborder.upload-success'), 'success')
               break
             case 'UPLOAD_FAILED':
-              Toast.show($i18n.t('upload-joborder.machine-upload-fail'))
+              showPlanningNotify($i18n.t('upload-joborder.machine-upload-fail'), 'error')
               break
             case 'MISSING_PARAMETERS':
-              Toast.show('Cannot schedule due to missing parameters')
+              showPlanningNotify('Cannot schedule due to missing parameters', 'info')
               break
           }
           refreshScheduler()
