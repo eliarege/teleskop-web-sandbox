@@ -1,8 +1,16 @@
 # Changelog
 
+## 0.81.1 - 2026-06-22
+
+[Compare Changes](24145e29afc4387efd1fd5a5bdb7ce2c92ea321e...6e6414e912101f7fa0b757de5be410c3bdf3a0b5)
+
+### 🔧 Miscellaneous Tasks
+
+- Update docker preparation steps to create context before building ([6e6414e](6e6414e912101f7fa0b757de5be410c3bdf3a0b5))
+
 ## 0.81.0 - 2026-06-22
 
-[Compare Changes](a3cff774aa8dc62872027743d46205741c10a917...69d267e555bc46be5a5ff7c0f8573535df8a9881)
+[Compare Changes](a3cff774aa8dc62872027743d46205741c10a917...24145e29afc4387efd1fd5a5bdb7ce2c92ea321e)
 
 ### 🚀 Features
 
