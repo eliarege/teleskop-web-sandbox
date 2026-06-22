@@ -50,7 +50,8 @@ export class TonelloApi {
     const adjusted = tzOffset ? subMinutes(datetime, tzOffset) : datetime
     const [date, time] = adjusted.toISOString().slice(0, -5).split('T')
     await this.fetch('/api/v1/setDateTime', {
-      body: { date, time },
+      method: 'GET',
+      query: { date, time },
     })
   }
 
