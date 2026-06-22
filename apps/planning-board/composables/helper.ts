@@ -279,7 +279,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
       resourceRecord: machine,
     })
   } catch (err) {
-    showPlanningNotify.error(`Scheduling Failed: ${err}`)
+    showPlanningNotify.error($i18n.t('upload-joborder.scheduling-failed', { err }))
     throw err
   }
 
@@ -371,7 +371,7 @@ export async function handleSchedule(schedule: SchedulerPro, task, machine, grid
               showPlanningNotify.error($i18n.t('upload-joborder.machine-upload-fail'))
               break
             case 'MISSING_PARAMETERS':
-              showPlanningNotify.info('Cannot schedule due to missing parameters')
+              showPlanningNotify.info($i18n.t('upload-joborder.cannot-schedule-missing-params'))
               break
           }
           refreshScheduler()

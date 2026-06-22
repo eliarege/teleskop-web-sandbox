@@ -28,9 +28,12 @@
     "_": "Send to machine",
     "upload-success": "Joborder upload successfully completed",
     "no-program": "This machine does not have required programs",
+    "missing-params": "Missing Parameters",
     "fail": "Could not access the machine!",
     "schedule-fail": "Failed to schedule job order",
-    "machine-upload-fail": "Job order scheduled but could not be sent to machine"
+    "scheduling-failed": "Scheduling Failed: {err}",
+    "machine-upload-fail": "Job order scheduled but could not be sent to machine",
+    "cannot-schedule-missing-params": "Cannot schedule due to missing parameters"
   },
   "app": {
     "name": "Planning Board"
@@ -51,6 +54,8 @@
   },
   "queue-based": {
     "alarm-count": "Total Alarm Count",
+    "pin-success": "Event successfully pinned!",
+    "unpin-success": "Event successfully unpinned!",
     "ctx-menu": {
       "task-edit": "Update Job Order",
       "task-delete": "Delete Job Order",

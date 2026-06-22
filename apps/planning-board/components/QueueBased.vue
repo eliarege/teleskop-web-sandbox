@@ -829,7 +829,7 @@ onMounted(async () => {
                 .then(() => {
                   refreshScheduler()
                   schedule.refreshRows()
-                  showPlanningNotify.success('Event successfully pinned!')
+                  showPlanningNotify.success(t('queue-based.pin-success'))
                 })
                 .catch(err => showPlanningNotify.error(err))
             },
@@ -845,7 +845,7 @@ onMounted(async () => {
                 .then(() => {
                   refreshScheduler()
                   schedule.refreshRows()
-                  showPlanningNotify.success('Event successfully unpinned!')
+                  showPlanningNotify.success(t('queue-based.unpin-success'))
                 })
                 .catch(err => showPlanningNotify.error(err))
             },
