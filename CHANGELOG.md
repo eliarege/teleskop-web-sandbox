@@ -1,8 +1,23 @@
 # Changelog
 
+## 0.82.0 - 2026-06-23
+
+[Compare Changes](3ad62d99f6983a4cc22c8f3dfd1ee574d6af8459...1eb71f058afc88aa9458c962dfaaeff3c4b15b18)
+
+### 🚀 Features
+
+-  **PB**: Enhance StepWorkingTimes with status-based coloring and fix theoretical duration ([cb6080d](cb6080ddf78b54d97682465d3e0cce48f699d8fc))
+-  **PE**: Tüm programları gönder/al sonuçları için dialog oluşturuldu. ([1b7d069](1b7d069a3df75f10237d92859895d589a295615d))
+
+### 🐛 Bug Fixes
+
+-  **PE**: Makineye tüm programları gönderirken sadece makinede olan programların atllanması sağlandı. ([5504499](5504499f3b95f3c74d45f75b72d81b6a565f9899))
+-  **PE**: Isimlendirme hatası ([2ddb815](2ddb81592c5b5809539914a5f25e6ad25669a3c1))
+-  **PE**: Çoklu bildirimler için Bildirimler dialogu kullanıldı. ([a534c6f](a534c6f0d76b9ea8e30b5981473d0ccc224ef0c9))
+
 ## 0.81.1 - 2026-06-22
 
-[Compare Changes](24145e29afc4387efd1fd5a5bdb7ce2c92ea321e...6e6414e912101f7fa0b757de5be410c3bdf3a0b5)
+[Compare Changes](24145e29afc4387efd1fd5a5bdb7ce2c92ea321e...3ad62d99f6983a4cc22c8f3dfd1ee574d6af8459)
 
 ### 🔧 Miscellaneous Tasks
 
