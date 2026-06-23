@@ -22,5 +22,6 @@ export default defineAuthEventHandler(async (event) => {
     total: result.total,
     skipped: result.skipped,
     message: result.message,
+    results: result.results,
   }
 })

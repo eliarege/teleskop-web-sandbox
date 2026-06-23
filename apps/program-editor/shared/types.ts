@@ -586,6 +586,48 @@ export interface BulkDeletionResponse<T extends ProgramDeletionSource = ProgramD
   results: DeletionResult<T>[]
 }
 
+// --- Send All Programs (upload) result types ---
+export type ProgramSendStatus = 'sent' | 'skipped' | 'failed'
+
+export interface SendAllProgramResult {
+  programNo: number
+  programName: string
+  status: ProgramSendStatus
+  error?: string
+  errorCode?: string
+  errorDetail?: Record<string, unknown>
+}
+
+export interface SendAllProgramsResponse {
+  success: boolean
+  count: number
+  total: number
+  skipped: number
+  message: string
+  results: SendAllProgramResult[]
+}
+
+// --- Get All Programs (download) result types ---
+export type ProgramGetStatus = 'received' | 'failed'
+
+export interface GetAllProgramResult {
+  programNo: number
+  programName: string
+  status: ProgramGetStatus
+  error?: string
+  errorCode?: string
+  errorDetail?: Record<string, unknown>
+}
+
+export interface GetAllProgramsResponse {
+  success: boolean
+  count: number
+  total: number
+  errors: Array<{ programNo: number, message: string }>
+  message?: string
+  results: GetAllProgramResult[]
+}
+
 // #region Find in Programs
 export interface FindInProgramsParams {
   machineIds: number[]
