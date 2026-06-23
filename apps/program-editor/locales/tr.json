@@ -784,7 +784,7 @@
     "title": "Silme Sonuçları",
     "programName": "Program Adı",
     "deletedFromMachine": "Makineden Silindi",
-    "deletedFromDb": "Veritabanından Silindi"
+    "deletedFromDb": "Teleskop'tan Silindi"
   },
   "sendAllProgramsResultsDialog": {
     "title": "Tüm Programları Gönder Sonuçları",

@@ -756,7 +756,7 @@
     "title": "Delete Results",
     "programName": "Program Name",
     "deletedFromMachine": "Deleted From Machine",
-    "deletedFromDb": "Deleted From DB"
+    "deletedFromDb": "Deleted From Teleskop"
   },
   "sendAllProgramsResultsDialog": {
     "title": "Send All Programs Results",
