@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { TopbarMenuItem } from '@teleskop/nuxt-base'
 import TBFindAndReplaceDialog from './TBFindAndReplaceDialog.vue'
-import type { Machine, MachineGroup, MachineInfo, ProcessType, ProgramTableRow } from '~/shared/types'
+import SendAllProgramsResultsDialog from './SendAllProgramsResultsDialog.vue'
+import GetAllProgramsResultsDialog from './GetAllProgramsResultsDialog.vue'
+import type { Machine, MachineGroup, MachineInfo, ProcessType, ProgramTableRow, SendAllProgramsResponse } from '~/shared/types'
 import { useMachineStatusStore } from '~/composables/machine'
 
 type GroupContext = { type: 'group', group: MachineGroup, machine?: never, processType?: never }
@@ -17,7 +19,7 @@ const { t } = useI18n()
 const appList = useAppList()
 const editor = useEditorStore()
 const { fetch } = useKeycloak()
-const { notifySuccess, notifyError } = useNotify()
+const { notifyError } = useNotify()
 const machineStatusStore = useMachineStatusStore()
 
 const machinesAppUrl = appList.find(app => app.name === 'machines')?.url
@@ -33,10 +35,19 @@ async function sendAllProgramsToGroup(group: MachineGroup) {
     for (const machine of enabledMachines) {
       const status = await machineStatusStore.checkMachineStatus(machine.id, machine.name)
       if (status) {
-        await contextMenuStore.sendAllPrograms(machine)
+        const response = await contextMenuStore.sendAllPrograms(machine)
+        if (response) {
+          $q.dialog({
+            component: SendAllProgramsResultsDialog,
+            componentProps: {
+              machine: { id: machine.id, name: machine.name },
+              results: response.results,
+              summary: { count: response.count, total: response.total, skipped: response.skipped },
+            },
+          })
+        }
       }
     }
-    notifySuccess(t('machineContextMenu.group.sendSuccess', { name: group.name }))
   } catch (error: any) {
     notifyError(t('machineContextMenu.group.sendFailed', { name: group.name }))
   } finally {
@@ -56,10 +67,19 @@ async function getAllProgramsFromGroup(group: MachineGroup) {
     for (const machine of enabledMachines) {
       const status = await machineStatusStore.checkMachineStatus(machine.id, machine.name)
       if (status) {
-        await contextMenuStore.getAllPrograms(machine)
+        const response = await contextMenuStore.getAllPrograms(machine)
+        if (response) {
+          $q.dialog({
+            component: GetAllProgramsResultsDialog,
+            componentProps: {
+              machine: { id: machine.id, name: machine.name },
+              results: response.results,
+              summary: { count: response.count, total: response.total },
+            },
+          })
+        }
       }
     }
-    notifySuccess(t('machineContextMenu.group.getSuccess', { name: group.name }))
   } catch (error: any) {
     notifyError(t('machineContextMenu.group.getFailed', { name: group.name }))
   } finally {
@@ -116,7 +136,17 @@ const machineItems = computed(() => {
           return
         }
 
-        await contextMenuStore.sendAllPrograms({ id: machine.id, name: machine.name })
+        const response = await contextMenuStore.sendAllPrograms({ id: machine.id, name: machine.name })
+        if (response) {
+          $q.dialog({
+            component: SendAllProgramsResultsDialog,
+            componentProps: {
+              machine: { id: machine.id, name: machine.name },
+              results: response.results,
+              summary: { count: response.count, total: response.total, skipped: response.skipped },
+            },
+          })
+        }
         await editor.refreshAllPrograms()
       },
     },
@@ -126,10 +156,21 @@ const machineItems = computed(() => {
       disabled: isMachineDisabled,
       onClick: async () => {
         const status = await machineStatusStore.checkMachineStatus(machine.id, machine.name)
-        if (status) {
-          await contextMenuStore.getAllPrograms({ id: machine.id, name: machine.name })
-          await editor.refreshAllPrograms()
+        if (!status)
+          return
+
+        const response = await contextMenuStore.getAllPrograms({ id: machine.id, name: machine.name })
+        if (response) {
+          $q.dialog({
+            component: GetAllProgramsResultsDialog,
+            componentProps: {
+              machine: { id: machine.id, name: machine.name },
+              results: response.results,
+              summary: { count: response.count, total: response.total },
+            },
+          })
         }
+        await editor.refreshAllPrograms()
       },
     },
     {

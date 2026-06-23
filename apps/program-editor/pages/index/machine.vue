@@ -594,7 +594,7 @@ const contextMenuOptions = computed(() => [
       label: t('contextMenu.sendProgram'),
       shortcut: '',
       icon: 'send',
-      disabled: hasOnlyOnController.value,
+      // disabled: hasOnlyOnController.value,
       onClick: async () => {
         // TODO: Context cannot be provided by executor
         $commandManager.executeCommand(

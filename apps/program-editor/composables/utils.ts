@@ -205,7 +205,7 @@ export const useNotificationStore = defineStore('notification', () => {
   }, { deep: true })
 
   function addNotification(message: string, type: 'positive' | 'warning') {
-    notifications.value.push({
+    notifications.value.unshift({
       message,
       type,
       date: new Date(),

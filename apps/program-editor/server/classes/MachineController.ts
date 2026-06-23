@@ -3,12 +3,12 @@ import { isDef } from '@teleskop/utils'
 import { fetchTeleskopSettings, logEditorOperation, upsertTreatments } from '../functions'
 import { db } from '../database'
 import { withDmTransaction, withProgramClient, withTransaction } from '../decorators'
-import { PError } from '../error'
+import { PError, getFriendlyErrorMessage } from '../error'
 import { ProgramEditorActivityCodes } from '../constants'
 import logger from '../logger'
 import { mapObject } from '../utils/map'
 import type { ProgramClient } from './ProgramClient'
-import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, ReplaceInProgramsParams, SelectionArchiveList, SelectionList, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
+import type { BatchParameter, CommandFormula, CommandIO, CommandIOSelection, CommandTypes, FindInProgramsParams, GetAllProgramResult, Machine, MachineCommand, MachineConstant, ParameterItem, Program, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, ReplaceInProgramsParams, SelectionArchiveList, SelectionList, SendAllProgramResult, StepArchiveInputOutput, StepArchiveItem, StepArchiveParameter, StepInputOutput, StepItem, StepParameter, TreatmentParameter } from '~/shared/types'
 import { AdditiveType, CommandType, PROCESS_TYPE_NAMES, ParameterType, ParameterTypeRaw, ProgramStatus } from '~/shared/constants'
 import { calculateProgramDuration } from '~/shared/formula'
 import { validateProgram } from '~/shared/utils'
@@ -1270,18 +1270,18 @@ export class MachineController {
       CHANGETIME: timestamp,
       WHATCHANGE: '',
       PRGSOURCE: 0,
-      TotalChemReq: program.totalChemReq || 0,
-      TotalDyeReq: program.totalDyeReq || 0,
-      ManChemReq: program.manChemReq || 0,
-      AutoChemReq: program.autoChemReq || 0,
-      AutoDyeReq: program.autoDyeReq || 0,
-      ManDyeReq: program.manDyeReq || 0,
+      TotalChemReq: program.manChemReq + program.autoChemReq + program.saltReq + program.genericMat1Req + program.genericMat2Req,
+      TotalDyeReq: program.manDyeReq + program.autoDyeReq,
+      ManChemReq: program.manChemReq,
+      AutoChemReq: program.autoChemReq,
+      AutoDyeReq: program.autoDyeReq,
+      ManDyeReq: program.manDyeReq,
       DefaultRecipeNo: '',
       ICONNAME: program.icon,
       ORDEROFREQUESTS: '',
-      TOTALSALTREQ: program.saltReq || 0,
-      TOTALGM1REQ: program.genericMat1Req || 0,
-      TOTALGM2REQ: program.genericMat2Req || 0,
+      TOTALSALTREQ: program.saltReq,
+      TOTALGM1REQ: program.genericMat1Req,
+      TOTALGM2REQ: program.genericMat2Req,
       PHASEVERSION: 1,
       INTERVENTIONFREEPROGRAM: 0,
     }]
@@ -1824,19 +1824,20 @@ export class MachineController {
    */
   @withProgramClient
   @withTransaction
-  async downloadAllPrograms(): Promise<{ success: boolean, count: number, total: number, errors: Array<{ programNo: number, message: string }>, message?: string }> {
+  async downloadAllPrograms(): Promise<{ success: boolean, count: number, total: number, errors: Array<{ programNo: number, message: string }>, message?: string, results: GetAllProgramResult[] }> {
     try {
       // Önce program listesini al
       const programNumbers = await this.client.fetchProgramList()
 
       if (programNumbers.length === 0) {
-        return { success: true, count: 0, total: 0, errors: [] }
+        return { success: true, count: 0, total: 0, errors: [], results: [] }
       }
 
       // Machine commands listesini al
       const commands = await this.fetchCommands()
       let successCount = 0
       const errors: { programNo: number, message: string }[] = []
+      const results: GetAllProgramResult[] = []
 
       // 1. Geçiş: tüm programları makineden indir
       const downloadedPrograms: { programNo: number, program: Program }[] = []
@@ -1848,7 +1849,11 @@ export class MachineController {
           }
           downloadedPrograms.push({ programNo, program })
         } catch (error) {
-          errors.push({ programNo, message: error instanceof Error ? error.message : 'Unknown error' })
+          const msg = getFriendlyErrorMessage(error)
+          const errorCode = error instanceof PError ? error.code : undefined
+          const errorDetail = error instanceof PError ? error.detail : undefined
+          errors.push({ programNo, message: msg })
+          results.push({ programNo, programName: '', status: 'failed', error: msg, errorCode, errorDetail })
           logger.error({ error, programNo }, `Failed to download program ${programNo}`)
         }
       }
@@ -1877,8 +1882,13 @@ export class MachineController {
           await this.updateProgramHeader(program)
 
           successCount++
+          results.push({ programNo, programName: program.name, status: 'received' })
         } catch (error) {
-          errors.push({ programNo, message: error instanceof Error ? error.message : 'Unknown error' })
+          const msg = getFriendlyErrorMessage(error)
+          const errorCode = error instanceof PError ? error.code : undefined
+          const errorDetail = error instanceof PError ? error.detail : undefined
+          errors.push({ programNo, message: msg })
+          results.push({ programNo, programName: '', status: 'failed', error: msg, errorCode, errorDetail })
           logger.error({ error, programNo }, `Failed to download program ${programNo}`)
         }
       }
@@ -1892,6 +1902,7 @@ export class MachineController {
         count: successCount,
         total: programNumbers.length,
         errors,
+        results,
       }
     } catch (error) {
       logger.error({ error }, 'Failed to download all programs from machine')
@@ -1900,6 +1911,7 @@ export class MachineController {
         count: 0,
         total: 0,
         errors: [],
+        results: [],
         message: error instanceof Error ? error.message : 'Unknown error',
       }
     }
@@ -1911,23 +1923,33 @@ export class MachineController {
    */
   @withProgramClient
   @withTransaction
-  async uploadAllPrograms(): Promise<{ success: boolean, count: number, message: string }> {
+  async uploadAllPrograms(): Promise<{ success: boolean, count: number, total: number, skipped: number, message: string, results: SendAllProgramResult[] }> {
     try {
       // Yerel veritabanından tüm program header'larını al
       const programHeaders = await this.fetchAllProgramHeaders()
 
       if (programHeaders.length === 0) {
-        return { success: true, count: 0, message: 'No programs found in database' }
+        return { success: true, count: 0, total: 0, skipped: 0, message: 'No programs found in database', results: [] }
       }
 
       // Machine commands listesini al
       const commands = await this.fetchCommands()
       let successCount = 0
       let errorCount = 0
+      let skippedCount = 0 // Atlanan programları takip etmek için eklendi
       const errors: string[] = []
+      const results: SendAllProgramResult[] = []
 
       // Her program için upload işlemi yap
       for (const programHeader of programHeaders) {
+        // 1. KONTROL: Program sadece makinedeyse bu adımı atla
+        if (programHeader.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+          skippedCount++
+          results.push({ programNo: programHeader.programNo, programName: programHeader.name, status: 'skipped' })
+          logger.info(`Program ${programHeader.programNo} skipped (EXISTS_ONLY_ON_CONTROLLER)`)
+          continue
+        }
+
         try {
           // Programın tam detaylarını al
           const { program } = await this.fetchProgram(programHeader.programNo)
@@ -1942,20 +1964,24 @@ export class MachineController {
           }
 
           successCount++
+          results.push({ programNo: programHeader.programNo, programName: programHeader.name, status: 'sent' })
 
           logger.info(`Program ${program.programNo} successfully uploaded to machine`)
         } catch (error) {
           errorCount++
-          const errorMsg = `Program ${programHeader.programNo}: ${error instanceof Error ? error.message : 'Unknown error'}`
-          errors.push(errorMsg)
+          const friendlyMsg = getFriendlyErrorMessage(error)
+          errors.push(`Program ${programHeader.programNo}: ${friendlyMsg}`)
+          results.push({ programNo: programHeader.programNo, programName: programHeader.name, status: 'failed', error: friendlyMsg })
           logger.error({ error, programNo: programHeader.programNo }, `Failed to upload program ${programHeader.programNo}`)
         }
       }
 
       // Başarılı yüklemeler için log
-      await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `${successCount} programs uploaded`)
+      if (successCount > 0) {
+        await logEditorOperation(ProgramEditorActivityCodes.PROGRAMSENT, `Makine ${this.id}`, `${successCount} programs uploaded`)
+      }
 
-      const message = `Uploaded ${successCount}/${programHeaders.length} programs successfully`
+      const message = `Uploaded ${successCount} programs successfully. Skipped ${skippedCount} programs.`
       if (errors.length > 0) {
         logger.warn({ errors }, 'Some programs failed to upload')
       }
@@ -1963,14 +1989,20 @@ export class MachineController {
       return {
         success: errorCount === 0,
         count: successCount,
-        message: errors.length > 0 ? `${message}. Errors: ${errors.join(', ')}` : message,
+        total: programHeaders.length,
+        skipped: skippedCount,
+        message: errors.length > 0 ? `${message} Errors: ${errors.join(', ')}` : message,
+        results,
       }
     } catch (error) {
       logger.error({ error }, 'Failed to upload all programs to machine')
       return {
         success: false,
         count: 0,
+        total: 0,
+        skipped: 0,
         message: `Failed to upload programs: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        results: [],
       }
     }
   }

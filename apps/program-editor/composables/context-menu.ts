@@ -3,9 +3,10 @@ import type { Router } from 'vue-router'
 import { klona } from 'klona'
 import { isProgramError } from './utils'
 import { useCopyAndSendStore } from './copyAndSend'
-import type { BulkDeletionResponse, CopyItem, Machine, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors } from '~/shared/types'
+import type { BulkDeletionResponse, CopyItem, GetAllProgramsResponse, Machine, MachineCommand, MachineInfo, PasteOptions, ProgramDeletionSource, ProgramHeader, ProgramHeaderArchive, ProgramHeaderUpdate, ProgramItem, ProgramStep, ProgramTableRow, ProgramWithErrors, SendAllProgramsResponse } from '~/shared/types'
 import { notification } from '~/shared/functions'
 import type { CopyAndSendResult } from '~/server/utils/JobManager'
+import { ProgramStatus } from '~/shared/constants'
 
 export interface ContextMenuStore {
   getCopiedValues: () => ProgramItem[]
@@ -20,7 +21,7 @@ export interface ContextMenuStore {
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   changeProcessType: (machineId: number, programs: ProgramTableRow[], typeData: { typeId: number, additionalTypeId: number | null }) => Promise<void>
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
-  getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
+  getRemoteProgram: (programs: ProgramTableRow[], machineId: number, silent?: boolean) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
   copyAndSendProgramsToMachines: (programs: { programNo: number, name: string }[], sourceMachine: { id: number, name: string }, targetMachines: MachineInfo[], pasteOption: PasteOptions) => Promise<void>
   trackCopyAndSendJob: (sourceMachine: { id: number, name: string }, jobId: string) => Promise<void>
@@ -37,8 +38,8 @@ export interface ContextMenuStore {
   programVersions: Ref<ProgramHeaderArchive[]>
   copyStep: (machine: Machine, selectedSteps: ProgramStep[]) => void
   pasteStep: () => void
-  sendAllPrograms: (machine: { id: number, name: string }) => Promise<void>
-  getAllPrograms: (machine: { id: number, name: string }) => Promise<void>
+  sendAllPrograms: (machine: { id: number, name: string }) => Promise<SendAllProgramsResponse | undefined>
+  getAllPrograms: (machine: { id: number, name: string }) => Promise<GetAllProgramsResponse | undefined>
 }
 
 export function useContextMenuStore(ctx?: any): ContextMenuStore {
@@ -240,13 +241,19 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     const isMultiplePrograms = programs.length > 3
 
     for (const program of programs) {
+      if (program.prgState === ProgramStatus.EXISTS_ONLY_ON_CONTROLLER) {
+        continue
+      }
+
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
 
+        const message = t(`contextMenu.send.success`, { programNo: program.programNo })
         if (isMultiplePrograms) {
-          notificationState.addNotification(t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
+          notificationState.addNotification(message, 'positive')
         } else {
-          notifySuccess(t(`contextMenu.send.success`, { programNo: program.programNo }))
+          notifySuccess(message)
+          notificationState.addNotification(message, 'positive')
         }
       } catch (error: any) {
         let messageKey = 'fail'
@@ -257,10 +264,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
           messageKey = 'programHasErrors'
         }
 
+        const message = t(`contextMenu.send.${messageKey}`, { programNo: program.programNo })
         if (isMultiplePrograms) {
-          notificationState.addNotification(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }), 'warning')
+          notificationState.addNotification(message, 'warning')
         } else {
-          notifyError(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
+          notifyError(message)
+          notificationState.addNotification(message, 'warning')
         }
       } finally {
         editor.isLoading = false
@@ -272,16 +281,24 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function getRemoteProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
+  async function getRemoteProgram(programs: ProgramTableRow[], machineId: number, silent?: boolean): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    const notificationState = useNotificationStore()
     const { notifySuccess, notifyError } = useNotify()
     editor.isLoading = true
+    const isMultiplePrograms = programs.length > 3 || silent
 
     for (const program of programs) {
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-        notifySuccess(t(`contextMenu.get.success`, { programNo: program.programNo }))
+        const message = t(`contextMenu.get.success`, { programNo: program.programNo })
+        if (isMultiplePrograms) {
+          notificationState.addNotification(message, 'positive')
+        } else {
+          notifySuccess(message)
+          notificationState.addNotification(message, 'positive')
+        }
       } catch (error: any) {
         let messageKey = 'fail'
 
@@ -289,8 +306,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
           messageKey = 'programNotFound'
         }
 
-        notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
+        const message = t(`contextMenu.get.${messageKey}`, { programNo: program.programNo })
+        if (isMultiplePrograms) {
+          notificationState.addNotification(message, 'warning')
+        } else {
+          notifyError(message)
+          notificationState.addNotification(message, 'warning')
+        }
       }
+    }
+
+    if (isMultiplePrograms) {
+      notificationState.showNotificationPopup = true
     }
 
     await editor.fetchAllProcessTypes()
@@ -482,57 +509,43 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function sendAllPrograms(machine: { id: number, name: string }): Promise<void> {
+  async function sendAllPrograms(machine: { id: number, name: string }): Promise<SendAllProgramsResponse | undefined> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-    const { notifySuccess, notifyError } = useNotify()
+    const { notifyError } = useNotify()
     editor.isLoading = true
 
     try {
-      const response = await fetch<{ success: boolean, count: number, message: string }>(`/api/machine/${machine.id}/upload-all-programs`, {
+      const response = await fetch<SendAllProgramsResponse>(`/api/machine/${machine.id}/upload-all-programs`, {
         method: 'POST',
       })
-
-      if (response.success) {
-        notifySuccess(t('contextMenu.sendAllProgramsSuccess', { machineName: machine.name }))
-      } else {
-        notifyError(t('contextMenu.sendAllProgramsFailed', { message: response.message }))
-      }
+      return response
     } catch (error: any) {
-      notifyError(t('contextMenu.sendAllProgramsFailed', { message: error.message }))
+      notifyError(t('contextMenu.sendAllProgramsFailed', { machineName: machine.name }))
       console.error('Send All Programs error:', error)
+      return undefined
     } finally {
       editor.isLoading = false
     }
   }
 
-  async function getAllPrograms(machine: { id: number, name: string }): Promise<void> {
+  async function getAllPrograms(machine: { id: number, name: string }): Promise<GetAllProgramsResponse | undefined> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
-    const { notifySuccess, notifyError, notifyWarning } = useNotify()
+    const { notifyError } = useNotify()
     editor.isLoading = true
 
     try {
-      const response = await fetch<{ success: boolean, count: number, total: number, errors: Array<{ programNo: number, message: string }>, message?: string }>(`/api/machine/${machine.id}/download-all-programs`, {
+      const response = await fetch<GetAllProgramsResponse>(`/api/machine/${machine.id}/download-all-programs`, {
         method: 'POST',
       })
-      if (response.errors.length > 0) {
-        for (const err of response.errors) {
-          console.warn(`Get All Programs: program ${err.programNo} failed:`, err.message)
-        }
-      }
-      if (response.success) {
-        notifySuccess(t('contextMenu.getAllProgramsSuccess', { machineName: machine.name }))
-      } else if (response.count > 0) {
-        notifyWarning(t('contextMenu.getAllProgramsPartialSuccess', { count: response.count, total: response.total, machineName: machine.name }))
-      } else {
-        notifyError(response.message ?? t('contextMenu.getAllProgramsFailed', { machineName: machine.name }))
-      }
 
       await editor.fetchAllProcessTypes()
+      return response
     } catch (error: any) {
       notifyError(t('contextMenu.getAllProgramsFailed', { machineName: machine.name }))
       console.error('Get All Programs error:', error)
+      return undefined
     } finally {
       editor.isLoading = false
     }

@@ -289,3 +289,86 @@ export class PError extends Error {
 export function isPError(error: unknown): error is AnyError {
   return error instanceof PError
 }
+
+/**
+ * Convert a PError (or generic Error) into a human-friendly message.
+ * Used in bulk operation result dialogs where raw error codes like
+ * "COMMAND_NOT_FOUND" are not meaningful to end users.
+ */
+export function getFriendlyErrorMessage(error: unknown): string {
+  if (error instanceof PError) {
+    switch (error.code) {
+      case 'COMMAND_NOT_FOUND': {
+        const d = error.detail as ErrorProgramCommandDetail
+        return `Command ${d.commandNo} not found on machine (program ${d.programNo})`
+      }
+      case 'PROGRAM_IO_NOT_FOUND': {
+        const d = error.detail as ErrorProgramIoDetail
+        return `I/O ${d.ioIndex} not found on command ${d.commandNo} (program ${d.programNo})`
+      }
+      case 'MACHINE_PARAMETER_NOT_FOUND': {
+        const d = error.detail as ErrorMachineParameterDetail
+        return `Parameter ${d.parameterIndex} not found on command ${d.commandNo} (program ${d.programNo})`
+      }
+      case 'MACHINE_PARAMETER_INVALID': {
+        const d = error.detail as ErrorMachineParameterDetail & { reason: string }
+        return `Invalid parameter ${d.parameterIndex} on command ${d.commandNo} (program ${d.programNo}): ${d.reason}`
+      }
+      case 'PROGRAM_FAILED_TO_DOWNLOAD': {
+        const d = error.detail as ErrorProgramDetail
+        return `Failed to download program ${d.programNo} from machine`
+      }
+      case 'PROGRAM_FAILED_TO_LOAD': {
+        const d = error.detail as ErrorProgramDetail
+        return `Failed to load program ${d.programNo}`
+      }
+      case 'PROGRAM_INSERT_FAILED': {
+        const d = error.detail as ErrorProgramDetail
+        return `Failed to save program ${d.programNo} to database`
+      }
+      case 'PROGRAM_UPDATE_FAILED': {
+        const d = error.detail as ErrorProgramDetail
+        return `Failed to update program ${d.programNo} in database`
+      }
+      case 'PROGRAM_TREATMENT_COMMAND_LIMIT': {
+        const d = error.detail as ErrorTreatmentLimitDetail
+        return `Treatment command limit exceeded on command ${d.commandNo} (program ${d.programNo}, limit: ${d.limit})`
+      }
+      case 'NO_COMMANDS_FOUND': {
+        const d = error.detail as ErrorProgramDetail
+        return `Machine command list is empty (program ${d.programNo})`
+      }
+      case 'PROGRAM_NOT_FOUND': {
+        const d = error.detail as ErrorProgramDetail
+        return `Program ${d.programNo} not found`
+      }
+      case 'PROGRAM_INVALID': {
+        const d = error.detail as ErrorProgramInvalidDetail
+        return `Program ${d.programNo} is invalid: ${d.reason}`
+      }
+      case 'MACHINE_NOT_FOUND': {
+        const d = error.detail as ErrorMachineDetail
+        return `Machine ${d.machineId} not found`
+      }
+      case 'MACHINE_UNAVAILABLE':
+        return 'Machine is unavailable'
+      case 'MACHINE_OFFLINE':
+        return 'Machine is offline'
+      case 'INVALID_COMMAND_NUMBER': {
+        const d = error.detail as ErrorCommandDetail
+        return `Invalid command number ${d.commandNo}`
+      }
+      case 'INVALID_PROGRAM_NUMBER': {
+        const d = error.detail as ErrorProgramDetail
+        return `Invalid program number ${d.programNo}`
+      }
+      case 'INVALID_VERSION_NUMBER': {
+        const d = error.detail as ErrorProgramArchiveDetail
+        return `Invalid version number ${d.versionNo} (program ${d.programNo})`
+      }
+      default:
+        return error.code.replace(/_/g, ' ').toLowerCase()
+    }
+  }
+  return error instanceof Error ? error.message : 'Unknown error'
+}
