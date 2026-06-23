@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatDuration } from '@teleskop/utils';
+import { formatDuration } from '@teleskop/utils'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
@@ -11,25 +11,119 @@ const emit = defineEmits(['close'])
 
 const { t, d } = useI18n()
 
-const { data: stepWorkingTimes } = await useAuthFetch<any[]>('/api/stepWorkingTimes', {
+const STEP_STATUS = {
+  FINISHED: 0,
+  ADDED_LATER: 1,
+  SKIPPED_OR_DELETED: 2,
+  PENDING: 3,
+} as const
+
+type StepStatus = typeof STEP_STATUS[keyof typeof STEP_STATUS]
+
+type StepWorkingTime = {
+  step: number
+  program: string
+  programName?: string
+  command: string
+  commandName?: string
+  startTime?: string | null
+  endTime?: string | null
+  theoreticalDuration?: number | null
+  actualDuration?: number | null
+  stepStatus?: StepStatus | null
+}
+
+type StepWorkingTimeRow = Omit<StepWorkingTime, 'startTime' | 'endTime' | 'theoreticalDuration' | 'actualDuration'> & {
+  startTime: string
+  endTime: string
+  theoreticalDuration: string
+  actualDuration: string
+  rawTheoreticalDuration: number | null
+  rawActualDuration: number | null
+}
+
+type StepWorkingTimeColumn = {
+  name: string
+  label: string
+  field: keyof StepWorkingTimeRow
+  align: 'center'
+}
+
+function getRowClassByStatus(step: {
+  stepStatus?: StepStatus | null
+  actualDuration?: number | null
+  theoreticalDuration?: number | null
+}) {
+  if (isTimeExceeded(step)) {
+    return 'bg-red-200'
+  }
+
+  switch (step.stepStatus) {
+    case STEP_STATUS.FINISHED:
+      return 'bg-green-200'
+    case STEP_STATUS.ADDED_LATER:
+      return 'bg-blue-200'
+    case STEP_STATUS.SKIPPED_OR_DELETED:
+      return 'bg-yellow-200'
+    case STEP_STATUS.PENDING:
+    default:
+      return 'bg-white'
+  }
+}
+
+function isTimeExceeded(step: {
+  stepStatus?: StepStatus | null
+  actualDuration?: number | null
+  theoreticalDuration?: number | null
+}) {
+  return step.stepStatus === STEP_STATUS.FINISHED
+    && !!step.actualDuration
+    && !!step.theoreticalDuration
+    && step.actualDuration > step.theoreticalDuration
+}
+
+function getPdfFillColor(step: {
+  stepStatus?: StepStatus | null
+  actualDuration?: number | null
+  theoreticalDuration?: number | null
+}) {
+  if (isTimeExceeded(step)) {
+    return [254, 202, 202]
+  }
+
+  switch (step.stepStatus) {
+    case STEP_STATUS.FINISHED:
+      return [187, 247, 208]
+    case STEP_STATUS.ADDED_LATER:
+      return [191, 219, 254]
+    case STEP_STATUS.SKIPPED_OR_DELETED:
+      return [253, 224, 71]
+    default:
+      return null
+  }
+}
+
+const { data: stepWorkingTimes } = await useAuthFetch<StepWorkingTime[]>('/api/stepWorkingTimes', {
   query: { batchKey: props.batchKey },
 })
-const modifiedStepWorkingTimes = computed(() => {
+const modifiedStepWorkingTimes = computed<StepWorkingTimeRow[]>(() => {
   return (stepWorkingTimes.value || []).map((step) => {
     return {
       ...step,
       step: step.step + 1,
-      program: step.programName ? step.program + ' ' + step.programName : step.program,
-      command: step.commandName ? step.command + ' ' + step.commandName : step.command,
+      program: step.programName ? `${step.program} ${step.programName}` : step.program,
+      command: step.commandName ? `${step.command} ${step.commandName}` : step.command,
       startTime: step.startTime ? d(new Date(step.startTime), 'datetime') : '',
       endTime: step.endTime ? d(new Date(step.endTime), 'datetime') : '',
+      rawTheoreticalDuration: step.theoreticalDuration ?? null,
+      rawActualDuration: step.actualDuration ?? null,
       theoreticalDuration: step.theoreticalDuration ? formatDuration(step.theoreticalDuration * 1000) : '',
       actualDuration: step.actualDuration ? formatDuration(step.actualDuration * 1000) : '',
     }
   })
 })
 
-const cols = computed(() => [
+const cols = computed<StepWorkingTimeColumn[]>(() => [
   { name: 'step', label: t('stepWorkingTimes.step'), field: 'step', align: 'center' as const },
   { name: 'program', label: t('stepWorkingTimes.program'), field: 'program', align: 'center' as const },
   { name: 'command', label: t('stepWorkingTimes.command'), field: 'command', align: 'center' as const },
@@ -40,19 +134,11 @@ const cols = computed(() => [
 ])
 
 function getRowClass(row: any) {
-  if (!row.actualDuration || row.actualDuration === 0) {
-    return 'bg-white'
-  }
-
-  if (row.theoreticalDuration && row.actualDuration > row.theoreticalDuration) {
-    return 'bg-red-200'
-  }
-
-  if (row.endTime) {
-    return 'bg-green-200'
-  }
-
-  return 'bg-white'
+  return getRowClassByStatus({
+    stepStatus: row.stepStatus,
+    actualDuration: row.rawActualDuration,
+    theoreticalDuration: row.rawTheoreticalDuration,
+  })
 }
 
 async function printTable() {
@@ -128,14 +214,10 @@ async function printTable() {
     didParseCell: (data: any) => {
       if (data.section === 'body') {
         const row = (stepWorkingTimes.value || [])[data.row.index]
-        if (row) {
-          if (row.actualDuration && row.theoreticalDuration && row.actualDuration > row.theoreticalDuration) {
-            data.cell.styles.fillColor = [254, 202, 202]
-            data.cell.styles.textColor = [0, 0, 0]
-          } else if (row.endTime) {
-            data.cell.styles.fillColor = [187, 247, 208]
-            data.cell.styles.textColor = [0, 0, 0]
-          }
+        const fillColor = getPdfFillColor(row || {})
+        if (fillColor) {
+          data.cell.styles.fillColor = fillColor
+          data.cell.styles.textColor = [0, 0, 0]
         }
       }
     },
@@ -159,17 +241,29 @@ async function printTable() {
   doc.rect(leftMargin, legendY, boxSize, boxSize, 'S')
   doc.text(t('stepWorkingTimes.addedLater'), leftMargin + 7, legendY + 4)
 
-  doc.setFillColor(187, 247, 208)
+  doc.setFillColor(253, 224, 71)
   doc.rect(leftMargin, legendY + spacing, boxSize, boxSize, 'F')
   doc.setDrawColor(180, 180, 180)
   doc.rect(leftMargin, legendY + spacing, boxSize, boxSize, 'S')
   doc.text(t('stepWorkingTimes.deletedOrSkipped'), leftMargin + 7, legendY + spacing + 4)
 
-  doc.setFillColor(254, 202, 202)
+  doc.setFillColor(187, 247, 208)
   doc.rect(leftMargin, legendY + spacing * 2, boxSize, boxSize, 'F')
   doc.setDrawColor(180, 180, 180)
   doc.rect(leftMargin, legendY + spacing * 2, boxSize, boxSize, 'S')
-  doc.text(t('stepWorkingTimes.timeExceeded'), leftMargin + 7, legendY + spacing * 2 + 4)
+  doc.text(t('stepWorkingTimes.completed'), leftMargin + 7, legendY + spacing * 2 + 4)
+
+  doc.setFillColor(254, 202, 202)
+  doc.rect(leftMargin, legendY + spacing * 3, boxSize, boxSize, 'F')
+  doc.setDrawColor(180, 180, 180)
+  doc.rect(leftMargin, legendY + spacing * 3, boxSize, boxSize, 'S')
+  doc.text(t('stepWorkingTimes.timeExceeded'), leftMargin + 7, legendY + spacing * 3 + 4)
+
+  doc.setFillColor(255, 255, 255)
+  doc.rect(leftMargin, legendY + spacing * 4, boxSize, boxSize, 'F')
+  doc.setDrawColor(180, 180, 180)
+  doc.rect(leftMargin, legendY + spacing * 4, boxSize, boxSize, 'S')
+  doc.text(t('stepWorkingTimes.pending'), leftMargin + 7, legendY + spacing * 4 + 4)
 
   doc.autoPrint()
   doc.output('dataurlnewwindow')
@@ -226,12 +320,20 @@ function handleClose() {
         <label for="overtime">{{ t('stepWorkingTimes.addedLater') }}</label>
       </div>
       <div class="flex items-center gap-2">
-        <div class="w-4 h-4 bg-green-200 border border-gray-400" />
+        <div class="w-4 h-4 bg-yellow-200 border border-gray-400" />
         <label for="saved">{{ t('stepWorkingTimes.deletedOrSkipped') }}</label>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-green-200 border border-gray-400" />
+        <label for="completed">{{ t('stepWorkingTimes.completed') }}</label>
       </div>
       <div class="flex items-center gap-2">
         <div class="w-4 h-4 bg-red-200 border border-gray-400" />
         <label for="timeExceeded">{{ t('stepWorkingTimes.timeExceeded') }}</label>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-white border border-gray-400" />
+        <label for="pending">{{ t('stepWorkingTimes.pending') }}</label>
       </div>
     </div>
 
@@ -290,6 +392,7 @@ function handleClose() {
   }
 
   .bg-red-200,
+  .bg-yellow-200,
   .bg-green-200,
   .bg-blue-200 {
     -webkit-print-color-adjust: exact !important;
