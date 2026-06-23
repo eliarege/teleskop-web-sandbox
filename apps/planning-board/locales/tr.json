@@ -337,10 +337,12 @@
     "endTime": "Bitiş Zamanı",
     "theoreticalDuration": "Teorik Süre",
     "actualDuration": "Gerçekleşen Süre",
-    "colorCodes": "Parametreler için renk kodları",
+    "colorCodes": "Renk kodları",
     "addedLater": "Sonradan eklenmiş adım",
     "deletedOrSkipped": "Adım silinmiş veya atlanıldı",
+    "completed": "Adım tamamlandı",
     "timeExceeded": "Zaman aşıldı",
+    "pending": "Adım beklemede",
     "print": "Yazdır",
     "ok": "Tamam"
   }

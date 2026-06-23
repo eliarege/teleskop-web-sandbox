@@ -1313,17 +1313,26 @@ export async function getJobOrderWithPlanKey(planKey: number, trx = knex): Promi
     .andWhere('lastForJoborder', 1)
 }
 
+export const StepStatus = {
+  Finished: 0,
+  AddedLater: 1,
+  SkippedOrDeleted: 2,
+  Pending: 3,
+} as const
+
+export type StepStatusValue = typeof StepStatus[keyof typeof StepStatus]
+
 export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
   step: number
   program: number
   command: number
   programName?: string
   commandName?: string
-  startTime: Date
+  startTime: Date | null
   endTime: Date | null
   theoreticalDuration: number
   actualDuration: number
-  stepStatus: 0 | 1 | 2
+  stepStatus: StepStatusValue
   isFinished: boolean
 }>> {
   if (!batchKey) {
@@ -1362,7 +1371,7 @@ export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
   // Initialize theoretical step numbers and status
   for (const step of actualSteps) {
     step.theoreticalStepNo = step.actualStepNo
-    step.stepStatus = 0
+    step.stepStatus = StepStatus.Finished
     step.isFinished = true
   }
 
@@ -1376,17 +1385,17 @@ export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
     if (!change.isInsert) {
       // Step deletion
       for (const step of actualSteps) {
-        if (step.theoreticalStepNo >= change.stepNo && step.startTime > change.changeDate) {
+        if (step.theoreticalStepNo >= change.stepNo && step.startTime! > change.changeDate) {
           step.theoreticalStepNo++
         }
       }
     } else {
       // Step insertion
       for (const step of actualSteps) {
-        if (step.startTime > change.changeDate) {
+        if (step.startTime! > change.changeDate) {
           if (step.theoreticalStepNo === change.stepNo) {
             step.theoreticalStepNo -= 0.001
-            step.stepStatus = 1
+            step.stepStatus = StepStatus.AddedLater
           } else if (step.theoreticalStepNo > change.stepNo) {
             step.theoreticalStepNo--
           }
@@ -1409,9 +1418,9 @@ export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
           theoreticalStepNo: ts.stepNo,
           commandNo: ts.commandNo,
           programNo: ts.programNo,
-          startTime: new Date(step.startTime.getTime() - 1000),
+          startTime: new Date(step.startTime!.getTime() - 1000),
           endTime: null,
-          stepStatus: 2,
+          stepStatus: StepStatus.SkippedOrDeleted,
           isFinished: false,
           theoreticDuration: ts.theoreticDuration,
         } as ActualStepDetailed)))
@@ -1424,7 +1433,6 @@ export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
   const pendingSteps: ActualStepDetailed[] = []
 
   if (maxTheoricStep > maxActualStep) {
-    const maxStartTime = actualSteps.length > 0 ? new Date(Math.max(...actualSteps.map(s => s.startTime.getTime()))) : new Date()
     pendingSteps.push(...theoricSteps
       .filter(ts => ts.stepNo > maxActualStep)
       .map(ts => ({
@@ -1432,9 +1440,9 @@ export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
         theoreticalStepNo: ts.stepNo,
         commandNo: ts.commandNo,
         programNo: ts.programNo,
-        startTime: new Date(maxStartTime.getTime() + 1000),
+        startTime: null,
         endTime: null,
-        stepStatus: 2,
+        stepStatus: StepStatus.Pending,
         isFinished: false,
         theoreticDuration: ts.theoreticDuration,
       } as ActualStepDetailed)))
@@ -1442,22 +1450,36 @@ export async function getStepWorkingTimes(batchKey: number): Promise<Array<{
 
   // Merge and sort all steps
   const mergedSteps = [...actualSteps, ...skippedSteps, ...pendingSteps]
-    .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+    .sort((a, b) => {
+      if (!a.startTime && !b.startTime)
+        return a.theoreticalStepNo - b.theoreticalStepNo
+      if (!a.startTime)
+        return 1
+      if (!b.startTime)
+        return -1
+      return a.startTime.getTime() - b.startTime.getTime()
+    })
 
   // Calculate actual duration and return formatted results
-  return mergedSteps.map(step => ({
-    step: Math.floor(step.theoreticalStepNo),
-    program: step.programNo,
-    command: step.commandNo,
-    programName: step.programName,
-    commandName: step.commandName,
-    startTime: step.startTime,
-    endTime: step.endTime,
-    theoreticalDuration: step.theoreticDuration || 0,
-    actualDuration: step.endTime ? Math.floor((step.endTime.getTime() - step.startTime.getTime()) / 1000) : 0,
-    stepStatus: step.stepStatus,
-    isFinished: step.isFinished,
-  }))
+  return mergedSteps.map((step) => {
+    const theoreticalStep = Number.isInteger(step.theoreticalStepNo)
+      ? theoricSteps.find(ts => ts.stepNo === step.theoreticalStepNo)
+      : undefined
+
+    return {
+      step: Math.floor(step.theoreticalStepNo),
+      program: step.programNo,
+      command: step.commandNo,
+      programName: step.programName,
+      commandName: step.commandName,
+      startTime: step.startTime,
+      endTime: step.endTime,
+      theoreticalDuration: theoreticalStep?.theoreticDuration ?? step.theoreticDuration ?? 0,
+      actualDuration: step.endTime && step.startTime ? Math.floor((step.endTime.getTime() - step.startTime.getTime()) / 1000) : 0,
+      stepStatus: step.stepStatus,
+      isFinished: step.isFinished,
+    }
+  })
 }
 
 interface TheoreticalStep {
@@ -1475,7 +1497,7 @@ interface ActualStepInternal {
   actualStepNo: number
   programNo: number
   commandNo: number
-  startTime: Date
+  startTime: Date | null
   endTime: Date | null
   programName?: string
   commandName?: string
@@ -1483,7 +1505,7 @@ interface ActualStepInternal {
 
 interface ActualStepDetailed extends ActualStepInternal {
   theoreticalStepNo: number
-  stepStatus: 0 | 1 | 2
+  stepStatus: StepStatusValue
   isFinished: boolean
   theoreticDuration: number
 }
@@ -1634,7 +1656,7 @@ async function getBatchActualStepsInternal(batchKey: number): Promise<ActualStep
   return steps.map(step => ({
     ...step,
     theoreticalStepNo: step.actualStepNo,
-    stepStatus: 0 as 0 | 1 | 2,
+    stepStatus: StepStatus.Finished as StepStatusValue,
     isFinished: true,
     theoreticDuration: stepDurations.find(d => d.programNo === step.programNo && d.commandNo === step.commandNo)?.theoreticDuration || 0,
   }))

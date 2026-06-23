@@ -336,10 +336,12 @@
     "endTime": "End Time",
     "theoreticalDuration": "Theoretical Duration",
     "actualDuration": "Actual Time",
-    "colorCodes": "Color codes for parameters",
+    "colorCodes": "Color codes",
     "addedLater": "Step added later",
     "deletedOrSkipped": "Step deleted or skipped",
+    "completed": "Step completed",
     "timeExceeded": "Time exceeded",
+    "pending": "Step pending",
     "print": "Print",
     "ok": "OK"
   }
