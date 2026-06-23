@@ -442,7 +442,7 @@ registerCommand(() => {
       }).onOk(async (result: { typeId: number, additionalTypeId: number | null }) => {
         await contextMenuStore.changeProcessType(machineId, selectedRows, {
           typeId: result.typeId,
-          additionalTypeId: result.additionalTypeId
+          additionalTypeId: result.additionalTypeId,
         })
         await editor.refreshAllPrograms()
         return true
@@ -516,18 +516,19 @@ registerCommand(() => {
     name: 'getProgram',
     async execute(ctx: any, machineId: number, selectedRows: ProgramTableRow[]) {
       let userChoice: 'ask' | 'yesToAll' | 'noToAll' = 'ask'
+      const isMultiplePrograms = selectedRows.length > 3
 
       for (const row of selectedRows) {
         const shouldFetch = row.prgState !== ProgramStatus.EXISTS_ONLY_ON_DATABASE
           && row.prgState !== ProgramStatus.EXISTS_ON_BOTH
 
         if (shouldFetch) {
-          await contextMenuStore.getRemoteProgram([row], machineId)
+          await contextMenuStore.getRemoteProgram([row], machineId, isMultiplePrograms)
           continue
         }
 
         if (userChoice === 'yesToAll') {
-          await contextMenuStore.getRemoteProgram([row], machineId)
+          await contextMenuStore.getRemoteProgram([row], machineId, true)
           continue
         }
 
@@ -547,10 +548,10 @@ registerCommand(() => {
         )
 
         if (response === 'yes') {
-          await contextMenuStore.getRemoteProgram([row], machineId)
+          await contextMenuStore.getRemoteProgram([row], machineId, isMultiplePrograms)
         } else if (response === 'yesToAll') {
           userChoice = 'yesToAll'
-          await contextMenuStore.getRemoteProgram([row], machineId)
+          await contextMenuStore.getRemoteProgram([row], machineId, true)
         } else if (response === 'noToAll') {
           userChoice = 'noToAll'
         }

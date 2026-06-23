@@ -21,7 +21,7 @@ export interface ContextMenuStore {
   getProgramHeader: (machineId: number, programNo: number,) => Promise<ProgramHeader>
   changeProcessType: (machineId: number, programs: ProgramTableRow[], typeData: { typeId: number, additionalTypeId: number | null }) => Promise<void>
   sendProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
-  getRemoteProgram: (programs: ProgramTableRow[], machineId: number) => Promise<void>
+  getRemoteProgram: (programs: ProgramTableRow[], machineId: number, silent?: boolean) => Promise<void>
   sendProgramToMachines: (programs: ProgramItem[], machines: MachineInfo[], machineId: number) => Promise<void>
   copyAndSendProgramsToMachines: (programs: { programNo: number, name: string }[], sourceMachine: { id: number, name: string }, targetMachines: MachineInfo[], pasteOption: PasteOptions) => Promise<void>
   trackCopyAndSendJob: (sourceMachine: { id: number, name: string }, jobId: string) => Promise<void>
@@ -248,10 +248,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/upload`, { method: 'POST' })
 
+        const message = t(`contextMenu.send.success`, { programNo: program.programNo })
         if (isMultiplePrograms) {
-          notificationState.addNotification(t(`contextMenu.send.success`, { programNo: program.programNo }), 'positive')
+          notificationState.addNotification(message, 'positive')
         } else {
-          notifySuccess(t(`contextMenu.send.success`, { programNo: program.programNo }))
+          notifySuccess(message)
+          notificationState.addNotification(message, 'positive')
         }
       } catch (error: any) {
         let messageKey = 'fail'
@@ -262,10 +264,12 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
           messageKey = 'programHasErrors'
         }
 
+        const message = t(`contextMenu.send.${messageKey}`, { programNo: program.programNo })
         if (isMultiplePrograms) {
-          notificationState.addNotification(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }), 'warning')
+          notificationState.addNotification(message, 'warning')
         } else {
-          notifyError(t(`contextMenu.send.${messageKey}`, { programNo: program.programNo }))
+          notifyError(message)
+          notificationState.addNotification(message, 'warning')
         }
       } finally {
         editor.isLoading = false
@@ -277,16 +281,24 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
     }
   }
 
-  async function getRemoteProgram(programs: ProgramTableRow[], machineId: number): Promise<void> {
+  async function getRemoteProgram(programs: ProgramTableRow[], machineId: number, silent?: boolean): Promise<void> {
     const { fetch } = useKeycloak()
     const editor = useEditorStore()
+    const notificationState = useNotificationStore()
     const { notifySuccess, notifyError } = useNotify()
     editor.isLoading = true
+    const isMultiplePrograms = programs.length > 3 || silent
 
     for (const program of programs) {
       try {
         await fetch(`/api/machine/${machineId}/program/${program.programNo}/download`, { method: 'POST' })
-        notifySuccess(t(`contextMenu.get.success`, { programNo: program.programNo }))
+        const message = t(`contextMenu.get.success`, { programNo: program.programNo })
+        if (isMultiplePrograms) {
+          notificationState.addNotification(message, 'positive')
+        } else {
+          notifySuccess(message)
+          notificationState.addNotification(message, 'positive')
+        }
       } catch (error: any) {
         let messageKey = 'fail'
 
@@ -294,8 +306,18 @@ export function useContextMenuStore(ctx?: any): ContextMenuStore {
           messageKey = 'programNotFound'
         }
 
-        notifyError(t(`contextMenu.get.${messageKey}`, { programNo: program.programNo }))
+        const message = t(`contextMenu.get.${messageKey}`, { programNo: program.programNo })
+        if (isMultiplePrograms) {
+          notificationState.addNotification(message, 'warning')
+        } else {
+          notifyError(message)
+          notificationState.addNotification(message, 'warning')
+        }
       }
+    }
+
+    if (isMultiplePrograms) {
+      notificationState.showNotificationPopup = true
     }
 
     await editor.fetchAllProcessTypes()
