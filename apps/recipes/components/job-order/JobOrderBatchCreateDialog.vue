@@ -151,12 +151,13 @@ applyInitialFromProps()
 watch(() => props.initialParams, () => applyInitialFromProps(), { deep: true })
 
 async function getRecipes() {
-  recipes.value = await $fetch('/api/recipes/master',
-  // { query: { machineId: stateStore.defaultMachine } }
-
-  )
-  if (props.recipeId && props.machineId)
-    updateRecipe(recipes.value.find(recipe => recipe.recipeId === props.recipeId && recipe.machineId === props.machineId))
+  recipes.value = await $fetch('/api/recipes/master')
+  if (props.recipeId && props.machineId) {
+    const recipe = recipes.value.find(r => r.recipeId === props.recipeId && r.machineId === props.machineId)
+    if (recipe) {
+      selectRecipe(recipe)
+    }
+  }
 }
 async function getMachines(programNumbers: number[]) {
   machines.value = await $fetch('/api/machines', {
@@ -297,7 +298,7 @@ function getIntermediateStepStyle(isDarkMode: boolean) {
     : 'background-color: #fef3c7; color: #78350f;'
 }
 
-function updateRecipe(val: RecipeProgramMaster | undefined) {
+function updateRecipe(val: RecipeProgramMaster) {
   recipeHeader.value = { ...val, ...(props.variant || {}) }
   getRecipeSteps()
 }
