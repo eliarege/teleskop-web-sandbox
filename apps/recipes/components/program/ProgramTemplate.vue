@@ -338,17 +338,17 @@ async function onSave() {
 function onValidate() {
   validateMaterials()
 
-  // if (hasEmptyMaterials.value) {
-  //   q.notify({
-  //     message: t('confirmationDialogBody.EmptyRecipeSteps'),
-  //     color: 'red',
-  //     actions: [
-  //       { color: 'white', icon: 'close', handler: () => { } },
-  //     ],
-  //     timeout: 9999999999,
-  //   })
-  //   return false
-  // }
+  if (hasEmptyMaterials.value) {
+    q.notify({
+      message: t('confirmationDialogBody.EmptyRecipeSteps'),
+      color: 'red',
+      actions: [
+        { color: 'white', icon: 'close', handler: () => { } },
+      ],
+      timeout: 9999999999,
+    })
+    return false
+  }
 
   return true
 }
