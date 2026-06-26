@@ -76,7 +76,7 @@ export function getMaxBatchSize(records: Record<string, unknown>[]): number {
   return Math.floor(maxDBParameters / uniqueKeySet.size)
 }
 
-/** Inserts a batch of records into the specified table in chunks */
+/** Inserts a batch of records into the specified table in chunks. (Based on MSSQL limitations) */
 export async function insertBatch<T extends Record<string | number | symbol, unknown>>(
   knex: Knex,
   tableName: string,
