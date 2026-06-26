@@ -81,27 +81,8 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Group recipe steps by program and step
+    // Group recipe steps by program and step.
     const stepsMap = new Map<string, any>()
-
-    // Compute per-program request order rank for prog_proc_no.
-    // prog_proc_no (callOff) is a global counter across the whole batch; we need the
-    // 1-based rank within each (process_order, recipe_type) group to recover the
-    // original CHEM/DYE/SALT request number as it was defined in the recipe.
-    const progProcRankMap = new Map<string, number>()
-    {
-      const groupValues = new Map<string, Set<number>>()
-      for (const step of recipeSteps) {
-        const key = `${step.process_order}-${step.recipe_type}`
-        if (!groupValues.has(key))
-          groupValues.set(key, new Set())
-        groupValues.get(key)!.add(step.prog_proc_no)
-      }
-      for (const [key, vals] of groupValues) {
-        const sorted = Array.from(vals).sort((a, b) => a - b)
-        sorted.forEach((val, idx) => progProcRankMap.set(`${key}-${val}`, idx + 1))
-      }
-    }
 
     for (const step of recipeSteps) {
       // Find the corresponding job order for this recipe step
@@ -136,8 +117,7 @@ export default defineEventHandler(async (event) => {
       if (!materialRequest)
         continue
 
-      // Rank of prog_proc_no within the program = the original request order number
-      const orderNo = progProcRankMap.get(`${step.process_order}-${step.recipe_type}-${step.prog_proc_no}`) ?? 1
+      const orderNo = step.prog_proc_no
 
       // Key by prog_proc_no so each request slot is its own step group
       const stepKey = `${step.process_order}-${step.prog_proc_no}-${step.recipe_type}`
