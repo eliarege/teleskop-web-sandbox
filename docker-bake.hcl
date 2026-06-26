@@ -79,23 +79,23 @@ target "_common" {
     APP_DEPENDENCIES = ""
   }
 
-  cache-from = concat(
-    (CACHE_COMPILE_FROM != ""
-    ? [{ type = "registry", ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CACHE_COMPILE_FROM}" }]
-    : []),
-    # Fallback to default branch
-    [{ type = "registry", ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CI_DEFAULT_BRANCH_SLUG}" }]
-  )
+  # cache-from = concat(
+  #   (CACHE_COMPILE_FROM != ""
+  #   ? [{ type = "registry", ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CACHE_COMPILE_FROM}" }]
+  #   : []),
+  #   # Fallback to default branch
+  #   [{ type = "registry", ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CI_DEFAULT_BRANCH_SLUG}" }]
+  # )
 
-  cache-to = (CACHE_COMPILE_TO != ""
-    ? [{
-      type = "registry",
-      ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CACHE_COMPILE_TO}",
-      mode = "max",
-      "image-manifest" = true,
-      "oci-mediatypes" = true
-    }]
-    : [])
+  # cache-to = (CACHE_COMPILE_TO != ""
+  #   ? [{
+  #     type = "registry",
+  #     ref = "${CI_REGISTRY_IMAGE}/${APP_NAME}.cache:${CACHE_COMPILE_TO}",
+  #     mode = "max",
+  #     "image-manifest" = true,
+  #     "oci-mediatypes" = true
+  #   }]
+  #   : [])
 
   labels = {
     "com.eliar.manifest.name"             = APP_NAME,
