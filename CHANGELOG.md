@@ -1,8 +1,40 @@
 # Changelog
 
+## 0.83.0 - 2026-06-26
+
+[Compare Changes](4ef535b37f9d0802dad9cdafd6adc6b3c778764d...21721374bb4160a28aa4f90ae76925ad1b2b23f0)
+
+### 🚀 Features
+
+- **generate-env**: Add per-app env overrides and CLI options ([56a8849](56a8849f29674f4b8a10fc60414da203dc540f05))
+-  **RE**: Derive controller type from TBB model in machines sync ([f77bf9c](f77bf9c61fd2b8dfea02d037802ed5ba0e51c4cd))
+-  **RE**: Extend batchInsert with onConflict ignore option ([295149b](295149bb0c870d1c0d2d970140710908db0e9ed2))
+-  **RE**: Split template step materials into own table and rework program sync ([3a4a46c](3a4a46c85c073f939e16bdfce2385b21513b00a9))
+
+### 🐛 Bug Fixes
+
+-  **RE**: Use selectRecipe() when initializing from batch recipeId ([ecef669](ecef6694fc9a01f8c37fcc237509ed762df26738))
+-  **PE**: Clone parameters/ioList and assign unique commandIds when pasting steps ([72cf981](72cf9812ada5c8ad9fe7af52c3b4a2a70a1a8494))
+-  **RE**: Respect backend stepNo when fetching program template ([3f1b223](3f1b22373737f193d80ab49a8069d88d8a04978c))
+-  **RE**: Re-enable notification for empty recipe steps during validation ([5d66136](5d66136d9d83a75970e24b6ab7efa079a5df6b32))
+
+### 📖 Documentation
+
+- **utils**: Clarify insertBatch function comment regarding MSSQL limitations ([397d507](397d507886a0f254c7eaa1b9e1662812f52402e5))
+
+### ♻️ Refactor
+
+-  **RE**: Flatten sync endpoints and remove unused monolithic sync ([b6a8a77](b6a8a77015e7928387d90d0e07180ee91d900812))
+
+### 🔧 Miscellaneous Tasks
+
+- Add VS Code debug and task configurations ([7e4e447](7e4e44770eedfb79e2655197a67601b2303f5baf))
+- Update lockfile ([bee9dd7](bee9dd782881f6f971fa676cedf8dbdf614c1fb9))
+- Disable Docker cache-from/cache-to in bake config ([2172137](21721374bb4160a28aa4f90ae76925ad1b2b23f0))
+
 ## 0.82.0 - 2026-06-23
 
-[Compare Changes](3ad62d99f6983a4cc22c8f3dfd1ee574d6af8459...1eb71f058afc88aa9458c962dfaaeff3c4b15b18)
+[Compare Changes](3ad62d99f6983a4cc22c8f3dfd1ee574d6af8459...4ef535b37f9d0802dad9cdafd6adc6b3c778764d)
 
 ### 🚀 Features
 
