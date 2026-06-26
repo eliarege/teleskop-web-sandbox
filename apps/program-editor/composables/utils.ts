@@ -416,6 +416,12 @@ export function adaptStepToMachine(step: ProgramStep, sourceMachineCommands: Map
     .map(command => adaptCommand(command, sourceMachineCommands, isSameMachine))
     .filter(command => command.commandNo !== null)
 
+  // Her yapıştırılan adım için benzersiz ve sıralı commandId ata
+  // (ana komut 0, paralel komutlar 1, 2, ...) — addStep ile aynı desen
+  let cmdId = 0
+  emptyStep.mainCommand.commandId = cmdId++
+  emptyStep.parallelCommands.forEach(command => command.commandId = cmdId++)
+
   return emptyStep
 }
 
@@ -439,10 +445,15 @@ export function adaptCommand(stepCommand: ProgramStepCommand, sourceMachineComma
     return newCommand
 
   // Aynı makine ise direkt kopyala (yeni commandId ile)
+  // parameters ve ioList klonlanmazsa aynı buffer'dan birden fazla yapıştırma
+  // yapıldığında adımlar aynı dizi referansını paylaşır ve bir input'u düzenlemek
+  // diğerlerini de günceller
   if (isSameMachine) {
     return {
       ...stepCommand,
       commandId: newCommand.commandId,
+      parameters: klona(stepCommand.parameters),
+      ioList: klona(stepCommand.ioList),
     }
   }
 
