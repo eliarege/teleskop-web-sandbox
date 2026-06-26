@@ -1,8 +1,8 @@
 {
   "recommendations": [
-    "dbaeumer.vscode-eslint",
     "vue.volar",
-    "antfu.unocss",
+    "dbaeumer.vscode-eslint",
+    "rioj7.command-variable",
     "editorconfig.editorconfig"
   ]
 }

@@ -23,7 +23,8 @@ logs
 tmp
 
 # VSCode
-.vscode
+.vscode/mcp.json
+.vscode/settings.json
 
 # Local env files
 .env

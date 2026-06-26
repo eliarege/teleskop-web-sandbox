@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "whichEnv",
+      "type": "command",
+      "command": "extension.commandvariable.file.pickFile",
+      "args": {
+        "include": "config/*.json",
+        "display": "transform",
+        "description": "Select environment",
+        "valueTransform": { "text": "${fileBasenameNoExtension}" },
+        "labelTransform": { "text": "${fileBasenameNoExtension}" },
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "label": "generate-env",
+      "type": "shell",
+      "command": "pnpm",
+      "args": [
+        "generate-env",
+        "${input:whichEnv}",
+        "-e", ".env.tmp"
+      ]
+    }
+  ]
+}

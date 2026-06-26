@@ -1,0 +1,166 @@
+{
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nuxt: archive",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/nuxt/bin/nuxt.mjs",
+      "cwd": "${workspaceFolder}/apps/archive",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "dev",
+        "--dotenv",
+        ".env.tmp"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nuxt: dispensing-manager-ui",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/nuxt/bin/nuxt.mjs",
+      "cwd": "${workspaceFolder}/apps/dispensing-manager-ui",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "dev",
+        "--dotenv",
+        ".env.tmp"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nuxt: machines",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/nuxt/bin/nuxt.mjs",
+      "cwd": "${workspaceFolder}/apps/machines",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "dev",
+        "--dotenv",
+        ".env.tmp"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nuxt: multi-monitor",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/nuxt/bin/nuxt.mjs",
+      "cwd": "${workspaceFolder}/apps/multi-monitor",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "dev",
+        "--dotenv",
+        ".env.tmp"
+      ],
+      "env": {
+        "NUXT_MACHINE_STATUS_URL": "http://localhost:5000",
+        "NUXT_PUBLIC_WEBSOCKIFY_URL": "http://localhost:6800"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nuxt: planning-board",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/nuxt/bin/nuxt.mjs",
+      "cwd": "${workspaceFolder}/apps/planning-board",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "dev",
+        "--dotenv",
+        ".env.tmp"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nuxt: program-editor",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/nuxt/bin/nuxt.mjs",
+      "cwd": "${workspaceFolder}/apps/program-editor",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "dev",
+        "--dotenv",
+        ".env.tmp"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nuxt: recipes",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/nuxt/bin/nuxt.mjs",
+      "cwd": "${workspaceFolder}/apps/recipes",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "dev",
+        "--dotenv",
+        ".env.tmp"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "nuxt: root",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/nuxt/bin/nuxt.mjs",
+      "cwd": "${workspaceFolder}/apps/root",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "dev",
+        "--dotenv",
+        ".env.tmp"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "node: websockify",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/tsx/dist/cli.mjs",
+      "cwd": "${workspaceFolder}/apps/websockify",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "src/server.ts"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "SERVER_PORT": "6800"
+      },
+      "envFile": "${workspaceFolder}/apps/websockify/.env.tmp"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "node: machine-status",
+      "outputCapture": "std",
+      "program": "${workspaceFolder}/node_modules/tsx/dist/cli.mjs",
+      "cwd": "${workspaceFolder}/apps/machine-status",
+      "preLaunchTask": "generate-env",
+      "args": [
+        "src/server.ts"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "SERVER_PORT": "5000"
+      },
+      "envFile": "${workspaceFolder}/apps/machine-status/.env.tmp"
+    },
+  ],
+  "compounds": [
+    {
+      "name": "Multi Monitor",
+      "configurations": ["nuxt: multi-monitor", "node: machine-status", "node: websockify"],
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "group": "stacks",
+        "order": 1
+      }
+    }
+  ]
+}
