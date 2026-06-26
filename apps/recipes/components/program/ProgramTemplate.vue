@@ -75,13 +75,13 @@ async function getProgram() {
 
     if (program.value) {
       const chemSteps = program.value.steps.filter(step => step.type === RecipeType.CHEM)
-      const chemGrouped = groupMaterialsByOrderNo(getAllMaterialsFromSteps(chemSteps))
+      const chemGrouped = chemSteps.map(step => ({ orderNo: step.stepNo, materials: step.materials }))
 
       const dyeSteps = program.value.steps.filter(step => step.type === RecipeType.DYE)
-      const dyeGrouped = groupMaterialsByOrderNo(getAllMaterialsFromSteps(dyeSteps))
+      const dyeGrouped = dyeSteps.map(step => ({ orderNo: step.stepNo, materials: step.materials }))
 
       const saltSteps = program.value.steps.filter(step => step.type === RecipeType.SALT)
-      const saltGrouped = groupMaterialsByOrderNo(getAllMaterialsFromSteps(saltSteps))
+      const saltGrouped = saltSteps.map(step => ({ orderNo: step.stepNo, materials: step.materials }))
 
       const allExisting = [...chemGrouped, ...dyeGrouped, ...saltGrouped]
       let maxOrderNo = allExisting.length > 0 ? Math.max(...allExisting.map(s => s.orderNo)) : 0
@@ -99,19 +99,6 @@ async function getProgram() {
   }
   editedProgram.value = klona(program.value)
   validateMaterials()
-}
-
-function groupMaterialsByOrderNo(materials: RecipeMasterMaterial[]) {
-  const grouped: Record<number, { orderNo: number, materials: RecipeMasterMaterial[] }> = {}
-
-  materials.forEach((material) => {
-    if (!grouped[material.orderNo]) {
-      grouped[material.orderNo] = { orderNo: material.orderNo, materials: [] }
-    }
-    grouped[material.orderNo].materials.push(material)
-  })
-
-  return Object.values(grouped)
 }
 
 function ensureStepCount(steps: { orderNo: number, materials: RecipeMasterMaterial[] }[], requiredCount: number, nextOrderNo?: number) {
@@ -351,17 +338,17 @@ async function onSave() {
 function onValidate() {
   validateMaterials()
 
-  if (hasEmptyMaterials.value) {
-    q.notify({
-      message: t('confirmationDialogBody.EmptyRecipeSteps'),
-      color: 'red',
-      actions: [
-        { color: 'white', icon: 'close', handler: () => { } },
-      ],
-      timeout: 9999999999,
-    })
-    return false
-  }
+  // if (hasEmptyMaterials.value) {
+  //   q.notify({
+  //     message: t('confirmationDialogBody.EmptyRecipeSteps'),
+  //     color: 'red',
+  //     actions: [
+  //       { color: 'white', icon: 'close', handler: () => { } },
+  //     ],
+  //     timeout: 9999999999,
+  //   })
+  //   return false
+  // }
 
   return true
 }
@@ -757,6 +744,7 @@ function onMaterialAdded(material: any) {
                             reactive-rules
                             min="1"
                             hide-bottom-space
+                            readonly
                             @update:model-value="val => updateStepNo(val, RecipeType.CHEM, step, editedProgram.chemSteps, $refs)"
                           />
                           <div class="flex gap-4 flex-nowrap">
@@ -1209,6 +1197,7 @@ function onMaterialAdded(material: any) {
                             reactive-rules
                             min="1"
                             hide-bottom-space
+                            readonly
                             @update:model-value="val => updateStepNo(val, RecipeType.DYE, step, editedProgram.dyeSteps, $refs)"
                           />
                           <div class="flex gap-4 flex-nowrap">
@@ -1653,6 +1642,7 @@ function onMaterialAdded(material: any) {
                             reactive-rules
                             min="1"
                             hide-bottom-space
+                            readonly
                             @update:model-value="val => updateStepNo(val, RecipeType.SALT, step, editedProgram.saltSteps, $refs)"
                           />
                           <div class="flex gap-4 flex-nowrap">
