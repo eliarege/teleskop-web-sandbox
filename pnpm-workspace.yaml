@@ -6,11 +6,23 @@ packages:
   - devops/*
   - mcp/*
   - playground
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - vue-demi
 shamefullyHoist: true
 ignoreScripts: true
 strictPeerDependencies: false
 saveExact: true
+peerDependencyRules:
+  allowedVersions:
+    '@azure/identity': '3'
+    eslint: '9'
+  ignoreMissing:
+    - webpack
+patchedDependencies:
+  '@nuxtjs/i18n': patches/@nuxtjs__i18n.patch
+  httpxy: patches/httpxy.patch
+  '@novnc/novnc': patches/@novnc__novnc.patch
+  quasar@2.18.6: patches/quasar@2.18.6.patch
+  '@types/nearley': patches/@types__nearley.patch
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  vue-demi: true
