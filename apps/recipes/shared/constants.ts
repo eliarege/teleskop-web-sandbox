@@ -27,3 +27,8 @@ export const RecipeIcons = [
   'grain',
   '',
 ]
+
+export const ControllerType = {
+  Tbb: 1,
+  Tonello: 2,
+} as const

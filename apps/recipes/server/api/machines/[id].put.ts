@@ -10,7 +10,6 @@ export default defineEventHandler(async (event) => {
     machine_name: machine.machineName,
     capacity: machine.capacity,
     controller_type: machine.controllerType,
-
   })
   await dmsDB('MACHINE_GROUP').where({
     machine_id: machine.machineId,

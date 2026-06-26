@@ -1,10 +1,5 @@
 import { dmsDB, getTeleskopDB } from '~/server/connectionPool'
-
-const machineParams = {
-  machine_name: 'MACHINECODE',
-  machine_id: 'MACHINEID',
-  capacity: 'MACHINECAPACITY',
-}
+import { ControllerType } from '~/shared/constants'
 
 const parameterGroupParams = {
   group_id: 'ID',
@@ -34,11 +29,22 @@ export default defineEventHandler(async () => {
   try {
     const teleskopDB = await getTeleskopDB()
 
-    const machines = await teleskopDB('dbo.BFMACHINES')
-      .select(machineParams)
+    const rawMachines = await teleskopDB('dbo.BFMACHINES').select({
+      machine_name: 'MACHINECODE',
+      machine_id: 'MACHINEID',
+      capacity: 'MACHINECAPACITY',
+      tbb_model: 'TBBMODEL',
+    })
 
-    machines.forEach((machine) => {
-      machine.controller_type = 1
+    const machines = rawMachines.map((machine) => {
+      return {
+        machine_name: machine.machine_name,
+        machine_id: machine.machine_id,
+        capacity: machine.capacity,
+        controller_type: machine.tbb_model !== 'Tonello'
+          ? ControllerType.Tbb
+          : ControllerType.Tonello
+      }
     })
 
     const parameterGroups = await teleskopDB('dbo.BFTREATMENTPARAMETERGROUPS')

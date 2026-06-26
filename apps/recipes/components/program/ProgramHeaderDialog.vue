@@ -6,6 +6,7 @@ import type { Machine, ProgramHeader } from '~/shared/types'
 import { getProgramTypeOptions } from '~/shared/enums'
 import { RecipeType } from '~/shared/constants'
 import { useStateStore } from '~/store/State'
+import { ControllerType } from '~/shared/constants'
 
 const props = defineProps({
   program: {
@@ -49,6 +50,10 @@ const hasChanges = computed(() => {
   return (
     JSON.stringify(editedProgram.value) !== JSON.stringify(program.value ? program.value : defaultProgram)
   )
+})
+const isTonello = computed(() => {
+  const machine = machines.value.find((machine) => machine.machineId === editedProgram.value.machineId)
+  return machine ? machine.controllerType === ControllerType.Tonello : false
 })
 function getMachineLabel(machine: Machine) {
   return `${machine.machineId} - ${machine.machineName}`
@@ -227,6 +232,7 @@ async function onDelete() {
               <QInput
                 v-model.number="editedProgram.chemRequests"
                 class="item-input"
+                :readonly="isTonello"
                 dense
                 filled
                 type="number"
@@ -242,6 +248,7 @@ async function onDelete() {
               <QInput
                 v-model.number="editedProgram.dyeRequests"
                 class="item-input"
+                :readonly="isTonello"
                 dense
                 filled
                 type="number"
@@ -257,6 +264,7 @@ async function onDelete() {
               <QInput
                 v-model.number="editedProgram.saltRequests"
                 class="item-input"
+                :readonly="isTonello"
                 dense
                 filled
                 type="number"

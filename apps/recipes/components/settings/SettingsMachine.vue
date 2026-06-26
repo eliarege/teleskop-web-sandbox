@@ -3,6 +3,7 @@ import type { QTableColumn } from 'quasar'
 import MachineInfoDialog from '../machine/MachineInfoDialog.vue'
 import type { Machine, MachineControllerType, MachineGroup } from '~/shared/types'
 import { useDataStore } from '~/store/DataStore'
+import { ControllerType } from '~/shared/constants.js'
 
 const q = useQuasar()
 const { t } = useI18n()
@@ -10,7 +11,10 @@ const { notifySuccess, notifyFail } = useNotify()
 const dataStore = useDataStore()
 const { data: machines, refresh: refreshMachines } = await useFetch<Machine[]>('/api/machines')
 const { data: machineGroups } = useFetch<MachineGroup[]>('/api/machines/groups')
-const { data: controllerTypes } = await useFetch<MachineControllerType[]>('/api/machines/types')
+const controllerTypes: MachineControllerType[] = [
+  { controllerTypeId: ControllerType.Tbb, controllerTypeName: 'TBB' },
+  { controllerTypeId: ControllerType.Tonello, controllerTypeName: 'Tonello' },
+]
 const columns: (QTableColumn<Machine>)[] = [
   {
     name: 'machineNo',
@@ -49,7 +53,7 @@ async function onRowClick(_event: Event, row: any) {
     componentProps: {
       machine: selectedMachine,
       machineGroups: machineGroups.value,
-      controllerTypes: controllerTypes.value,
+      controllerTypes,
       machines,
       dispensers,
     },
