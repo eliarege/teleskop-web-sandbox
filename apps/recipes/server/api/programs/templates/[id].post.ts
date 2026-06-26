@@ -1,90 +1,68 @@
 import { dmsDB } from '~/server/connectionPool'
 import { RecipeType } from '~/shared/constants'
-import type { RecipeMasterStep } from '~/shared/types'
+import type { RecipeMasterStep, RecipeStep } from '~/shared/types'
 
 export default defineEventHandler(async (event) => {
   const { template, machineId } = await readBody<{ template: RecipeMasterStep, machineId: number }>(event)
   const { id } = getRouterParams(event)
   try {
     await dmsDB.transaction(async (trx) => {
+      // Deleting steps cascades to PROGRAM_TEMPLATE_STEP_MATERIAL via fk_step_id.
       await trx('PROGRAM_TEMPLATE_STEP').where('program_no', id).andWhere('machine_id', machineId).del()
-      await trx('PROGRAM_TEMPLATE').where('program_no', id).andWhere('machine_id', machineId).del()
 
-      const stepData = []
-      if (template.chemSteps.length > 0) {
-        stepData.push({ program_no: id, machine_id: machineId, type: RecipeType.CHEM })
-      }
-      if (template.dyeSteps.length > 0) {
-        stepData.push({ program_no: id, machine_id: machineId, type: RecipeType.DYE })
-      }
-      if (template.saltSteps.length > 0) {
-        stepData.push({ program_no: id, machine_id: machineId, type: RecipeType.SALT })
-      }
+      const regularStepGroups: { steps: RecipeStep[], type: number }[] = [
+        { steps: template.chemSteps ?? [], type: RecipeType.CHEM },
+        { steps: template.dyeSteps ?? [], type: RecipeType.DYE },
+        { steps: template.saltSteps ?? [], type: RecipeType.SALT },
+      ]
 
-      if (stepData.length > 0) {
-        await trx('PROGRAM_TEMPLATE').insert(stepData)
-      }
+      for (const { steps, type } of regularStepGroups) {
+        for (const step of steps) {
+          // Insert one step row regardless of whether it has materials,
+          // so steps (orderNo) without materials are persisted.
+          const [inserted] = await trx('PROGRAM_TEMPLATE_STEP')
+            .insert({
+              program_no: id,
+              machine_id: machineId,
+              type,
+              step_no: step.orderNo,
+              next_step: step.materials.find(m => m.nextStep != null)?.nextStep ?? null,
+            })
+            .returning('id')
 
-      const materialData: any[] = []
-      template.chemSteps?.forEach((step) => {
-        step.materials.forEach((material) => {
-          materialData.push({
-            program_no: id,
-            machine_id: machineId,
-            step_no: step.orderNo,
-            type: RecipeType.CHEM,
+          const materialData = step.materials.map(material => ({
+            step_id: inserted.id,
             material_code: material.materialCode,
             unit: material.unit,
             amount: material.amount,
-            next_step: material.nextStep ?? null,
-          })
-        })
-      })
-      template.dyeSteps?.forEach((step) => {
-        step.materials.forEach((material) => {
-          materialData.push({
+          }))
+          if (materialData.length > 0) {
+            await trx('PROGRAM_TEMPLATE_STEP_MATERIAL').insert(materialData)
+          }
+        }
+      }
+
+      // Handle manual steps (step_no = -1): one step row per manual step.
+      for (const intStep of template.manualSteps ?? []) {
+        const [inserted] = await trx('PROGRAM_TEMPLATE_STEP')
+          .insert({
             program_no: id,
             machine_id: machineId,
-            step_no: step.orderNo,
-            type: RecipeType.DYE,
-            material_code: material.materialCode,
-            unit: material.unit,
-            amount: material.amount,
-            next_step: material.nextStep ?? null,
-          })
-        })
-      })
-      template.saltSteps?.forEach((step) => {
-        step.materials.forEach((material) => {
-          materialData.push({
-            program_no: id,
-            machine_id: machineId,
-            step_no: step.orderNo,
-            type: RecipeType.SALT,
-            material_code: material.materialCode,
-            unit: material.unit,
-            amount: material.amount,
-            next_step: material.nextStep ?? null,
-          })
-        })
-      })
-      // Handle manual steps (materials with step_no = -1)
-      template.manualSteps?.forEach((intStep) => {
-        intStep.materials.forEach((material) => {
-          materialData.push({
-            program_no: id,
-            machine_id: machineId,
-            step_no: -1,
             type: intStep.type,
-            material_code: material.materialCode,
-            unit: material.unit,
-            amount: material.amount,
+            step_no: -1,
             next_step: intStep.nextStep,
           })
-        })
-      })
-      if (materialData.length > 0) {
-        await trx('PROGRAM_TEMPLATE_STEP').insert(materialData)
+          .returning('id')
+
+        const materialData = intStep.materials.map(material => ({
+          step_id: inserted.id,
+          material_code: material.materialCode,
+          unit: material.unit,
+          amount: material.amount,
+        }))
+        if (materialData.length > 0) {
+          await trx('PROGRAM_TEMPLATE_STEP_MATERIAL').insert(materialData)
+        }
       }
     })
     return { success: true }

@@ -24,10 +24,6 @@ export default defineEventHandler(async (event) => {
     saltRequests: 'p.salt_requests',
   })
     .where('p.machine_id', Number(machineId))
-    .leftJoin('PROGRAM_TEMPLATE as t', function () {
-      this.on('p.program_no', 't.program_no')
-        .andOn('p.machine_id', 't.machine_id')
-    })
     .whereNotNull('p.program_name')
     .distinct('p.program_no')
     .orderBy('p.program_no')
