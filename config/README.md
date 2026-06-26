@@ -23,6 +23,48 @@
   - `database`: The name of the DmExchange database. (Default: `DmExchange`)
   - `connectionOptions`: Additional connection options for the DmExchange database.
 
+### Per-app environment overrides
+
+In addition to the standard keys above, the config may contain one top-level
+key **per app directory** under `apps/` (e.g. `machines`, `root`,
+`planning-board`). Keys that do not match an existing app directory are
+silently ignored.
+
+For each present app, the value is recursively flattened into `.env` entries
+prefixed with `NUXT_` and appended to that app's generated `.env` under an
+`# App configuration` block. Keys are converted to UPPER_SNAKE_CASE the way
+Nuxt derives env-var names from `runtimeConfig`, so camelCase / PascalCase
+keys map to `PARENT_CHILD_...` segments.
+
+- Leaf values may be **string**, **number**, or **boolean**.
+- `null` leaves are dropped (ignored).
+- **Arrays are invalid** and cause the script to exit with a zod validation
+  error pointing at the offending key path.
+
+```json
+{
+  "machines": {
+    "public": { "kcClientId": "machines-x" },
+    "someNumber": 5,
+    "ignored": null
+  },
+  "root": { "rootKey": "rv" },
+  "nonexistentApp": { "x": 1 }
+}
+```
+
+The `machines` block above produces, in `apps/machines/.env` only:
+
+```
+# App configuration
+NUXT_PUBLIC_KC_CLIENT_ID=machines-x
+NUXT_SOME_NUMBER=5
+```
+
+`ignored` is `null` and is therefore skipped; `nonexistentApp` does not match
+any app in `apps/` and is dropped; the `root` block only affects
+`apps/root/.env`.
+
 ## Example Config
 
 ```json
