@@ -1,1 +1,1 @@
-MOCK_SUCCESS_TAGS=v1.0.2,v1.0.4  node ./scripts/detect-file-change.js v1.0.7
+MOCK_SUCCESS_TAGS=v1.0.7  node ./scripts/detect-file-change.js v1.0.8

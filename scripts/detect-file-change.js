@@ -1,4 +1,6 @@
 import { spawnSync } from 'node:child_process';
+import { existsSync , readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 function git(args, cwd = process.cwd()) {
   const result = spawnSync('git', args, {
@@ -118,16 +120,18 @@ for (const file of output.split('\n').filter(Boolean)) {
       };
 
       if (deps[changedPackageName]) {
-        changedApps.add(app);
+        if(!changedApps.includes(app)) {
+          changedApps.push(app);
+        }
       }
     }
   }
 }
 
 
-console.error(`Current tag: ${currentTag}`);
-console.error(`Previous successful tag: ${previousSuccessfulTag}`);
-console.error(`Changed apps: ${changedApps.join(' ')}`);
+// console.error(`Current tag: ${currentTag}`);
+// console.error(`Previous successful tag: ${previousSuccessfulTag}`);
+// console.error(`Changed apps: ${changedApps.join(' ')}`);
 
 console.log(changedApps.join(' '));
 
