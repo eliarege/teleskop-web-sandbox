@@ -1,9 +1,10 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import { useProgramWriteSettings } from './settings'
+import { useProgramWriteSettings, useTeleskopSettingsStore } from './settings'
 import { areProgramsEqual, useErrorStore } from './utils'
 import { capitalize } from '~/shared/utils'
+import { computeProgramDurations } from '~/shared/formula'
 import type { CommandError, CommandPath, CommandTypes, IoPath, MachineCommand, ParameterItem, ParameterPath, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepPath, ioListItem } from '~/shared/types'
 import { CommandEligibility, MoveParallel, ProgramStatus } from '~/shared/constants'
 
@@ -432,7 +433,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   /**
    * Belirtilen adım id'ye göre adımı siler.
-   * Eğer indeks belirtilmezse, seçili adımlar üzerinden silme işlemi yapılır.
+   * Eğer indeks belirtilmezse, seçili adımları silme işlemi yapılır.
    *
    * @param {number} [stepId] - (İsteğe bağlı) Silinecek adımın ID'sidir.
    *
@@ -997,6 +998,12 @@ export const useEditorStore = defineStore('editor', () => {
       // Prepare translations for the PDF
       const processed = buildTranslations(messages.value, locale.value, t, 'printProgramListDialog')
 
+      // Adım ve kümülatif süreleri ana thread'de hesapla
+      const teleskopSettings = useTeleskopSettingsStore()
+      const programDurations = [
+        computeProgramDurations(program.value, machine.currentMachine, teleskopSettings.initialTemperature),
+      ]
+
       const payload = {
         machine: { id: machine.currentMachine.id, name: machine.currentMachine.name },
         programs: [program.value],
@@ -1005,6 +1012,7 @@ export const useEditorStore = defineStore('editor', () => {
         translations: processed,
         locale: locale.value,
         processTypes: allProcessTypes.value,
+        programDurations,
       }
 
       const programDetailPdf = await generateProgramPDF('PROGRAM_DETAIL', payload)

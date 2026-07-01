@@ -733,4 +733,29 @@ export interface ProgramDetailPDFData {
   translations: Record<string, string>
   locale: string
   processTypes: ProcessType[]
+  programDurations?: ProgramDurationData[]
+}
+
+export interface ProgramDurationData {
+  /** Programın teorik toplam süresi (saniye). */
+  totalDuration: number
+  /** Orijinal `program.steps` sırasına göre her adımın süre bilgisi. */
+  steps: ProgramStepDuration[]
+}
+
+/**
+ * Tek bir program adımının süre bilgisi.
+ *
+ * @property stepId - `program.steps` içindeki adımın id'si (eşleştirme anahtarı).
+ * @property duration - Bu adımın teorik süresi (saniye). Bir adımın tüm fazları
+ *   (ısınma + bekleme vb.) dahildir; paralel komutlar hariçtir.
+ * @property cumulativeDuration - Program başlangıcından bu adımın sonuna kadar
+ *   biriken kümülatif süre (saniye). Tüm adımlar sırasıyla toplanır.
+ */
+export interface ProgramStepDuration {
+  stepId: number
+  /** Bu adımın teorik süresi (saniye). */
+  duration: number
+  /** Program başlangıcından bu adımın sonuna kadar biriken süre (saniye). */
+  cumulativeDuration: number
 }

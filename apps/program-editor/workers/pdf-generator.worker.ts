@@ -2,13 +2,35 @@ import { jsPDF } from 'jspdf'
 import { autoTable } from 'jspdf-autotable'
 import RobotoBold from '@teleskop/nuxt-base/assets/fonts/Roboto-Bold.ttf?base64'
 import RobotoRegular from '@teleskop/nuxt-base/assets/fonts/Roboto-Regular.ttf?base64'
-import type { CommandIOSelection, MachineCommand, ProcessType, Program, ProgramDetailPDFData, ProgramPDFMessage, ProgramStep, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
+import type { CommandIOSelection, MachineCommand, ProcessType, Program, ProgramDetailPDFData, ProgramDurationData, ProgramPDFMessage, ProgramStep, ProgramStepCommand, ProgramTableRow } from '~/shared/types'
 
 function formatDuration(duration: number): string {
   const hours = Math.floor(duration / 3600)
   const minutes = Math.floor((duration % 3600) / 60)
   const seconds = duration % 60
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+/**
+ * Verilen `stepId` için adım süresini bulur.
+ * Bulunamazsa `null` döner (PDF'te süre gösterilmez).
+ */
+function findStepDuration(durations: ProgramDurationData | undefined, stepId: number): number | null {
+  if (!durations)
+    return null
+  const step = durations.steps.find(s => s.stepId === stepId)
+  return step ? step.duration : null
+}
+
+/**
+ * Verilen `stepId` için kümülatif süreyi bulur.
+ * Bulunamazsa `null` döner (PDF'te süre gösterilmez).
+ */
+function findCumulativeDuration(durations: ProgramDurationData | undefined, stepId: number): number | null {
+  if (!durations)
+    return null
+  const step = durations.steps.find(s => s.stepId === stepId)
+  return step ? step.cumulativeDuration : null
 }
 
 function getProcessTypeName(typeId: number, processTypes: ProcessType[]): string {
@@ -75,7 +97,7 @@ function getParameterValue(commandList: MachineCommand[], commandNo: number, par
 function generateProgramDetailPDF(data: ProgramDetailPDFData): jsPDF {
   const doc = createDocument()
 
-  const { machine, programs, selectedCommandNos, commandList, translations, locale, processTypes } = data
+  const { machine, programs, selectedCommandNos, commandList, translations, locale, processTypes, programDurations } = data
 
   programs.forEach((program, programIndex) => {
     if (programIndex > 0) {
@@ -124,6 +146,9 @@ function generateProgramDetailPDF(data: ProgramDetailPDFData): jsPDF {
 
     const filteredSteps = filterSteps(program, selectedCommandNos)
 
+    // Bu programa ait adım bazlı süre bilgisi (varsa)
+    const durations = programDurations?.[programIndex]
+
     if (filteredSteps.length > 0) {
       filteredSteps.forEach((step, index) => {
         // Sayfa kontrolü
@@ -136,6 +161,16 @@ function generateProgramDetailPDF(data: ProgramDetailPDFData): jsPDF {
         doc.setFontSize(10)
         doc.setFont('Roboto', 'bold')
         doc.text(`${index + 1}    ${step.mainCommand.commandNo}  ${getCommandName(commandList, step.mainCommand.commandNo)}`, 14, startY)
+
+        // Adım süresi ve kümülatif süre (saniye -> HH:MM:SS)
+        // Format: "<adım süresi>  <kümülatif>"  sağa hizalı (196 mm sağ kenar)
+        const stepDuration = findStepDuration(durations, step.stepId)
+        const cumulativeDuration = findCumulativeDuration(durations, step.stepId)
+        if (stepDuration !== null && cumulativeDuration !== null) {
+          const durationText = `${formatDuration(stepDuration)}  ${formatDuration(cumulativeDuration)}`
+          doc.text(durationText, 196, startY, { align: 'right' })
+        }
+
         startY += 4
         // Parametreler
         if (step.mainCommand.parameters && step.mainCommand.parameters.length > 0) {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { MachineCommand, MachineGroup, MachineInfo, MachineOption, Program, ProgramTableRow } from '~/shared/types'
+import { computeProgramDurations } from '~/shared/formula'
 import CMMachineSelector from '~/components/CMMachineSelector.vue'
 
 const props = defineProps<{
@@ -113,6 +114,16 @@ function getProcessTypeName(typeValue: number) {
 // Prepare translations for the PDF
 const processed = buildTranslations(messages.value, locale.value, t, 'printProgramListDialog')
 
+const teleskopSettings = useTeleskopSettingsStore()
+
+/**
+ * Verilen programlar için adım bazlı süre bilgisini hesaplar.
+ */
+async function computeDurationsForPrograms(programs: Program[], machineId: number) {
+  const fullMachine = await machine.fetchMachine(machineId)
+  return programs.map(p => computeProgramDurations(p, fullMachine, teleskopSettings.initialTemperature ?? 25))
+}
+
 async function downloadProgram() {
   if (isDownloading.value)
     return
@@ -129,6 +140,8 @@ async function downloadProgram() {
     const programs = await getPrograms(machine.id, programNos)
     const selectedCommandNos = selectedCommands.value.map(c => c.commandNo)
 
+    const programDurations = await computeDurationsForPrograms(programs, machine.id)
+
     const payload = {
       machine,
       programs,
@@ -137,6 +150,7 @@ async function downloadProgram() {
       translations: processed,
       locale: locale.value,
       processTypes: editor.allProcessTypes,
+      programDurations,
     }
 
     const programDetailPDF = await generateProgramPDF('PROGRAM_DETAIL', payload)
@@ -170,6 +184,8 @@ async function printProgram() {
     const programs = await getPrograms(machine.id, programNos)
     const selectedCommandNos = selectedCommands.value.map(c => c.commandNo)
 
+    const programDurations = await computeDurationsForPrograms(programs, machine.id)
+
     const payload = {
       machine,
       programs,
@@ -178,6 +194,7 @@ async function printProgram() {
       translations: processed,
       locale: locale.value,
       processTypes: editor.allProcessTypes,
+      programDurations,
     }
 
     const programDetailPdf = await generateProgramPDF('PROGRAM_DETAIL', payload)
