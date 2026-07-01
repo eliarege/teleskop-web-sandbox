@@ -90,8 +90,45 @@ const changedApps = [
   ),
 ];
 
+
+for (const file of output.split('\n').filter(Boolean)) {
+  const parts = file.split('/');
+
+  if (parts[0] === 'packages') {
+    const packageDir = parts[1];
+    const packageJsonPath = join(repoRoot, 'packages', packageDir, 'package.json');
+
+    if (!existsSync(packageJsonPath)) continue;
+
+    const changedPackage = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+    const changedPackageName = changedPackage.name;
+
+    for (const app of readdirSync(join(repoRoot, 'apps'))) {
+      const appPackageJsonPath = join(repoRoot, 'apps', app, 'package.json');
+
+      if (!existsSync(appPackageJsonPath)) continue;
+
+      const appPackage = JSON.parse(readFileSync(appPackageJsonPath, 'utf8'));
+
+      const deps = {
+        ...appPackage.dependencies,
+        ...appPackage.devDependencies,
+        ...appPackage.peerDependencies,
+        ...appPackage.optionalDependencies,
+      };
+
+      if (deps[changedPackageName]) {
+        changedApps.add(app);
+      }
+    }
+  }
+}
+
+
 console.error(`Current tag: ${currentTag}`);
 console.error(`Previous successful tag: ${previousSuccessfulTag}`);
 console.error(`Changed apps: ${changedApps.join(' ')}`);
 
 console.log(changedApps.join(' '));
+
+
