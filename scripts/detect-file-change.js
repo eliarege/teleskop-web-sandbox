@@ -16,11 +16,19 @@ function git(args) {
 
 const repoRoot = git(['rev-parse', '--show-toplevel']);
 
-const output = spawnSync('git', ['diff', '--name-only'], {
-  cwd: repoRoot,
-  env: process.env,
-  encoding: 'utf8',
-}).stdout;
+// const output = spawnSync('git', ['diff', '--name-only'], {
+//   cwd: repoRoot,
+//   env: process.env,
+//   encoding: 'utf8',
+// }).stdout;
+
+
+git(['fetch', 'origin', 'main'], repoRoot);
+
+const output = git(
+  ['diff', '--name-only', 'origin/main...HEAD'],
+  repoRoot
+);
 
 const changedApps = [
   ...new Set(
@@ -34,3 +42,5 @@ const changedApps = [
 ];
 
 console.log(changedApps);
+
+
