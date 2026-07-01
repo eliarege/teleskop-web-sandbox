@@ -198,6 +198,7 @@ release-apps:
     # Send mail with list of failed apps, TODO: attach logs to mail
     - |
       if [ -n "$ERRORS" ]; then
+        if [ -n "$SMTP_CONF" ]; then
           ssmtp -C"$SMTP_CONF" "$SMTP_TO" <<EOF
       From: $SMTP_FROM
       To: $SMTP_TO
@@ -214,7 +215,10 @@ release-apps:
         </body>
       </html>
       EOF
-          exit 1
+        else
+          echo "Failed apps: $ERRORS"
+        fi
+        exit 1
       fi;
   # Ideally, the job script should only fail on the last line.
   # If the script exits at that stage, we still want to proceed to the deployment stage with what has already been built.
