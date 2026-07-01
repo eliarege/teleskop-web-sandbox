@@ -1,34 +1,83 @@
 import { spawnSync } from 'node:child_process';
 
-function git(args) {
+function git(args, cwd = process.cwd()) {
   const result = spawnSync('git', args, {
-    cwd: process.cwd(),
+    cwd,
     env: process.env,
     encoding: 'utf8',
   });
 
   if (result.status !== 0) {
-    throw new Error(result.stderr);
+    throw new Error(result.stderr || result.stdout);
   }
 
   return result.stdout.trim();
 }
 
+async function gitlab(path) {
+  const res = await fetch(`${process.env.CI_API_V4_URL}${path}`, {
+    headers: {
+      'JOB-TOKEN': process.env.CI_JOB_TOKEN,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`GitLab API failed: ${res.status} ${await res.text()}`);
+  }
+
+  return res.json();
+}
+
+async function hasSuccessfulPipeline(tag) {
+  if (process.env.MOCK_SUCCESS_TAGS) {
+    return process.env.MOCK_SUCCESS_TAGS.split(',').includes(tag);
+  }
+  
+  const projectId = encodeURIComponent(process.env.CI_PROJECT_ID);
+
+  const pipelines = await gitlab(
+    `/projects/${projectId}/pipelines?ref=${encodeURIComponent(tag)}&status=success&per_page=1`
+  );
+
+  return pipelines.length > 0;
+}
+
 const repoRoot = git(['rev-parse', '--show-toplevel']);
 
-const output = spawnSync('git', ['diff', '--name-only'], {
-  cwd: repoRoot,
-  env: process.env,
-  encoding: 'utf8',
-}).stdout;
+git(['fetch', '--tags', 'origin'], repoRoot);
 
+const currentTag = process.env.CI_COMMIT_TAG || process.argv[2];
 
-// git(['fetch', 'origin', 'main'], repoRoot);
+if (!currentTag) {
+  throw new Error('Current tag yok. CI_COMMIT_TAG veya argüman ver.');
+}
 
-// const output = git(
-//   ['diff', '--name-only', 'origin/main...HEAD'],
-//   repoRoot
-// );
+const tags = git(['tag', '--sort=-v:refname'], repoRoot)
+  .split('\n')
+  .map(x => x.trim())
+  .filter(Boolean)
+  .filter(tag => /^v\d+\.\d+\.\d+(-rc\.\d+)?$/.test(tag))
+  .filter(tag => tag !== currentTag);
+
+let previousSuccessfulTag = null;
+
+for (const tag of tags) {
+  if (await hasSuccessfulPipeline(tag)) {
+    previousSuccessfulTag = tag;
+    break;
+  }
+}
+
+if (!previousSuccessfulTag) {
+  console.error('Previous successful tag bulunamadı.');
+  console.log('');
+  process.exit(0);
+}
+
+const output = git(
+  ['diff', '--name-only', previousSuccessfulTag, currentTag],
+  repoRoot
+);
 
 const changedApps = [
   ...new Set(
@@ -37,11 +86,12 @@ const changedApps = [
       .map(x => x.trim())
       .filter(Boolean)
       .filter(path => path.startsWith('apps/'))
-      .map(path => path.split('/').slice(1, 2).join(' '))
-  )
-].join(' ')
+      .map(path => path.split('/')[1])
+  ),
+];
 
+console.error(`Current tag: ${currentTag}`);
+console.error(`Previous successful tag: ${previousSuccessfulTag}`);
+console.error(`Changed apps: ${changedApps.join(' ')}`);
 
-console.log(changedApps);
-
-
+console.log(changedApps.join(' '));
