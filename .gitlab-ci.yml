@@ -255,7 +255,7 @@ release-hotfix:
     paths:
       - release-logs/
 
-.deploy:
+deploy:
   image: ubuntu:22.04
   stage: deploy
   extends:
