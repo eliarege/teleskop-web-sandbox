@@ -73,8 +73,11 @@ prepare-apps:
   stage: prepare
   extends:
     - .app-rules
-  script:
+  before_script: 
     - npm install -g turbo@^2
+  script:
+    - export TARGET_APPS="$(node ./scripts/detect-file-change.js)"
+    - echo "TARGET_APPS=$TARGET_APPS" > changed-apps.env
     - |
       for APP_NAME in $TARGET_APPS; do
         turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
@@ -83,6 +86,8 @@ prepare-apps:
     expire_in: 1 hour
     paths:
       - out-*/
+    reports:
+      dotenv: changed-apps.env
 
 prepare-hotfix:
   image: node:22
