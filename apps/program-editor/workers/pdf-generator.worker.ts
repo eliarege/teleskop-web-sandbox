@@ -150,6 +150,27 @@ function generateProgramDetailPDF(data: ProgramDetailPDFData): jsPDF {
     const durations = programDurations?.[programIndex]
 
     if (filteredSteps.length > 0) {
+      // Adım başlık satırı
+      doc.setFontSize(10)
+      doc.setFont('Roboto', 'bold')
+      doc.text(`#    ${translations.commandNo || 'Command No'}  ${translations.commandName || 'Command Name'}`, 14, startY)
+
+      const totalDurationLabel = `${translations.totalDuration || 'Total Duration'}`
+      const commandDurationLabel = `${translations.commandDuration || 'Step Duration'}`
+      const durationValueWidth = doc.getTextWidth('00:00:00')
+      const totalColWidth = Math.max(doc.getTextWidth(totalDurationLabel), durationValueWidth)
+      const commandColRightEdge = 196 - totalColWidth - 4
+
+      doc.text(totalDurationLabel, 196, startY, { align: 'right' })
+      doc.text(commandDurationLabel, commandColRightEdge, startY, { align: 'right' })
+      startY += 2
+
+      // Başlık altı çizgi
+      doc.setDrawColor(0)
+      doc.setLineWidth(0.5)
+      doc.line(14, startY, 196, startY)
+      startY += 4
+
       filteredSteps.forEach((step, index) => {
         // Sayfa kontrolü
         if (startY > 250) {
@@ -167,8 +188,9 @@ function generateProgramDetailPDF(data: ProgramDetailPDFData): jsPDF {
         const stepDuration = findStepDuration(durations, step.stepId)
         const cumulativeDuration = findCumulativeDuration(durations, step.stepId)
         if (stepDuration !== null && cumulativeDuration !== null) {
-          const durationText = `${formatDuration(stepDuration)}  ${formatDuration(cumulativeDuration)}`
-          doc.text(durationText, 196, startY, { align: 'right' })
+          // Değerler, başlıkla aynı sabit sağ kenarlara hizalanır.
+          doc.text(formatDuration(cumulativeDuration), 196, startY, { align: 'right' })
+          doc.text(formatDuration(stepDuration), commandColRightEdge, startY, { align: 'right' })
         }
 
         startY += 4

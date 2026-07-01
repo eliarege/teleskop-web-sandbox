@@ -723,6 +723,8 @@
     "programNo": "Program No",
     "programName": "Program Name",
     "duration": "Duration",
+    "commandDuration": "Step Duration",
+    "totalDuration": "Total Duration",
     "stepCount": "Step Count",
     "type": "Type",
     "processCode": "Process Code",

@@ -751,6 +751,8 @@
     "programNo": "Program No",
     "programName": "Program Adı",
     "duration": "Süre",
+    "commandDuration": "Komut Süresi",
+    "totalDuration": "Toplam Süre",
     "stepCount": "Adım Sayısı",
     "type": "Tipi",
     "versionNo": "Versiyon No",
