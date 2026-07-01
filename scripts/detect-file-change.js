@@ -37,7 +37,7 @@ const changedApps = [
       .map(x => x.trim())
       .filter(Boolean)
       .filter(path => path.startsWith('apps/'))
-      .map(path => path.split('/').slice(1, 2).join(''))
+      .map(path => path.split('/').slice(1, 2).join(' '))
   )
 ].join(' ')
 
