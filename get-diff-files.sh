@@ -1,1 +1,1 @@
-MOCK_SUCCESS_TAGS=v1.0.5  node ./scripts/detect-file-change.js v1.0.6
+MOCK_SUCCESS_TAGS=v1.0.6 MOCK_REGISTERED_APPS=archive,recipes,dispensing-manager-ui,communication-driver,machine-status,machines,migration-service,multi-monitor,planning-board,planning-board-engine,root,websockify,program-editor  node ./scripts/detect-file-change.js v1.0.8

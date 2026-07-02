@@ -2,6 +2,9 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+const allApps =
+  "archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor";
+
 function git(args, cwd = process.cwd()) {
   const result = spawnSync("git", args, {
     cwd,
@@ -71,9 +74,7 @@ for (const tag of tags) {
 }
 
 if (!previousSuccessfulTag) {
-  console.error("Previous successful tag bulunamadı.");
-  console.log("");
-  process.exit(0);
+  console.log(allApps);
 }
 
 const output = git(
@@ -131,6 +132,48 @@ for (const file of output.split("\n").filter(Boolean)) {
     }
   }
 }
+
+async function fetchAppsFromContainerRegistry() {
+  if (process.env.MOCK_REGISTERED_APPS) {
+    return process.env.MOCK_REGISTERED_APPS.split(",");
+  }
+
+  if (!process.env.CI_API_V4_URL) {
+    return [];
+  }
+
+  const res = await fetch(
+    `${process.env.CI_API_V4_URL}/projects/${process.env.CI_PROJECT_ID}/registry/repositories`,
+    {
+      headers: {
+        "JOB-TOKEN": process.env.CI_JOB_TOKEN,
+      },
+    },
+  );
+
+  const repos = await res.json();
+
+  const appNames = repos.map((repo) => repo.name);
+
+  return appNames;
+}
+
+const registeredApps = await fetchAppsFromContainerRegistry();
+
+const failedApps = new Set();
+
+allApps.split(" ").forEach((app) => {
+  if (!registeredApps.includes(app)) {
+    failedApps.add(app);
+  }
+});
+
+// failed apps must be re-built, so we add them to the changed apps list
+failedApps.forEach((app) => {
+  if (!changedApps.includes(app)) {
+    changedApps.push(app);
+  }
+});
 
 // console.error(`Current tag: ${currentTag}`);
 // console.error(`Previous successful tag: ${previousSuccessfulTag}`);
