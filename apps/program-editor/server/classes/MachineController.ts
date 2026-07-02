@@ -1007,6 +1007,7 @@ export class MachineController {
       .from('BFMACHINES')
       .where('MACHINEID', this.id)
       .andWhere('USEINTELESKOP', 1)
+      .andWhere('INUSE', 1)
 
     if (!machine) {
       throw new PError('MACHINE_NOT_FOUND', { machineId: this.id })
