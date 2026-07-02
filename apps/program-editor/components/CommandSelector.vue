@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QSelect } from 'quasar'
 import { isDef } from '@teleskop/utils'
-import type { MachineCommand, ProgramStepCommand } from '~/shared/types'
+import type { MachineCommand } from '~/shared/types'
 import { useEditorStore } from '~~/composables/editor'
 import { useProgramWriteSettings } from '~/composables/settings'
 import { CommandEligibility } from '~/shared/constants'
@@ -29,7 +29,11 @@ const availableCommands = computed(() => {
   const allCommands: MachineCommand[] = Array.from(machine.currentMachine.commands.values())
 
   return allCommands
-    .filter(({ commandType }) => !(isMainCommand.value && commandType === CommandEligibility.PARALLEL_ONLY))
+    .filter(({ commandNo, commandType }) =>
+      !(isMainCommand.value
+      && commandType === CommandEligibility.PARALLEL_ONLY
+      && commandNo !== programCommand.value.commandNo),
+    )
     .filter(({ commandNo }) =>
       commandNo === programCommand.value.commandNo
       || (step.value.mainCommand.commandNo !== commandNo
@@ -51,6 +55,16 @@ const rules = [
   (value: number) => {
     const machineCommand = machine.currentMachine.commands.get(value)
     return machineCommand ? true : t('error.machineCommandNotFound', { commandNo: value })
+  },
+  (value: number) => {
+    if (!isMainCommand.value) {
+      return true
+    }
+    const machineCommand = machine.currentMachine.commands.get(value)
+    if (machineCommand && machineCommand.commandType === CommandEligibility.PARALLEL_ONLY) {
+      return t('error.cannotBeMainStep', { commandNo: value })
+    }
+    return true
   },
 ]
 

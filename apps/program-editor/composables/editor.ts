@@ -156,9 +156,9 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     // Paralel komutların ID'sini güncelle
-    lastCommandId = 0
-    newStep.mainCommand.commandId = lastCommandId++
-    newStep.parallelCommands.forEach(command => command.commandId = lastCommandId++)
+    let cmdId = 1
+    newStep.mainCommand.commandId = cmdId++
+    newStep.parallelCommands.forEach(command => command.commandId = cmdId++)
 
     // Yeni adımı ekle
     program.value.steps.splice(stepIndex, 0, newStep)
@@ -577,14 +577,25 @@ export const useEditorStore = defineStore('editor', () => {
     const fetchedPrograms: Program[] = []
 
     for (const programWithError of response) {
-      const { program, programError } = programWithError
+      const { program: fetchedProgram, programError } = programWithError
 
-      errorStore.setErrors(machineId, program.programNo, programError.steps)
+      errorStore.setErrors(machineId, fetchedProgram.programNo, programError.steps)
+
+      // Eğer çekilen program, şu anda editörde açık olan program ise errorIds'i senkronize et
+      // (fetchProgram ile aynı desen — backend stepId/commandId ile doldurulur).
+      if (fetchedProgram.programNo === program.value.programNo) {
+        errorIds.value.clear()
+        programError.steps.forEach((step: StepError) => {
+          step.commands.forEach((command: CommandError) => {
+            errorIds.value.add(`${step.stepId}-${command.commandId}`)
+          })
+        })
+      }
 
       lastStepId = 0
       lastCommandId = 0
 
-      for (const step of program.steps) {
+      for (const step of fetchedProgram.steps) {
         step.stepId = lastStepId++
         step.mainCommand.commandId = lastCommandId++
         for (const command of step.parallelCommands) {
@@ -593,7 +604,7 @@ export const useEditorStore = defineStore('editor', () => {
         lastCommandId = 0
       }
 
-      fetchedPrograms.push(program)
+      fetchedPrograms.push(fetchedProgram)
     }
 
     return fetchedPrograms
