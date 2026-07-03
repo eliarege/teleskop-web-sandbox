@@ -89,3 +89,60 @@ export async function insertBatch<T extends Record<string | number | symbol, unk
     await knex(tableName).insert(chunk)
   }
 }
+
+const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/
+
+function assertIdentifier(name: string): void {
+  if (!IDENTIFIER_RE.test(name))
+    throw new Error(`Invalid SQL identifier: ${name}`)
+}
+
+/**
+ * Updates a batch of records in the specified table in chunks. (Based on MSSQL limitations)
+ *
+ * Builds a `CASE`-based `UPDATE` keyed by `keyColumns`, so each record can target
+ * a different row while collapsing N round-trips into a few chunked statements.
+ */
+export async function updateBatch<T extends Record<string | number | symbol, unknown>>(
+  knex: Knex,
+  tableName: string,
+  records: T[],
+  keyColumns: string[],
+  updateColumns: string[],
+): Promise<void> {
+  if (records.length === 0)
+    return
+
+  assertIdentifier(tableName)
+  keyColumns.forEach(assertIdentifier)
+  updateColumns.forEach(assertIdentifier)
+
+  const paramsPerRow = updateColumns.length * (keyColumns.length + 1) + keyColumns.length
+  const maxBatchSize = Math.max(1, Math.floor((2100 - 10) / paramsPerRow))
+
+  console.log(`Updating ${records.length} records in ${tableName} in batches of ${maxBatchSize}...`)
+
+  for (const batch of chunks(records, maxBatchSize)) {
+    const bindings: unknown[] = []
+
+    const setClauses = updateColumns.map((col) => {
+      const whens = batch.map((rec) => {
+        const conds = keyColumns.map(k => `${k} = ?`).join(' AND ')
+        keyColumns.forEach(k => bindings.push(rec[k]))
+        bindings.push(rec[col])
+        return `WHEN ${conds} THEN ?`
+      })
+      return `${col} = CASE ${whens.join(' ')} END`
+    })
+
+    const whereClauses = batch.map((rec) => {
+      const conds = keyColumns.map(k => `${k} = ?`).join(' AND ')
+      keyColumns.forEach(k => bindings.push(rec[k]))
+      return `(${conds})`
+    })
+
+    const sql = `UPDATE ${tableName} SET ${setClauses.join(', ')} WHERE ${whereClauses.join(' OR ')}`
+    await knex.raw(sql, bindings)
+    console.log(`Updated ${batch.length} records in ${tableName}.`)
+  }
+}
