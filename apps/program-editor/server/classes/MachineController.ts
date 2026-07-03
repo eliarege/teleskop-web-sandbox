@@ -1565,8 +1565,16 @@ export class MachineController {
       commands: this.commandArrayToMap(machine.commands),
     }, initialTemperature)
 
+    const stepDurationByIndex = new Map<number, number>()
+    for (const phase of programDuration.stepDuration) {
+      stepDurationByIndex.set(
+        phase.stepIndex,
+        (stepDurationByIndex.get(phase.stepIndex) ?? 0) + phase.duration,
+      )
+    }
+
     program.steps.forEach((step, i) => {
-      const stepDuration = programDuration.stepDuration[i].duration
+      const stepDuration = stepDurationByIndex.get(i) ?? 0
 
       // BFMASTERSTEPS
       steps.push({

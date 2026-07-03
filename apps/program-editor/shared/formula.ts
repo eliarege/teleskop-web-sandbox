@@ -13,6 +13,7 @@ interface StepResult {
   errors: string[][]
   duration: number
   temperature: number
+  stepIndex: number
 }
 
 /**
@@ -32,8 +33,9 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
   const stepDuration: StepResult[] = []
   let totalDuration = 0
 
-  for (const step of program.steps) {
-    const phases = calculateStepPhases(step, context)
+  for (let i = 0; i < program.steps.length; i++) {
+    const step = program.steps[i]
+    const phases = calculateStepPhases(step, context, i)
 
     for (const phase of phases) {
       stepDuration.push(phase)
@@ -81,7 +83,7 @@ export function calculateProgramDurationPoint(machine: Machine, program: Program
 
   for (let i = 0; i < program.steps.length; i++) {
     const step = program.steps[i]
-    const phases = calculateStepPhases(step, context)
+    const phases = calculateStepPhases(step, context, i)
 
     if (!phases || phases.length === 0)
       continue
@@ -124,9 +126,9 @@ export function calculateProgramDurationPoint(machine: Machine, program: Program
 /**
  * Bir program adımının süre ve sıcaklık fazlarını hesaplar. (Eski _calculateProgramStepDuration)
  */
-function calculateStepPhases(step: ProgramStep, context: CalculationContext): StepResult[] {
+function calculateStepPhases(step: ProgramStep, context: CalculationContext, stepIndex: number): StepResult[] {
   let duration = 0
-  const phases: StepResult[] = [{ errors: [], duration: 0, temperature: context.temperature }]
+  const phases: StepResult[] = [{ errors: [], duration: 0, temperature: context.temperature, stepIndex }]
 
   const commandNo = step.mainCommand.commandNo
   if (!isDef(commandNo)) {
@@ -189,6 +191,7 @@ function calculateStepPhases(step: ProgramStep, context: CalculationContext): St
       errors: [],
       duration: Math.round(b),
       temperature: context.temperature, // Beklemede sıcaklık değişmez
+      stepIndex,
     })
   }
 
@@ -289,7 +292,7 @@ function calculateTreeNode(step: ProgramStep, commandNo: number, node: TreeNode,
           if (!commandParameter.containsVariable) {
             return commandParameter.useDefault
               ? Number(commandParameter.value)
-              : Number(step.mainCommand.parameters.find(p => p.index === commandParameter.index)?.value)
+              : Number(step.mainCommand.parameters.find(p => p.index === commandParameter.index)?.value || 0)
           } else {
             return calculateFormula(step, commandNo, commandParameter.value, machine)
           }
