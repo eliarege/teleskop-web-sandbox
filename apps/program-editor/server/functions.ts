@@ -340,8 +340,10 @@ export async function upsertTreatments(programs: { programNo: number, programNam
 export async function fetchTeleskopSettings(): Promise<TeleskopSettings> {
   const settings = await db('TFTELESKOPSETTINGS').select({ id: 'ID', value: 'VALUE' })
 
-  const getValue = (id: TeleskopSettingsIds) =>
-    settings.find(s => s.id === id)?.value
+  const getValue = (id: TeleskopSettingsIds) => {
+    const value = settings.find(s => s.id === id)?.value
+    return value === '' ? undefined : value
+  }
 
   // Program yazarken optimize edilsin
   const optimizedEnable = getValue(TeleskopSettingsIds.OPTIMIZED_ENABLE) === '1'
