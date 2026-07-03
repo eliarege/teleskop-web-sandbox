@@ -1,6 +1,6 @@
 import { convertElementToCanvas } from '@teleskop/nuxt-base/utils/html2canvas'
 import type { MachineCommand, Program, ProgramError, StepError } from './types'
-import { ParameterType } from './constants'
+import { CommandEligibility, ParameterType } from './constants'
 
 export const as = <T>(value: T) => value as T
 
@@ -86,6 +86,24 @@ export function validateProgram(program: Program, machineCommands: MachineComman
 
       if (!machineCommand)
         return
+
+      // Ana komut (mainCommand) sadece-paralel (PARALLEL_ONLY) tipinde ise hata üret
+      if (command === step.mainCommand && machineCommand.commandType === CommandEligibility.PARALLEL_ONLY) {
+        errors.push({
+          stepId: step.stepId,
+          commands: [
+            {
+              commandId: command.commandId,
+              messages: [
+                {
+                  type: 'commandCannotBeMain',
+                  commandNo: command.commandNo,
+                },
+              ],
+            },
+          ],
+        })
+      }
 
       const { parameters: machineParams, ioList: machineIOs } = machineCommand
 

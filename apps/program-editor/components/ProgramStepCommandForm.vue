@@ -86,11 +86,27 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
 
 <template>
   <div class="pl-1 pt-1">
-    <div class="flex">
-      <!-- Command Icon -->
-      <div v-show="expanded" class="flex-center mr-2">
-        <div class="w-4">
-          <div v-if="commandIcon">
+    <span
+      v-for="messages in commandError?.messages"
+      :key="messages.type"
+      class="text-red text-xs text-gray-7 dark:text-gray-4 block pb-1 ml-6"
+    >
+      {{
+        t(`programError.${messages.type}`, {
+          commandNo: programCommand.commandNo,
+          paramIndex: messages.parameterIndex,
+          paramName: messages.parameterName,
+          ioIndex: messages.ioIndex,
+          ioName: messages.ioName,
+          ioValue: messages.ioValue,
+        })
+      }}
+    </span>
+
+    <div class="flex flex-1 flex-nowrap items-start">
+      <div class="flex items-center pb-1 pr-2 shrink-0">
+        <div class="flex-center w-4 shrink-0 mr-2">
+          <div v-if="commandIcon" v-show="expanded">
             <UnoIcon
               class="icon"
               :class="commandIcon.name"
@@ -101,68 +117,43 @@ function handleParameterBlur(parameterIndex: number, oldValue: number | string, 
             </q-tooltip>
           </div>
         </div>
+
+        <CommandSelector
+          :step-id="stepId"
+          :parallel-index="parallelIndex"
+        />
       </div>
-
-      <div>
-        <!-- Error Messages -->
-        <span
-          v-for="messages in commandError?.messages"
-          :key="messages.type"
-          class="text-red text-xs text-gray-7 dark:text-gray-4 block pb-1"
+      <!-- Parameters & IOs -->
+      <div class="flex-1 flex min-w-0">
+        <div
+          v-for="(group, groupName) in groupedParameters"
+          :key="`group-${groupName}`"
+          class="inline-flex parameter-group mr-2 mb-1 rounded"
+          :class="{ 'parameter-group__multiple': group.length > 1 }"
         >
-          {{
-            t(`programError.${messages.type}`, {
-              commandNo: programCommand.commandNo,
-              paramIndex: messages.parameterIndex,
-              paramName: messages.parameterName,
-              ioIndex: messages.ioIndex,
-              ioName: messages.ioName,
-              ioValue: messages.ioValue,
-            })
-          }}
-        </span>
-        <!-- Command -->
-        <div class="flex">
-          <div class="pb-1 pr-2">
-            <CommandSelector
-              :step-id="stepId"
-              :parallel-index="parallelIndex"
-            />
-          </div>
-
-          <!-- Parameters & IOs -->
-          <div class="flex-1 flex">
-            <div
-              v-for="(group, groupName) in groupedParameters"
-              :key="`group-${groupName}`"
-              class="inline-flex parameter-group mr-2 mb-1 rounded"
-              :class="{ 'parameter-group__multiple': group.length > 1 }"
-            >
-              <ProgramStepCommandParameterInput
-                v-for="item in group"
-                :key="`pr-${item.originalIndex}`"
-                :step-id="stepId"
-                :parallel-index="parallelIndex"
-                :parameter-index="item.originalIndex"
-                :parameter="item.param"
-                :command-no="programCommand.commandNo!"
-                class="parameter-input"
-                :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === item.param.index)"
-                @parameter-blur="handleParameterBlur"
-              />
-            </div>
-            <ProgramStepCommandIoInput
-              v-for="(io, index) in machineCommand.selectableIOs"
-              :key="`io-${index}`"
-              :step-id="stepId"
-              :parallel-index="parallelIndex"
-              :io-index="index"
-              :io="io"
-              :command-no="programCommand.commandNo!"
-              :io-error="props.commandError?.messages.find(m => m.ioIndex === io.index)"
-            />
-          </div>
+          <ProgramStepCommandParameterInput
+            v-for="item in group"
+            :key="`pr-${item.originalIndex}`"
+            :step-id="stepId"
+            :parallel-index="parallelIndex"
+            :parameter-index="item.originalIndex"
+            :parameter="item.param"
+            :command-no="programCommand.commandNo!"
+            class="parameter-input"
+            :parameter-error="props.commandError?.messages.find(m => m.parameterIndex === item.param.index)"
+            @parameter-blur="handleParameterBlur"
+          />
         </div>
+        <ProgramStepCommandIoInput
+          v-for="(io, index) in machineCommand.selectableIOs"
+          :key="`io-${index}`"
+          :step-id="stepId"
+          :parallel-index="parallelIndex"
+          :io-index="index"
+          :io="io"
+          :command-no="programCommand.commandNo!"
+          :io-error="props.commandError?.messages.find(m => m.ioIndex === io.index)"
+        />
       </div>
     </div>
   </div>

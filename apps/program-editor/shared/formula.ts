@@ -2,7 +2,7 @@ import nearley from 'nearley'
 import { isDef } from '@teleskop/utils'
 import grammar from './grammar.ne'
 import { ParameterType } from './constants'
-import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineConstant, Program, ProgramStep } from './types'
+import type { BatchParameter, CommandFormula, CommandParameter, Machine, MachineConstant, Program, ProgramDurationData, ProgramStep, ProgramStepDuration } from './types'
 
 interface CalculationContext {
   temperature: number
@@ -50,6 +50,63 @@ export function calculateProgramDuration(program: Program, machine: Machine, ini
     errors,
     duration: Math.round(totalDuration),
     stepDuration,
+  }
+}
+
+/**
+ * Bir program için adım bazlı süre ve kümülatif süre bilgisini hesaplar.
+ * Süreler saniye cinsindendir. Bir adımın tüm fazları (ısınma + bekleme vb.)
+ * toplanır; kümülatif süre tüm `program.steps` sırasıyla biriktirilir.
+ *
+ * @param program - Program
+ * @param machine - Machine (komut tanımları için)
+ * @param initialTemperature - Başlangıç sıcaklığı (°C)
+ * @returns Program boyunca her `stepId` için { duration, cumulativeDuration } ve
+ *          programın toplam teorik süresi. Hesaplama hatası durumunda boş bir
+ *          `steps` dizisi ve `totalDuration: 0` döner.
+ */
+export function computeProgramDurations(program: Program, machine: Machine, initialTemperature: number): ProgramDurationData {
+  const steps: ProgramStepDuration[] = []
+  let cumulativeDuration = 0
+  let totalDuration = 0
+
+  // Sıcaklık, adımlar arasında birikerek taşınır (calculateProgramDuration ile aynı mantık)
+  const context: CalculationContext = {
+    temperature: initialTemperature,
+    machine,
+  }
+
+  try {
+    for (const step of program.steps) {
+      const phases = calculateStepPhases(step, context)
+
+      // Adımın tüm fazlarının süresini topla
+      let stepDuration = 0
+      for (const phase of phases) {
+        stepDuration += phase.duration
+      }
+      stepDuration = Math.round(stepDuration)
+
+      cumulativeDuration += stepDuration
+      totalDuration = cumulativeDuration
+
+      steps.push({
+        stepId: step.stepId,
+        duration: stepDuration,
+        cumulativeDuration,
+      })
+    }
+  } catch (error) {
+    console.warn('Failed to compute program durations', {
+      error: error instanceof Error ? error.message : String(error),
+      programNo: program.programNo,
+    })
+    return { totalDuration: 0, steps: [] }
+  }
+
+  return {
+    totalDuration,
+    steps,
   }
 }
 

@@ -701,6 +701,7 @@
   },
   "programError": {
     "machineCommandNotFound": "Command with index {commandNo} was not found on the machine!",
+    "commandCannotBeMain": "Command with index {commandNo} cannot be a main step!",
     "programParameterNotFound": "Command parameter with index {paramIndex} was not found on the machine!",
     "machineParameterAdded": "{paramName} parameter has been added!",
     "programIONotFound": "IO with index {ioIndex} was not found on the machine!",
@@ -723,6 +724,8 @@
     "programNo": "Program No",
     "programName": "Program Name",
     "duration": "Duration",
+    "commandDuration": "Step Duration",
+    "totalDuration": "Total Duration",
     "stepCount": "Step Count",
     "type": "Type",
     "processCode": "Process Code",
