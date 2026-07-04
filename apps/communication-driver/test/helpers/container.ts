@@ -59,6 +59,7 @@ export function makeTestContainer(
   const defaults: MachineSessionDeps = {
     teleskop: makeKnex(trx),
     digitalIoFlushInterval: 0,
+    timeSyncMaxDriftMinutes: 2,
     machineStatusRepository: makeMachineStatusRepository(),
     batchDataRepository: makeBatchDataRepository(),
     batchStepRepository: makeBatchStepRepository(),

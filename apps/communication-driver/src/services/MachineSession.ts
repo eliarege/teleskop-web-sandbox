@@ -81,7 +81,6 @@ type PostCommitAction =
 export interface MachineSessionDeps {
   teleskop: Knex
   digitalIoFlushInterval: number
-  teleskopTimezoneOffset: number
   timeSyncMaxDriftMinutes: number
   machineStatusRepository: MachineStatusRepository
   batchDataRepository: BatchDataRepository
@@ -386,7 +385,7 @@ export class MachineSession {
     try {
       const machineTime = await this.api.fetchDatetime()
       const now = new Date()
-      const driftMs = Math.abs(now.getTime() - machineTime.getTime())
+      const driftMs = Math.abs(now.getTime() - machineTime.date.getTime())
       const driftMinutes = driftMs / 60_000
 
       if (driftMinutes < this.deps.timeSyncMaxDriftMinutes) {
@@ -397,7 +396,7 @@ export class MachineSession {
         { driftMinutes: driftMinutes.toFixed(2) },
         'Machine clock drift detected - syncing datetime',
       )
-      await this.api.updateDatetime(new Date(), this.deps.teleskopTimezoneOffset)
+      await this.api.updateDatetime(new Date(), machineTime.tzOffset)
       this.logger.info('Machine datetime synced successfully')
     } catch (err) {
       this.logger.error({ err }, 'Failed to sync machine datetime')
