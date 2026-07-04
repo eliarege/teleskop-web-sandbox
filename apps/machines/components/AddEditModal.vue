@@ -188,21 +188,16 @@ function handleCancel() {
   requestClose(() => onDialogCancel())
 }
 
-const teleskopConnectionMessage = ref({
-  message: '',
-  class: '',
-})
+const connectionTest = ref<{
+  loading: boolean
+  results: { id: string, result: boolean }[] | null
+}>({ loading: false, results: null })
 
-const networkConnectionMessage = ref({
-  message: '',
-  class: '',
-})
-
-async function checkNetworkConnection(machine: Machine) {
+async function testConnection(machine: Machine) {
   try {
-    networkConnectionMessage.value.message = t('tryingConnection')
-    networkConnectionMessage.value.class = 'text-black'
-    await kc.fetch('/api/sync/network-connection', {
+    connectionTest.value.loading = true
+    connectionTest.value.results = null
+    const response = await kc.fetch<{ results: { id: string, result: boolean }[] }>('/api/sync/test-connection', {
       method: 'POST',
       retry: false,
       body: {
@@ -210,37 +205,13 @@ async function checkNetworkConnection(machine: Machine) {
         tbbModel: machine.tbbModel,
       },
     })
-    networkConnectionMessage.value.message = (t('connection-successful'))
-    networkConnectionMessage.value.class = 'text-primary'
-  } catch (error: any) {
-    console.error(error)
-    if (error.statusCode === 500) {
-      networkConnectionMessage.value.message = (t('noConnectionToNetwork'))
-      networkConnectionMessage.value.class = 'text-red'
-    }
+    connectionTest.value.results = response.results
   }
-}
-
-async function checkTeleskopConnection(machine: Machine) {
-  try {
-    teleskopConnectionMessage.value.message = t('tryingConnection')
-    teleskopConnectionMessage.value.class = 'text-black'
-    await kc.fetch('/api/sync/teleskop-connection', {
-      method: 'GET',
-      retry: false,
-      query: {
-        ip: machine.ip,
-        model: machine.tbbModel,
-      },
-    })
-    teleskopConnectionMessage.value.message = t('connection-successful')
-    teleskopConnectionMessage.value.class = 'text-primary'
-  } catch (error: any) {
+  catch (error: any) {
     console.error(error)
-    if (error.statusCode === 500) {
-      teleskopConnectionMessage.value.message = (t('noConnectionToTeleskop'))
-      teleskopConnectionMessage.value.class = 'text-red'
-    }
+  }
+  finally {
+    connectionTest.value.loading = false
   }
 }
 
@@ -440,42 +411,35 @@ async function getVersionInfo(machine: Machine) {
             />
             <!-- Buttons for connection checks and version info -->
             <div class="col-span-5 justify-start flex gap-2 mt-2">
-              <div class="space-y-1">
+              <div class="space-y-2">
                 <q-btn
                   no-caps
-                  :disabled="!formData.ip"
+                  :loading="connectionTest.loading"
+                  :disabled="!formData.ip || !formData.tbbModel"
                   color="primary"
-                  @click="checkTeleskopConnection(formData)"
+                  @click="testConnection(formData)"
                 >
-                  {{ t('checkTeleskopConnection') }}
+                  {{ t('testConnection') }}
                   <q-tooltip v-if="!formData.ip">
-                    {{ t('enterIpToCheckConnection') }}
+                    {{ t('enterIpToTestConnection') }}
                   </q-tooltip>
                 </q-btn>
                 <div
-                  :class="[teleskopConnectionMessage.class]"
-                  class="formkit-message"
+                  v-if="connectionTest.results"
+                  class="space-y-0.5"
                 >
-                  {{ teleskopConnectionMessage.message || '&nbsp;' }}
-                </div>
-              </div>
-              <div class="space-y-1">
-                <q-btn
-                  no-caps
-                  :disabled="!formData.ip"
-                  color="primary"
-                  @click="checkNetworkConnection(formData)"
-                >
-                  {{ t('checkNetworkConnection') }}
-                  <q-tooltip v-if="!formData.ip">
-                    {{ t('enterIpToCheckConnection') }}
-                  </q-tooltip>
-                </q-btn>
-                <div
-                  :class="[networkConnectionMessage.class]"
-                  class="formkit-message"
-                >
-                  {{ networkConnectionMessage.message || '&nbsp;' }}
+                  <div
+                    v-for="r in connectionTest.results"
+                    :key="r.id"
+                    class="flex items-center gap-1 text-sm"
+                  >
+                    <q-icon
+                      :name="r.result ? 'check_circle' : 'cancel'"
+                      :color="r.result ? 'positive' : 'negative'"
+                      size="xs"
+                    />
+                    <span>{{ t(`connectionTest.${r.id}`) }}</span>
+                  </div>
                 </div>
               </div>
               <div class="space-y-1">
