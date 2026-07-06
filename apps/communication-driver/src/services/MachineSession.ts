@@ -311,10 +311,9 @@ export class MachineSession {
       }).catch((err) => {
         this.logger.error({ err }, 'Failed to update machine connection status')
       })
-      // Disable time sync until Tonello fixes the issue on their end
-      // if (machineStatus && this.isMachineIdle(machineStatus)) {
-      //   await this.syncMachineTime()
-      // }
+      if (machineStatus && this.isMachineIdle(machineStatus)) {
+        await this.syncMachineTime()
+      }
     }
 
     if (events.length === 0) {
@@ -368,11 +367,10 @@ export class MachineSession {
       }
       if (this.pendingTimeSync) {
         this.pendingTimeSync = false
-        // Disable time sync until Tonello fixes the issue on their end
-        // const status = await this.api.fetchStatus().catch(() => null)
-        // if (status && this.isMachineIdle(status)) {
-        //   await this.syncMachineTime()
-        // }
+        const status = await this.api.fetchStatus().catch(() => null)
+        if (status && this.isMachineIdle(status)) {
+          await this.syncMachineTime()
+        }
       }
     } catch (err) {
       await trx.rollback()
