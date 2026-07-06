@@ -9,9 +9,8 @@ stages:
   - docker buildx create --name gitlab-builder --driver docker-container --use gitlab-context
   - docker buildx inspect --bootstrap
 
-.prepare-ssh: &prepare-ssh
-  # Install ssh-agent
-  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+.prepare-ssh: &prepare-ssh # Install ssh-agent
+  - "command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )"
   # Run ssh-agent
   - eval $(ssh-agent -s)
   # # Give the right permissions, otherwise ssh-add will refuse to add files
@@ -66,6 +65,7 @@ workflow:
 variables:
   TARGET_APPS:
     value: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
+    # value: archive
     description: Whitespace seperated list of apps to build/release
 
 prepare-apps:
@@ -73,8 +73,11 @@ prepare-apps:
   stage: prepare
   extends:
     - .app-rules
-  script:
+  before_script:
     - npm install -g turbo@^2
+  script:
+    # - export TARGET_APPS="$(node ./scripts/detect-file-change.js)"
+    # - echo "TARGET_APPS=$TARGET_APPS" > changed-apps.env
     - |
       for APP_NAME in $TARGET_APPS; do
         turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
@@ -83,6 +86,8 @@ prepare-apps:
     expire_in: 1 hour
     paths:
       - out-*/
+    reports:
+      dotenv: changed-apps.env
 
 prepare-hotfix:
   image: node:22
@@ -192,6 +197,7 @@ release-apps:
     # Send mail with list of failed apps, TODO: attach logs to mail
     - |
       if [ -n "$ERRORS" ]; then
+        if [ -n "$SMTP_CONF" ]; then
           ssmtp -C"$SMTP_CONF" "$SMTP_TO" <<EOF
       From: $SMTP_FROM
       To: $SMTP_TO
@@ -208,7 +214,10 @@ release-apps:
         </body>
       </html>
       EOF
-          exit 1
+        else
+          echo "Failed apps: $ERRORS"
+        fi
+        exit 1
       fi;
   # Ideally, the job script should only fail on the last line.
   # If the script exits at that stage, we still want to proceed to the deployment stage with what has already been built.
@@ -249,7 +258,7 @@ release-hotfix:
     paths:
       - release-logs/
 
-deploy:
+.deploy:
   image: ubuntu:22.04
   stage: deploy
   extends:
