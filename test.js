@@ -181,10 +181,10 @@ for(const appName of allAppsArray) {
     .map(file => file.trim())
     .filter(file => file.length > 0)
 
-  const flag = changedFiles.some(file => {
-    return dependencies.some(deq => deq.startsWith(file))
-  })
-  
+  const flag = changedFiles.some((file) => {
+    return dependencies.some((deq) => file.startsWith(deq));
+  });
+
   if(flag) {
     shouldRebuild.add(appName)
   }
