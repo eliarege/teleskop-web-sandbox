@@ -1,6 +1,6 @@
 import { TonelloApi } from '@teleskop/core'
 import { TbbFtpClient } from '@teleskop/tbb-ftp-client'
-import * as ping from 'ping'
+import ping from 'ping'
 import { z } from 'zod'
 import soapSchema from '~/utils/soapSchema'
 
