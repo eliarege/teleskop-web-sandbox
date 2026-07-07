@@ -76,8 +76,12 @@ prepare-apps:
   before_script:
     - npm install -g turbo@^2
   script:
-    - export TARGET_APPS="$(node ./scripts/detect-changes.js)"
+    - export DETECT_RESULT="$(node ./scripts/detect-changes.js)"
+    - echo "$DETECT_RESULT"
+    - export TARGET_APPS="$(echo "$DETECT_RESULT" | jq -r '.targetApps | join(" ")')"
+    - export RETAG_APPS="$(echo "$DETECT_RESULT" | jq -r '.retagApps | join(" ")')"
     - echo "TARGET_APPS=$TARGET_APPS" > changed-apps.env
+    - echo "RETAG_APPS=$RETAG_APPS" >> changed-apps.env
     - |
       for APP_NAME in $TARGET_APPS; do
         turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
@@ -191,6 +195,30 @@ release-apps:
             ERRORS="$ERRORS,$APP_NAME"
           else
             ERRORS="$APP_NAME"
+          fi
+        fi
+      done
+    # Retag every app defined in RETAG_APPS sequentially
+    - |
+      for APP_NAME in $RETAG_APPS; do
+        LOG_PATH="release-logs/$APP_NAME-retag.log"
+        ERR_PATH="release-logs/$APP_NAME-retag.error.log"
+
+        IMAGE="$CI_REGISTRY_IMAGE/apps/$APP_NAME"
+
+        {
+          docker buildx imagetools create \
+            -t "$IMAGE:$CI_COMMIT_TAG" \
+            "$IMAGE:latest" 2>&1 || {
+              mv "$LOG_PATH" "$ERR_PATH"
+            }
+        } | tee "$LOG_PATH"
+
+        if [ -e "$ERR_PATH" ]; then
+          if [ -n "$ERRORS" ]; then
+            ERRORS="$ERRORS,$APP_NAME-retag"
+          else
+            ERRORS="$APP_NAME-retag"
           fi
         fi
       done

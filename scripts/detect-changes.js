@@ -263,7 +263,12 @@ async function main() {
     }
   }
 
-  console.log([...shouldRebuild].join(" "));
+  console.log(
+    JSON.stringify({
+      targetApps: [...shouldRebuild],
+      retagApps: [...shouldReTag],
+    }),
+  );
 }
 
 main();
