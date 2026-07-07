@@ -1,3 +1,23 @@
+/**
+ * Detects which applications should be rebuilt in CI.
+ *
+ * This script reads target apps from CI parameters, checks the latest
+ * container image commit hash from GitLab Container Registry, compares it
+ * with the latest release tag, and prints the apps that need rebuilding.
+ *
+ * Required in CI:
+ * - CI_JOB_TOKEN
+ * - CI_PROJECT_PATH
+ * - CI_REGISTRY
+ * - CI_API_V4_URL
+ * - GITLAB_USER_NAME
+ *
+ * Optional:
+ * - TARGET_APPS
+ * - GITLAB_TOKEN for local usage
+ */
+
+
 import { spawnSync } from "node:child_process";
 
 const gitlab_legacy_token = process.env.GITLAB_TOKEN; // add your own legacy_token if you want to use CI script from local, otherwise do not need to add
