@@ -201,26 +201,21 @@ release-apps:
     # Retag every app defined in RETAG_APPS sequentially
     - |
       for APP_NAME in $RETAG_APPS; do
-        LOG_PATH="release-logs/$APP_NAME-retag.log"
-        ERR_PATH="release-logs/$APP_NAME-retag.error.log"
+        export APP_NAME="$APP_NAME"
+        export APP_ROLES="$(jq -Mc '.roles // []' "apps/$APP_NAME/manifest.json" 2> /dev/null || echo '[]')"
 
-        IMAGE="$CI_REGISTRY_IMAGE/apps/$APP_NAME"
+        SOURCE_IMAGE="$CI_REGISTRY_IMAGE/$APP_NAME:latest"
 
-        {
+        TAGS="$(docker buildx bake "$APP_NAME" --print | jq -r ".target[\"$APP_NAME\"].tags[]")"
+
+        echo "Retagging $SOURCE_IMAGE"
+        echo "$TAGS"
+
+        for TAG in $TAGS; do
           docker buildx imagetools create \
-            -t "$IMAGE:$CI_COMMIT_TAG" \
-            "$IMAGE:latest" 2>&1 || {
-              mv "$LOG_PATH" "$ERR_PATH"
-            }
-        } | tee "$LOG_PATH"
-
-        if [ -e "$ERR_PATH" ]; then
-          if [ -n "$ERRORS" ]; then
-            ERRORS="$ERRORS,$APP_NAME-retag"
-          else
-            ERRORS="$APP_NAME-retag"
-          fi
-        fi
+            -t "$TAG" \
+            "$SOURCE_IMAGE"
+        done
       done
     # Send mail with list of failed apps, TODO: attach logs to mail
     - |
