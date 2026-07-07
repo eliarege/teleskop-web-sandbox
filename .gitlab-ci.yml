@@ -76,8 +76,8 @@ prepare-apps:
   before_script:
     - npm install -g turbo@^2
   script:
-    # - export TARGET_APPS="$(node ./scripts/detect-file-change.js)"
-    # - echo "TARGET_APPS=$TARGET_APPS" > changed-apps.env
+    - export TARGET_APPS="$(node ./scripts/detect-changes.js)"
+    - echo "TARGET_APPS=$TARGET_APPS" > changed-apps.env
     - |
       for APP_NAME in $TARGET_APPS; do
         turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
