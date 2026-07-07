@@ -10,7 +10,7 @@ const props = defineProps<{
   machineGroups: MachineGroup[]
 
   disabledMachineIds?: number[]
-
+  singleSelection?: boolean
   selectedMachines: MachineInfo[]
 }>()
 
@@ -28,7 +28,8 @@ const internalSelectedMachines = ref<MachineInfo[]>([])
 
 watch(machineOption, (newOption) => {
   if (newOption === 'selected') {
-    emit('update:selectedMachines', internalSelectedMachines.value)
+    const value = props.singleSelection ? internalSelectedMachines.value.slice(0, 1) : internalSelectedMachines.value
+    emit('update:selectedMachines', value)
   } else if (newOption === 'current') {
     const currentMachine = props.allMachines.find(m => m.id === props.machineId)
     if (!currentMachine)
@@ -44,14 +45,16 @@ function selectMachineDialog() {
     componentProps: {
       allMachines: props.allMachines,
       machineGroups: props.machineGroups,
+      singleSelection: props.singleSelection,
 
       selectedMachineIds: internalSelectedMachines.value.map(m => m.id),
       disabledMachineIds: props.disabledMachineIds,
     },
   }).onOk((selectedMachines: MachineInfo[]) => {
+    const result = props.singleSelection ? selectedMachines.slice(0, 1) : selectedMachines
     machineOption.value = 'selected'
-    internalSelectedMachines.value = selectedMachines
-    emit('update:selectedMachines', selectedMachines)
+    internalSelectedMachines.value = result
+    emit('update:selectedMachines', result)
   })
 }
 </script>
@@ -80,7 +83,7 @@ function selectMachineDialog() {
           <q-radio
             v-model="machineOption"
             val="selected"
-            :label="internalSelectedMachines.length === 1 ? t('machineSelectorDialog.selectedMachine') : t('machineSelectorDialog.selectedMachines')"
+            :label="props.singleSelection || internalSelectedMachines.length === 1 ? t('machineSelectorDialog.selectedMachine') : t('machineSelectorDialog.selectedMachines')"
             dense
           />
           <q-btn
@@ -97,9 +100,12 @@ function selectMachineDialog() {
         <div v-if="internalSelectedMachines.length > 0" class="pl-6 pt-1">
           <div class="text-xs text-grey-6 dark:text-grey-4 cursor-help">
             <span class="font-medium">
-              {{ t('machineSelectorDialog.machinesSelected', { count: internalSelectedMachines.length }) }}
+              {{ props.singleSelection
+                ? internalSelectedMachines[0]?.name
+                : t('machineSelectorDialog.machinesSelected', { count: internalSelectedMachines.length }) }}
             </span>
             <q-tooltip
+              v-if="!props.singleSelection"
               class="bg-white text-dark shadow-4 text-body2"
               anchor="top middle"
               self="bottom middle"

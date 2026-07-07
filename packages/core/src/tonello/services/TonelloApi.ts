@@ -19,6 +19,8 @@ import type {
   TonelloResponse,
 } from '../tonello.types'
 
+const ISO_TIMEZONE_REGEX = /([+-]\d{2}):?(\d{2})$/
+
 export class TonelloApi {
   private fetch: $Fetch = $fetch
   constructor(public readonly baseURL: string) {
@@ -40,13 +42,30 @@ export class TonelloApi {
     return response.data
   }
 
-    async fetchDatetime(timeout = 5000): Promise<Date> {
+  async fetchDatetime(timeout = 5000): Promise<{ date: Date, tzOffset: number }> {
     const { data } = await this.fetch<TonelloResponse<TonelloDatetimeResponse>>('/api/v1/getDateTime', { timeout })
     // Tonello API returns ISO string with local timezone, can be directly parsed by Date constructor
-    return new Date(data.dateTime)
+    const date = new Date(data.dateTime)
+    let tzOffset = 0
+    if (ISO_TIMEZONE_REGEX.test(data.dateTime)) {
+      const [, hours, minutes] = data.dateTime.match(ISO_TIMEZONE_REGEX)!
+      // To conform to getTimezoneOffset() convention, we need to invert the sign of the offset
+      tzOffset = -1 * (parseInt(hours) * 60 + parseInt(minutes))
+    }
+    return { date, tzOffset }
   }
 
-  async updateDatetime(datetime: Date, tzOffset = 0): Promise<void> {
+  /**
+   *
+   * @param datetime Date to set on Tonello machine
+   * @param tzOffset Minutes offset from UTC, if not provided will be fetched from Tonello API
+   */
+  async updateDatetime(datetime: Date, tzOffset?: number): Promise<void> {
+    if (!tzOffset) {
+      const dt = await this.fetchDatetime()
+      tzOffset = dt.tzOffset
+    }
+
     const adjusted = tzOffset ? subMinutes(datetime, tzOffset) : datetime
     const [date, time] = adjusted.toISOString().slice(0, -5).split('T')
     await this.fetch('/api/v1/setDateTime', {

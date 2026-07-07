@@ -81,10 +81,10 @@ importers:
         version: 2.11.5(patch_hash=43e1068305a8c8092cf641a90d2195c7f3c815fe8a8ab63fa3303717e8248056)
       eslint:
         specifier: 9.14.0
-        version: 9.14.0(jiti@2.4.0)(supports-color@9.4.0)
+        version: 9.14.0(jiti@2.4.0)
       nuxt:
         specifier: 3.14.159
-        version: 3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0)(supports-color@9.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(supports-color@9.4.0)(terser@5.46.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.3.4)
+        version: 3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.46.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.3.4)
       typescript:
         specifier: 5.6.3
         version: 5.6.3
@@ -145,7 +145,7 @@ importers:
         version: 2.0.0(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))
       vitest:
         specifier: 2.1.4
-        version: 2.1.4(@types/node@22.9.0)(supports-color@9.4.0)(terser@5.46.0)
+        version: 2.1.4(@types/node@22.9.0)(terser@5.46.0)
 
   apps/dispensing-manager-ui:
     dependencies:
@@ -185,7 +185,7 @@ importers:
         version: 5.6.3
       unocss:
         specifier: 0.64.0
-        version: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))
+        version: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))
       vue:
         specifier: 3.5.12
         version: 3.5.12(typescript@5.6.3)
@@ -252,7 +252,7 @@ importers:
         version: 2.0.0(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))
       vitest:
         specifier: 2.1.4
-        version: 2.1.4(@types/node@22.9.0)(supports-color@9.4.0)(terser@5.46.0)
+        version: 2.1.4(@types/node@22.9.0)(terser@5.46.0)
 
   apps/machine-status:
     dependencies:
@@ -322,10 +322,10 @@ importers:
         version: 1.6.7
       '@formkit/nuxt':
         specifier: 1.6.7
-        version: 1.6.7(magicast@0.3.5)(rollup@4.25.0)(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.3.4)(webpack@5.96.1)
+        version: 1.6.7(esbuild@0.23.1)(magicast@0.3.5)(rollup@4.25.0)(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.3.4)(webpack@5.96.1(esbuild@0.23.1))
       '@formkit/themes':
         specifier: 1.6.7
-        version: 1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))
+        version: 1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))
       '@teleskop/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -350,6 +350,9 @@ importers:
       mathjs:
         specifier: 12.4.2
         version: 12.4.2
+      ping:
+        specifier: 1.0.0
+        version: 1.0.0
       soap:
         specifier: 1.1.6
         version: 1.1.6
@@ -404,16 +407,16 @@ importers:
         version: 0.64.0
       eslint:
         specifier: 9.14.0
-        version: 9.14.0(jiti@2.4.0)
+        version: 9.14.0(jiti@2.4.0)(supports-color@9.4.0)
       nuxt:
         specifier: 3.14.159
-        version: 3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(terser@5.46.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.3.4)
+        version: 3.14.159(@azure/identity@4.5.0)(@parcel/watcher@2.5.0)(@types/node@22.9.0)(eslint@9.14.0(jiti@2.4.0)(supports-color@9.4.0))(ioredis@5.4.1)(magicast@0.3.5)(optionator@0.9.4)(rollup@4.25.0)(supports-color@9.4.0)(terser@5.46.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue-tsc@2.1.10(typescript@5.6.3))(webpack-sources@3.3.4)
       typescript:
         specifier: 5.6.3
         version: 5.6.3
       unocss:
         specifier: 0.64.0
-        version: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))
+        version: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))
       vue:
         specifier: 3.5.12
         version: 3.5.12(typescript@5.6.3)
@@ -741,7 +744,7 @@ importers:
         version: 2.0.0(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))
       vitest:
         specifier: 2.1.4
-        version: 2.1.4(@types/node@22.9.0)(supports-color@9.4.0)(terser@5.46.0)
+        version: 2.1.4(@types/node@22.9.0)(terser@5.46.0)
 
   apps/program-editor:
     dependencies:
@@ -1266,6 +1269,9 @@ importers:
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.9.0)(terser@5.46.0)
     devDependencies:
       '@teleskop/tsconfig':
         specifier: workspace:*
@@ -1486,7 +1492,7 @@ importers:
         version: 5.4.11(@types/node@22.9.0)(terser@5.46.0)
       vitest:
         specifier: 2.1.4
-        version: 2.1.4(@types/node@22.9.0)(supports-color@9.4.0)(terser@5.46.0)
+        version: 2.1.4(@types/node@22.9.0)(terser@5.46.0)
       vue:
         specifier: 3.5.12
         version: 3.5.12(typescript@5.6.3)
@@ -1533,7 +1539,7 @@ importers:
         version: 5.6.3
       vitest:
         specifier: 2.1.4
-        version: 2.1.4(@types/node@22.9.0)(supports-color@9.4.0)(terser@5.46.0)
+        version: 2.1.4(@types/node@22.9.0)(terser@5.46.0)
 
   packages/tsconfig: {}
 
@@ -7405,6 +7411,10 @@ packages:
     resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
     engines: {node: '>=12'}
 
+  ping@1.0.0:
+    resolution: {integrity: sha512-3dxdgGtV+7P/EVo42JhkGSomeO/0GGicSz3mI/yK+AI+VGNAOfakw5XfcbGI4IjyBY+ZZwvuRXdhnNF2uliKew==}
+    engines: {node: '>=22.0.0'}
+
   pinia@2.2.6:
     resolution: {integrity: sha512-vIsR8JkDN5Ga2vAxqOE2cJj4VtsHnzpR1Fz30kClxlh0yCHfec6uoMeM3e/ddqmwFUejK3NlrcQa/shnpyT4hA==}
     peerDependencies:
@@ -10132,16 +10142,16 @@ snapshots:
       '@formkit/core': 1.6.7
       '@formkit/utils': 1.6.7
 
-  '@formkit/nuxt@1.6.7(magicast@0.3.5)(rollup@4.25.0)(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.3.4)(webpack@5.96.1)':
+  '@formkit/nuxt@1.6.7(esbuild@0.23.1)(magicast@0.3.5)(rollup@4.25.0)(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.3.4)(webpack@5.96.1(esbuild@0.23.1))':
     dependencies:
       '@formkit/core': 1.6.7
       '@formkit/i18n': 1.6.7
-      '@formkit/vue': 1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))(vue@3.5.12(typescript@5.6.3))
+      '@formkit/vue': 1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))(vue@3.5.12(typescript@5.6.3))
       '@nuxt/kit': 3.14.159(magicast@0.3.5)(rollup@4.25.0)(webpack-sources@3.3.4)
       chokidar: 3.6.0
       pathe: 1.1.2
       unplugin: 1.15.0(webpack-sources@3.3.4)
-      unplugin-formkit: 0.2.13(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(webpack-sources@3.3.4)(webpack@5.96.1)
+      unplugin-formkit: 0.2.13(esbuild@0.23.1)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(webpack-sources@3.3.4)(webpack@5.96.1(esbuild@0.23.1))
     transitivePeerDependencies:
       - esbuild
       - magicast
@@ -10166,11 +10176,11 @@ snapshots:
       '@formkit/utils': 1.6.7
       '@formkit/validation': 1.6.7
 
-  '@formkit/themes@1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))':
+  '@formkit/themes@1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))':
     dependencies:
       '@formkit/core': 1.6.7
     optionalDependencies:
-      unocss: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))
+      unocss: 0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3))
 
   '@formkit/utils@1.6.7': {}
 
@@ -10180,7 +10190,7 @@ snapshots:
       '@formkit/observer': 1.6.7
       '@formkit/utils': 1.6.7
 
-  '@formkit/vue@1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))(vue@3.5.12(typescript@5.6.3))':
+  '@formkit/vue@1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))(vue@3.5.12(typescript@5.6.3))':
     dependencies:
       '@formkit/core': 1.6.7
       '@formkit/dev': 1.6.7
@@ -10188,7 +10198,7 @@ snapshots:
       '@formkit/inputs': 1.6.7
       '@formkit/observer': 1.6.7
       '@formkit/rules': 1.6.7
-      '@formkit/themes': 1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))
+      '@formkit/themes': 1.6.7(unocss@0.64.0(@unocss/webpack@0.64.0(rollup@4.25.0)(webpack@5.96.1(esbuild@0.23.1)))(postcss@8.4.49)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(vue@3.5.12(typescript@5.6.3)))
       '@formkit/utils': 1.6.7
       '@formkit/validation': 1.6.7
       vue: 3.5.12(typescript@5.6.3)
@@ -13809,7 +13819,7 @@ snapshots:
       eslint: 9.14.0(jiti@2.4.0)
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 7.18.0(@typescript-eslint/parser@7.18.0(eslint@9.14.0(jiti@2.4.0))(typescript@5.6.3))(eslint@9.14.0(jiti@2.4.0))(supports-color@9.4.0)(typescript@5.6.3)
-      vitest: 2.1.4(@types/node@22.9.0)(supports-color@9.4.0)(terser@5.46.0)
+      vitest: 2.1.4(@types/node@22.9.0)(terser@5.46.0)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -16046,6 +16056,8 @@ snapshots:
 
   picomatch@4.0.2: {}
 
+  ping@1.0.0: {}
+
   pinia@2.2.6(typescript@5.6.3)(vue@3.5.12(typescript@5.6.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
@@ -17425,14 +17437,15 @@ snapshots:
 
   unpipe@1.0.0: {}
 
-  unplugin-formkit@0.2.13(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(webpack-sources@3.3.4)(webpack@5.96.1):
+  unplugin-formkit@0.2.13(esbuild@0.23.1)(rollup@4.25.0)(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))(webpack-sources@3.3.4)(webpack@5.96.1(esbuild@0.23.1)):
     dependencies:
       pathe: 1.1.2
       unplugin: 1.15.0(webpack-sources@3.3.4)
     optionalDependencies:
+      esbuild: 0.23.1
       rollup: 4.25.0
       vite: 5.4.11(@types/node@22.9.0)(terser@5.46.0)
-      webpack: 5.96.1
+      webpack: 5.96.1(esbuild@0.23.1)
     transitivePeerDependencies:
       - webpack-sources
 
@@ -17580,7 +17593,7 @@ snapshots:
   vite-node@2.1.4(@types/node@22.9.0)(terser@5.46.0):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.7
+      debug: 4.4.3(supports-color@9.4.0)
       pathe: 1.1.2
       vite: 5.4.11(@types/node@22.9.0)(terser@5.46.0)
     transitivePeerDependencies:
@@ -17683,7 +17696,7 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.46.0
 
-  vitest@2.1.4(@types/node@22.9.0)(supports-color@9.4.0)(terser@5.46.0):
+  vitest@2.1.4(@types/node@22.9.0)(terser@5.46.0):
     dependencies:
       '@vitest/expect': 2.1.4
       '@vitest/mocker': 2.1.4(vite@5.4.11(@types/node@22.9.0)(terser@5.46.0))

@@ -1,9 +1,10 @@
 import { klona } from 'klona/lite'
 import { isDef } from '@teleskop/utils'
 import { useKeycloak } from '@teleskop/nuxt-base/composables/useKeycloak'
-import { useProgramWriteSettings } from './settings'
+import { useProgramWriteSettings, useTeleskopSettingsStore } from './settings'
 import { areProgramsEqual, useErrorStore } from './utils'
 import { capitalize } from '~/shared/utils'
+import { computeProgramDurations } from '~/shared/formula'
 import type { CommandError, CommandPath, CommandTypes, IoPath, MachineCommand, ParameterItem, ParameterPath, ProcessType, Program, ProgramStep, ProgramStepCommand, ProgramTableRow, ProgramWithErrors, StepError, StepPath, ioListItem } from '~/shared/types'
 import { CommandEligibility, MoveParallel, ProgramStatus } from '~/shared/constants'
 
@@ -155,9 +156,9 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     // Paralel komutların ID'sini güncelle
-    lastCommandId = 0
-    newStep.mainCommand.commandId = lastCommandId++
-    newStep.parallelCommands.forEach(command => command.commandId = lastCommandId++)
+    let cmdId = 1
+    newStep.mainCommand.commandId = cmdId++
+    newStep.parallelCommands.forEach(command => command.commandId = cmdId++)
 
     // Yeni adımı ekle
     program.value.steps.splice(stepIndex, 0, newStep)
@@ -432,7 +433,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   /**
    * Belirtilen adım id'ye göre adımı siler.
-   * Eğer indeks belirtilmezse, seçili adımlar üzerinden silme işlemi yapılır.
+   * Eğer indeks belirtilmezse, seçili adımları silme işlemi yapılır.
    *
    * @param {number} [stepId] - (İsteğe bağlı) Silinecek adımın ID'sidir.
    *
@@ -576,14 +577,25 @@ export const useEditorStore = defineStore('editor', () => {
     const fetchedPrograms: Program[] = []
 
     for (const programWithError of response) {
-      const { program, programError } = programWithError
+      const { program: fetchedProgram, programError } = programWithError
 
-      errorStore.setErrors(machineId, program.programNo, programError.steps)
+      errorStore.setErrors(machineId, fetchedProgram.programNo, programError.steps)
+
+      // Eğer çekilen program, şu anda editörde açık olan program ise errorIds'i senkronize et
+      // (fetchProgram ile aynı desen — backend stepId/commandId ile doldurulur).
+      if (fetchedProgram.programNo === program.value.programNo) {
+        errorIds.value.clear()
+        programError.steps.forEach((step: StepError) => {
+          step.commands.forEach((command: CommandError) => {
+            errorIds.value.add(`${step.stepId}-${command.commandId}`)
+          })
+        })
+      }
 
       lastStepId = 0
       lastCommandId = 0
 
-      for (const step of program.steps) {
+      for (const step of fetchedProgram.steps) {
         step.stepId = lastStepId++
         step.mainCommand.commandId = lastCommandId++
         for (const command of step.parallelCommands) {
@@ -592,7 +604,7 @@ export const useEditorStore = defineStore('editor', () => {
         lastCommandId = 0
       }
 
-      fetchedPrograms.push(program)
+      fetchedPrograms.push(fetchedProgram)
     }
 
     return fetchedPrograms
@@ -997,6 +1009,12 @@ export const useEditorStore = defineStore('editor', () => {
       // Prepare translations for the PDF
       const processed = buildTranslations(messages.value, locale.value, t, 'printProgramListDialog')
 
+      // Adım ve kümülatif süreleri ana thread'de hesapla
+      const teleskopSettings = useTeleskopSettingsStore()
+      const programDurations = [
+        computeProgramDurations(program.value, machine.currentMachine, teleskopSettings.initialTemperature),
+      ]
+
       const payload = {
         machine: { id: machine.currentMachine.id, name: machine.currentMachine.name },
         programs: [program.value],
@@ -1005,6 +1023,7 @@ export const useEditorStore = defineStore('editor', () => {
         translations: processed,
         locale: locale.value,
         processTypes: allProcessTypes.value,
+        programDurations,
       }
 
       const programDetailPdf = await generateProgramPDF('PROGRAM_DETAIL', payload)

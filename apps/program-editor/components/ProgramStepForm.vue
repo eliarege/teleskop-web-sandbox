@@ -117,7 +117,7 @@ function handleContextMenu(stepId: number, commandId: number) {
   <div v-if="!machine.isTonello">
     <div
       v-show="step.expanded"
-      class="e-border-color border-(t x-0) pl-16"
+      class="e-border-color border-(t x-0) pl-24"
     >
       <Sortable
         class="parallel-commands e-div-y"

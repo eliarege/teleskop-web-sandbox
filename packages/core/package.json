@@ -9,14 +9,17 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "dev": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@teleskop/utils": "workspace:*",
     "date-fns": "4.1.0",
     "ofetch": "1.4.1",
-    "@teleskop/utils": "workspace:*"
+    "vitest": "2.1.4"
   },
   "devDependencies": {
     "@teleskop/tsconfig": "workspace:*",

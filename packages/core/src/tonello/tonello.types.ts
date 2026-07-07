@@ -295,7 +295,7 @@ export interface TonelloMachineParameterBit extends TonelloFunctionParameterBase
 
 export type TonelloResponse<T = unknown, DataKey extends string = 'data'> = {
   result: TonelloResponseResult
-} & (T extends null ? Record<string, never> : { [K in DataKey]: T })
+} & { [K in DataKey]: T }
 
 export interface TonelloResponseResult {
   status: string

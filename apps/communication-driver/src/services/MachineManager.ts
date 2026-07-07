@@ -17,7 +17,6 @@ export class MachineManager {
     config,
     logger,
     teleskop,
-    teleskopTimezoneOffset,
     machineRepository,
     machineStatusRepository,
     batchDataRepository,
@@ -41,7 +40,6 @@ export class MachineManager {
     this.sessionDeps = {
       teleskop,
       digitalIoFlushInterval: config.digitalIoFlushInterval,
-      teleskopTimezoneOffset,
       timeSyncMaxDriftMinutes: config.timeSyncMaxDriftMinutes,
       machineStatusRepository,
       batchDataRepository,
