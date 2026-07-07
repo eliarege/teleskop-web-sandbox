@@ -1,19 +1,16 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
 
-const gitlab_legacy_token =
-  "glpat--9PSlPUWpEQHl_a8jzA-ymM6MQpvOjEKdTpucjIwcQ8.01.171wxk651";
-const api_v4_url = "https://gitlab.com/api/v4";
-const projectPath = encodeURIComponent(
-  "eliarelektronik/dijital_boyahane/intern/teleskop-web-sandbox",
-);
-const gitlabUsername = "yagiz erdem";
+const gitlab_legacy_token = process.env.GITLAB_TOKEN; // add your own legacy_token if you want to use CI script from local, otherwise do not need to add
+const api_v4_url =  process.env.CI_API_V4_URL ||  "https://gitlab.com/api/v4";
+const projectPath = process.env.CI_PROJECT_PATH || "eliarelektronik/dijital_boyahane/intern/teleskop-web-sandbox"
+const ci_job_token = process.env.CI_JOB_TOKEN;
+const gitlabUsername = process.env.GITLAB_USER_NAME || "yagiz erdem";
+const registry = process.env.CI_REGISTRY || "registry.gitlab.com";
 
 const allApps =
-  "archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor";
+  process.env.TARGET_APPS || "archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor";
 
-const allAppsArray = allApps.split(" ");
+const allAppsArray = allApps.split(/\s+/).filter(Boolean);
 
 // 1-) fetch the commith hash's of latest images
 
@@ -26,9 +23,9 @@ async function getRegistryBearerToken(imagePath) {
       headers: {
         Authorization:
           "Basic " +
-          Buffer.from(`${gitlabUsername}:${gitlab_legacy_token}`).toString(
-            "base64",
-          ),
+          Buffer.from(
+            `${ci_job_token ? "gitlab-ci-token" : gitlabUsername}:${ci_job_token ? ci_job_token : gitlab_legacy_token}`, // fallback for using legacy token
+          ).toString("base64"),
       },
     },
   );
@@ -42,7 +39,7 @@ async function getRegistryBearerToken(imagePath) {
 
 async function fetchManifest(imagePath, reference, bearer) {
   const res = await fetch(
-    `https://registry.gitlab.com/v2/${imagePath}/manifests/${reference}`,
+    `https://${registry}/v2/${imagePath}/manifests/${reference}`,
     {
       headers: {
         Authorization: `Bearer ${bearer}`,
@@ -65,7 +62,7 @@ async function fetchManifest(imagePath, reference, bearer) {
 
 async function fetchBlob(imagePath, digest, bearer) {
   const res = await fetch(
-    `https://registry.gitlab.com/v2/${imagePath}/blobs/${digest}`,
+    `https://${registry}/v2/${imagePath}/blobs/${digest}`,
     {
       headers: {
         Authorization: `Bearer ${bearer}`,
@@ -81,7 +78,7 @@ async function fetchBlob(imagePath, digest, bearer) {
 }
 
 async function getLatestImageCommitHash(app) {
-  const imagePath = `eliarelektronik/dijital_boyahane/intern/teleskop-web-sandbox/${app}`;
+  const imagePath = `${projectPath}/apps/${app}`;
 
   const bearer = await getRegistryBearerToken(imagePath);
 
