@@ -10,29 +10,26 @@
  * - CI_PROJECT_PATH
  * - CI_REGISTRY
  * - CI_API_V4_URL
- * - GITLAB_USER_NAME
+ * - CI_REGISTRY_USER
+ * - CI_REGISTRY_PASSWORD
  *
  * Optional:
  * - TARGET_APPS
- * - GITLAB_TOKEN for local usage
  */
-
 
 import { spawnSync } from "node:child_process";
 
-const gitlab_legacy_token = process.env.GITLAB_TOKEN; // add your own legacy_token if you want to use CI script from local, otherwise do not need to add
-const api_v4_url =  process.env.CI_API_V4_URL ||  "https://gitlab.com/api/v4";
-const projectPath = process.env.CI_PROJECT_PATH || "eliarelektronik/dijital_boyahane/intern/teleskop-web-sandbox"
-const ci_job_token = process.env.CI_JOB_TOKEN;
-const gitlabUsername = process.env.GITLAB_USER_NAME || "yagiz erdem";
-const registry = process.env.CI_REGISTRY || "registry.gitlab.com";
+// helper functions
 
-const allApps =
-  process.env.TARGET_APPS || "archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor";
+function requireEnv(name, fallback = undefined) {
+  const value = process.env[name] ?? fallback;
 
-const allAppsArray = allApps.split(/\s+/).filter(Boolean);
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
 
-// 1-) fetch the commith hash's of latest images
+  return value;
+}
 
 async function getRegistryBearerToken(imagePath) {
   const scope = `repository:${imagePath}:pull`;
@@ -44,7 +41,7 @@ async function getRegistryBearerToken(imagePath) {
         Authorization:
           "Basic " +
           Buffer.from(
-            `${ci_job_token ? "gitlab-ci-token" : gitlabUsername}:${ci_job_token ? ci_job_token : gitlab_legacy_token}`, // fallback for using legacy token
+            `${ciRegisteryUser}:${ciRegisteryPassword}`, // fallback for using legacy token
           ).toString("base64"),
       },
     },
@@ -120,99 +117,153 @@ async function getLatestImageCommitHash(app) {
   return labels["com.eliar.manifest.build.commit_hash"];
 }
 
-const appName_lastCommitHash = {};
+function spawnSyncWrapper(executable, args = [], options = {}) {
+  const output = spawnSync(executable, args, {
+    ...options,
+    encoding: "utf8",
+    shell: process.platform === "win32",
+  });
 
-const results = await Promise.allSettled(
-  allAppsArray.map(async (app) => {
-    const commitHash = await getLatestImageCommitHash(app);
-    return { app, commitHash };
-  }),
-);
-
-for (const result of results) {
-  if (result.status === "fulfilled") {
-    appName_lastCommitHash[result.value.app] = result.value.commitHash;
-  } else {
-    console.error("skipped:", result.reason.message);
-  }
-}
-
-// console.log(appName_lastCommitHash);
-
-// 2-) find diff
-
-// utils
-
-function spawnSyncWrapper(executable, args, options) {
-  const output = spawnSync(executable, args, options);
-  if (output.status != 0) {
+  if (output.error) {
     throw new Error(
-      `Command failed: ${executable} ${args.join(" ")}\n${output.stderr.toString()}`,
+      `Command could not be started: ${executable} ${args.join(" ")}\n${output.error.message}`,
     );
   }
-  const stdout = output.stdout.toString();
-  return stdout;
+
+  if (output.status !== 0) {
+    throw new Error(
+      `Command failed: ${executable} ${args.join(" ")}\n${output.stderr || ""}`,
+    );
+  }
+
+  return output.stdout || "";
 }
 
 function gitWrapper(args, options) {
   return spawnSyncWrapper("git", args, options);
 }
 
-const app_dependencies = {}; // { appName -> string : depArray -> string[] } record that holds app-names and dependencies
+function pnpmWrapper(args, options) {
+  return spawnSyncWrapper("pnpm", args, options);
+}
+
+//
+
+const projectPath = requireEnv("CI_PROJECT_PATH");
+const ciJobToken = requireEnv("CI_JOB_TOKEN");
+const ciRegisteryUser = requireEnv("CI_REGISTRY_USER");
+const ciRegisteryPassword = requireEnv("CI_REGISTRY_PASSWORD");
+
+const registry = process.env.CI_REGISTRY || "registry.gitlab.com";
+const apiv4Url = process.env.CI_API_V4_URL || "https://gitlab.com/api/v4";
 
 const cwd = process.cwd();
 
-allAppsArray.forEach((app) => {
-  const out = spawnSyncWrapper(
-    "pnpm",
-    ["list", "--depth", "-1", "--parseable", "--filter", `{./apps/${app}}...`],
-    { cwd: process.cwd() },
+const allAppsArray = process.env.TARGET_APPS
+  ? process.env.TARGET_APPS.trim().split(/\s+/).filter(Boolean)
+  : pnpmWrapper([
+      "list",
+      "--depth",
+      "-1",
+      "--parseable",
+      "--filter",
+      "./apps/*",
+    ])
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .filter(
+        (line) =>
+          line.includes(`${cwd}/apps/`) || line.includes(`${cwd}\\apps\\`),
+      )
+      .map((line) => line.replaceAll("\\", "/"))
+      .map((line) => line.split("/apps/")[1])
+      .filter(Boolean)
+      .map((path) => path.split("/")[0]);
+
+async function main() {
+  // 1-) fetch the commith hash's of latest images
+
+  const appNameLastCommitHash = {};
+
+  const results = await Promise.allSettled(
+    allAppsArray.map(async (app) => {
+      const commitHash = await getLatestImageCommitHash(app);
+      return { app, commitHash };
+    }),
   );
-  app_dependencies[app] = out
-    .split("\n")
-    .filter((line) => line.trim() !== "")
-    .filter((line) => !line.includes("node_modules"))
-    .map((line) => line.replace(cwd + "/", ""));
-});
 
-const tags = gitWrapper(["tag", "--sort=creatordate"])
-  .split("\n")
-  .filter((tag) => tag.trim().length > 0);
-const latestTag = tags[tags.length - 1];
-const commitHashOfLastTag = gitWrapper(["show-ref", "-s", latestTag]).trim();
-
-const shouldRebuild = new Set();
-const shouldReTag = new Set();
-
-for (const appName of allAppsArray) {
-  // does not exist in docker img registery -> must rebuild
-  if (!appName_lastCommitHash[appName]) {
-    shouldRebuild.add(appName);
-    continue;
+  for (const result of results) {
+    if (result.status === "fulfilled") {
+      appNameLastCommitHash[result.value.app] = result.value.commitHash;
+    } else {
+      console.error("skipped:", result.reason.message);
+    }
   }
 
-  const lastCommitHashOfDockerImage = appName_lastCommitHash[appName];
-  const dependencies = app_dependencies[appName];
+  // console.log(appNameLastCommitHash);
 
-  const changedFiles = gitWrapper([
-    "diff",
-    lastCommitHashOfDockerImage,
-    commitHashOfLastTag,
-    "--name-only",
-  ])
-    .split("\n")
-    .map((file) => file.trim())
-    .filter((file) => file.length > 0);
+  // 2-) find diff
 
-  const flag = changedFiles.some((file) => {
-    return dependencies.some((deq) => file.startsWith(deq));
+  const appDependencies = {}; // { appName -> string : depArray -> string[] } record that holds app-names and dependencies
+
+  allAppsArray.forEach((app) => {
+    const out = spawnSyncWrapper(
+      "pnpm",
+      [
+        "list",
+        "--depth",
+        "-1",
+        "--parseable",
+        "--filter",
+        `{./apps/${app}}...`,
+      ],
+      { cwd: process.cwd() },
+    );
+    appDependencies[app] = out
+      .split("\n")
+      .filter((line) => line.trim() !== "")
+      .filter((line) => !line.includes("node_modules"))
+      .map((line) => line.replace(cwd + "/", ""));
   });
 
-  if (flag) {
-    shouldRebuild.add(appName);
-  } else {
-    shouldReTag.add(appName);
+  const commitHashOfCurrentHead = gitWrapper(["rev-parse", "HEAD"]).trim();
+
+  const shouldRebuild = new Set();
+  const shouldReTag = new Set();
+
+  for (const appName of allAppsArray) {
+    // does not exist in docker img registery -> must rebuild
+    if (!appNameLastCommitHash[appName]) {
+      shouldRebuild.add(appName);
+      continue;
+    }
+
+    const lastCommitHashOfDockerImage = appNameLastCommitHash[appName];
+    const dependencies = appDependencies[appName];
+
+    const changedFiles = gitWrapper([
+      "diff",
+      lastCommitHashOfDockerImage,
+      commitHashOfCurrentHead,
+      "--name-only",
+    ])
+      .split("\n")
+      .map((file) => file.trim())
+      .filter((file) => file.length > 0);
+
+    const flag = changedFiles.some((file) => {
+      return dependencies.some((deq) => file.startsWith(deq));
+    });
+
+    if (flag) {
+      shouldRebuild.add(appName);
+    } else {
+      shouldReTag.add(appName);
+    }
   }
+
+  console.log([...shouldRebuild].join(" "));
 }
 
-console.log([...shouldRebuild].join(" "));
+main();
