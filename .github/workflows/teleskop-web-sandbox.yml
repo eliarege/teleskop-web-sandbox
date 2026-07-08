@@ -1,0 +1,266 @@
+name: eliarelektronik/dijital_boyahane/intern/teleskop-web-sandbox
+on:
+  push:
+  workflow_dispatch:
+concurrency:
+  group: "${{ github.ref }}"
+  cancel-in-progress: true
+env:
+  TURBO_TOKEN: "${{ secrets.TURBO_TOKEN }}"
+  TURBO_CONFIG: "{}"
+  TURBO_FORCE: "false"
+jobs:
+  classify-ref:
+    runs-on: ubuntu-latest
+    outputs:
+      app_rules: ${{ steps.ref.outputs.app_rules }}
+      hotfix: ${{ steps.ref.outputs.hotfix }}
+      devops: ${{ steps.ref.outputs.devops }}
+      merge_request: ${{ steps.ref.outputs.merge_request }}
+      dev_branch: ${{ steps.ref.outputs.dev_branch }}
+      app_name: ${{ steps.ref.outputs.app_name }}
+      tag_version: ${{ steps.ref.outputs.tag_version }}
+
+    steps:
+      - id: ref
+        shell: bash
+        run: |
+          REF="${GITHUB_REF}"
+          REF_NAME="${GITHUB_REF_NAME}"
+
+          echo "app_rules=false" >> "$GITHUB_OUTPUT"
+          echo "hotfix=false" >> "$GITHUB_OUTPUT"
+          echo "devops=false" >> "$GITHUB_OUTPUT"
+          echo "merge_request=false" >> "$GITHUB_OUTPUT"
+          echo "dev_branch=false" >> "$GITHUB_OUTPUT"
+
+          # GitLab .app-rules:
+          # /^v\d+\.\d+\.\d+(-rc\.\d+)?$/
+          if [[ "$REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
+            echo "app_rules=true" >> "$GITHUB_OUTPUT"
+            echo "tag_version=${REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+
+          # GitLab .app-rules branch:
+          # $CI_COMMIT_BRANCH == "dev"
+          if [[ "$REF" == "refs/heads/dev" ]]; then
+            echo "dev_branch=true" >> "$GITHUB_OUTPUT"
+            echo "app_rules=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          # GitLab .hotfix-rules:
+          # /^[a-z._-]+@\d+\.\d+\.\d+-hotfix\d+$/
+          if [[ "$REF" =~ ^refs/tags/[a-z._-]+@[0-9]+\.[0-9]+\.[0-9]+-hotfix[0-9]+$ ]]; then
+            echo "hotfix=true" >> "$GITHUB_OUTPUT"
+            echo "app_name=${REF_NAME%@*}" >> "$GITHUB_OUTPUT"
+          fi
+
+          # GitLab .devops-rules:
+          # /^devops@/
+          if [[ "$REF" =~ ^refs/tags/devops@ ]]; then
+            echo "devops=true" >> "$GITHUB_OUTPUT"
+            echo "tag_version=${REF_NAME#devops@}" >> "$GITHUB_OUTPUT"
+          fi
+
+          # GitLab .merge-request-rules:
+          # merge_request_event && target == default branch
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "${{ github.event.repository.default_branch }}" ]]; then
+            echo "merge_request=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  prepare-apps:
+    runs-on: ubuntu-latest
+    needs:
+      - classify-ref
+    container:
+      image: node:22
+    if: ${{ needs.classify-ref.outputs.app_rules == 'true' }}
+    timeout-minutes: 60
+    env:
+      TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
+    steps:
+      - uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 20
+          lfs: true
+      - run: npm install -g turbo@^2
+      - run: |
+          for APP_NAME in $TARGET_APPS; do
+            turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
+          done
+      #     # 'artifacts.dotenv' was not transformed because there is no suitable equivalent in GitHub Actions
+      - uses: actions/upload-artifact@v4.1.0
+        if: success()
+        with:
+          name: "${{ github.job }}"
+          retention-days: 1
+          path: out-*/
+
+  prepare-hotfix:
+    runs-on: ubuntu-latest
+    needs:
+      - classify-ref
+    container:
+      image: node:22
+    if: ${{ needs.classify-ref.outputs.hotfix == 'true' }}
+    timeout-minutes: 60
+    env:
+      TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
+    steps:
+      - uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 20
+          lfs: true
+      - run: npm install -g turbo@^2
+      - run: export APP_NAME=$(echo ${{ github.ref }} | sed -E 's/^([a-z._-]+)@.*/\1/')
+      - run: turbo prune --scope=$APP_NAME --out-dir out --docker
+      - uses: actions/upload-artifact@v4.1.0
+        if: success()
+        with:
+          name: "${{ github.job }}"
+          retention-days: 1
+          path: out/
+
+  release-devops-packages:
+    needs:
+      - prepare-apps
+      - prepare-hotfix
+      - classify-ref
+    runs-on: ubuntu-latest
+    container:
+      image: node:22
+    if: ${{ needs.classify-ref.outputs.devops == 'true' }}
+    timeout-minutes: 60
+    env:
+      TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
+    steps:
+      - uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 20
+          lfs: true
+      - uses: actions/download-artifact@v4.1.0
+      - run: apt update && apt install -y jq
+      - run: corepack enable
+      - run: npm install -g turbo@^2
+      - run: echo "@${{ github.repository_owner }}:registry=${{ github.api_url }}/projects/${{ github.repository }}/packages/npm/" >> .npmrc
+      - run: echo "${CI_API_V4_URL#http*:}/projects/${{ github.repository }}/packages/npm/:_authToken=\${{ github.token }}" >> .npmrc
+      - run: export TAG_VERSION=${CI_COMMIT_TAG:7}
+      - run: "./scripts/publish-package @eliarelektronik/samba-env $TAG_VERSION"
+
+  release-apps:
+    needs:
+      - prepare-apps
+      - prepare-hotfix
+      - classify-ref
+    runs-on:
+      - self-hosted
+      - docker
+    if: ${{ needs.classify-ref.outputs.app_rules == 'true' }}
+    timeout-minutes: 60
+    continue-on-error: true
+    env:
+      TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
+    steps:
+      - uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 20
+          lfs: true
+      - uses: actions/download-artifact@v4.1.0
+      - run: apk add --no-cache jq ssmtp gomplate
+      - run: docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+      - run: docker context create gitlab-context
+      - run: docker buildx create --name gitlab-builder --driver docker-container --use gitlab-context
+      - run: docker buildx inspect --bootstrap
+      - run: mkdir release-logs
+      - run: export ERRORS=""
+      - run: |
+          for APP_NAME in $TARGET_APPS; do
+            LOG_PATH="release-logs/$APP_NAME.log"
+            ERR_PATH="release-logs/$APP_NAME.error.log"
+            EXIT_CODE=0
+            # Variables for docker bake
+            export APP_NAME="$APP_NAME"
+            export APP_ROLES="$(jq -Mc '.roles // []' "apps/$APP_NAME/manifest.json" 2> /dev/null || echo '[]')"
+            rm -rf out && mv out-$APP_NAME out
+            # Output build logs to both the console and a log file
+            {
+              docker buildx bake "$APP_NAME" --push 2>&1 || {
+                mv $LOG_PATH $ERR_PATH
+              }
+            } | tee $LOG_PATH
+            if [ -e "$ERR_PATH" ]; then
+              if [ -n "$ERRORS" ]; then
+                ERRORS="$ERRORS,$APP_NAME"
+              else
+                ERRORS="$APP_NAME"
+              fi
+            fi
+          done
+      - run: |
+          if [ -n "$ERRORS" ]; then
+            if [ -n "$SMTP_CONF" ]; then
+              ssmtp -C"$SMTP_CONF" "$SMTP_TO" <<EOF
+          From: $SMTP_FROM
+          To: $SMTP_TO
+          Subject: ${{ github.event.repository.name }} | Pipeline Warning | ${{ github.sha }}
+          Content-Type: text/html; charset=UTF-8
+          <html>
+            <body>
+              <p>Build failed for following apps: </p>
+              <ul>
+                $(gomplate -i '{{range strings.Split "," .Env.ERRORS}}<li>{{.}}</li>{{end}}')
+              </ul>
+              <p>Pipeline: <a href="${{ github.server_url }}/${{ github.repository }}/-/pipelines/${{ github.repository}}/${{ github.workflow }}">#${{ github.repository}}/${{ github.workflow }}</a></p>
+            </body>
+          </html>
+          EOF
+            else
+              echo "Failed apps: $ERRORS"
+            fi
+            exit 1
+          fi;
+      - uses: actions/upload-artifact@v4.1.0
+        if: always()
+        with:
+          name: "${{ github.job }}"
+          path: release-logs/
+
+  release-hotfix:
+    needs:
+      - prepare-apps
+      - prepare-hotfix
+      - classify-ref
+    runs-on:
+      - self-hosted
+      - docker
+    if: ${{ needs.classify-ref.outputs.hotfix == 'true' }}
+    timeout-minutes: 60
+    env:
+      TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
+    steps:
+      - uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 20
+          lfs: true
+      - uses: actions/download-artifact@v4.1.0
+      - run: apk add --no-cache jq
+      - run: docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+      - run: docker context create gitlab-context
+      - run: docker buildx create --name gitlab-builder --driver docker-container --use gitlab-context
+      - run: docker buildx inspect --bootstrap
+      - run: mkdir release-logs
+      - run: export ERRORS=""
+      - run: export APP_NAME=$(echo ${{ github.ref }} | sed -E 's/^([a-z._-]+)@.*/\1/')
+      - run: export APP_ROLES="$(jq -Mc '.roles // []' "apps/$APP_NAME/manifest.json" 2> /dev/null || echo '[]')"
+      - run: |
+          {
+            docker buildx bake "$APP_NAME" --push 2>&1 || {
+              mv "release-logs/$APP_NAME.log" "release-logs/$APP_NAME.error.log"
+              exit 1
+            }
+          } | tee "release-logs/$APP_NAME.log"
+      - uses: actions/upload-artifact@v4.1.0
+        if: always()
+        with:
+          name: "${{ github.job }}"
+          path: release-logs/
