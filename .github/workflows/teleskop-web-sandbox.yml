@@ -96,7 +96,7 @@ jobs:
           done
       #     # 'artifacts.dotenv' was not transformed because there is no suitable equivalent in GitHub Actions
       - uses: actions/upload-artifact@v4.1.0
-        if: success()
+        if: ${{ success() && !github.event.act }}
         with:
           name: "${{ github.job }}"
           retention-days: 1
@@ -171,8 +171,8 @@ jobs:
           fetch-depth: 20
           lfs: true
       - uses: actions/download-artifact@v4.1.0
-      - run: apk add --no-cache jq ssmtp gomplate
-      - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor || github.event.actor }} --password-stdin
       - run: docker context create github-context
       - run: docker buildx create --name github-builder --driver docker-container --use github-context
       - run: docker buildx inspect --bootstrap
@@ -225,7 +225,7 @@ jobs:
             exit 1
           fi;
       - uses: actions/upload-artifact@v4.1.0
-        if: always()
+        if: ${{ always() && !github.event.act }}
         with:
           name: "${{ github.job }}"
           path: release-logs/
@@ -249,7 +249,7 @@ jobs:
           lfs: true
       - uses: actions/download-artifact@v4.1.0
       - run: apk add --no-cache jq
-      - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.events.actor }} --password-stdin
       - run: docker context create github-context
       - run: docker buildx create --name github-builder --driver docker-container --use github-context
       - run: docker buildx inspect --bootstrap
