@@ -156,7 +156,6 @@ jobs:
   release-apps:
     needs:
       - prepare-apps
-      - prepare-hotfix
       - classify-ref
     runs-on:
       - self-hosted
