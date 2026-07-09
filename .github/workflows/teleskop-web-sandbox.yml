@@ -81,6 +81,10 @@ jobs:
     env:
       TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
     steps:
+      - run: apt-get update
+      - run: apt-get install -y git-lfs
+      - run: git lfs install
+
       - uses: actions/checkout@v4.1.0
         with:
           fetch-depth: 20
