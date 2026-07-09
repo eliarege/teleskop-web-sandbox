@@ -37,43 +37,33 @@ jobs:
           echo "merge_request=false" >> "$GITHUB_OUTPUT"
           echo "dev_branch=false" >> "$GITHUB_OUTPUT"
 
-          # GitLab .app-rules:
-          # /^v\d+\.\d+\.\d+(-rc\.\d+)?$/
           if [[ "$REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
             echo "app_rules=true" >> "$GITHUB_OUTPUT"
             echo "tag_version=${REF_NAME#v}" >> "$GITHUB_OUTPUT"
           fi
 
-          # GitLab .app-rules branch:
           if [[ "$REF" == "refs/heads/dev" ]]; then
             echo "dev_branch=true" >> "$GITHUB_OUTPUT"
             echo "app_rules=true" >> "$GITHUB_OUTPUT"
           fi
 
-          # GitLab .hotfix-rules:
-          # /^[a-z._-]+@\d+\.\d+\.\d+-hotfix\d+$/
           if [[ "$REF" =~ ^refs/tags/[a-z._-]+@[0-9]+\.[0-9]+\.[0-9]+-hotfix[0-9]+$ ]]; then
             echo "hotfix=true" >> "$GITHUB_OUTPUT"
             echo "app_name=${REF_NAME%@*}" >> "$GITHUB_OUTPUT"
           fi
 
-          # GitLab .devops-rules:
-          # /^devops@/
           if [[ "$REF" =~ ^refs/tags/devops@ ]]; then
             echo "devops=true" >> "$GITHUB_OUTPUT"
             echo "tag_version=${REF_NAME#devops@}" >> "$GITHUB_OUTPUT"
           fi
 
-          # GitLab .merge-request-rules:
-          # merge_request_event && target == default branch
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "${{ github.event.repository.default_branch }}" ]]; then
             echo "merge_request=true" >> "$GITHUB_OUTPUT"
           fi
 
   prepare-apps:
     runs-on: ubuntu-latest
-    needs:
-      - classify-ref
+    needs: - classify-ref
     container:
       image: node:22
     if: ${{ needs.classify-ref.outputs.app_rules == 'true' }}
@@ -90,18 +80,16 @@ jobs:
           for APP_NAME in $TARGET_APPS; do
             turbo prune --scope=$APP_NAME --out-dir out-$APP_NAME --docker
           done
-      #     # 'artifacts.dotenv' was not transformed because there is no suitable equivalent in GitHub Actions
       - uses: actions/upload-artifact@v4.1.0
         if: success()
         with:
-          name: "${{ github.job }}"
+          name: prepare-apps-artifact
           retention-days: 1
           path: out-*/
 
   prepare-hotfix:
     runs-on: ubuntu-latest
-    needs:
-      - classify-ref
+    needs: - classify-ref
     container:
       image: node:22
     if: ${{ needs.classify-ref.outputs.hotfix == 'true' }}
@@ -114,12 +102,13 @@ jobs:
           fetch-depth: 20
           lfs: true
       - run: npm install -g turbo@^2
-      - run: export APP_NAME=$(echo ${{ github.ref }} | sed -E 's/^([a-z._-]+)@.*/\1/')
-      - run: turbo prune --scope=$APP_NAME --out-dir out --docker
+      - run: |
+          APP_NAME=$(echo ${{ github.ref }} | sed -E 's/^([a-z._-]+)@.*/\1/')
+          turbo prune --scope=$APP_NAME --out-dir out --docker
       - uses: actions/upload-artifact@v4.1.0
         if: success()
         with:
-          name: "${{ github.job }}"
+          name: prepare-hotfix-artifact
           retention-days: 1
           path: out/
 
@@ -133,21 +122,19 @@ jobs:
       image: node:22
     if: ${{ needs.classify-ref.outputs.devops == 'true' }}
     timeout-minutes: 60
-    env:
-      TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
     steps:
       - uses: actions/checkout@v4.1.0
         with:
           fetch-depth: 20
           lfs: true
-      - uses: actions/download-artifact@v4.1.0
       - run: apt update && apt install -y jq
       - run: corepack enable
       - run: npm install -g turbo@^2
-      - run: echo "@${{ github.repository_owner }}:registry=${{ github.api_url }}/projects/${{ github.repository }}/packages/npm/" >> .npmrc
-      - run: echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> .npmrc
-      - run: echo "TAG_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
-      - run: "./scripts/publish-package @eliarelektronik/samba-env $TAG_VERSION"
+      - run: |
+          echo "@${{ github.repository_owner }}:registry=${{ github.api_url }}/projects/${{ github.repository }}/packages/npm/" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> .npmrc
+          echo "TAG_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          ./scripts/publish-package @eliarelektronik/samba-env $GITHUB_REF_NAME
 
   release-apps:
     needs:
@@ -167,30 +154,34 @@ jobs:
         with:
           fetch-depth: 20
           lfs: true
+
+      # Klasör karmaşasını önlemek için doğrudan ilgili artifact'i ana dizine indiriyoruz
       - uses: actions/download-artifact@v4.1.0
+        with:
+          name: prepare-apps-artifact
+
       - run: apk add --no-cache jq ssmtp gomplate
       - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - run: docker context create github-context
       - run: docker buildx create --name github-builder --driver docker-container --use github-context
       - run: docker buildx inspect --bootstrap
       - run: mkdir release-logs
-      - run: export ERRORS=""
-      - run: |
+
+      # Tek bir run adımında export'ları ve döngüyü birleştirdik, hata yönetimini düzelttik
+      - name: Build and Push Docker Images
+        run: |
+          ERRORS=""
           for APP_NAME in $TARGET_APPS; do
             LOG_PATH="release-logs/$APP_NAME.log"
             ERR_PATH="release-logs/$APP_NAME.error.log"
-            EXIT_CODE=0
-            # Variables for docker bake
+
             export APP_NAME="$APP_NAME"
             export APP_ROLES="$(jq -Mc '.roles // []' "apps/$APP_NAME/manifest.json" 2> /dev/null || echo '[]')"
+
             rm -rf out && mv out-$APP_NAME out
-            # Output build logs to both the console and a log file
-            {
-              docker buildx bake "$APP_NAME" --push 2>&1 || {
-                mv $LOG_PATH $ERR_PATH
-              }
-            } | tee $LOG_PATH
-            if [ -e "$ERR_PATH" ]; then
+
+            if ! docker buildx bake "$APP_NAME" --push 2>&1 | tee $LOG_PATH; then
+              mv "$LOG_PATH" "$ERR_PATH"
               if [ -n "$ERRORS" ]; then
                 ERRORS="$ERRORS,$APP_NAME"
               else
@@ -198,7 +189,11 @@ jobs:
               fi
             fi
           done
-      - run: |
+          echo "ERRORS=$ERRORS" >> $GITHUB_ENV
+
+      # Bildirim adımını tek bir script bloğuna çektik
+      - name: Send Email Notification on Failure
+        run: |
           if [ -n "$ERRORS" ]; then
             if [ -n "$SMTP_CONF" ]; then
               ssmtp -C"$SMTP_CONF" "$SMTP_TO" <<EOF
@@ -212,7 +207,7 @@ jobs:
               <ul>
                 $(gomplate -i '{{range strings.Split "," .Env.ERRORS}}<li>{{.}}</li>{{end}}')
               </ul>
-              <p>Pipeline: <a href="${{ github.server_url }}/${{ github.repository }}/-/pipelines/${{ github.repository}}/${{ github.workflow }}">#${{ github.repository}}/${{ github.workflow }}</a></p>
+              <p>Pipeline: <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">#${{ github.run_id }}</a></p>
             </body>
           </html>
           EOF
@@ -220,11 +215,12 @@ jobs:
               echo "Failed apps: $ERRORS"
             fi
             exit 1
-          fi;
+          fi
+
       - uses: actions/upload-artifact@v4.1.0
         if: always()
         with:
-          name: "${{ github.job }}"
+          name: release-apps-logs
           path: release-logs/
 
   release-hotfix:
@@ -237,32 +233,36 @@ jobs:
       - docker
     if: ${{ needs.classify-ref.outputs.hotfix == 'true' }}
     timeout-minutes: 60
-    env:
-      TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
     steps:
       - uses: actions/checkout@v4.1.0
         with:
           fetch-depth: 20
           lfs: true
+
       - uses: actions/download-artifact@v4.1.0
+        with:
+          name: prepare-hotfix-artifact
+
       - run: apk add --no-cache jq
       - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - run: docker context create github-context
       - run: docker buildx create --name github-builder --driver docker-container --use github-context
       - run: docker buildx inspect --bootstrap
       - run: mkdir release-logs
-      - run: export ERRORS=""
-      - run: export APP_NAME=$(echo ${{ github.ref }} | sed -E 's/^([a-z._-]+)@.*/\1/')
-      - run: export APP_ROLES="$(jq -Mc '.roles // []' "apps/$APP_NAME/manifest.json" 2> /dev/null || echo '[]')"
-      - run: |
-          {
-            docker buildx bake "$APP_NAME" --push 2>&1 || {
-              mv "release-logs/$APP_NAME.log" "release-logs/$APP_NAME.error.log"
-              exit 1
-            }
-          } | tee "release-logs/$APP_NAME.log"
+
+      - name: Build Hotfix
+        run: |
+          APP_NAME=$(echo ${{ github.ref }} | sed -E 's/^([a-z._-]+)@.*/\1/')
+          export APP_NAME
+          export APP_ROLES="$(jq -Mc '.roles // []' "apps/$APP_NAME/manifest.json" 2> /dev/null || echo '[]')"
+
+          if ! docker buildx bake "$APP_NAME" --push 2>&1 | tee "release-logs/$APP_NAME.log"; then
+            mv "release-logs/$APP_NAME.log" "release-logs/$APP_NAME.error.log"
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v4.1.0
         if: always()
         with:
-          name: "${{ github.job }}"
+          name: release-hotfix-logs
           path: release-logs/
