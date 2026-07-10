@@ -153,6 +153,7 @@ jobs:
           # Variables for docker bake
           echo APP_NAME=${{ matrix.app }} >> $GITHUB_ENV
           echo CI_COMMIT_TAG=${{ github.ref_name }} >> $GITHUB_ENV
+          echo CI_COMMIT_SHA=${{ github.sha }} >> $GITHUB_ENV
           echo CI_REGISTRY_IMAGE=ghcr.io/${{ github.repository }} >> $GITHUB_ENV
           echo APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')" >> $GITHUB_ENV
           rm -rf out && mv out-${{ matrix.app }} out
