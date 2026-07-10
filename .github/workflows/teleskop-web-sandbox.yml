@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: "${{ github.ref }}"
+  group: '${{ github.ref }}'
   cancel-in-progress: true
 
 env:
-  TURBO_TOKEN: "${{ secrets.TURBO_TOKEN }}"
-  TURBO_CONFIG: "{}"
-  TURBO_FORCE: "false"
+  TURBO_TOKEN: '${{ secrets.TURBO_TOKEN }}'
+  TURBO_CONFIG: '{}'
+  TURBO_FORCE: 'false'
 
 jobs:
   classify-ref:
@@ -98,7 +98,7 @@ jobs:
       - uses: actions/upload-artifact@v4.1.0
         if: ${{ success() && !github.event.act }}
         with:
-          name: "${{ github.job }}"
+          name: '${{ github.job }}'
           retention-days: 1
           path: out-*/
 
@@ -123,7 +123,7 @@ jobs:
       - uses: actions/upload-artifact@v4.1.0
         if: success()
         with:
-          name: "${{ github.job }}"
+          name: '${{ github.job }}'
           retention-days: 1
           path: out/
 
@@ -151,18 +151,22 @@ jobs:
       - run: echo "@${{ github.repository_owner }}:registry=${{ github.api_url }}/projects/${{ github.repository }}/packages/npm/" >> .npmrc
       - run: echo "//npm.pkg.github.com/:_authToken=${{ github.token }}" >> .npmrc
       - run: echo "TAG_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
-      - run: "./scripts/publish-package @eliarelektronik/samba-env $TAG_VERSION"
+      - run: ./scripts/publish-package @eliarelektronik/samba-env $TAG_VERSION
 
   release-apps:
     needs:
       - prepare-apps
       - classify-ref
-    runs-on:
-      - self-hosted
-      - docker
+    runs-on: ubuntu-latest
+    # runs-on:
+    #   - self-hosted
+    #   - docker
     if: ${{ needs.classify-ref.outputs.app_rules == 'true' }}
     timeout-minutes: 60
     continue-on-error: true
+    permissions:
+      contents: read
+      packages: write
     env:
       TARGET_APPS: archive recipes dispensing-manager-ui communication-driver machine-status machines migration-service multi-monitor planning-board planning-board-engine root websockify program-editor
     steps:
@@ -227,7 +231,7 @@ jobs:
       - uses: actions/upload-artifact@v4.1.0
         if: ${{ always() && !github.event.act }}
         with:
-          name: "${{ github.job }}"
+          name: '${{ github.job }}'
           path: release-logs/
 
   release-hotfix:
@@ -267,5 +271,5 @@ jobs:
       - uses: actions/upload-artifact@v4.1.0
         if: always()
         with:
-          name: "${{ github.job }}"
+          name: '${{ github.job }}'
           path: release-logs/
