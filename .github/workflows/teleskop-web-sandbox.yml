@@ -190,7 +190,7 @@ jobs:
           ERR_PATH="release-logs/${{ matrix.app }}.error.log"
           EXIT_CODE=0
           # Variables for docker bake
-          export APP_NAME="$APP_NAME"
+          export APP_NAME=${{ matrix.app }}
           export APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')"
           rm -rf out && mv out-${{ matrix.app }} out
           # Output build logs to both the console and a log file
