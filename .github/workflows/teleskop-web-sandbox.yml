@@ -232,7 +232,7 @@ jobs:
       - uses: actions/upload-artifact@v4.1.0
         if: ${{ always() && !github.event.act }}
         with:
-          name: '${{ github.job }}'
+          name: release-logs-${{ matrix.app }}
           path: release-logs/
 
   release-hotfix:
