@@ -97,7 +97,7 @@ jobs:
         with:
           name: app-${{ matrix.app }}
           retention-days: 1
-          path: out-${{ matrix.app }}/
+          path: out-${{ matrix.app }}
           if-no-files-found: error
 
   prepare-hotfix:
@@ -176,8 +176,8 @@ jobs:
       - name: Download prepared applications
         uses: actions/download-artifact@v4
         with:
-          name: prepare-apps
-          path: prepared-apps
+          name: app-${{ matrix.app }}
+          path: out-${{ matrix.app }}
 
       - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor || github.event.actor }} --password-stdin
       - run: docker context create github-context
