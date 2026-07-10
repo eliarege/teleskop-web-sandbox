@@ -166,8 +166,9 @@ jobs:
       - name: Build and push
         uses: docker/bake-action@v7
         with:
-          source: ./apps
-          files: ./docker-bake.hcl
+          source: .
+          files: docker-bake.hcl
+          targets: ${{ matrix.app }}
           push: true
 
       # - run: |
