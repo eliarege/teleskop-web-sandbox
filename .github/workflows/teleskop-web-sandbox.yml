@@ -147,14 +147,14 @@ jobs:
       - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor || github.event.actor }} --password-stdin
 
       - run: |
-          LOG_PATH="release-logs/${{ matrix.app }}.log" >> $GITHUB_ENV
-          ERR_PATH="release-logs/${{ matrix.app }}.error.log" >> $GITHUB_ENV
-          EXIT_CODE=0 >> $GITHUB_ENV
+          echo LOG_PATH="release-logs/${{ matrix.app }}.log" >> $GITHUB_ENV
+          echo ERR_PATH="release-logs/${{ matrix.app }}.error.log" >> $GITHUB_ENV
+          echo EXIT_CODE=0 >> $GITHUB_ENV
           # Variables for docker bake
-          export APP_NAME=${{ matrix.app }} >> $GITHUB_ENV
-          export CI_COMMIT_TAG=${{ github.ref_name }} >> $GITHUB_ENV
-          export CI_REGISTRY_IMAGE=ghcr.io/${{ github.repository }} >> $GITHUB_ENV
-          export APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')" >> $GITHUB_ENV
+          echo APP_NAME=${{ matrix.app }} >> $GITHUB_ENV
+          echo CI_COMMIT_TAG=${{ github.ref_name }} >> $GITHUB_ENV
+          echo CI_REGISTRY_IMAGE=ghcr.io/${{ github.repository }} >> $GITHUB_ENV
+          echo APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')" >> $GITHUB_ENV
           rm -rf out && mv out-${{ matrix.app }} out
 
       - run: mkdir release-logs
