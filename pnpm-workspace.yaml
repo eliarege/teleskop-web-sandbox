@@ -27,3 +27,4 @@ allowBuilds:
   esbuild: true
   vue-demi: true
   core-js: true
+  fastify-socket.io@5.1.0: true
