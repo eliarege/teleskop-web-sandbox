@@ -30,6 +30,17 @@ jobs:
 
     steps:
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/checkout@v4
+
+      - name: Detect file changes
+        run: |
+          node ./scripts/detect-file-change.js
+
       - id: ref
         shell: bash
         run: |
@@ -74,19 +85,6 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "${{ github.event.repository.default_branch }}" ]]; then
             echo "merge_request=true" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: define env vars
-        run: |
-          echo CI_COMMIT_TAG=${{ github.ref_name }} >> $GITHUB_ENV
-          echo CI_COMMIT_SHA=${{ github.sha }} >> $GITHUB_ENV
-          echo CI_PROJECT_PATH=${{ github.repository }} >> $GITHUB_ENV
-          echo CI_REGISTRY_IMAGE=ghcr.io/${{ github.repository }} >> $GITHUB_ENV
-
-      - uses: actions/checkout@v4
-
-      - name: Detect file changes
-        run: |
-          node ./scripts/detect-file-change.js
 
   prepare-hotfix:
     runs-on: ubuntu-latest
