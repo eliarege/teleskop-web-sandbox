@@ -98,9 +98,10 @@ jobs:
       - uses: actions/upload-artifact@v4.1.0
         if: ${{ success() && !github.event.act }}
         with:
-          name: '${{ github.job }}'
+          name: prepare-apps
           retention-days: 1
-          path: out-*/
+          path: prepared-apps/
+          if-no-files-found: error
 
   prepare-hotfix:
     runs-on: ubuntu-latest
@@ -174,7 +175,11 @@ jobs:
         with:
           fetch-depth: 20
           lfs: true
-      - uses: actions/download-artifact@v4.1.0
+      - name: Download prepared applications
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-apps
+          path: prepared-apps
 
       - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor || github.event.actor }} --password-stdin
       - run: docker context create github-context
