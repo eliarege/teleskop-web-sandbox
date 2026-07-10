@@ -11,6 +11,10 @@ env:
   TURBO_TOKEN: '${{ secrets.TURBO_TOKEN }}'
   TURBO_CONFIG: '{}'
   TURBO_FORCE: 'false'
+  CI_COMMIT_TAG: ${{ github.ref_name }}
+  CI_COMMIT_SHA: ${{ github.sha }}
+  CI_PROJECT_PATH: ${{ github.repository }}
+  CI_REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
   classify-ref:
@@ -25,12 +29,6 @@ jobs:
       tag_version: ${{ steps.ref.outputs.tag_version }}
 
     steps:
-
-      - uses: actions/checkout@v4
-
-      - name: Detect file changes
-        run: |
-          node ./scripts/detect-file-change.js
 
       - id: ref
         shell: bash
@@ -76,6 +74,19 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "${{ github.event.repository.default_branch }}" ]]; then
             echo "merge_request=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: define env vars
+        run: |
+          echo CI_COMMIT_TAG=${{ github.ref_name }} >> $GITHUB_ENV
+          echo CI_COMMIT_SHA=${{ github.sha }} >> $GITHUB_ENV
+          echo CI_PROJECT_PATH=${{ github.repository }} >> $GITHUB_ENV
+          echo CI_REGISTRY_IMAGE=ghcr.io/${{ github.repository }} >> $GITHUB_ENV
+
+      - uses: actions/checkout@v4
+
+      - name: Detect file changes
+        run: |
+          node ./scripts/detect-file-change.js
 
   prepare-hotfix:
     runs-on: ubuntu-latest
@@ -159,10 +170,6 @@ jobs:
           echo EXIT_CODE=0 >> $GITHUB_ENV
           # Variables for docker bake
           echo APP_NAME=${{ matrix.app }} >> $GITHUB_ENV
-          echo CI_COMMIT_TAG=${{ github.ref_name }} >> $GITHUB_ENV
-          echo CI_COMMIT_SHA=${{ github.sha }} >> $GITHUB_ENV
-          echo CI_PROJECT_PATH=${{ github.repository }} >> $GITHUB_ENV
-          echo CI_REGISTRY_IMAGE=ghcr.io/${{ github.repository }} >> $GITHUB_ENV
           echo APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')" >> $GITHUB_ENV
           rm -rf out && mv out-${{ matrix.app }} out
 
