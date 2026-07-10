@@ -192,6 +192,7 @@ jobs:
           # Variables for docker bake
           export APP_NAME=${{ matrix.app }}
           export CI_COMMIT_TAG=${{ github.ref_name }}
+          export CI_REGISTRY_IMAGE=ghcr.io/${{ github.repository }}
           export APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')"
           rm -rf out && mv out-${{ matrix.app }} out
           # Output build logs to both the console and a log file
