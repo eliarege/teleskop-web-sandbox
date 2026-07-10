@@ -8,8 +8,6 @@
  * Required in CI:
  * - CI_PROJECT_PATH
  * - CI_REGISTRY
- * - CI_REGISTRY_USER
- * - CI_REGISTRY_PASSWORD
  *
  * Optional:
  * - TARGET_APPS
@@ -30,10 +28,10 @@ function requireEnv(name, fallback = undefined) {
   return value
 }
 
-// const projectPath = requireEnv('CI_PROJECT_PATH')
+const projectPath = requireEnv('CI_PROJECT_PATH')
 // const ciRegisteryUser = requireEnv('CI_REGISTRY_USER')
 // const ciRegisteryPassword = requireEnv('CI_REGISTRY_PASSWORD')
-// const registry = process.env.CI_REGISTRY || 'registry.gitlab.com'
+const registry = process.env.CI_REGISTRY || 'ghcr.io'
 
 const cwd = process.cwd()
 
@@ -59,90 +57,92 @@ const allAppsArray = process.env.TARGET_APPS
     .filter(Boolean)
     .map(path => path.split('/')[0])
 
-async function getRegistryBearerToken(imagePath) {
-  const scope = `repository:${imagePath}:pull`
+// async function getRegistryBearerToken(imagePath) {
+//   const scope = `repository:${imagePath}:pull`
 
-  const res = await fetch(
-    `https://gitlab.com/jwt/auth?service=container_registry&scope=${encodeURIComponent(scope)}`,
-    {
-      headers: {
-        Authorization:
-          `Basic ${
-          Buffer.from(
-            `${ciRegisteryUser}:${ciRegisteryPassword}`, // fallback for using legacy token
-          ).toString('base64')}`,
-      },
-    },
-  )
+//   const res = await fetch(
+//     `https://gitlab.com/jwt/auth?service=container_registry&scope=${encodeURIComponent(scope)}`,
+//     {
+//       headers: {
+//         Authorization:
+//           `Basic ${
+//           Buffer.from(
+//             `${ciRegisteryUser}:${ciRegisteryPassword}`, // fallback for using legacy token
+//           ).toString('base64')}`,
+//       },
+//     },
+//   )
 
-  if (!res.ok) {
-    throw new Error(`registry token error: ${res.status} ${await res.text()}`)
-  }
+//   if (!res.ok) {
+//     throw new Error(`registry token error: ${res.status} ${await res.text()}`)
+//   }
 
-  return (await res.json()).token
-}
+//   return (await res.json()).token
+// }
 
-async function fetchManifest(imagePath, reference, bearer) {
-  const res = await fetch(
-    `https://${registry}/v2/${imagePath}/manifests/${reference}`,
-    {
-      headers: {
-        Authorization: `Bearer ${bearer}`,
-        Accept: [
-          'application/vnd.oci.image.index.v1+json',
-          'application/vnd.oci.image.manifest.v1+json',
-          'application/vnd.docker.distribution.manifest.list.v2+json',
-          'application/vnd.docker.distribution.manifest.v2+json',
-        ].join(', '),
-      },
-    },
-  )
+// async function fetchManifest(imagePath, reference, bearer) {
+//   const res = await fetch(
+//     `https://${registry}/v2/${imagePath}/manifests/${reference}`,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${bearer}`,
+//         Accept: [
+//           'application/vnd.oci.image.index.v1+json',
+//           'application/vnd.oci.image.manifest.v1+json',
+//           'application/vnd.docker.distribution.manifest.list.v2+json',
+//           'application/vnd.docker.distribution.manifest.v2+json',
+//         ].join(', '),
+//       },
+//     },
+//   )
 
-  if (!res.ok) {
-    throw new Error(`manifest error: ${res.status} ${await res.text()}`)
-  }
+//   if (!res.ok) {
+//     throw new Error(`manifest error: ${res.status} ${await res.text()}`)
+//   }
 
-  return await res.json()
-}
+//   return await res.json()
+// }
 
-async function fetchBlob(imagePath, digest, bearer) {
-  const res = await fetch(
-    `https://${registry}/v2/${imagePath}/blobs/${digest}`,
-    {
-      headers: {
-        Authorization: `Bearer ${bearer}`,
-      },
-    },
-  )
+// async function fetchBlob(imagePath, digest, bearer) {
+//   const res = await fetch(
+//     `https://${registry}/v2/${imagePath}/blobs/${digest}`,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${bearer}`,
+//       },
+//     },
+//   )
 
-  if (!res.ok) {
-    throw new Error(`blob error: ${res.status} ${await res.text()}`)
-  }
+//   if (!res.ok) {
+//     throw new Error(`blob error: ${res.status} ${await res.text()}`)
+//   }
 
-  return await res.json()
-}
+//   return await res.json()
+// }
 
 async function getLatestImageCommitHash(app) {
-  const imagePath = `${projectPath}/apps/${app}`
+  const image = `${registry}/${projectPath}/${app}:latest`
 
-  const bearer = await getRegistryBearerToken(imagePath)
+  const manifest = JSON.parse(dockerWrapper(['buildx', 'imagetools', 'inspect', image, '--raw']))
+  const digestId = manifest.manifests.find(x => x.platform.architecture === 'amd64' || x.platform.os === 'linux').digest || undefined
 
-  let manifest = await fetchManifest(imagePath, 'latest', bearer)
+  const imageConfig = JSON.parse(
+    dockerWrapper([
+      'buildx',
+      'imagetools',
+      'inspect',
+    `${image}@${digestId}`,
+    '--format',
+    '{{json .Image}}',
+    ]),
+  )
 
-  if (manifest.manifests) {
-    const selected
-      = manifest.manifests.find(
-        m =>
-          m.platform?.os === 'linux' && m.platform?.architecture === 'amd64',
-      ) ?? manifest.manifests[0]
+  const commitHash
+  = imageConfig.config?.Labels?.[
+    'com.eliar.manifest.build.commit_hash'
+  ]
 
-    manifest = await fetchManifest(imagePath, selected.digest, bearer)
-  }
-
-  const config = await fetchBlob(imagePath, manifest.config.digest, bearer)
-  const labels = config.config?.Labels ?? {}
-
-  return labels['com.eliar.manifest.build.commit_hash']
+  return commitHash
 }
 
 function spawnSyncWrapper(executable, args = [], options = {}) {
@@ -173,6 +173,10 @@ function gitWrapper(args, options) {
 
 function pnpmWrapper(args, options) {
   return spawnSyncWrapper('pnpm', args, options)
+}
+
+function dockerWrapper(args, options) {
+  return spawnSyncWrapper('docker', args, options)
 }
 
 async function main() {
@@ -265,7 +269,4 @@ async function main() {
   )
 }
 
-// main()
-
-console.log('hit')
-// docker pull ghcr.io/eliarege/teleskop-web-sandbox/planning-board-engine
+main()
