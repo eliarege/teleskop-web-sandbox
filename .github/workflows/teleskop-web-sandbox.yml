@@ -25,6 +25,13 @@ jobs:
       tag_version: ${{ steps.ref.outputs.tag_version }}
 
     steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Detect file changes
+        run: |
+          node ./scripts/detect-file-change.js
+
       - id: ref
         shell: bash
         run: |
@@ -36,8 +43,6 @@ jobs:
           echo "devops=false" >> "$GITHUB_OUTPUT"
           echo "merge_request=false" >> "$GITHUB_OUTPUT"
           echo "dev_branch=false" >> "$GITHUB_OUTPUT"
-
-          echo file changes $(node ./scripts/detect-file-change.js)
 
           # GitLab .app-rules:
           # /^v\d+\.\d+\.\d+(-rc\.\d+)?$/
