@@ -172,6 +172,7 @@ jobs:
       matrix:
         app: ${{ fromJSON(needs.classify-ref.outputs.rebuild_apps) }}
     steps:
+
       - uses: actions/checkout@v4.1.0
         with:
           fetch-depth: 20
