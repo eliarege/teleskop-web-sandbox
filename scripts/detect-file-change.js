@@ -148,8 +148,7 @@ async function getLatestImageCommitHash(app) {
 function spawnSyncWrapper(executable, args = [], options = {}) {
   const output = spawnSync(executable, args, {
     ...options,
-    encoding: 'utf8',
-    shell: process.platform === 'win32',
+    encoding: 'utf-8',
   })
 
   if (output.error) {
@@ -172,7 +171,10 @@ function gitWrapper(args, options) {
 }
 
 function pnpmWrapper(args, options) {
-  return spawnSyncWrapper('pnpm', args, options)
+  return spawnSyncWrapper('pnpm', args, {
+    shell: true,
+    ...options,
+  })
 }
 
 function dockerWrapper(args, options) {
@@ -182,34 +184,29 @@ function dockerWrapper(args, options) {
 async function main() {
   // 1-) fetch the commith hash's of latest images
 
-  const appNameLastCommitHash = {}
-
-  const results = await Promise.allSettled(
+  const entries = await Promise.all(
     allAppsArray.map(async (app) => {
-      const commitHash = await getLatestImageCommitHash(app)
-      return { app, commitHash }
+      try {
+        const commitHash = await getLatestImageCommitHash(app)
+        return [app, commitHash]
+      } catch {
+        return [app, undefined]
+      }
     }),
   )
 
+  const appNameLastCommitHash = Object.fromEntries(
+    entries.filter(([, commitHash]) => commitHash),
+  )
+
   console.log(appNameLastCommitHash)
-
-  for (const result of results) {
-    if (result.status === 'fulfilled') {
-      appNameLastCommitHash[result.value.app] = result.value.commitHash
-    } else {
-      console.error('skipped:', result.reason.message)
-    }
-  }
-
-  // console.log(appNameLastCommitHash);
 
   // 2-) find diff
 
   const appDependencies = {} // { appName -> string : depArray -> string[] } record that holds app-names and dependencies
 
   allAppsArray.forEach((app) => {
-    const out = spawnSyncWrapper(
-      'pnpm',
+    const out = pnpmWrapper(
       [
         'list',
         '--depth',
@@ -271,4 +268,19 @@ async function main() {
   )
 }
 
-await main()
+// await main()
+
+const app = 'archive'
+console.log(pnpmWrapper(
+  [
+    'list',
+    '--depth',
+    '-1',
+    '--parseable',
+    '--filter',
+    `'{./apps/${app}}...'`,
+  ],
+  { cwd: process.cwd(), shell: true },
+))
+
+console.log(process.cwd())
