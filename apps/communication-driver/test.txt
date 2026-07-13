@@ -1,1 +1,1 @@
-test-apps-communication-driver
+test-apps-communication-driver, new communication driver
