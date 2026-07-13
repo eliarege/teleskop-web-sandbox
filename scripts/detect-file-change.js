@@ -191,6 +191,8 @@ async function main() {
     }),
   )
 
+  console.log(appNameLastCommitHash)
+
   for (const result of results) {
     if (result.status === 'fulfilled') {
       appNameLastCommitHash[result.value.app] = result.value.commitHash
@@ -269,4 +271,4 @@ async function main() {
   )
 }
 
-main()
+await main()
