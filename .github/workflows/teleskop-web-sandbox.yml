@@ -31,8 +31,11 @@ jobs:
       rebuild_apps: ${{ steps.detect.outputs.rebuild_apps }}
       retag_apps: ${{ steps.detect.outputs.retag_apps }}
 
-    steps:
+    permissions:
+      contents: read
+      packages: read
 
+    steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
