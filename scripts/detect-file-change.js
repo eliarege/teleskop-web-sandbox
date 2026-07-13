@@ -199,7 +199,7 @@ async function main() {
     entries.filter(([, commitHash]) => commitHash),
   )
 
-  console.log(appNameLastCommitHash)
+  // console.log(appNameLastCommitHash)
 
   // 2-) find diff
 
@@ -268,11 +268,11 @@ async function main() {
   )
 }
 
-// await main()
+await main()
 
 /*
 * sample stdout of main
 {"targetApps":["archive"],"retagApps":["recipes","dispensing-manager-ui","communication-driver","machine-status","machines","migration-service","multi-monitor","planning-board","planning-board-engine","root","websockify","program-editor"]}
 */
 
-console.log(JSON.stringify({"targetApps":["archive"],"retagApps":["recipes","dispensing-manager-ui","communication-driver","machine-status","machines","migration-service","multi-monitor","planning-board","planning-board-engine","root","websockify","program-editor"]}))
+// console.log(JSON.stringify({"targetApps":["archive"],"retagApps":["recipes","dispensing-manager-ui","communication-driver","machine-status","machines","migration-service","multi-monitor","planning-board","planning-board-engine","root","websockify","program-editor"]}))
