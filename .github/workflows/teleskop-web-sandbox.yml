@@ -228,3 +228,37 @@ jobs:
       - run: export APP_NAME=$(echo ${{ github.ref }} | sed -E 's/^([a-z._-]+)@.*/\1/')
       - run: export APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')"
       - run: docker buildx bake "${{ matrix.app }}" --push 2>&1 ||  exit 1
+
+  retag-apps:
+    needs:
+      - classify-ref
+    runs-on: ubuntu-latest
+    if: ${{ needs.classify-ref.outputs.app_rules == 'true' }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        app: ${{ fromJSON(needs.classify-ref.outputs.retag_apps) }}
+
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Retag existing image
+        env:
+          APP_NAME: ${{ matrix.app }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          SOURCE_IMAGE="${CI_REGISTRY_IMAGE}/${APP_NAME}:latest"
+          TARGET_IMAGE="${CI_REGISTRY_IMAGE}/${APP_NAME}:${RELEASE_TAG}"
+
+          docker buildx imagetools create \
+            --tag "${TARGET_IMAGE}" \
+            "${SOURCE_IMAGE}"
