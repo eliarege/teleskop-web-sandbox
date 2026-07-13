@@ -28,6 +28,8 @@ jobs:
       dev_branch: ${{ steps.ref.outputs.dev_branch }}
       app_name: ${{ steps.ref.outputs.app_name }}
       tag_version: ${{ steps.ref.outputs.tag_version }}
+      rebuild_apps: ${{ steps.detect.outputs.rebuild_apps }}
+      retag_apps: ${{ steps.detect.outputs.retag_apps }}
 
     steps:
 
@@ -44,8 +46,18 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Detect file changes
+        id: detect
         run: |
-          node ./scripts/detect-file-change.js
+          export FILE_CHANGES=$(node ./scripts/detect-file-change.js)
+
+          rebuild_apps=$(echo $FILE_CHANGES | jq -c '.targetApps')
+          echo $rebuild_apps
+          echo "rebuild_apps=${rebuild_apps}" >> "$GITHUB_OUTPUT"
+
+          retag_apps=$(echo $FILE_CHANGES | jq -c '.retagApps')
+          echo $retag_apps
+          echo "retag_apps=${retag_apps}" >> "$GITHUB_OUTPUT"
+
 
       - id: ref
         shell: bash
@@ -91,6 +103,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "${{ github.event.repository.default_branch }}" ]]; then
             echo "merge_request=true" >> "$GITHUB_OUTPUT"
           fi
+
 
   # prepare-hotfix:
   #   runs-on: ubuntu-latest
@@ -142,99 +155,99 @@ jobs:
   #     - run: echo "TAG_VERSION=${GITHUB_REF_NAME}" >> $GITHUB_ENV
   #     - run: ./scripts/publish-package @eliarelektronik/samba-env $TAG_VERSION
 
-  # prepare-and-release-apps:
-  #   needs:
-  #     - classify-ref
-  #   runs-on: ubuntu-latest
-  #   # runs-on:
-  #   #   - self-hosted
-  #   #   - docker
-  #   if: ${{ needs.classify-ref.outputs.app_rules == 'true' }}
-  #   timeout-minutes: 60
-  #   continue-on-error: true
-  #   permissions:
-  #     contents: read
-  #     packages: write
-  #   strategy:
-  #     matrix:
-  #       app: [archive, recipes, dispensing-manager-ui, communication-driver, machine-status, machines, migration-service, multi-monitor, planning-board, planning-board-engine, root, websockify, program-editor]
-  #   steps:
-  #     - uses: actions/checkout@v4.1.0
-  #       with:
-  #         fetch-depth: 20
-  #         lfs: true
-  #     - run: npm install -g turbo@^2
+  prepare-and-release-apps:
+    needs:
+      - classify-ref
+    runs-on: ubuntu-latest
+    # runs-on:
+    #   - self-hosted
+    #   - docker
+    if: ${{ needs.classify-ref.outputs.app_rules == 'true' }}
+    timeout-minutes: 60
+    continue-on-error: true
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        app: ${{ fromJSON(needs.classify-ref.outputs.rebuild_apps) }}
+    steps:
+      - uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 20
+          lfs: true
+      - run: npm install -g turbo@^2
 
-  #     - run: turbo prune --scope=${{ matrix.app }} --out-dir out-${{ matrix.app }} --docker
-  #     - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor || github.event.actor }} --password-stdin
+      - run: turbo prune --scope=${{ matrix.app }} --out-dir out-${{ matrix.app }} --docker
+      - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor || github.event.actor }} --password-stdin
 
-  #     - run: |
-  #         echo LOG_PATH="release-logs/${{ matrix.app }}.log" >> $GITHUB_ENV
-  #         echo ERR_PATH="release-logs/${{ matrix.app }}.error.log" >> $GITHUB_ENV
-  #         echo EXIT_CODE=0 >> $GITHUB_ENV
-  #         # Variables for docker bake
-  #         echo APP_NAME=${{ matrix.app }} >> $GITHUB_ENV
-  #         echo APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')" >> $GITHUB_ENV
-  #         rm -rf out && mv out-${{ matrix.app }} out
+      - run: |
+          echo LOG_PATH="release-logs/${{ matrix.app }}.log" >> $GITHUB_ENV
+          echo ERR_PATH="release-logs/${{ matrix.app }}.error.log" >> $GITHUB_ENV
+          echo EXIT_CODE=0 >> $GITHUB_ENV
+          # Variables for docker bake
+          echo APP_NAME=${{ matrix.app }} >> $GITHUB_ENV
+          echo APP_ROLES="$(jq -Mc '.roles // []' "apps/${{ matrix.app }}/manifest.json" 2> /dev/null || echo '[]')" >> $GITHUB_ENV
+          rm -rf out && mv out-${{ matrix.app }} out
 
-  #     - run: mkdir release-logs
-  #     - run: export ERRORS="" >> $GITHUB_ENV
+      - run: mkdir release-logs
+      - run: export ERRORS="" >> $GITHUB_ENV
 
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
-  #     - name: Build and push
-  #       uses: docker/bake-action@v7
-  #       with:
-  #         source: .
-  #         files: docker-bake.hcl
-  #         targets: ${{ matrix.app }}
-  #         push: true
+      - name: Build and push
+        uses: docker/bake-action@v7
+        with:
+          source: .
+          files: docker-bake.hcl
+          targets: ${{ matrix.app }}
+          push: true
 
-  #     # - run: |
-  #     #     # Output build logs to both the console and a log file
-  #     #     {
-  #     #       docker buildx bake "${{ matrix.app }}" --push 2>&1 || {
-  #     #         mv $LOG_PATH $ERR_PATH
-  #     #       }
-  #     #     } | tee $LOG_PATH
-  #     #     if [ -e "$ERR_PATH" ]; then
-  #     #       if [ -n "$ERRORS" ]; then
-  #     #         ERRORS="$ERRORS,$APP_NAME"
-  #     #       else
-  #     #         ERRORS="$APP_NAME"
-  #     #       fi
-  #     #     fi
+      # - run: |
+      #     # Output build logs to both the console and a log file
+      #     {
+      #       docker buildx bake "${{ matrix.app }}" --push 2>&1 || {
+      #         mv $LOG_PATH $ERR_PATH
+      #       }
+      #     } | tee $LOG_PATH
+      #     if [ -e "$ERR_PATH" ]; then
+      #       if [ -n "$ERRORS" ]; then
+      #         ERRORS="$ERRORS,$APP_NAME"
+      #       else
+      #         ERRORS="$APP_NAME"
+      #       fi
+      #     fi
 
-  #     - run: |
-  #         if [ -n "$ERRORS" ]; then
-  #           if [ -n "$SMTP_CONF" ]; then
-  #             ssmtp -C"$SMTP_CONF" "$SMTP_TO" <<EOF
-  #         From: $SMTP_FROM
-  #         To: $SMTP_TO
-  #         Subject: ${{ github.event.repository.name }} | Pipeline Warning | ${{ github.sha }}
-  #         Content-Type: text/html; charset=UTF-8
-  #         <html>
-  #           <body>
-  #             <p>Build failed for following apps: </p>
-  #             <ul>
-  #               $(gomplate -i '{{range strings.Split "," .Env.ERRORS}}<li>{{.}}</li>{{end}}')
-  #             </ul>
-  #             <p>Pipeline: <a href="${{ github.server_url }}/${{ github.repository }}/-/pipelines/${{ github.repository}}/${{ github.workflow }}">#${{ github.repository}}/${{ github.workflow }}</a></p>
-  #           </body>
-  #         </html>
-  #         EOF
-  #           else
-  #             echo "Failed apps: $ERRORS"
-  #           fi
-  #           exit 1
-  #         fi;
+      - run: |
+          if [ -n "$ERRORS" ]; then
+            if [ -n "$SMTP_CONF" ]; then
+              ssmtp -C"$SMTP_CONF" "$SMTP_TO" <<EOF
+          From: $SMTP_FROM
+          To: $SMTP_TO
+          Subject: ${{ github.event.repository.name }} | Pipeline Warning | ${{ github.sha }}
+          Content-Type: text/html; charset=UTF-8
+          <html>
+            <body>
+              <p>Build failed for following apps: </p>
+              <ul>
+                $(gomplate -i '{{range strings.Split "," .Env.ERRORS}}<li>{{.}}</li>{{end}}')
+              </ul>
+              <p>Pipeline: <a href="${{ github.server_url }}/${{ github.repository }}/-/pipelines/${{ github.repository}}/${{ github.workflow }}">#${{ github.repository}}/${{ github.workflow }}</a></p>
+            </body>
+          </html>
+          EOF
+            else
+              echo "Failed apps: $ERRORS"
+            fi
+            exit 1
+          fi;
 
-  #     - uses: actions/upload-artifact@v4.1.0
-  #       if: ${{ always() && !github.event.act }}
-  #       with:
-  #         name: release-logs-${{ matrix.app }}
-  #         path: release-logs/
+      - uses: actions/upload-artifact@v4.1.0
+        if: ${{ always() && !github.event.act }}
+        with:
+          name: release-logs-${{ matrix.app }}
+          path: release-logs/
 
   # release-hotfix:
   #   needs:

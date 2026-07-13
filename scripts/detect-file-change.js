@@ -270,17 +270,9 @@ async function main() {
 
 // await main()
 
-const app = 'archive'
-console.log(pnpmWrapper(
-  [
-    'list',
-    '--depth',
-    '-1',
-    '--parseable',
-    '--filter',
-    `'{./apps/${app}}...'`,
-  ],
-  { cwd: process.cwd(), shell: true },
-))
+/*
+* sample stdout of main
+{"targetApps":["archive"],"retagApps":["recipes","dispensing-manager-ui","communication-driver","machine-status","machines","migration-service","multi-monitor","planning-board","planning-board-engine","root","websockify","program-editor"]}
+*/
 
-console.log(process.cwd())
+console.log(JSON.stringify({"targetApps":["archive"],"retagApps":["recipes","dispensing-manager-ui","communication-driver","machine-status","machines","migration-service","multi-monitor","planning-board","planning-board-engine","root","websockify","program-editor"]}))
